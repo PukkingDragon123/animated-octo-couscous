@@ -1,0 +1,2863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>1 sheep 2 sheep 3 sheep</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #06060e; overflow: hidden; }
+  #wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    cursor: default;
+  }
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="screen"></canvas></div>
+<script>
+'use strict';
+
+/* ============================================================
+   1 sheep 2 sheep 3 sheep
+   a small game about not sleeping
+   ============================================================ */
+
+const W = 320, H = 180;
+
+const canvas = document.getElementById('screen');
+const ctx = canvas.getContext('2d');
+canvas.width = W; canvas.height = H;
+ctx.imageSmoothingEnabled = false;
+
+function fitCanvas() {
+  const ww = window.innerWidth, wh = window.innerHeight;
+  let scale = Math.min(ww / W, wh / H);
+  if (scale >= 1) scale = Math.max(1, Math.floor(scale));
+  canvas.style.width = (W * scale) + 'px';
+  canvas.style.height = (H * scale) + 'px';
+}
+window.addEventListener('resize', fitCanvas);
+fitCanvas();
+
+/* ---------------- utils ---------------- */
+
+function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// deterministic-ish rng for visual jitter
+let _seed = 1337;
+function srand(s) { _seed = s >>> 0; }
+function rnd() {
+  _seed = (_seed * 1664525 + 1013904223) >>> 0;
+  return _seed / 4294967296;
+}
+function rndi(n) { return Math.floor(rnd() * n); }
+function chance(p) { return Math.random() < p; }
+function rand(a, b) { return a + Math.random() * (b - a); }
+function randi(a, b) { return Math.floor(rand(a, b + 1)); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+/* ---------------- pixel font (5x7, all caps) ---------------- */
+
+const GLYPHS = {
+'A':['01110','10001','10001','11111','10001','10001','10001'],
+'B':['11110','10001','10001','11110','10001','10001','11110'],
+'C':['01110','10001','10000','10000','10000','10001','01110'],
+'D':['11110','10001','10001','10001','10001','10001','11110'],
+'E':['11111','10000','10000','11110','10000','10000','11111'],
+'F':['11111','10000','10000','11110','10000','10000','10000'],
+'G':['01110','10001','10000','10111','10001','10001','01111'],
+'H':['10001','10001','10001','11111','10001','10001','10001'],
+'I':['01110','00100','00100','00100','00100','00100','01110'],
+'J':['00111','00010','00010','00010','00010','10010','01100'],
+'K':['10001','10010','10100','11000','10100','10010','10001'],
+'L':['10000','10000','10000','10000','10000','10000','11111'],
+'M':['10001','11011','10101','10101','10001','10001','10001'],
+'N':['10001','11001','10101','10011','10001','10001','10001'],
+'O':['01110','10001','10001','10001','10001','10001','01110'],
+'P':['11110','10001','10001','11110','10000','10000','10000'],
+'Q':['01110','10001','10001','10001','10101','10010','01101'],
+'R':['11110','10001','10001','11110','10100','10010','10001'],
+'S':['01111','10000','10000','01110','00001','00001','11110'],
+'T':['11111','00100','00100','00100','00100','00100','00100'],
+'U':['10001','10001','10001','10001','10001','10001','01110'],
+'V':['10001','10001','10001','10001','10001','01010','00100'],
+'W':['10001','10001','10001','10101','10101','11011','10001'],
+'X':['10001','10001','01010','00100','01010','10001','10001'],
+'Y':['10001','10001','01010','00100','00100','00100','00100'],
+'Z':['11111','00001','00010','00100','01000','10000','11111'],
+'0':['01110','10001','10011','10101','11001','10001','01110'],
+'1':['00100','01100','00100','00100','00100','00100','01110'],
+'2':['01110','10001','00001','00010','00100','01000','11111'],
+'3':['11111','00010','00100','00010','00001','10001','01110'],
+'4':['00010','00110','01010','10010','11111','00010','00010'],
+'5':['11111','10000','11110','00001','00001','10001','01110'],
+'6':['00110','01000','10000','11110','10001','10001','01110'],
+'7':['11111','00001','00010','00100','01000','01000','01000'],
+'8':['01110','10001','10001','01110','10001','10001','01110'],
+'9':['01110','10001','10001','01111','00001','00010','01100'],
+' ':['00000','00000','00000','00000','00000','00000','00000'],
+'.':['00000','00000','00000','00000','00000','01100','01100'],
+',':['00000','00000','00000','00000','01100','01100','01000'],
+'!':['00100','00100','00100','00100','00100','00000','00100'],
+'?':['01110','10001','00001','00110','00100','00000','00100'],
+"'":['00100','00100','01000','00000','00000','00000','00000'],
+'"':['01010','01010','10100','00000','00000','00000','00000'],
+'-':['00000','00000','00000','01110','00000','00000','00000'],
+'+':['00000','00100','00100','11111','00100','00100','00000'],
+':':['00000','01100','01100','00000','01100','01100','00000'],
+';':['00000','01100','01100','00000','01100','01100','01000'],
+'(':['00010','00100','01000','01000','01000','00100','00010'],
+')':['01000','00100','00010','00010','00010','00100','01000'],
+'/':['00001','00010','00010','00100','01000','01000','10000'],
+'ـ':['00000','00000','00000','00000','00000','00000','11111'],
+'>':['01000','00100','00010','00001','00010','00100','01000'],
+'<':['00010','00100','01000','10000','01000','00100','00010'],
+'*':['00000','10101','01110','11111','01110','10101','00000'],
+'~':['00000','00000','01000','10101','00010','00000','00000'],
+};
+
+const CHAR_W = 6, CHAR_H = 8; // 5x7 glyph + 1px spacing
+
+// pre-rendered tinted glyph atlases, cached per color
+const _fontCache = {};
+function fontAtlas(color) {
+  if (_fontCache[color]) return _fontCache[color];
+  const keys = Object.keys(GLYPHS);
+  const c = document.createElement('canvas');
+  c.width = keys.length * CHAR_W; c.height = CHAR_H;
+  const g = c.getContext('2d');
+  g.fillStyle = color;
+  keys.forEach((k, i) => {
+    const rows = GLYPHS[k];
+    for (let y = 0; y < 7; y++)
+      for (let x = 0; x < 5; x++)
+        if (rows[y][x] === '1') g.fillRect(i * CHAR_W + x, y, 1, 1);
+  });
+  const atlas = { canvas: c, index: {} };
+  keys.forEach((k, i) => atlas.index[k] = i);
+  _fontCache[color] = atlas;
+  return atlas;
+}
+
+function drawText(text, x, y, color, opts) {
+  opts = opts || {};
+  const atlas = fontAtlas(color);
+  const s = String(text).toUpperCase();
+  let cx = x;
+  if (opts.align === 'center') cx = Math.round(x - s.length * CHAR_W / 2);
+  else if (opts.align === 'right') cx = Math.round(x - s.length * CHAR_W);
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (ch === '\n') continue;
+    const idx = atlas.index[ch];
+    if (idx !== undefined && ch !== ' ') {
+      let yy = y;
+      if (opts.wavy) yy = y + Math.round(Math.sin(T * 4 + i * 0.7) * 1.5);
+      ctx.drawImage(atlas.canvas, idx * CHAR_W, 0, CHAR_W, CHAR_H, cx, yy, CHAR_W, CHAR_H);
+    }
+    cx += CHAR_W;
+  }
+  return cx;
+}
+
+function wrapText(text, maxChars) {
+  const words = String(text).split(' ');
+  const lines = [];
+  let line = '';
+  for (const w of words) {
+    if (line.length === 0) line = w;
+    else if ((line + ' ' + w).length <= maxChars) line += ' ' + w;
+    else { lines.push(line); line = w; }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+/* ---------------- input ---------------- */
+
+const keys = {};        // held
+let pressed = {};       // pressed this frame
+let anyPressed = false;
+
+const KEYMAP = {
+  'ArrowLeft':'left','KeyA':'left',
+  'ArrowRight':'right','KeyD':'right',
+  'ArrowUp':'up','KeyW':'up',
+  'ArrowDown':'down','KeyS':'down',
+  'Space':'action','KeyZ':'action','Enter':'action',
+  'KeyX':'alt',
+  'KeyM':'mute',
+};
+
+window.addEventListener('keydown', (e) => {
+  if (['Space','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter'].includes(e.code)) e.preventDefault();
+  const k = KEYMAP[e.code];
+  audioBoot();
+  if (e.repeat) return;
+  anyPressed = true;
+  if (!k) return;
+  keys[k] = true;
+  pressed[k] = true;
+  if (k === 'mute') toggleMute();
+});
+window.addEventListener('keyup', (e) => {
+  const k = KEYMAP[e.code];
+  if (k) keys[k] = false;
+});
+
+// pointer: tapping/clicking counts as action (for the counting scene / advancing text)
+let pointerDown = false;
+let pointerClick = null; // {x, y} in buffer coords, valid for one frame
+canvas.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  audioBoot();
+  anyPressed = true;
+  pressed['action'] = true;
+  keys['action'] = true;
+  pointerDown = true;
+  const r = canvas.getBoundingClientRect();
+  pointerClick = {
+    x: (e.clientX - r.left) / r.width * W,
+    y: (e.clientY - r.top) / r.height * H,
+  };
+});
+window.addEventListener('pointerup', () => { keys['action'] = false; pointerDown = false; });
+
+/* ---------------- audio ---------------- */
+
+let AC = null, master = null, muted = false;
+try { muted = localStorage.getItem('sheep_muted') === '1'; } catch (e) {}
+let ambienceNodes = [];
+
+function audioBoot() {
+  if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
+  try {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    master = AC.createGain();
+    master.gain.value = muted ? 0 : 0.5;
+    master.connect(AC.destination);
+  } catch (e) { AC = null; }
+}
+function toggleMute() {
+  muted = !muted;
+  try { localStorage.setItem('sheep_muted', muted ? '1' : '0'); } catch (e) {}
+  if (master) master.gain.setTargetAtTime(muted ? 0 : 0.5, AC.currentTime, 0.02);
+}
+
+let _noiseBuf = null;
+function noiseBuf() {
+  if (_noiseBuf) return _noiseBuf;
+  _noiseBuf = AC.createBuffer(1, AC.sampleRate * 0.5, AC.sampleRate);
+  const d = _noiseBuf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return _noiseBuf;
+}
+
+// soft landing thump, optionally delayed
+function sfxToof(delay) {
+  if (!AC || muted) return;
+  const t = AC.currentTime + (delay || 0);
+  const src = AC.createBufferSource(); src.buffer = noiseBuf();
+  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 400;
+  const g = AC.createGain();
+  env(g, t, 0.004, 0.14, 0.02, 0.05, 0.04, t + 0.09);
+  src.connect(lp); lp.connect(g); g.connect(master);
+  src.start(t); src.stop(t + 0.1);
+}
+
+// the splash. used at 43 and in the memory. nowhere else.
+function sfxSplash() {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const src = AC.createBufferSource(); src.buffer = noiseBuf();
+  const lp = AC.createBiquadFilter(); lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(1200, t);
+  lp.frequency.exponentialRampToValueAtTime(300, t + 0.35);
+  const g = AC.createGain();
+  env(g, t, 0.01, 0.12, 0.1, 0.05, 0.2, t + 0.38);
+  src.connect(lp); lp.connect(g); g.connect(master);
+  src.start(t); src.stop(t + 0.4);
+  const o = AC.createOscillator(), og = AC.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(300, t);
+  o.frequency.exponentialRampToValueAtTime(150, t + 0.3);
+  env(og, t, 0.02, 0.08, 0.1, 0.04, 0.15, t + 0.32);
+  o.connect(og); og.connect(master);
+  o.start(t); o.stop(t + 0.34);
+}
+
+// dead button click for the jam
+function sfxDeadClick() {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const src = AC.createBufferSource(); src.buffer = noiseBuf();
+  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 250;
+  const g = AC.createGain();
+  env(g, t, 0.002, 0.09, 0.01, 0.03, 0.02, t + 0.05);
+  src.connect(lp); lp.connect(g); g.connect(master);
+  src.start(t); src.stop(t + 0.06);
+}
+
+// quiet unison saw cluster. only at 77.
+function sfxSawSwell() {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const g = AC.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.08, t + 1.5);
+  g.gain.linearRampToValueAtTime(0.0001, t + 2.6);
+  g.connect(master);
+  for (const det of [-14, -5, 0, 7, 13]) {
+    const o = AC.createOscillator();
+    o.type = 'sawtooth'; o.frequency.value = 65; o.detune.value = det;
+    o.connect(g); o.start(t); o.stop(t + 2.7);
+  }
+}
+
+// knock (two taps); answer variant pitched down
+function sfxKnock(down) {
+  if (!AC || muted) return;
+  const t0 = AC.currentTime;
+  for (const dt of [0, 0.25]) {
+    const t = t0 + dt;
+    const src = AC.createBufferSource(); src.buffer = noiseBuf();
+    const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = down ? 180 : 500;
+    const g = AC.createGain();
+    env(g, t, 0.002, down ? 0.22 : 0.16, 0.02, 0.04, 0.03, t + 0.08);
+    src.connect(lp); lp.connect(g); g.connect(master);
+    src.start(t); src.stop(t + 0.09);
+  }
+}
+
+// long wrong bleat: octave down, swells then hard-cuts
+function sfxWrongBaa() {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const dur = 1.5;
+  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
+  const g = AC.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.2, t + dur - 0.05);
+  g.gain.setValueAtTime(0.0001, t + dur);
+  lp.connect(g); g.connect(master);
+  for (const det of [0, 9]) {
+    const o = AC.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(110 + det, t);
+    const lfo = AC.createOscillator(), lg = AC.createGain();
+    lfo.type = 'sine'; lfo.frequency.value = 5; lg.gain.value = 7;
+    lfo.connect(lg); lg.connect(o.frequency);
+    o.connect(lp);
+    o.start(t); o.stop(t + dur);
+    lfo.start(t); lfo.stop(t + dur);
+  }
+}
+
+// deliberately ugly little alarm
+function sfxAlarm() {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'square'; o.frequency.value = 880;
+  const lfo = AC.createOscillator(), lg = AC.createGain();
+  lfo.type = 'square'; lfo.frequency.value = 8; lg.gain.value = 0.5;
+  const gg = AC.createGain(); gg.gain.value = 0.04;
+  lfo.connect(lg); lg.connect(gg.gain);
+  env(g, t, 0.01, 0.06, 0.3, 0.05, 0.2, t + 1.1);
+  o.connect(gg); gg.connect(g); g.connect(master);
+  o.start(t); o.stop(t + 1.1); lfo.start(t); lfo.stop(t + 1.1);
+}
+
+// scale the current ambience bus (0..1)
+function setAmbienceGain(mult) {
+  if (!AC || !ambienceNodes.length) return;
+  const g = ambienceNodes[0];
+  if (g && g.gain) g.gain.setTargetAtTime(0.06 * mult, AC.currentTime, 0.4);
+}
+
+function env(gainNode, t0, a, peak, d, sustain, r, end) {
+  const g = gainNode.gain;
+  g.setValueAtTime(0.0001, t0);
+  g.linearRampToValueAtTime(peak, t0 + a);
+  g.linearRampToValueAtTime(sustain, t0 + a + d);
+  g.setValueAtTime(sustain, end - r);
+  g.linearRampToValueAtTime(0.0001, end);
+}
+
+// short counting blip; pitch drifts with the count
+function sfxBlip(count) {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'triangle';
+  const base = 440 + (count % 8) * 30 + Math.min(count, 100) * 1.5;
+  o.frequency.setValueAtTime(base, t);
+  o.frequency.exponentialRampToValueAtTime(base * 1.4, t + 0.05);
+  env(g, t, 0.005, 0.25, 0.03, 0.08, 0.05, t + 0.14);
+  o.connect(g); g.connect(master);
+  o.start(t); o.stop(t + 0.16);
+}
+
+// wrong/creepy variant of the blip
+function sfxBlipWrong() {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(220, t);
+  o.frequency.exponentialRampToValueAtTime(90, t + 0.25);
+  env(g, t, 0.005, 0.18, 0.05, 0.06, 0.1, t + 0.3);
+  o.connect(g); g.connect(master);
+  o.start(t); o.stop(t + 0.32);
+}
+
+// sheep bleat: two detuned saws, pitch wobble down, lowpass
+function sfxBaa(pitch, dark) {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const dur = dark ? 0.9 : 0.45;
+  const f0 = (pitch || 1) * (dark ? 110 : 220);
+  const lp = AC.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = dark ? 500 : 1200;
+  const g = AC.createGain();
+  env(g, t, 0.03, dark ? 0.16 : 0.12, 0.1, 0.08, 0.15, t + dur);
+  lp.connect(g); g.connect(master);
+  for (const det of [0, 8]) {
+    const o = AC.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(f0 + det, t);
+    // bleat wobble
+    const lfo = AC.createOscillator(), lg = AC.createGain();
+    lfo.type = 'sine'; lfo.frequency.value = dark ? 6 : 9;
+    lg.gain.value = f0 * 0.06;
+    lfo.connect(lg); lg.connect(o.frequency);
+    o.frequency.linearRampToValueAtTime(f0 * (dark ? 0.7 : 0.85) + det, t + dur);
+    o.connect(lp);
+    o.start(t); o.stop(t + dur);
+    lfo.start(t); lfo.stop(t + dur);
+  }
+}
+
+// low double thump
+function sfxHeartbeat() {
+  if (!AC || muted) return;
+  const t0 = AC.currentTime;
+  for (const dt of [0, 0.22]) {
+    const t = t0 + dt;
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(55, t);
+    o.frequency.exponentialRampToValueAtTime(35, t + 0.12);
+    env(g, t, 0.005, dt === 0 ? 0.5 : 0.35, 0.05, 0.1, 0.08, t + 0.18);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + 0.2);
+  }
+}
+
+function sfxChime(good) {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const notes = good ? [523.25, 659.25, 783.99] : [523.25, 493.88, 466.16];
+  notes.forEach((f, i) => {
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'sine';
+    o.frequency.value = f;
+    const st = t + i * 0.12;
+    env(g, st, 0.01, 0.15, 0.1, 0.06, 0.3, st + 0.6);
+    o.connect(g); g.connect(master);
+    o.start(st); o.stop(st + 0.62);
+  });
+}
+
+function sfxStep() {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'triangle';
+  o.frequency.setValueAtTime(90 + Math.random() * 30, t);
+  env(g, t, 0.002, 0.06, 0.02, 0.02, 0.03, t + 0.06);
+  o.connect(g); g.connect(master);
+  o.start(t); o.stop(t + 0.07);
+}
+
+function sfxSchoolBell() {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'square';
+  o.frequency.value = 1760;
+  const lfo = AC.createOscillator(), lg = AC.createGain();
+  lfo.type = 'square'; lfo.frequency.value = 16;
+  lg.gain.value = 0.5;
+  lfo.connect(lg);
+  const gg = AC.createGain(); gg.gain.value = 0.05;
+  lg.connect(gg.gain);
+  env(g, t, 0.01, 0.08, 0.2, 0.05, 0.4, t + 1.4);
+  o.connect(gg); gg.connect(g); g.connect(master);
+  o.start(t); o.stop(t + 1.4); lfo.start(t); lfo.stop(t + 1.4);
+}
+
+function stopAmbience() {
+  for (const n of ambienceNodes) { try { n.stop ? n.stop() : n.disconnect(); } catch (e) {} }
+  ambienceNodes = [];
+}
+
+// scene ambiences: 'night' soft drone, 'dream' hollow detuned drone + hum, 'day' bright thin tone, 'none'
+function setAmbience(kind) {
+  if (!AC) { pendingAmbience = kind; return; }
+  pendingAmbience = null;
+  stopAmbience();
+  if (muted && kind !== 'none') { pendingAmbience = kind; }
+  if (kind === 'none') return;
+  const t = AC.currentTime;
+  const g = AC.createGain();
+  g.gain.value = 0;
+  g.gain.setTargetAtTime(kind === 'dream' ? 0.10 : 0.06, t, 2.0);
+  g.connect(master);
+  ambienceNodes.push(g);
+  const make = (type, freq, det) => {
+    const o = AC.createOscillator();
+    o.type = type; o.frequency.value = freq; o.detune.value = det || 0;
+    o.connect(g); o.start(t);
+    ambienceNodes.push(o);
+  };
+  if (kind === 'night') {
+    make('sine', 55); make('sine', 82.5, 4);
+  } else if (kind === 'dream') {
+    make('sine', 48); make('sine', 72, -12); make('triangle', 96.5, 9);
+    // fluorescent hum
+    make('sawtooth', 120, 0);
+    const last = ambienceNodes[ambienceNodes.length - 1];
+    last.disconnect();
+    const hg = AC.createGain(); hg.gain.value = 0.12;
+    const hp = AC.createBiquadFilter(); hp.type = 'bandpass'; hp.frequency.value = 120; hp.Q.value = 8;
+    last.connect(hp); hp.connect(hg); hg.connect(g);
+    ambienceNodes.push(hg, hp);
+  } else if (kind === 'day') {
+    make('triangle', 220); make('sine', 330, 6);
+    const gg = ambienceNodes[0];
+    gg.gain.setTargetAtTime(0.02, t, 2.0);
+  }
+}
+let pendingAmbience = null;
+
+/* ---------------- drawing helpers ---------------- */
+
+function px(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.round(x), Math.round(y), w, h);
+}
+
+function ditherRect(x, y, w, h, color, step) {
+  ctx.fillStyle = color;
+  step = step || 2;
+  for (let yy = y; yy < y + h; yy++)
+    for (let xx = x + ((yy % step) ? 1 : 0); xx < x + w; xx += step)
+      ctx.fillRect(xx, yy, 1, 1);
+}
+
+function vignette(strength) {
+  ctx.fillStyle = 'rgba(0,0,0,' + strength + ')';
+  ctx.fillRect(0, 0, W, 6); ctx.fillRect(0, H - 6, W, 6);
+  ctx.fillRect(0, 0, 6, H); ctx.fillRect(W - 6, 0, 6, H);
+}
+
+/* ---------------- sprites ---------------- */
+
+function hexLerp(a, b, t) {
+  const pa = [parseInt(a.slice(1, 3), 16), parseInt(a.slice(3, 5), 16), parseInt(a.slice(5, 7), 16)];
+  const pb = [parseInt(b.slice(1, 3), 16), parseInt(b.slice(3, 5), 16), parseInt(b.slice(5, 7), 16)];
+  const c = pa.map((v, i) => Math.round(lerp(v, pb[i], t)));
+  return 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+}
+
+// sheep, ~18x13. opts: flip, dark, stare, faceless, scarf, scale, lying, body/face/eyes colors
+function drawSheep(x, y, opts) {
+  opts = opts || {};
+  const flip = opts.flip;
+  const body = opts.dark ? '#3a3644' : (opts.body || '#e8e4dc');
+  const face = opts.faceless ? body : (opts.dark ? '#141019' : (opts.face || '#2a2430'));
+  const eye = opts.faceless ? body : (opts.eyes || (opts.dark ? '#c33' : '#e8e4dc'));
+  const legs = opts.dark ? '#141019' : (opts.face || '#2a2430');
+  const bob = opts.bob || 0;
+  ctx.save();
+  ctx.translate(Math.round(x), Math.round(y + bob));
+  if (opts.scale && opts.scale !== 1) ctx.scale(opts.scale, opts.scale);
+  if (flip) { ctx.scale(-1, 1); ctx.translate(-18, 0); }
+  if (opts.lying) {
+    px(1, 6, 16, 6, body); px(3, 4, 12, 2, body);
+    px(2, 12, 14, 1, opts.darkShade || '#c9c4b8');
+    px(5, 1, 6, 6, face);
+    px(4, 3, 1, 2, face); px(11, 3, 1, 2, face);
+    px(6, 3, 2, 1, eye); px(9, 3, 2, 1, eye); // closed-line eyes
+    if (opts.scarf) { px(4, 6, 10, 1, '#b7443e'); px(4, 7, 3, 1, '#b7443e'); }
+    ctx.restore();
+    return;
+  }
+  // legs
+  px(3, 10, 2, 3, legs); px(8, 10, 2, 3, legs); px(13, 10, 2, 3, legs);
+  // wool body: cloud of blobs
+  px(1, 3, 16, 7, body);
+  px(3, 1, 12, 2, body);
+  px(0, 5, 1, 3, body); px(17, 5, 1, 3, body);
+  px(2, 10, 14, 1, body);
+  // wool shading
+  const shade = opts.dark ? '#2b2735' : '#c9c4b8';
+  px(2, 9, 14, 1, shade); px(15, 4, 2, 5, shade);
+  if (opts.stare) {
+    // head facing the camera, centered
+    px(6, 2, 6, 7, face);
+    px(5, 4, 1, 3, face); px(12, 4, 1, 3, face); // ears out
+    if (!opts.faceless) { px(7, 4, 1, 1, eye); px(10, 4, 1, 1, eye); }
+    if (opts.dark && !opts.faceless) { px(7, 5, 1, 1, eye); px(10, 5, 1, 1, eye); } // taller wrong eyes
+    if (opts.scarf) px(6, 8, 6, 1, '#b7443e');
+  } else {
+    // head in profile at front (left)
+    px(0, 2, 5, 6, face);
+    px(-1, 4, 1, 3, face);
+    if (!opts.faceless) px(1, 3, 1, 1, eye);
+    px(4, 0, 2, 3, body); // wool tuft on head
+    if (opts.scarf) px(0, 7, 5, 1, '#b7443e');
+    if (opts.bell) { px(2, 8, 2, 2, '#c9a24a'); }
+  }
+  ctx.restore();
+}
+
+// the kid, ~8x14. frame: walk frame 0..3, opts: {sleep, sit, blink, flip, pale}
+function drawKid(x, y, frame, opts) {
+  opts = opts || {};
+  const skin = opts.pale ? '#cfc3c9' : '#e0b094';
+  const hair = '#3d2b23';
+  const shirt = opts.pj ? '#7a86b8' : '#b85450';
+  const pants = opts.pj ? '#5a6494' : '#4a4a5e';
+  ctx.save();
+  ctx.translate(Math.round(x), Math.round(y));
+  if (opts.flip) { ctx.scale(-1, 1); ctx.translate(-8, 0); }
+  if (opts.lying) {
+    // lying in bed, drawn horizontal: just head + blanket handled by scene
+    px(0, 0, 5, 5, skin);
+    px(0, 0, 5, 2, hair); px(0, 2, 1, 2, hair);
+    if (!opts.eyesClosed) { px(2, 3, 1, 1, '#1a1420'); px(4, 3, 1, 1, '#1a1420'); }
+    else { px(2, 3, 2, 1, '#8a6a58'); }
+    ctx.restore();
+    return;
+  }
+  // head
+  px(1, 0, 6, 5, skin);
+  px(0, 0, 8, 2, hair); px(0, 2, 1, 2, hair); px(7, 2, 1, 1, hair);
+  // eyes (dark circles under from insomnia)
+  if (!opts.eyesClosed) {
+    px(3, 3, 1, 1, '#1a1420'); px(6, 3, 1, 1, '#1a1420');
+  } else {
+    px(3, 3, 1, 1, '#8a6a58'); px(6, 3, 1, 1, '#8a6a58');
+  }
+  if (opts.tired) { px(3, 4, 1, 1, '#9a8ab0'); px(6, 4, 1, 1, '#9a8ab0'); }
+  // body
+  px(1, 5, 6, 5, shirt);
+  // arms
+  px(0, 6, 1, 3, shirt); px(7, 6, 1, 3, shirt);
+  // legs walk cycle
+  const f = Math.floor(frame) % 4;
+  if (opts.sit) {
+    px(1, 10, 6, 2, pants);
+  } else if (f === 0 || f === 2) {
+    px(2, 10, 2, 4, pants); px(5, 10, 2, 4, pants);
+  } else if (f === 1) {
+    px(1, 10, 2, 4, pants); px(5, 10, 2, 3, pants); px(6, 13, 2, 1, pants);
+  } else {
+    px(2, 10, 2, 3, pants); px(1, 13, 2, 1, pants); px(5, 10, 2, 4, pants);
+  }
+  ctx.restore();
+}
+
+/* ---------------- textbox / monologue system ---------------- */
+
+const textbox = {
+  queue: [],       // [{text, who, then}]
+  current: null,
+  shown: 0,        // chars revealed
+  timer: 0,
+  done: false,
+  onEmpty: null,
+};
+
+function say(lines, onEmpty) {
+  if (!Array.isArray(lines)) lines = [lines];
+  for (const l of lines) textbox.queue.push(typeof l === 'string' ? { text: l } : l);
+  if (onEmpty) textbox.onEmpty = onEmpty;
+  if (!textbox.current) nextLine();
+}
+function nextLine() {
+  textbox.current = textbox.queue.shift() || null;
+  textbox.shown = 0; textbox.timer = 0; textbox.done = false;
+  if (!textbox.current && textbox.onEmpty) {
+    const f = textbox.onEmpty; textbox.onEmpty = null; f();
+  }
+}
+function textboxActive() { return !!textbox.current; }
+function clearText() { textbox.queue = []; textbox.current = null; textbox.onEmpty = null; }
+
+function updateTextbox(dt) {
+  if (!textbox.current) return;
+  const speed = 28; // chars per second
+  if (!textbox.done) {
+    textbox.timer += dt * speed;
+    const n = Math.floor(textbox.timer);
+    if (n > textbox.shown) {
+      textbox.shown = n;
+      if (textbox.shown >= textbox.current.text.length) {
+        textbox.shown = textbox.current.text.length;
+        textbox.done = true;
+      }
+    }
+    if (pressed['action']) { textbox.shown = textbox.current.text.length; textbox.done = true; pressed['action'] = false; }
+  } else if (pressed['action']) {
+    pressed['action'] = false;
+    if (textbox.current.then) textbox.current.then();
+    nextLine();
+  }
+}
+
+function drawTextbox() {
+  if (!textbox.current) return;
+  const t = textbox.current;
+  const lines = wrapText(t.text, 48);
+  const boxH = 14 + lines.length * 9;
+  const y0 = H - boxH - 4;
+  ctx.fillStyle = 'rgba(6,6,14,0.92)';
+  ctx.fillRect(4, y0, W - 8, boxH);
+  ctx.strokeStyle = t.color || '#8a86a0';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(4.5, y0 + 0.5, W - 9, boxH - 1);
+  if (t.who) drawText(t.who, 10, y0 - 4, t.color || '#c9c4d8');
+  let shown = textbox.shown;
+  let yy = y0 + 7;
+  for (const ln of lines) {
+    const take = clamp(shown, 0, ln.length);
+    drawText(ln.slice(0, take), 10, yy, t.color || '#e8e4ec');
+    shown -= ln.length + 1;
+    yy += 9;
+    if (shown <= 0) break;
+  }
+  if (textbox.done && Math.floor(T * 2) % 2 === 0) drawText('>', W - 14, y0 + boxH - 10, '#8a86a0');
+}
+
+/* ---------------- fade / scene machine ---------------- */
+
+let T = 0;                 // global time (seconds)
+let scene = null;
+let sceneTime = 0;
+let fade = { v: 1, target: 0, speed: 1.2, onDone: null };
+
+let sceneName = '';
+function goto_(name, arg) {
+  fade.target = 1; fade.speed = 2.2;
+  fade.onDone = () => {
+    clearText();
+    scene = SCENES[name];
+    sceneName = name;
+    sceneTime = 0;
+    if (scene.enter) scene.enter(arg);
+    fade.target = 0; fade.speed = 1.4;
+  };
+}
+function hardGoto(name, arg) {
+  clearText();
+  scene = SCENES[name];
+  sceneName = name;
+  sceneTime = 0;
+  if (scene.enter) scene.enter(arg);
+}
+
+function updateFade(dt) {
+  if (fade.v < fade.target) { fade.v = Math.min(fade.target, fade.v + dt * fade.speed); }
+  else if (fade.v > fade.target) { fade.v = Math.max(fade.target, fade.v - dt * fade.speed); }
+  if (fade.v === 1 && fade.onDone) { const f = fade.onDone; fade.onDone = null; f(); }
+}
+function drawFade() {
+  if (fade.v > 0.001) {
+    ctx.fillStyle = 'rgba(3,3,8,' + fade.v.toFixed(3) + ')';
+    ctx.fillRect(0, 0, W, H);
+  }
+}
+
+/* ---------------- game state ---------------- */
+
+const G = {
+  count: 0,          // sheep counted tonight
+  wrongPresses: 0,
+  sawExtra: 0,       // optional dream/school discoveries
+  name: 'SAM',
+};
+
+/* ---------------- walk scene helper ----------------
+   Generic side-scroller: player walks left/right through a long room,
+   triggers monologue at positions, inspects things with ACTION.       */
+
+function makeWalker(cfg) {
+  return {
+    x: cfg.startX || 20,
+    y: cfg.groundY,
+    frame: 0,
+    facing: 1,
+    cam: 0,
+    len: cfg.len,
+    speed: cfg.speed || 42,
+    triggers: (cfg.triggers || []).map(t => ({ ...t, fired: false })),
+    things: cfg.things || [],   // {x, w, label, onInteract, used}
+    stepT: 0,
+    locked: false,
+  };
+}
+
+function updateWalker(wk, dt) {
+  if (textboxActive() || wk.locked) return;
+  let mv = 0;
+  if (keys['left']) mv = -1;
+  if (keys['right']) mv = 1;
+  if (mv !== 0) {
+    wk.facing = mv;
+    wk.x = clamp(wk.x + mv * wk.speed * dt, 4, wk.len - 12);
+    wk.frame += dt * 8;
+    wk.stepT += dt;
+    if (wk.stepT > 0.28) { wk.stepT = 0; sfxStep(); }
+  } else wk.frame = 0;
+  wk.cam = clamp(wk.x - W / 2 + 4, 0, Math.max(0, wk.len - W));
+  for (const tr of wk.triggers) {
+    if (!tr.fired && wk.x >= tr.x) { tr.fired = true; tr.run(wk); }
+  }
+  if (pressed['action']) {
+    for (const th of wk.things) {
+      if (!th.used && Math.abs((th.x + (th.w || 8) / 2) - (wk.x + 4)) < 14) {
+        pressed['action'] = false;
+        if (th.once) th.used = true;
+        th.onInteract(wk, th);
+        break;
+      }
+    }
+  }
+}
+
+function nearThing(wk) {
+  for (const th of wk.things) {
+    if (!th.used && Math.abs((th.x + (th.w || 8) / 2) - (wk.x + 4)) < 14) return th;
+  }
+  return null;
+}
+
+function drawInteractHint(wk, color) {
+  const th = nearThing(wk);
+  if (th && !textboxActive()) {
+    const sx = Math.round(th.x - wk.cam + (th.w || 8) / 2);
+    if (Math.floor(T * 2) % 2 === 0) drawText('?', sx - 2, wk.groundHintY || 40, color || '#e8e4ec');
+    if (th.label) drawText(th.label, sx, (wk.groundHintY || 40) - 10, color || '#8a86a0', { align: 'center' });
+  }
+}
+
+/* ---------------- counting scene machinery ----------------
+   One button. Each press sends a sheep over the fence and advances the
+   count. A scripted event table keyed on the count runs the escalation. */
+
+const counting = {
+  jumpers: [],      // {t, spd, dir, dark, faceless, bell, scale, shade, silent, stopAt}
+  watchers: [],     // accumulated non-exiting sheep {x, y, gx, gy}
+  shake: 0,
+  wobble: 0,
+  flashText: null, flashT: 0, flashDur: 3.2,
+  stareOnFence: 0,  // timer: a sheep sits on the fence staring
+  headTurnT: 0,     // 77 beat
+  jamDead: 0,
+  stallT: 0,        // 99 input stall
+  ghostOn: false,
+  hideNumT: 0,
+  redFlashT: 0,     // one-blink red sheep at the skip
+  pressPop: 0,      // numeral squash-pop
+  pressAnimT: 0,    // for the 66+ freeze rule
+  hbT: 0,           // heartbeat loop timer
+  fenceDrift: 0,
+  starsGone: 0,
+  finaleT: -1,
+  night2: false,
+  eyesBtnT: 0,      // night2: OPEN YOUR EYES fade-in
+  ended: false,
+};
+
+function flash(text, dur) {
+  counting.flashText = text;
+  counting.flashT = dur || 3.2;
+  counting.flashDur = dur || 3.2;
+}
+
+function sheepArc(t, dir) {
+  // parabola over the fence; dir 1 = right-to-left (normal), -1 reversed
+  const x = dir === -1 ? lerp(-30, W + 20, t) : lerp(W + 20, -30, t);
+  const ground = 128;
+  const jump = Math.sin(Math.PI * clamp((t - 0.25) / 0.5, 0, 1)) * 34;
+  return { x, y: ground - 13 - jump };
+}
+
+// scaled text for the big numeral
+function drawTextBig(text, x, y, color, scale, squashY) {
+  const atlas = fontAtlas(color);
+  const s = String(text);
+  const sy = scale * (squashY || 1);
+  let cx = Math.round(x - s.length * CHAR_W * scale / 2);
+  const yy = Math.round(y + (scale - sy) * CHAR_H);
+  for (let i = 0; i < s.length; i++) {
+    const idx = atlas.index[s[i]];
+    if (idx !== undefined && s[i] !== ' ')
+      ctx.drawImage(atlas.canvas, idx * CHAR_W, 0, CHAR_W, CHAR_H, cx, yy, Math.round(CHAR_W * scale), Math.round(CHAR_H * sy));
+    cx += Math.round(CHAR_W * scale);
+  }
+}
+
+/* ---------------- scenes (filled in below) ---------------- */
+
+const SCENES = {};
+
+/* ---- title ---- */
+SCENES.title = {
+  stars: null,
+  enter() {
+    setAmbience('night');
+    this.stars = [];
+    srand(99);
+    for (let i = 0; i < 60; i++) this.stars.push({ x: rndi(W), y: rndi(100), tw: rnd() * 6 });
+  },
+  update(dt) {
+    if (pressed['action'] || (anyPressed && sceneTime > 0.5)) {
+      goto_('bedroom');
+    }
+  },
+  draw() {
+    // night sky gradient in bands
+    px(0, 0, W, 60, '#0a0a1e'); px(0, 60, W, 50, '#0d0d26'); px(0, 110, W, 70, '#10102e');
+    for (const s of this.stars) {
+      const a = 0.4 + 0.6 * Math.abs(Math.sin(T * 0.7 + s.tw));
+      ctx.fillStyle = 'rgba(220,220,240,' + a.toFixed(2) + ')';
+      ctx.fillRect(s.x, s.y, 1, 1);
+    }
+    // moon
+    px(250, 24, 22, 22, '#e8e4d0'); px(248, 26, 2, 18, '#e8e4d0'); px(272, 26, 2, 18, '#e8e4d0');
+    px(250, 22, 22, 2, '#e8e4d0'); px(250, 46, 22, 2, '#e8e4d0');
+    px(256, 30, 4, 4, '#cfcab2'); px(264, 38, 3, 3, '#cfcab2');
+    // hills
+    px(0, 128, W, 52, '#0b0b20');
+    ditherRect(0, 124, W, 4, '#0b0b20', 2);
+    // fence
+    for (let x = 20; x < W; x += 26) { px(x, 118, 2, 12, '#1e1a2e'); }
+    px(0, 120, W, 2, '#1e1a2e'); px(0, 125, W, 2, '#1e1a2e');
+    // one sheep mid-jump, looping
+    const jt = (T * 0.25) % 1;
+    const p = sheepArc(jt);
+    drawSheep(p.x, p.y - 10, { bob: 0 });
+    // title counts itself in, at the counting cadence
+    if (sceneTime > 0.9) drawText('1 SHEEP', W / 2, 48, '#e8e4ec', { align: 'center' });
+    if (sceneTime > 2.0) drawText('2 SHEEP', W / 2, 60, '#c9c4d8', { align: 'center' });
+    if (sceneTime > 3.1) drawText('3 SHEEP', W / 2, 72, '#8a86a0', { align: 'center' });
+    if (sceneTime > 4.2) drawText('a quiet story about losing someone', W / 2, 92, '#3a3654', { align: 'center' });
+    if (Math.floor(T * 1.4) % 2 === 0) drawText('PRESS ANY KEY', W / 2, 150, '#6a6684', { align: 'center' });
+    drawText('ARROWS/WASD MOVE  Z/SPACE ACT  M MUTE', W / 2, 168, '#3a3654', { align: 'center' });
+    vignette(0.35);
+  },
+};
+
+/* ---- counting: the ritual (night one) ---- */
+
+function resetCounting(night2) {
+  G.count = 0;
+  Object.assign(counting, {
+    jumpers: [], watchers: [], shake: 0, wobble: 0,
+    flashText: null, flashT: 0,
+    stareOnFence: 0, headTurnT: 0, jamDead: 0, stallT: 0,
+    ghostOn: false, hideNumT: 0, redFlashT: 0, pressPop: 0, pressAnimT: 9,
+    hbT: 0, fenceDrift: 0, starsGone: 0, finaleT: -1,
+    night2: !!night2, eyesBtnT: 0, ended: false,
+  });
+  counting.stars = [];
+  srand(night2 ? 77 : 7);
+  for (let i = 0; i < 46; i++) counting.stars.push({ x: rndi(W), y: rndi(90), tw: rnd() * 6, stubborn: i < 8, gone: false });
+}
+
+// heartbeat interval by count; 0 = off
+function hbInterval(v) {
+  if (counting.night2) return 0;
+  if (v >= 91) return (0.65 - (v - 91) * 0.014) * (0.9 + Math.random() * 0.25);
+  if (v >= 84) return 0.75;
+  if (v >= 50) return 0.9;
+  return 0;
+}
+
+function spawnJumper(opts) {
+  counting.jumpers.push(Object.assign({
+    t: 0, spd: 0.85 + Math.random() * 0.2, dir: 1,
+    dark: false, faceless: false, bell: false, silent: false,
+    scale: 1, shade: 0, stopAt: -1,
+  }, opts || {}));
+}
+
+// night-one press: all escalation lives here
+function countPress() {
+  const v = G.count;
+  counting.pressPop = 1;
+  counting.pressAnimT = 0;
+
+  // THE JAM (88): three dead presses, then a lurch to 91
+  if (v === 88 && counting.jamDead < 3) {
+    counting.jamDead++;
+    sfxDeadClick();
+    counting.shake = 0.3;
+    if (counting.jamDead === 1) flash(SCRIPT.c88, 3.5);
+    return;
+  }
+
+  // increments
+  let nv, spawn = 1;
+  if (v === 42) { nv = 44; }                        // THE SKIP
+  else if (v === 84 || v === 86) { nv = v + 2; spawn = 2; }
+  else if (v === 88) { nv = 91; spawn = 2; }         // the lurch
+  else if (v >= 91 && v <= 97) { nv = v + 2; spawn = 2; }
+  else if (v >= 60 && v <= 65) { nv = v + 1; spawn = randi(2, 3); }
+  else if (v === 22 - 1) { nv = 22; spawn = 2; }     // two jump, one number
+  else { nv = v + 1; }
+  G.count = nv;
+
+  // per-press sheep spawn
+  for (let i = 0; i < spawn; i++) {
+    const o = {};
+    if (nv >= 14) { o.scale = 0.85 + Math.random() * 0.35; o.shade = rndi(3); }
+    if (nv >= 14 && nv < 20 && i === 0 && nv === 16) o.bell = true;
+    if (nv >= 30 && nv <= 32 && chance(0.6)) o.dir = -1;
+    if (nv === 33) o.faceless = true;
+    if (nv >= 91) o.dark = true;
+    if (nv >= 51) o.stopAt = 0.3 + Math.random() * 0.35;  // stop in the field, join the flock
+    if (nv >= 44 && nv % 3 === 0) o.silent = true;
+    o.delay = i * 0.12;
+    spawnJumper(o);
+  }
+
+  // audio for the press
+  if (nv === 13 || nv === 33) { /* the blip is MISSING. the silence is the cue */ }
+  else if (nv >= 84) sfxBlipDesc(nv);
+  else sfxBlip(nv);
+  if (nv < 44 || nv % 3 !== 0) sfxToof(0.45);
+  if (nv % 10 === 0 && nv <= 70 && nv > 0) sfxChime(true);
+  if (nv === 16) sfxBell();
+  if (chance(0.12) && nv < 77 && nv !== 13 && nv !== 33) sfxBaa(0.9 + Math.random() * 0.3, nv > 50);
+
+  // scripted beats on the value we just reached
+  switch (nv) {
+    case 3: flash(SCRIPT.c3, 4); break;
+    case 7: flash(SCRIPT.c7, 4.5); break;
+    case 13:
+      counting.stareOnFence = 1.4;
+      counting.shake = 0.2;
+      flash(SCRIPT.c13, 3.5);
+      break;
+    case 22: flash(SCRIPT.c22, 3.5); break;
+    case 30: flash(SCRIPT.c30, 3.5); break;
+    case 33: flash(SCRIPT.c33, 4); break;
+    case 40: flash(SCRIPT.c40, 3.5); setAmbienceGain(0); break;
+    case 44: // the skip beat: splash + one-blink red sheep + the line
+      sfxSplash();
+      counting.redFlashT = 0.14;
+      flash(SCRIPT.c43, 4.5);
+      break;
+    case 50:
+      flash(SCRIPT.c50, 4.5);
+      sfxHeartbeat();
+      break;
+    case 60: flash(SCRIPT.c60, 4); break;
+    case 66: flash(SCRIPT.c66, 4); break;
+    case 70: counting.ghostOn = true; flash(SCRIPT.c70, 4); break;
+    case 77:
+      counting.headTurnT = 2.0;
+      sfxSawSwell();
+      break;
+    case 78: flash(SCRIPT.c77after, 3.5); break;
+    case 80:
+      flash(SCRIPT.c80, 4);
+      gridifyWatchers();
+      break;
+    case 91: counting.shake = 1; counting.wobble = 0.3; sfxHeartbeat(); break;
+    case 99:
+      counting.stallT = 4;
+      flash(SCRIPT.c99, 7);
+      break;
+    case 100:
+      counting.finaleT = 0;
+      stopAmbience();
+      sfxWrongBaa();
+      break;
+  }
+
+  // continuous side effects
+  if (nv >= 23 && counting.starsGone < counting.stars.length) {
+    let k = randi(2, 3);
+    for (const s of counting.stars) {
+      if (k <= 0) break;
+      if (!s.gone && !s.stubborn) { s.gone = true; k--; counting.starsGone++; }
+    }
+  }
+  if (nv >= 26 && nv < 40) setAmbienceGain(1 - (nv - 26) / 14);
+  if (nv >= 34 && nv < 80) counting.fenceDrift++;
+  if (nv >= 30 && nv <= 32 && chance(0.5)) counting.hideNumT = 0.5;
+  if (nv === 67) setAmbience('dream'); // the hum leaks in early
+}
+
+// descending late-game blip
+function sfxBlipDesc(count) {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  for (const det of [0, 7]) {
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'triangle';
+    const base = 600 - (count - 84) * 22 + det;
+    o.frequency.setValueAtTime(base, t);
+    o.frequency.exponentialRampToValueAtTime(base * 0.8, t + 0.08);
+    env(g, t, 0.005, 0.18, 0.03, 0.06, 0.05, t + 0.13);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + 0.15);
+  }
+}
+
+function sfxBell() {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  for (const dt of [0, 0.15, 0.3]) {
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'sine'; o.frequency.value = 1319 + Math.random() * 30;
+    env(g, t + dt, 0.005, 0.06, 0.03, 0.02, 0.05, t + dt + 0.1);
+    o.connect(g); g.connect(master);
+    o.start(t + dt); o.stop(t + dt + 0.12);
+  }
+}
+
+// at 80: the flock rearranges into perfect desk-grid rows
+function gridifyWatchers() {
+  const cols = 8;
+  counting.watchers.forEach((w, i) => {
+    w.gx = 34 + (i % cols) * 32;
+    w.gy = 78 + Math.floor(i / cols) * 13;
+  });
+  counting.gridded = true;
+}
+
+SCENES.counting = {
+  enter() {
+    setAmbience('night');
+    resetCounting(false);
+    const kickoff = () => flash('PRESS TO COUNT', 6);
+    say(SCRIPT.countIntro, kickoff);
+  },
+  update(dt) {
+    const c = counting;
+    c.shake = Math.max(0, c.shake - dt * 2);
+    c.wobble = Math.max(0, c.wobble - dt);
+    c.pressPop = Math.max(0, c.pressPop - dt * 5);
+    c.pressAnimT += dt;
+    if (c.flashT > 0) c.flashT -= dt;
+    if (c.hideNumT > 0) c.hideNumT -= dt;
+    if (c.redFlashT > 0) c.redFlashT -= dt;
+    if (c.stareOnFence > 0) c.stareOnFence -= dt;
+    if (c.headTurnT > 0) c.headTurnT -= dt;
+    if (c.stallT > 0) c.stallT -= dt;
+
+    // heartbeat loop
+    const iv = hbInterval(G.count);
+    if (iv > 0 && c.finaleT < 0) {
+      c.hbT += dt;
+      if (c.hbT >= iv) { c.hbT = 0; sfxHeartbeat(); }
+    }
+
+    // sheep motion. after 66 the world only animates just after a press.
+    const frozen = G.count >= 66 && c.pressAnimT > 0.55 && c.finaleT < 0;
+    if (!frozen) {
+      for (const j of c.jumpers) {
+        if (j.delay > 0) { j.delay -= dt; continue; }
+        j.t += dt * j.spd;
+        if (j.stopAt > 0 && j.t >= j.stopAt) {
+          // leave the arc and join the flock, spread across the field
+          c.watchers.push({ x: randi(16, W - 40), y: randi(78, 118), gx: 0, gy: 0 });
+          j.t = 2;
+        }
+      }
+      c.jumpers = c.jumpers.filter(j => j.t < 1);
+      // watchers drift to grid slots after 80
+      if (c.gridded) {
+        for (const w of c.watchers) {
+          if (w.gx) { w.x = lerp(w.x, w.gx, dt * 3); w.y = lerp(w.y, w.gy, dt * 3); }
+        }
+      }
+    }
+
+    // finale
+    if (c.finaleT >= 0) {
+      c.finaleT += dt;
+      if (c.finaleT > 5) hardGoto('dream1');
+      return;
+    }
+
+    if (!textboxActive() && pressed['action'] && c.stallT <= 0 && G.count < 100) {
+      pressed['action'] = false;
+      countPress();
+    }
+  },
+  draw() { drawCountingWorld(); },
+};
+
+/* the counting backdrop. everything keys off G.count. */
+function drawCountingWorld() {
+  const c = counting, v = G.count;
+  // palette shift indigo -> bone-white over 44..90
+  const t = c.night2 ? 0 : clamp((v - 44) / 46, 0, 1);
+  const shakeX = c.shake > 0 ? Math.round((Math.random() - 0.5) * 4 * c.shake) : 0;
+  const wobY = c.wobble > 0 ? Math.round((Math.random() - 0.5) * 3) : 0;
+  ctx.save();
+  ctx.translate(shakeX, wobY);
+
+  const skyTop = hexLerp('#0a0a1e', '#efe9df', t);
+  const skyMid = hexLerp('#0d0d26', '#e4dcce', t);
+  const skyLow = hexLerp('#10102e', '#dcd3c4', t);
+  const groundC = hexLerp('#0b0b20', '#b8ad9c', t);
+  const inkC = hexLerp('#e8e4ec', '#3a352d', t);
+  const dimC = hexLerp('#6a6684', '#8d8375', t);
+  px(0, 0, W, 60, skyTop); px(0, 60, W, 50, skyMid); px(0, 110, W, 70, skyLow);
+
+  // stars (fading out; the stubborn ones become numerals at 80)
+  for (const s of c.stars) {
+    if (s.gone) continue;
+    const a = (0.35 + 0.5 * Math.abs(Math.sin(T * 0.7 + s.tw))) * (1 - t * 0.75);
+    if (v >= 80 && s.stubborn) {
+      ctx.globalAlpha = 0.5;
+      drawText(String((s.x + s.y) % 10), s.x, s.y, dimC);
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.fillStyle = 'rgba(220,220,240,' + a.toFixed(2) + ')';
+      ctx.fillRect(s.x, s.y, 1, 1);
+    }
+  }
+
+  // moon: 20% larger and lower after 20
+  const big = v >= 20;
+  const ms = big ? 26 : 22;
+  const mx = 246, my = big ? 30 : 24;
+  const moonC = hexLerp('#e8e4d0', '#f2f0e6', t);
+  px(mx, my, ms, ms, moonC); px(mx - 2, my + 2, 2, ms - 4, moonC); px(mx + ms, my + 2, 2, ms - 4, moonC);
+  px(mx, my - 2, ms, 2, moonC); px(mx, my + ms, ms, 2, moonC);
+  px(mx + 6, my + 6, 4, 4, hexLerp('#cfcab2', '#dcd3c4', t)); px(mx + 15, my + 15, 3, 3, hexLerp('#cfcab2', '#dcd3c4', t));
+
+  // ground
+  px(0, 128, W, 52, groundC);
+  ditherRect(0, 124, W, 4, groundC, 2);
+
+  // the flock (watchers). before 80 they face the bed; at 77 and after 80 they stare.
+  const stareAll = c.headTurnT > 0 || v >= 80;
+  for (const w of c.watchers) {
+    drawSheep(w.x, w.y, {
+      stare: stareAll, flip: false,
+      body: hexLerp('#e8e4dc', '#f2f0e6', t), face: hexLerp('#2a2430', '#3a352d', t),
+      eyes: stareAll ? hexLerp('#e8e4dc', '#efe9df', t) : undefined,
+      scale: 0.8 + (w.y - 78) / 100,
+    });
+  }
+
+  // fence: 5 posts, 2 rails, center-right; drifts left after 34; gone at 80
+  if (v < 80 && !c.fenceGone) {
+    const fx = 178 - c.fenceDrift;
+    const fenceC = hexLerp('#1e1a2e', '#1c1430', t);
+    for (let i = 0; i < 5; i++) px(fx + i * 13, 112, 2, 18, fenceC);
+    px(fx - 6, 116, 64, 2, fenceC); px(fx - 6, 122, 64, 2, fenceC);
+    // the sheep that stops on the fence and stares (13)
+    if (c.stareOnFence > 0) {
+      drawSheep(fx + 22, 99, { stare: true });
+    }
+  }
+
+  // bed: absent early (we are behind the eyelids); materializes in the field at 50
+  if (v >= 50 || c.night2) drawBedSide(14, 140, t);
+
+  // jumping sheep
+  for (const j of c.jumpers) {
+    if (j.delay > 0) continue;
+    const p = sheepArc(j.t, j.dir);
+    drawSheep(p.x, p.y - 10, {
+      dark: j.dark, faceless: j.faceless, bell: j.bell,
+      scale: j.scale, flip: j.dir === -1,
+      body: j.shade === 1 ? '#dcd8cc' : j.shade === 2 ? '#f2f0e6' : undefined,
+    });
+  }
+
+  // the red thing, far off, for one blink (the skip) — and steady at 91+
+  if (c.redFlashT > 0 || (v >= 91 && v < 100 && !c.night2)) {
+    const rx = 208, ry = 84;
+    drawSheep(rx, ry, { flip: true, body: hexLerp('#e8e4dc', '#f2f0e6', t), face: hexLerp('#2a2430', '#3a352d', t), scale: 0.85, scarf: true });
+  }
+
+  // the count numeral, big, top-center
+  if (c.hideNumT <= 0) {
+    const squash = 1 - c.pressPop * 0.35;
+    const wob = v >= 34 ? Math.round(Math.sin(T * 2.3) * 1) : 0;
+    const jit = (v === 13 && c.stareOnFence > 1.2) ? randi(-1, 1) : 0;
+    drawTextBig(String(v), W / 2 + wob + jit, 24, inkC, 3, squash);
+    drawText(v === 1 ? 'SHEEP' : 'SHEEP', W / 2, 56, dimC, { align: 'center' });
+    // ghost numeral one ahead (70-76)
+    if (c.ghostOn && v >= 70 && v < 77) {
+      ctx.globalAlpha = 0.25;
+      drawTextBig(String(v + 1), W / 2 + 40, 28, dimC, 2, 1);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // faint corner clock, slower than the presses (20-49)
+  if (v >= 20 && v < 50 && !c.night2) {
+    ctx.globalAlpha = 0.3;
+    drawText('11:5' + (8 + (Math.floor(T / 9) % 2)), 8, 8, dimC);
+    ctx.globalAlpha = 1;
+  }
+
+  // kid line, floating — never blocks the button
+  if (c.flashText && c.flashT > 0) {
+    const a = clamp(c.flashT / 0.4, 0, 1) * clamp((c.flashDur - c.flashT) / 0.25, 0, 1);
+    ctx.globalAlpha = a;
+    const lines = wrapText(c.flashText, 46);
+    lines.forEach((ln, i) => drawText(ln, W / 2, 64 + i * 9, hexLerp('#b8b4d0', '#6b705c', t), { align: 'center' }));
+    ctx.globalAlpha = 1;
+  }
+
+  // the COUNT button
+  drawCountButton(v, t);
+
+  // eyelid vignette: heavy at the start (behind the eyelids), returns after 81
+  let lid = 0;
+  if (!c.night2) {
+    if (v < 50) lid = 14 - clamp(v / 50, 0, 1) * 8;
+    if (v >= 81) lid = clamp((v - 81) / 18, 0, 1) * 24;
+  }
+  if (lid > 0) {
+    px(0, 0, W, Math.round(lid), '#08060c');
+    px(0, H - Math.round(lid), W, Math.round(lid), '#08060c');
+    ditherRect(0, Math.round(lid), W, 4, '#08060c', 2);
+    ditherRect(0, H - Math.round(lid) - 4, W, 4, '#08060c', 2);
+  }
+
+  // late darkening (91+): the world muffles press by press
+  if (v >= 91 && v < 100) {
+    ctx.fillStyle = 'rgba(6,6,10,' + ((v - 90) / 10 * 0.45).toFixed(2) + ')';
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  ctx.restore();
+  vignette(0.25 + t * 0.1);
+
+  // finale: cut to black, one hundred, ready or not
+  if (c.finaleT >= 0) {
+    ctx.fillStyle = '#030308';
+    ctx.fillRect(0, 0, W, H);
+    if (c.finaleT > 1.2 && c.finaleT < 4.6) drawText('one hundred.', W / 2, 84, '#4a4664', { align: 'center' });
+    if (c.finaleT > 2.8 && c.finaleT < 4.6) drawText('ready or not.', W / 2, 98, '#332f4a', { align: 'center' });
+  }
+}
+
+function drawCountButton(v, t) {
+  const c = counting;
+  const bw = 64, bh = 16;
+  const bx = W / 2 - bw / 2, by = H - 24 + (c.pressPop > 0.5 ? 1 : 0);
+  const label = (c.stallT > 0 || (v === 99 && !c.night2)) ? '...100?' : 'COUNT';
+  const edge = hexLerp('#2e2a4a', '#8d8375', t);
+  const fill = hexLerp('#181632', '#dcd3c4', t);
+  const ink = hexLerp('#8fa1d9', '#3a352d', t);
+  px(bx, by, bw, bh, edge);
+  px(bx + 1, by + 1, bw - 2, bh - 2, fill);
+  drawText(label, W / 2, by + 5, ink, { align: 'center' });
+  if (v === 0 && !textboxActive() && Math.floor(T * 1.4) % 2 === 0) {
+    drawText('Z / SPACE / TAP', W / 2, by - 10, ink, { align: 'center' });
+  }
+}
+
+// small side-view bed with sleeping kid; palette-shifts with t
+function drawBedSide(x, y, t) {
+  t = t || 0;
+  px(x, y + 8, 44, 10, hexLerp('#2a2440', '#b8ad9c', t));
+  px(x, y + 4, 44, 5, hexLerp('#4a4470', '#dcd3c4', t));
+  px(x + 2, y + 2, 10, 4, hexLerp('#d8d4e0', '#f2f0e6', t));
+  drawKid(x + 4, y - 1, 0, { lying: true, pj: true, eyesClosed: false });
+  px(x - 2, y + 6, 2, 12, hexLerp('#241f38', '#8d8375', t));
+  px(x + 44, y + 6, 2, 12, hexLerp('#241f38', '#8d8375', t));
+}
+
+/* ---- bedroom, night ---- */
+const BEDROOM = {
+  groundY: 132,
+  kidX: 150,
+};
+
+function drawBedroomRoom(pal) {
+  // pal: {wall, wallLo, floor, moon, warm, dark, detail}
+  px(0, 0, W, 118, pal.wall);
+  px(0, 40, W, 78, pal.wallLo);
+  px(0, 118, W, 62, pal.floor);
+  px(0, 116, W, 2, pal.dark);
+  // window, upper-center-left
+  px(118, 24, 44, 56, pal.dark);
+  px(120, 26, 40, 52, pal.moonSky || '#10102e');
+  px(138, 26, 3, 52, pal.dark); px(120, 50, 40, 3, pal.dark);
+  // moon visible through window
+  px(146, 32, 10, 10, pal.moon);
+  // moonlight parallelogram on the floor
+  if (pal.moonlight) {
+    ctx.fillStyle = pal.moonlight;
+    ctx.beginPath();
+    ctx.moveTo(112, 118); ctx.lineTo(170, 118); ctx.lineTo(190, 150); ctx.lineTo(132, 150);
+    ctx.closePath(); ctx.fill();
+    ditherRect(126, 150, 66, 4, pal.moonlight, 2);
+  }
+  // bed, lower right
+  px(238, 108, 70, 34, pal.bedFrame || '#2a2440');
+  px(238, 104, 70, 12, pal.blanket || '#4a4470');
+  px(292, 100, 14, 8, pal.pillow || '#d8d4e0');
+  px(236, 104, 2, 40, pal.dark); px(308, 96, 4, 48, pal.dark);
+  // desk + chair, left
+  px(30, 96, 44, 4, pal.detail); px(32, 100, 3, 32, pal.detail); px(68, 100, 3, 32, pal.detail);
+  px(14, 108, 12, 3, pal.detail); px(14, 111, 2, 20, pal.detail); px(24, 111, 2, 20, pal.detail);
+  // clock on desk
+  px(44, 88, 16, 8, pal.dark);
+  // door, far left with warm light under it
+  px(0, 60, 4, 72, pal.dark);
+  // posters
+  px(196, 40, 22, 26, pal.detail); px(200, 44, 14, 6, pal.dark); px(200, 54, 14, 2, pal.dark); px(200, 58, 10, 2, pal.dark);
+}
+
+SCENES.bedroom = {
+  wk: null,
+  enter() {
+    setAmbience('night');
+    const self = this;
+    this.glow = [];
+    srand(41);
+    for (let i = 0; i < 41; i++) this.glow.push({ x: 60 + rndi(220), y: 4 + rndi(16), tw: rnd() * 5 });
+    this.wk = makeWalker({
+      startX: BEDROOM.kidX, groundY: BEDROOM.groundY, len: W, speed: 34,
+      triggers: [],
+      things: [
+        { x: 0, w: 8, label: 'DOOR', onInteract: () => say(SCRIPT.door) },
+        { x: 14, w: 18, label: 'CLOSET', onInteract: () => say(SCRIPT.closet) },
+        { x: 44, w: 16, label: 'CLOCK', onInteract: () => say(SCRIPT.clock) },
+        { x: 120, w: 40, label: 'WINDOW', onInteract: () => say(SCRIPT.window) },
+        { x: 166, w: 20, label: 'GLOW STARS', onInteract: () => say(SCRIPT.stars) },
+        { x: 196, w: 22, label: 'DRAWING', onInteract: () => say(SCRIPT.drawing) },
+        { x: 250, w: 56, label: 'BED', onInteract: () => {
+            self.wk.locked = true;
+            say(SCRIPT.bedIn, () => goto_('counting'));
+          } },
+      ],
+    });
+    this.wk.groundHintY = 80;
+    this.wk.locked = true;
+    say(SCRIPT.bedroomIntro, () => { self.wk.locked = false; });
+  },
+  update(dt) {
+    updateWalker(this.wk, dt);
+  },
+  draw() {
+    drawBedroomRoom({
+      wall: '#141328', wallLo: '#181632', floor: '#221d38', dark: '#0c0b1c',
+      moon: '#e8e4d0', moonSky: '#0d0d26',
+      moonlight: 'rgba(90,111,163,0.28)',
+      detail: '#2e2848',
+    });
+    // closet (wardrobe) over the chair spot
+    px(8, 62, 24, 70, '#1c1834');
+    px(10, 64, 20, 66, '#241f42');
+    px(19, 64, 2, 66, '#1c1834');
+    px(15, 94, 2, 4, '#0c0b1c'); px(23, 94, 2, 4, '#0c0b1c');
+    // 41 glow stars on the ceiling
+    for (const g of this.glow) {
+      const a = 0.35 + 0.45 * Math.abs(Math.sin(T * 0.9 + g.tw));
+      ctx.fillStyle = 'rgba(159,232,160,' + a.toFixed(2) + ')';
+      ctx.fillRect(g.x, g.y, 1, 1);
+    }
+    // warm light under the door
+    const flicker = Math.sin(T * 3.1) > 0.85 ? 0.15 : 0.45;
+    ctx.fillStyle = 'rgba(232,176,74,' + flicker + ')';
+    ctx.fillRect(4, 128, 3, 4);
+    // clock face
+    drawText('11:58', 40, 89, '#8fa1d9');
+    // the kid
+    drawKid(this.wk.x, BEDROOM.groundY - 14, this.wk.frame, { pj: true, tired: true, flip: this.wk.facing < 0 });
+    drawInteractHint(this.wk, '#8fa1d9');
+    vignette(0.4);
+  },
+};
+
+
+/* ---- dream palette (fluorescent liminal) ---- */
+const DP = {
+  bright: '#e9ecd8', mid: '#c9cdae', low: '#9aa184', dim: '#6b705c',
+  dark: '#3f4438', black: '#22251f', carpet: '#7a6a58', white: '#f2f0e6',
+};
+
+/* ---- dream 1: the wrong bedroom ---- */
+SCENES.dream1 = {
+  wk: null,
+  flicker: 0,
+  enter() {
+    setAmbience('dream');
+    const self = this;
+    this.wk = makeWalker({
+      startX: 150, groundY: 132, len: W, speed: 34,
+      things: [
+        { x: 44, w: 16, label: 'CLOCK', once: false, onInteract: () => say(SCRIPT.d1clock) },
+        { x: 120, w: 40, label: 'WINDOW', onInteract: () => say(SCRIPT.d1window) },
+        { x: 60, w: 18, label: 'SHEEP', onInteract: () => { sfxBaa(0.8, true); say(SCRIPT.d1sheep); } },
+        { x: 250, w: 56, label: 'BED', onInteract: () => say(SCRIPT.d1bed) },
+        { x: 0, w: 8, label: 'DOOR', onInteract: () => {
+            say(SCRIPT.d1door, () => goto_('dream2'));
+          } },
+      ],
+    });
+    this.wk.groundHintY = 80;
+    this.wk.locked = true;
+    say(SCRIPT.d1intro, () => { self.wk.locked = false; });
+  },
+  update(dt) {
+    updateWalker(this.wk, dt);
+    this.flicker = Math.random() < 0.02 ? 3 : Math.max(0, this.flicker - 1);
+  },
+  draw() {
+    const fl = this.flicker > 0;
+    drawBedroomRoom({
+      wall: fl ? DP.mid : DP.bright, wallLo: DP.mid, floor: DP.carpet, dark: DP.dark,
+      moon: DP.white, moonSky: DP.bright,
+      moonlight: 'rgba(242,240,230,0.5)',
+      detail: DP.low,
+      bedFrame: DP.dim, blanket: DP.low, pillow: DP.white,
+    });
+    // oversized door drawn on the left (1.5x)
+    px(0, 44, 6, 88, DP.dark);
+    // no desk in the dream: a sheep stands in its footprint
+    px(30, 96, 44, 4, DP.bright); // erase desk top with wall color? keep — surreal shelf
+    drawSheep(58, 119, { stare: true, body: DP.white, face: DP.dark, eyes: DP.black });
+    // clock face reads wrong
+    drawText('2:', 44, 89, DP.dark);
+    drawSheepIcon(58, 89, DP.dark);
+    drawKid(this.wk.x, 132 - 14, this.wk.frame, { pj: true, pale: true, flip: this.wk.facing < 0 });
+    drawInteractHint(this.wk, DP.dark);
+    // fluorescent flicker overlay
+    if (fl) { ctx.fillStyle = 'rgba(233,236,216,0.25)'; ctx.fillRect(0, 0, W, H); }
+    vignette(0.25);
+  },
+};
+
+// tiny 8x6 sheep glyph used for the clock
+function drawSheepIcon(x, y, color) {
+  px(x + 1, y + 1, 6, 3, color); px(x, y + 2, 1, 1, color); px(x + 7, y + 2, 1, 1, color);
+  px(x + 1, y + 4, 1, 2, color); px(x + 5, y + 4, 1, 2, color);
+}
+
+/* ---- dream 2: the fluorescent hallway ---- */
+SCENES.dream2 = {
+  wk: null,
+  sheep: [],
+  panels: [],
+  enter() {
+    setAmbience('dream');
+    const LEN = 1400;
+    const self = this;
+    this.sheep = [];
+    for (let x = 200; x < LEN - 100; x += randi(100, 150)) {
+      this.sheep.push({ x, snapped: false });
+    }
+    this.panels = [];
+    for (let x = 0; x < LEN; x += 64) this.panels.push({ x, t: Math.random() * 10 });
+    this.wk = makeWalker({
+      startX: 16, groundY: 138, len: LEN, speed: 44,
+      triggers: [
+        { x: 60, run: () => say(SCRIPT.d2a) },
+        { x: 480, run: () => say(SCRIPT.d2b) },
+        { x: 900, run: () => say(SCRIPT.d2c) },
+        { x: LEN - 120, run: () => say(SCRIPT.d2d, () => { self.exitOpen = true; }) },
+      ],
+      things: [],
+    });
+    this.wk.groundHintY = 70;
+    this.exitOpen = false;
+  },
+  update(dt) {
+    updateWalker(this.wk, dt);
+    for (const s of this.sheep) {
+      if (!s.snapped && this.wk.x + 4 > s.x + 9) {
+        s.snapped = true;
+        if (chance(0.5)) sfxBaa(0.6 + Math.random() * 0.2, true);
+      }
+    }
+    if (this.exitOpen && this.wk.x > this.wk.len - 30) goto_('dream3');
+  },
+  draw() {
+    const cam = this.wk.cam;
+    // walls
+    px(0, 0, W, 146, DP.mid);
+    // wall trim parallax layers
+    ctx.fillStyle = DP.low;
+    for (let i = -1; i < 8; i++) {
+      const x = Math.round((i * 96 - (cam * 0.3) % 96));
+      ctx.fillRect(x, 30, 2, 100);
+    }
+    ctx.fillStyle = DP.dim;
+    for (let i = -1; i < 8; i++) {
+      const x = Math.round((i * 96 - (cam * 0.6) % 96));
+      ctx.fillRect(x, 26, 2, 110);
+    }
+    // ceiling with fluorescent panels
+    px(0, 0, W, 18, DP.low);
+    for (const p of this.panels) {
+      const sx = p.x - cam;
+      if (sx < -40 || sx > W) continue;
+      const on = Math.sin(T * 7 + p.t * 13) > -0.92;
+      px(sx, 6, 40, 6, on ? DP.bright : DP.dim);
+    }
+    // floor
+    px(0, 146, W, 34, DP.carpet);
+    px(0, 144, W, 2, DP.dark);
+    ditherRect(0, 150, W, 6, DP.dim, 3);
+    // identical doors every 96px, handles too high
+    for (let i = 0; i < Math.ceil(this.wk.len / 96); i++) {
+      const dx = i * 96 + 40 - cam;
+      if (dx < -40 || dx > W) continue;
+      px(dx, 52, 30, 92, DP.low);
+      px(dx + 2, 54, 26, 88, DP.mid);
+      px(dx + 22, 66, 3, 3, DP.dark); // handle, too high
+    }
+    // exit door at the end (dark, ajar when open)
+    const ex = this.wk.len - 50 - cam;
+    if (ex > -60 && ex < W) {
+      px(ex, 48, 34, 96, DP.dark);
+      if (this.exitOpen) { px(ex + 4, 52, 24, 90, DP.black); drawText('100', ex + 16, 36, DP.dark, { align: 'center' }); }
+    }
+    // sheep facing the walls; snap to stare when passed
+    for (const s of this.sheep) {
+      const sx = s.x - cam;
+      if (sx < -30 || sx > W + 10) continue;
+      drawSheep(sx, 130, { stare: s.snapped, flip: !s.snapped, body: DP.white, face: DP.dark, eyes: s.snapped ? DP.black : DP.white });
+    }
+    drawKid(this.wk.x - cam, 138 - 14, this.wk.frame, { pj: true, pale: true, flip: this.wk.facing < 0 });
+    drawInteractHint(this.wk, DP.dark);
+    vignette(0.2);
+  },
+};
+
+/* ---- dream 3: the pasture. the flock, the door, the bus stop, the creek ---- */
+SCENES.dream3 = {
+  enter() {
+    setAmbience('dream');
+    const LEN = this.LEN = 1500;
+    this.creekX = LEN - 190;
+    const self = this;
+    // the flock: static staring sheep on a seeded, jittered grid
+    this.flock = [];
+    srand(432);
+    for (let i = 0; i < 130; i++) {
+      const depth = rnd();
+      const x = 90 + rnd() * (this.creekX - 220);
+      this.flock.push({ x, y: lerp(152, 92, depth), depth, num: null, numT: 0 });
+    }
+    this.flock.sort((a, b) => b.depth - a.depth);
+    this.red = { state: 'far', x: 0, y: 88, boltT: 0 };
+    this.seen = { door: false, bus: false };
+    this.knockT = -1;
+    this.refusals = 0;
+    this.alarmT = -1;
+    this.countLineIdx = 0;
+    this.wk = makeWalker({
+      startX: 20, groundY: 158, len: LEN, speed: 38,
+      triggers: [
+        { x: 70, run: () => say(SCRIPT.d3a) },
+        { x: self.creekX - 130, run: () => { if (self.red.state === 'waiting') say(SCRIPT.d3plankSee); } },
+      ],
+      things: [
+        { x: 360, w: 26, label: 'A DOOR', onInteract: () => {
+            if (!self.seen.door) { self.seen.door = true; say(SCRIPT.d3door); }
+            else if (self.knockT < 0) { sfxKnock(false); self.knockT = 1.4; }
+          } },
+        { x: 760, w: 40, label: 'BUS STOP', once: true, onInteract: () => { self.seen.bus = true; say(SCRIPT.d3bus); } },
+      ],
+    });
+    this.wk.groundHintY = 118;
+    say(SCRIPT.d3intro);
+  },
+  countSheepAt(px_) {
+    // action key floats a wrong number over the nearest sheep
+    let best = null, bd = 26;
+    for (const s of this.flock) {
+      if (s.depth > 0.7) continue;
+      const d = Math.abs(s.x - px_);
+      if (d < bd) { bd = d; best = s; }
+    }
+    if (best) {
+      best.num = chance(0.5) ? '43' : String(randi(1, 5));
+      best.numT = 1.8;
+      const lines = [SCRIPT.d3count1, SCRIPT.d3count2, SCRIPT.d3count3];
+      if (chance(0.55)) say(lines[this.countLineIdx++ % 3]);
+      return true;
+    }
+    return false;
+  },
+  update(dt) {
+    const self = this;
+    // alarm outro
+    if (this.alarmT >= 0) {
+      this.alarmT += dt;
+      if (this.alarmT > 3.6) goto_('morning');
+      return;
+    }
+    // knock-back timer
+    if (this.knockT > 0) {
+      this.knockT -= dt;
+      if (this.knockT <= 0) { sfxKnock(true); say(SCRIPT.d3knock); this.knockT = -1; }
+    }
+    // red sheep logic
+    if (this.red.state === 'far' && this.seen.door && this.seen.bus && !textboxActive()) {
+      this.red.state = 'noticed';
+      this.wk.locked = true;
+      say(SCRIPT.d3red, () => { self.red.state = 'bolting'; self.red.x = self.wk.x + 130; self.red.boltT = 0; self.wk.locked = false; });
+    } else if (this.red.state === 'bolting') {
+      this.red.boltT += dt;
+      this.red.x = lerp(this.red.x, this.creekX + 90, dt * 1.1);
+      this.red.y = lerp(this.red.y, 140, dt * 1.4);
+      if (this.red.boltT > 5 || this.red.x > this.creekX + 80) { this.red.state = 'waiting'; this.red.x = this.creekX + 90; this.red.y = 140; }
+    }
+    // the plank: forward input refused
+    if (this.wk.x >= this.creekX - 22 && !textboxActive()) {
+      this.wk.x = this.creekX - 22;
+      if (pressed['right'] || (keys['right'] && !this._heldRefuse)) {
+        this._heldRefuse = true;
+        this.refusals++;
+        sfxDeadClick();
+        if (this.refusals === 1) say(SCRIPT.d3plank);
+        if (this.refusals >= 3) {
+          this.wk.locked = true;
+          sfxAlarm();
+          stopAmbience();
+          this.alarmT = 0;
+        }
+      }
+      if (!keys['right']) this._heldRefuse = false;
+    }
+    // count a sheep with action (when not near a landmark)
+    if (pressed['action'] && !textboxActive() && !nearThing(this.wk)) {
+      if (this.countSheepAt(this.wk.x + 4)) pressed['action'] = false;
+    }
+    updateWalker(this.wk, dt);
+  },
+  draw() {
+    if (this.alarmT >= 0) {
+      px(0, 0, W, H, '#030308');
+      if (this.alarmT > 0.4) drawTextBig('1:00', W / 2, 70, '#8fa1d9', 2, 1);
+      if (this.alarmT > 1.4) drawText(SCRIPT.d3wake, W / 2, 104, '#4a4664', { align: 'center' });
+      return;
+    }
+    const cam = this.wk.cam;
+    // no horizon: off-white on off-white, split by fog dither
+    px(0, 0, W, H, '#efe9df');
+    ditherRect(0, 96, W, 10, '#dcd3c4', 2);
+    ditherRect(0, 104, W, 8, '#b8ad9c', 3);
+    // repeating fence with copy-paste errors, sunk into the fog line
+    for (let i = 0; i < 40; i++) {
+      const fx = i * 90 - cam * 0.5;
+      if (fx < -70 || fx > W) continue;
+      const err = (i % 7 === 3);
+      px(fx, err ? 90 : 94, 2, 10, '#b8ad9c');
+      px(fx, 98, err ? 40 : 60, 1, '#b8ad9c');
+    }
+    // the flock
+    for (const s of this.flock) {
+      const sx = s.x - cam * lerp(1, 0.55, s.depth);
+      if (sx < -30 || sx > W + 10) continue;
+      if (s.depth > 0.75) {
+        px(sx, s.y, 4, 3, '#b8ad9c');
+      } else {
+        drawSheep(sx, s.y - 13, {
+          stare: true, scale: lerp(1.05, 0.7, s.depth),
+          body: s.depth > 0.4 ? '#dcd3c4' : '#f2f0e6',
+          face: '#3a352d', eyes: '#efe9df',
+        });
+        if (s.numT > 0) {
+          s.numT -= 0.016;
+          ctx.globalAlpha = clamp(s.numT, 0, 1);
+          drawText(s.num, sx + 9, s.y - 24, '#6b705c', { align: 'center' });
+          ctx.globalAlpha = 1;
+        }
+      }
+    }
+    // freestanding bedroom door
+    const doorX = 360 - cam;
+    if (doorX > -40 && doorX < W) {
+      px(doorX, 96, 30, 62, '#9aa184');
+      px(doorX + 2, 98, 26, 60, '#6b705c');
+      px(doorX + 22, 126, 3, 3, '#22251f');
+      px(doorX - 2, 94, 34, 2, '#9aa184');
+    }
+    // bus stop: sign, bench, five queued sheep
+    const busX = 760 - cam;
+    if (busX > -80 && busX < W) {
+      px(busX, 100, 2, 58, '#6b705c');
+      px(busX - 8, 92, 18, 10, '#9aa184');
+      drawText('BUS', busX + 1, 93, '#22251f', { align: 'center' });
+      for (let i = 0; i < 5; i++) drawSheep(busX + 12 + i * 20, 145, { flip: true, body: '#f2f0e6', face: '#3f4438' });
+    }
+    // the creek: vertical band of black static, one plank
+    const ckX = this.creekX - cam;
+    if (ckX > -80 && ckX < W + 40) {
+      // black static: per-pixel hash noise, re-rolled each frame
+      const fr = Math.floor(T * 20) * 131;
+      for (let yy = 108; yy < H; yy++) {
+        for (let xx = 0; xx < 44; xx++) {
+          let h = (xx * 374761 + yy * 668265 + fr) & 0xffff;
+          h = (h * 48271) % 65537;
+          if (h < 29000) px(ckX + xx, yy, 1, 1, h < 6000 ? '#3f4438' : '#22251f');
+        }
+      }
+      // the plank
+      px(ckX - 4, 152, 52, 3, '#9aa184');
+      px(ckX - 4, 155, 52, 1, '#6b705c');
+    }
+    // the red-scarf sheep
+    if (this.red.state === 'far') {
+      // always the same distance ahead, small, facing away
+      const rx = clamp(this.wk.x + 130, 200, this.creekX - 60) - cam;
+      drawSheep(rx, 84, { flip: true, scale: 0.7, body: '#f2f0e6', face: '#3a352d', scarf: true });
+    } else if (this.red.state !== 'far') {
+      const rx = this.red.x - cam;
+      if (rx > -30 && rx < W + 20)
+        drawSheep(rx, this.red.y, { flip: true, body: '#f2f0e6', face: '#3a352d', scarf: true, bob: this.red.state === 'bolting' ? Math.sin(T * 18) * 2 : 0 });
+    }
+    drawKid(this.wk.x - cam, 158 - 14, this.wk.frame, { pj: true, pale: true, flip: this.wk.facing < 0 });
+    drawInteractHint(this.wk, '#3a352d');
+    if (!textboxActive() && sceneTime > 4 && sceneTime < 8) {
+      drawText('Z TO COUNT A SHEEP', W / 2, 168, '#b8ad9c', { align: 'center' });
+    }
+    vignette(0.12);
+  },
+};
+
+/* ---- morning: the kitchen. grayer than the dream. ---- */
+SCENES.morning = {
+  wk: null,
+  enter() {
+    setAmbience('day');
+    const self = this;
+    this.momTalked = false;
+    this.wk = makeWalker({
+      startX: 250, groundY: 140, len: W, speed: 38,
+      things: [
+        { x: 30, w: 26, label: 'MOM', onInteract: () => {
+            if (!self.momTalked) {
+              self.momTalked = true;
+              say([
+                { text: "There's toast. Or.", who: 'MOM', color: '#8f8c7e' },
+                { text: '. . .', who: 'MOM', color: '#8f8c7e' },
+                { text: 'Okay.', who: 'MOM', color: '#8f8c7e' },
+                SCRIPT.momAfter,
+              ]);
+            } else say({ text: '. . .', who: 'MOM', color: '#8f8c7e' });
+          } },
+        { x: 150, w: 26, label: 'CEREAL', onInteract: () => say(SCRIPT.cereal) },
+        { x: 296, w: 20, label: 'OUT', onInteract: () => {
+            self.wk.locked = true;
+            say(SCRIPT.leaveHouse, () => goto_('street'));
+          } },
+      ],
+    });
+    this.wk.groundHintY = 86;
+    this.wk.locked = true;
+    say(SCRIPT.morningIntro, () => { self.wk.locked = false; });
+  },
+  update(dt) { updateWalker(this.wk, dt); },
+  draw() {
+    const M = { wall: '#b9b4a0', wallLo: '#aca795', floor: '#8f8c7e', dark: '#3b4048', mid: '#6f7d88' };
+    px(0, 0, W, 124, M.wall);
+    px(0, 44, W, 80, M.wallLo);
+    px(0, 124, W, 56, M.floor);
+    px(0, 122, W, 2, M.dark);
+    // window over the counter: flat gray light
+    px(24, 22, 40, 34, M.dark);
+    px(26, 24, 36, 30, '#d8d3bd');
+    // counter with sink, left
+    px(8, 96, 88, 6, '#a29d89');
+    px(10, 102, 84, 30, '#7d7868');
+    px(60, 92, 20, 4, M.mid);
+    // toaster
+    px(76, 86, 16, 10, M.mid);
+    // two coffee cups. one untouched.
+    px(30, 90, 6, 6, '#d8d3bd'); px(42, 90, 6, 6, '#d8d3bd');
+    px(43, 88, 4, 1, '#8f8c7e');
+    // mom at the sink, facing away
+    px(36, 68, 8, 5, '#8a7a66');
+    px(35, 73, 10, 16, '#7a7488');
+    px(36, 89, 3, 12, M.dark); px(41, 89, 3, 12, M.dark);
+    // table, center
+    px(130, 108, 64, 4, '#a29d89');
+    px(134, 112, 3, 24, '#7d7868'); px(187, 112, 3, 24, '#7d7868');
+    // cereal bowl
+    px(152, 102, 12, 6, '#d8d3bd');
+    // door, right
+    px(292, 60, 26, 76, M.dark);
+    px(294, 62, 22, 72, '#4d5560');
+    px(296, 96, 3, 3, '#d8d3bd');
+    // the kid
+    drawKid(this.wk.x, 140 - 14, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
+    drawInteractHint(this.wk, M.dark);
+    vignette(0.18);
+  },
+};
+
+/* ---- street: walk to school, overexposed ---- */
+const DAY = {
+  sky: '#f4f1e4', house: '#d8d3bd', green: '#a9b7a0', slate: '#6f7d88',
+  ink: '#3b4048', skin: '#e0b48c', red: '#a34a3f', blue: '#3c4f8a',
+};
+
+SCENES.street = {
+  wk: null,
+  enter() {
+    setAmbience('day');
+    const LEN = 1100;
+    const self = this;
+    this.sheepSpots = [
+      { x: 560, stare: true },
+      { x: 880, stare: true },
+      { x: 902, stare: true },
+    ];
+    // gray-hooded kids, drifting schoolward in a loose clump
+    this.hoods = [
+      { x: 120, spd: 30 }, { x: 148, spd: 27 }, { x: 170, spd: 32 }, { x: 108, spd: 25 },
+    ];
+    // the dog walker, passing the lawn sheep without a glance
+    this.walker = { x: 760, spd: -22 };
+    this.wk = makeWalker({
+      startX: 16, groundY: 140, len: LEN, speed: 46,
+      triggers: [
+        { x: 60, run: () => say(SCRIPT.st_hoods) },
+        { x: 470, run: () => say(SCRIPT.st_sheepSee) },
+        { x: 700, run: () => { sfxBlip(1); sfxBlip(2); sfxBlip(3); say(SCRIPT.st_guard); } },
+        { x: LEN - 160, run: () => { sfxSchoolBell(); } },
+      ],
+      things: [
+        { x: 552, w: 26, label: 'SHEEP', once: true, onInteract: () => { say(SCRIPT.st_sheepLook); } },
+      ],
+    });
+    this.wk.groundHintY = 96;
+    this.dogLinePlayed = false;
+  },
+  update(dt) {
+    updateWalker(this.wk, dt);
+    if (!textboxActive()) {
+      for (const h of this.hoods) { h.x += h.spd * dt; if (h.x > this.wk.len - 60) h.x = this.wk.len - 60; }
+      this.walker.x += this.walker.spd * dt;
+      if (this.walker.x < 400 && !this.dogLinePlayed && this.wk.x > 470) {
+        this.dogLinePlayed = true;
+        say(SCRIPT.st_nobody);
+      }
+    }
+    if (this.wk.x > this.wk.len - 40) goto_('school');
+  },
+  draw() {
+    const cam = this.wk.cam;
+    px(0, 0, W, 148, '#d8d3bd');
+    // houses: gable silhouettes, autumn-dead
+    for (let i = 0; i < Math.ceil(this.wk.len / 130) + 1; i++) {
+      const hx = i * 130 + 30 - cam * 0.85;
+      if (hx < -90 || hx > W) continue;
+      px(hx, 84, 60, 48, '#b9b4a0');
+      ctx.fillStyle = '#a29d89';
+      ctx.beginPath(); ctx.moveTo(hx - 4, 84); ctx.lineTo(hx + 30, 62); ctx.lineTo(hx + 64, 84); ctx.closePath(); ctx.fill();
+      px(hx + 8, 96, 10, 12, '#6f7d88');
+      px(hx + 40, 96, 10, 12, '#6f7d88');
+      px(hx + 24, 112, 12, 20, '#3b4048');
+    }
+    // bare trees
+    for (let i = 0; i < Math.ceil(this.wk.len / 200); i++) {
+      const tx = i * 200 + 100 - cam * 0.9;
+      if (tx < -20 || tx > W) continue;
+      px(tx, 96, 3, 36, '#6a6456');
+      px(tx - 6, 88, 6, 2, '#6a6456'); px(tx + 4, 92, 8, 2, '#6a6456');
+    }
+    // school building at the very end
+    const sx = this.wk.len - 110 - cam;
+    if (sx < W) {
+      px(sx, 60, 140, 72, '#b9b4a0');
+      px(sx + 10, 72, 16, 16, '#6f7d88'); px(sx + 40, 72, 16, 16, '#6f7d88'); px(sx + 70, 72, 16, 16, '#6f7d88');
+      px(sx + 34, 100, 24, 32, '#3b4048');
+      drawText('SCHOOL', sx + 46, 50, '#6f7d88', { align: 'center' });
+    }
+    // lawns + sidewalk
+    px(0, 132, W, 8, '#a9b7a0');
+    px(0, 140, W, 40, '#b3ae9a');
+    px(0, 139, W, 1, '#6f7d88');
+    // crosswalk + guard at 700
+    const gx = 700 - cam;
+    if (gx > -60 && gx < W) {
+      for (let i = 0; i < 5; i++) px(gx - 20 + i * 12, 142, 8, 34, '#cfc9b2');
+      // the guard: vest, stop sign
+      px(gx + 34, 106, 8, 5, '#e0b48c');
+      px(gx + 33, 111, 10, 12, '#c9a24a');
+      px(gx + 34, 123, 3, 12, '#3b4048'); px(gx + 39, 123, 3, 12, '#3b4048');
+      px(gx + 46, 100, 8, 8, '#a34a3f');
+      px(gx + 49, 108, 2, 16, '#6a6456');
+      drawText('1  2  3', gx + 38, 88, '#8f8c7e', { align: 'center' });
+    }
+    // gray-hooded kids from behind
+    for (const h of this.hoods) {
+      const hx = h.x - cam;
+      if (hx < -20 || hx > W) continue;
+      px(hx + 1, 112, 6, 5, '#8f8c7e');
+      px(hx, 114, 8, 12, '#8f8c7e');
+      px(hx + 1, 126, 2, 8, '#6f7d88'); px(hx + 5, 126, 2, 8, '#6f7d88');
+    }
+    // dog walker passing the sheep
+    const wx = this.walker.x - cam;
+    if (wx > -30 && wx < W) {
+      px(wx + 1, 106, 6, 5, '#e0b48c');
+      px(wx, 111, 8, 14, '#6f7d88');
+      px(wx + 1, 125, 2, 9, '#3b4048'); px(wx + 5, 125, 2, 9, '#3b4048');
+      px(wx - 10, 126, 8, 5, '#8a7a66');
+      px(wx - 12, 124, 3, 3, '#8a7a66');
+      px(wx - 2, 122, 1, 6, '#3b4048');
+    }
+    // lawn sheep. nobody reacts. ever.
+    for (const s of this.sheepSpots) {
+      const spx = s.x - cam;
+      if (spx < -30 || spx > W + 10) continue;
+      drawSheep(spx, 121, { stare: s.stare, body: '#f2f0e6', face: '#3b4048', eyes: '#f2f0e6' });
+    }
+    drawKid(this.wk.x - cam, 140 - 14, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
+    drawInteractHint(this.wk, '#3b4048');
+    vignette(0.1);
+  },
+};
+
+/* ---- school: the classroom ---- */
+
+// small seated student, 8x12, palette-swapped
+function drawStudent(x, y, c, opts) {
+  opts = opts || {};
+  px(x + 1, y, 6, 4, opts.skin || DAY.skin);
+  px(x, y, 8, 2, c.hair);
+  px(x + 2, y + 2, 1, 1, DAY.ink); px(x + 5, y + 2, 1, 1, DAY.ink);
+  px(x, y + 4, 8, 5, c.shirt);
+  px(x + 1, y + 9, 6, 3, DAY.slate);
+}
+
+function drawDesk(x, y) {
+  px(x, y, 22, 3, '#b8a988');
+  px(x + 1, y + 3, 2, 12, '#9a8c6e'); px(x + 19, y + 3, 2, 12, '#9a8c6e');
+}
+
+function drawClassroom(cam, seats, opts) {
+  opts = opts || {};
+  const wallC = opts.dim ? '#a8a390' : '#d8d3bd';
+  px(0, 0, W, 148, wallC);
+  px(0, 0, W, 8, opts.dim ? '#98937f' : '#e4dfca');
+  // chalkboard at the front (left)
+  const bx = 20 - cam;
+  px(bx, 24, 100, 48, '#a9b7a0');
+  px(bx - 3, 21, 106, 3, '#b8a988'); px(bx - 3, 72, 106, 3, '#b8a988');
+  px(bx - 3, 21, 3, 54, '#b8a988'); px(bx + 103, 21, 3, 54, '#b8a988');
+  drawText('1 2 3', bx + 10, 32, '#e4efdc');
+  drawSheepIcon(bx + 52, 31, '#e4efdc');
+  drawText('COUNTING', bx + 10, 44, '#cfe0c8');
+  // windows
+  for (let i = 0; i < 4; i++) {
+    const wx2 = 160 + i * 110 - cam;
+    if (wx2 < -40 || wx2 > W) continue;
+    px(wx2, 20, 34, 40, opts.dim ? '#c9b788' : '#f7f5ea');
+    px(wx2 - 2, 18, 38, 2, '#6f7d88'); px(wx2 - 2, 60, 38, 2, '#6f7d88');
+  }
+  // back row of desks (decor, higher and smaller)
+  if (opts.backRow) {
+    for (const b of opts.backRow) {
+      const dx = b.x - cam;
+      if (dx < -30 || dx > W) continue;
+      if (b.who === 'sheep') drawSheep(dx + 2, 96, { stare: true, scale: 0.8, body: '#f2f0e6', face: '#3b4048', eyes: '#f2f0e6' });
+      else if (b.who === 'kid') drawStudent(dx + 3, 96, b, { small: true });
+      px(dx, 108, 18, 2, '#a89a7c');
+      px(dx + 1, 110, 2, 9, '#8c8066'); px(dx + 15, 110, 2, 9, '#8c8066');
+    }
+  }
+  // floor
+  px(0, 148, W, 32, opts.dim ? '#8f8a76' : '#b3ae9a');
+  px(0, 146, W, 2, '#6f7d88');
+  // teacher by the board
+  if (!opts.noTeacher) {
+    const tx = 66 - cam;
+    px(tx + 1, 96, 8, 5, '#e0b48c');
+    px(tx, 96, 10, 2, '#5a5a66');
+    px(tx + 3, 98, 1, 1, '#3b4048'); px(tx + 6, 98, 1, 1, '#3b4048');
+    px(tx, 101, 10, 14, '#7a6a98');
+    px(tx + 1, 115, 3, 12, '#3b4048'); px(tx + 6, 115, 3, 12, '#3b4048');
+  }
+  // front row desks + occupants
+  for (const s of seats) {
+    const dx = s.x - cam;
+    if (dx < -40 || dx > W) continue;
+    if (s.who === 'sheep') {
+      drawSheep(dx + 2, 116, { stare: true, body: '#f2f0e6', face: '#3b4048', eyes: '#f2f0e6' });
+      px(dx + 24, 126, 1, 4, '#c9a24a'); // tiny pencil
+    } else if (s.who === 'kid') {
+      drawStudent(dx + 4, 114, s);
+    } else if (s.who === 'sam') {
+      // the empty desk. chair legs up, like summer.
+      if (s.chairUp) {
+        px(dx + 4, 118, 14, 3, '#9a8c6e');
+        px(dx + 6, 121, 2, 6, '#9a8c6e'); px(dx + 14, 121, 2, 6, '#9a8c6e');
+      } else {
+        px(dx + 4, 134, 14, 3, '#9a8c6e');
+        px(dx + 6, 137, 2, 8, '#9a8c6e'); px(dx + 14, 137, 2, 8, '#9a8c6e');
+      }
+    }
+    drawDesk(dx, 130);
+  }
+}
+
+SCENES.school = {
+  enter() {
+    setAmbience('day');
+    const self = this;
+    const LEN = 560;
+    const hairs = ['#3b2a1e', '#6e4a2a', '#1e1e24', '#7a5a3a', '#4a3a5a'];
+    const shirts = ['#3c4f8a', '#a34a3f', '#a9b7a0', '#7a6a98', '#c9a24a'];
+    this.seats = [];
+    for (let i = 0; i < 6; i++) {
+      this.seats.push({
+        x: 150 + i * 62,
+        who: (i === 3) ? 'sam' : 'kid',
+        chairUp: true,
+        hair: hairs[i % 5], shirt: shirts[(i * 2 + 1) % 5],
+        name: ['MAYA', 'JONAS', 'PRIYA', "SAM'S DESK", 'ELI', 'WREN'][i],
+      });
+    }
+    this.backRow = [];
+    for (let i = 0; i < 5; i++) this.backRow.push({ x: 180 + i * 70, who: 'kid', hair: hairs[(i + 2) % 5], shirt: shirts[(i + 3) % 5] });
+    this.blinkT = 8;       // seconds until next automatic blink
+    this.blinkFlash = 0;   // black-frame timer
+    this.blinks = 0;
+    this.baas = 0;
+    this.attendanceDone = false;
+    this.samSeen = false;
+    this.noteGiven = false;
+    this.leaving = false;
+    this.wk = makeWalker({
+      startX: 14, groundY: 148, len: LEN, speed: 40,
+      triggers: [
+        { x: 40, run: () => {
+            self.wk.locked = true;
+            say([
+              { text: '...twenty-one... twenty-two.', who: 'TEACHER', color: '#7a6a98' },
+              SCRIPT.sc_attend,
+            ], () => { self.attendanceDone = true; self.wk.locked = false; });
+          } },
+      ],
+      things: [],
+    });
+    this.wk.groundHintY = 92;
+    this.rebuildThings();
+  },
+  rebuildThings() {
+    const self = this;
+    this.wk.things = this.seats.map((s, i) => ({
+      x: s.x, w: 22,
+      label: s.who === 'sheep' ? 'SHEEP' : (s.who === 'sam' ? "SAM'S DESK" : s.name),
+      onInteract: () => {
+        if (s.who === 'sam') {
+          if (!self.samSeen) { self.samSeen = true; say(SCRIPT.sc_samdesk); }
+          else say(SCRIPT.sc_notyet);
+        } else if (s.who === 'sheep') {
+          sfxBaa(0.9 + i * 0.05);
+          say(SCRIPT.sc_sheepdesk);
+        } else {
+          self.baas++;
+          sfxBaa(1 + Math.random() * 0.2);
+          if (self.baas === 1) say([{ text: 'baa.', who: s.name, color: '#8f8c7e' }, SCRIPT.sc_baacap1]);
+          else if (self.baas === 2) say([{ text: 'baa. baa.', who: s.name, color: '#8f8c7e' }, SCRIPT.sc_baacap2]);
+          else say([{ text: 'baa.', who: s.name, color: '#8f8c7e' }, SCRIPT.sc_baacap3]);
+        }
+      },
+    }));
+    this.wk.things.push({ x: 60, w: 26, label: 'TEACHER', onInteract: () => say({ text: '. . .', who: 'TEACHER', color: '#7a6a98' }) });
+  },
+  doBlink() {
+    this.blinkFlash = 0.09;
+    this.blinks++;
+    // swaps: front row students and back row, more each time
+    const swaps = Math.min(1 + Math.floor(this.blinks / 2), 3);
+    for (let k = 0; k < swaps; k++) {
+      const humansF = this.seats.filter(s => s.who === 'kid');
+      const humansB = this.backRow.filter(s => s.who === 'kid');
+      if (humansB.length && (chance(0.5) || !humansF.length)) pick(humansB).who = 'sheep';
+      else if (humansF.length) pick(humansF).who = 'sheep';
+    }
+    sfxBaa(0.8 + Math.random() * 0.4, this.blinks > 3);
+    this.rebuildThings();
+    if (this.blinks === 1) say(SCRIPT.sc_blink);
+  },
+  update(dt) {
+    if (this.leaving) return;
+    // automatic blinks
+    if (this.attendanceDone && !textboxActive()) {
+      this.blinkT -= dt;
+      if (this.blinkT <= 0) { this.blinkT = 7 + Math.random() * 3; this.doBlink(); }
+    }
+    if (this.blinkFlash > 0) this.blinkFlash -= dt;
+    // the note, then the bell
+    const classDone = (this.samSeen && this.baas >= 2 && this.blinks >= 2) || this.blinks >= 4;
+    if (!this.noteGiven && this.attendanceDone && classDone && !textboxActive()) {
+      this.noteGiven = true;
+      const self = this;
+      this.wk.locked = true;
+      say(SCRIPT.sc_note, () => {
+        sfxSchoolBell();
+        self.leaving = true;
+        goto_('recess');
+      });
+    }
+    updateWalker(this.wk, dt);
+  },
+  draw() {
+    drawClassroom(this.wk.cam, this.seats, { backRow: this.backRow });
+    drawKid(this.wk.x - this.wk.cam, 148 - 14, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
+    drawInteractHint(this.wk, '#3b4048');
+    if (this.blinkFlash > 0) px(0, 0, W, H, '#08060c');
+    vignette(0.1);
+  },
+};
+
+/* ---- recess: the wall ---- */
+SCENES.recess = {
+  enter() {
+    setAmbience('day');
+    this.voiceN = 37;
+    this.voiceT = 2.5;
+    this.slow = 1;
+    this.cutT = -1;
+    this.linesDone = { move: false };
+    this.wk = makeWalker({
+      startX: 20, groundY: 146, len: W, speed: 42,
+      triggers: [{ x: 50, run: () => say(SCRIPT.rc_enter) }],
+      things: [],
+    });
+    // background hiders darting for cover
+    this.hiders = [
+      { x: 190, y: 132, t: 0 }, { x: 240, y: 128, t: 1.4 }, { x: 150, y: 136, t: 2.6 },
+    ];
+  },
+  update(dt) {
+    if (this.cutT >= 0) {
+      this.cutT += dt;
+      if (this.cutT > 1.1) hardGoto('memory');
+      return;
+    }
+    if (!textboxActive()) {
+      this.voiceT -= dt;
+      if (this.voiceT <= 0) {
+        this.voiceN++;
+        this.voiceT = 1.7;
+        if (this.voiceN < 43) {
+          sfxBlip(this.voiceN);
+          flash(this.voiceN === 40 ? '...forty...' : '...' + ['thirty-eight', 'thirty-nine', 'forty', 'forty-one', 'forty-two'][this.voiceN - 38] + '...', 1.5);
+          if (this.voiceN === 40 && !this.linesDone.move) { this.linesDone.move = true; say(SCRIPT.rc_freeze); }
+        } else {
+          // 43. all sound stops.
+          stopAmbience();
+          this.cutT = 0;
+        }
+      }
+    }
+    // controls degrade as the count climbs
+    this.slow = clamp(1 - (this.voiceN - 37) / 5, 0, 1);
+    this.wk.speed = 42 * this.slow;
+    if (counting.flashT > 0) counting.flashT -= dt;
+    for (const h of this.hiders) h.t += dt;
+    updateWalker(this.wk, dt);
+  },
+  draw() {
+    if (this.cutT >= 0) {
+      px(0, 0, W, H, '#08060c');
+      if (this.cutT > 0.35) drawText('forty-three.', W / 2, 86, '#4a4664', { align: 'center' });
+      return;
+    }
+    px(0, 0, W, 140, '#d8d3bd');
+    // school wall on the right: brick
+    px(220, 20, 100, 126, '#b09a86');
+    for (let yy = 24; yy < 144; yy += 8)
+      for (let xx = 222 + ((yy / 8) % 2) * 5; xx < 318; xx += 11)
+        px(xx, yy, 9, 1, '#a08a76');
+    // the counter, face to the wall
+    px(292, 106, 8, 5, '#e0b48c');
+    px(291, 111, 10, 13, '#8f8c7e');
+    px(292, 124, 3, 12, '#3b4048'); px(297, 124, 3, 12, '#3b4048');
+    // hiders darting behind things
+    for (const h of this.hiders) {
+      const dart = Math.abs(Math.sin(h.t * 0.8)) * 30;
+      px(h.x - dart, h.y, 6, 10, '#8f8c7e');
+    }
+    // trees to hide behind
+    px(150, 92, 5, 50, '#6a6456');
+    px(138, 78, 30, 18, '#a9b7a0');
+    px(52, 100, 4, 42, '#6a6456');
+    px(42, 88, 24, 14, '#a9b7a0');
+    // playground fence, far left
+    for (let i = 0; i < 5; i++) px(4 + i * 9, 118, 2, 24, '#8f8a76');
+    px(0, 124, 46, 2, '#8f8a76');
+    // ground
+    px(0, 140, W, 40, '#b3ae9a');
+    // hopscotch chalk
+    for (const [hx, hy] of [[96, 150], [108, 150], [102, 160]]) {
+      px(hx, hy, 10, 8, '#c2bda6');
+      px(hx + 1, hy + 1, 8, 6, '#b3ae9a');
+    }
+    // count text floats near the wall
+    if (counting.flashText && counting.flashT > 0) {
+      drawText(counting.flashText, 260, 60, '#6f7d88', { align: 'center' });
+    }
+    drawKid(this.wk.x - this.wk.cam, 146 - 14, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
+    // sluggishness reads on the sprite: darkening edges
+    if (this.slow < 0.8) vignette((1 - this.slow) * 0.5);
+  },
+};
+
+/* ---- memory: last october. the only warm scene. ---- */
+SCENES.memory = {
+  enter() {
+    setAmbience('none');
+    this.stage = 0;    // 0 caption, 1 sam talks, 2 sam runs, 3 eyes-closed count, 4 gray field, 5 scarf
+    this.samX = 190;
+    this.samRun = false;
+    this.countIdx = 0;
+    this.countSeq = [10, 20, 30, 40, 43, 60, 80, 99, 100];
+    this.countShown = 0;
+    this.splashDone = false;
+    this.wk = null;
+    const self = this;
+    say({ text: 'LAST OCTOBER.', color: '#c97b3a' }, () => {
+      self.stage = 1;
+      say([
+        { text: SCRIPT.mem_rules, who: 'SAM', color: '#e8b04a' },
+        { text: SCRIPT.mem_trick, who: 'SAM', color: '#e8b04a' },
+        { text: SCRIPT.mem_olly, who: 'SAM', color: '#e8b04a' },
+        { text: SCRIPT.mem_ready, who: 'SAM', color: '#e8b04a' },
+      ], () => { self.stage = 2; self.samRun = true; });
+    });
+  },
+  update(dt) {
+    const self = this;
+    if (this.stage === 2) {
+      this.samX += dt * 90;
+      if (this.samX > W + 20) {
+        this.stage = 3;
+        flash('PRESS TO COUNT. EYES CLOSED.', 4);
+      }
+    }
+    if (this.stage === 3) {
+      if (counting.flashT > 0) counting.flashT -= dt;
+      if (pressed['action'] && !textboxActive() && this.countIdx < this.countSeq.length) {
+        pressed['action'] = false;
+        const n = this.countSeq[this.countIdx++];
+        this.countShown = n;
+        sfxBlip(n);
+        if (n === 43) {
+          sfxSplash();
+          this.splashDone = true;
+          flash(SCRIPT.mem_splash, 3.2);
+        }
+        if (n === 100) {
+          say(SCRIPT.mem_readyornot, () => {
+            self.stage = 4;
+            self.wk = makeWalker({
+              startX: 16, groundY: 152, len: 620, speed: 40,
+              triggers: [{ x: 120, run: () => say(SCRIPT.mem_sam) }],
+              things: [
+                { x: 520, w: 24, label: 'THE SCARF', once: true, onInteract: () => {
+                    self.wk.locked = true;
+                    say(SCRIPT.mem_scarf, () => { self.stage = 5; });
+                  } },
+              ],
+            });
+            self.wk.groundHintY = 110;
+          });
+        }
+      }
+    }
+    if (this.stage === 4 && this.wk) updateWalker(this.wk, dt);
+    if (this.stage === 5) {
+      this.whiteT = (this.whiteT || 0) + dt;
+      if (this.whiteT > 2.2) goto_('aftermath');
+    }
+  },
+  draw() {
+    if (this.stage <= 2) {
+      // warm october pasture
+      px(0, 0, W, 110, '#f5d7a3');
+      px(0, 70, W, 40, '#e8b04a');
+      ditherRect(0, 104, W, 8, '#c97b3a', 2);
+      px(0, 110, W, 70, '#7a9e5a');
+      // fence
+      for (let i = 0; i < 6; i++) px(60 + i * 13, 96, 2, 16, '#8a4a2c');
+      px(56, 100, 70, 2, '#8a4a2c'); px(56, 106, 70, 2, '#8a4a2c');
+      // distant sheep, warm, alive, moving a little
+      for (let i = 0; i < 7; i++) {
+        drawSheep(180 + i * 22 + (i % 3) * 6, 95 + (i % 2) * 4, { flip: i % 2 === 0, body: '#f2f0e6', face: '#4a2c22', bob: Math.sin(T * 2 + i) * 0.8, scale: 0.8 });
+      }
+      // the kid (younger: no tired eyes)
+      drawKid(120, 138, 0, { flip: false });
+      // SAM: red scarf, gap-tooth grin
+      const sx = this.samX;
+      ctx.save();
+      ctx.translate(Math.round(sx), 136);
+      px(1, 0, 6, 5, '#e0b48c');
+      px(0, 0, 8, 2, '#6e4a2a'); px(0, 2, 1, 2, '#6e4a2a'); px(7, 2, 1, 1, '#6e4a2a'); // messy hair
+      px(3, 3, 1, 1, '#1a1420'); px(6, 3, 1, 1, '#1a1420');
+      px(4, 4, 1, 1, '#f2f0e6'); // the gap tooth
+      px(0, 5, 8, 2, '#b7443e'); // the scarf
+      px(6, 6, 3, 1, '#b7443e'); // scarf tail
+      px(1, 7, 6, 5, '#7a9e5a');
+      const f = this.samRun ? Math.floor(T * 10) % 2 : 0;
+      if (f === 0) { px(2, 12, 2, 4, '#4a2c22'); px(5, 12, 2, 4, '#4a2c22'); }
+      else { px(1, 12, 2, 4, '#4a2c22'); px(5, 12, 2, 3, '#4a2c22'); px(6, 15, 2, 1, '#4a2c22'); }
+      ctx.restore();
+      vignette(0.1);
+    } else if (this.stage === 3) {
+      // eyes closed. black. numbers rise.
+      px(0, 0, W, H, '#0a0806');
+      if (this.countShown > 0) {
+        drawTextBig(String(this.countShown), W / 2, 60, this.countShown === 43 ? '#8a5a4a' : '#c97b3a', 3, 1);
+      }
+      if (counting.flashText && counting.flashT > 0) {
+        const lines = wrapText(counting.flashText, 46);
+        lines.forEach((ln, i) => drawText(ln, W / 2, 110 + i * 9, '#8a6a4a', { align: 'center' }));
+      }
+      if (this.countIdx === 0 && Math.floor(T * 1.4) % 2 === 0) {
+        drawText('Z / SPACE', W / 2, 150, '#4a3626', { align: 'center' });
+      }
+    } else {
+      // the gray after. same field, day palette.
+      const cam = this.wk ? this.wk.cam : 0;
+      px(0, 0, W, 110, '#d8d3bd');
+      ditherRect(0, 104, W, 8, '#8f8c7e', 2);
+      px(0, 110, W, 70, '#a9b7a0');
+      // the creek, far right, quiet now
+      const ckX = 560 - cam;
+      px(ckX, 116, 60, 64, '#6f7d88');
+      ditherRect(ckX - 6, 116, 6, 64, '#6f7d88', 2);
+      // pasture fence; the scarf snagged on it
+      for (let i = 0; i < 22; i++) {
+        const fx = 40 + i * 24 - cam;
+        if (fx < -10 || fx > W) continue;
+        px(fx, 100, 2, 18, '#6a6456');
+      }
+      const rl = 40 - cam;
+      px(rl, 104, 520, 2, '#6a6456'); px(rl, 112, 520, 2, '#6a6456');
+      const scX = 520 - cam;
+      if (scX > -20 && scX < W) {
+        px(scX + 2, 100, 6, 2, '#b7443e');
+        px(scX + 6, 102, 2, 8, '#b7443e');
+        px(scX + 7, 110, 1, 4, '#8a3a30');
+      }
+      // no sheep anywhere. the field is empty.
+      if (this.wk) {
+        drawKid(this.wk.x - cam, 152 - 14, this.wk.frame, { flip: this.wk.facing < 0 });
+        drawInteractHint(this.wk, '#3b4048');
+      }
+      if (this.stage === 5) {
+        ctx.fillStyle = 'rgba(242,240,230,' + clamp(this.whiteT / 2, 0, 1).toFixed(2) + ')';
+        ctx.fillRect(0, 0, W, H);
+      }
+      vignette(0.15);
+    }
+  },
+};
+
+/* ---- aftermath: the chair ---- */
+SCENES.aftermath = {
+  enter() {
+    setAmbience('none');
+    const self = this;
+    this.seats = [];
+    for (let i = 0; i < 6; i++) this.seats.push({ x: 150 + i * 62, who: i === 3 ? 'sam' : 'none', chairUp: true });
+    this.chairDown = false;
+    this.wk = makeWalker({
+      startX: 20, groundY: 148, len: 560, speed: 38,
+      triggers: [{ x: 50, run: () => say(SCRIPT.af_enter) }],
+      things: [
+        { x: 150 + 3 * 62, w: 22, label: "SAM'S DESK", once: true, onInteract: () => {
+            self.seats[3].chairUp = false;
+            self.chairDown = true;
+            self.wk.locked = true;
+            say([SCRIPT.af_chair, SCRIPT.af_slow, SCRIPT.af_mom], () => goto_('count2'));
+          } },
+      ],
+    });
+    this.wk.groundHintY = 92;
+  },
+  update(dt) { updateWalker(this.wk, dt); },
+  draw() {
+    drawClassroom(this.wk.cam, this.seats, { dim: true, noTeacher: true });
+    // mom in the doorway, right edge, once the chair is down
+    if (this.chairDown) {
+      const mx = 530 - this.wk.cam;
+      px(mx, 100, 22, 46, '#3b4048');
+      px(mx + 2, 102, 18, 44, '#4d5560');
+      px(mx + 7, 106, 8, 5, '#8a7a66');
+      px(mx + 6, 111, 10, 16, '#7a7488');
+      px(mx + 7, 127, 3, 12, '#3b4048'); px(mx + 12, 127, 3, 12, '#3b4048');
+    }
+    drawKid(this.wk.x - this.wk.cam, 148 - 14, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
+    drawInteractHint(this.wk, '#3b4048');
+    vignette(0.3);
+  },
+};
+
+/* ---- night two: the last count ---- */
+function sfxBlipN2() {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'triangle';
+  o.frequency.setValueAtTime(330, t);
+  o.frequency.exponentialRampToValueAtTime(440, t + 0.06);
+  env(g, t, 0.008, 0.2, 0.04, 0.08, 0.06, t + 0.16);
+  o.connect(g); g.connect(master);
+  o.start(t); o.stop(t + 0.18);
+}
+
+SCENES.count2 = {
+  enter() {
+    setAmbience('night');
+    resetCounting(true);
+    this.warm = 0;
+    this.fillerIdx = 0;
+    say(SCRIPT.n2intro, () => flash('PRESS TO COUNT', 5));
+  },
+  endGame(reached100) {
+    const c = counting;
+    if (c.ended) return;
+    c.ended = true;
+    const self = this;
+    say(reached100 ? SCRIPT.olly100 : SCRIPT.olly, () => {
+      self.warmTarget = 1;
+      say(SCRIPT.goodDark, () => goto_('coda'));
+    });
+  },
+  update(dt) {
+    const c = counting;
+    c.pressPop = Math.max(0, c.pressPop - dt * 5);
+    if (c.flashT > 0) c.flashT -= dt;
+    if (this.warmTarget) this.warm = Math.min(1, this.warm + dt * 0.5);
+    if (c.ended) return;
+    if (G.count >= 20) c.eyesBtnT = Math.min(1, c.eyesBtnT + dt * 0.1);
+
+    // OPEN YOUR EYES: X key, or a click on the button
+    let openPressed = pressed['alt'];
+    if (pressed['action'] && pointerClick && c.eyesBtnT > 0) {
+      const b = this.eyesRect();
+      if (pointerClick.x >= b.x && pointerClick.x <= b.x + b.w && pointerClick.y >= b.y && pointerClick.y <= b.y + b.h) {
+        openPressed = true;
+        pressed['action'] = false;
+      }
+    }
+    if (openPressed && c.eyesBtnT > 0 && !textboxActive()) {
+      pressed['alt'] = false;
+      this.endGame(false);
+      return;
+    }
+
+    if (!textboxActive() && pressed['action'] && G.count < 100) {
+      pressed['action'] = false;
+      G.count++;
+      c.pressPop = 1;
+      sfxBlipN2();
+      const n = G.count;
+      const memory = SCRIPT.n2mem[n];
+      if (memory) flash(memory, 4);
+      else if (n % 4 === 0) flash(SCRIPT.n2filler[this.fillerIdx++ % SCRIPT.n2filler.length], 2.5);
+      if (n >= 100) this.endGame(true);
+    }
+  },
+  eyesRect() {
+    return { x: W / 2 - 56, y: H - 48, w: 112, h: 16 };
+  },
+  draw() {
+    drawCountingWorld();
+    const c = counting;
+    // the second button, growing louder
+    if (c.eyesBtnT > 0 && !c.ended) {
+      const b = this.eyesRect();
+      const pulse = 0.5 + 0.5 * Math.sin(T * 2.2);
+      const a = c.eyesBtnT * (0.55 + 0.45 * pulse);
+      ctx.globalAlpha = a;
+      px(b.x, b.y, b.w, b.h, '#4a4470');
+      px(b.x + 1, b.y + 1, b.w - 2, b.h - 2, '#241f42');
+      drawText('OPEN YOUR EYES', W / 2, b.y + 5, '#d9a5a0', { align: 'center' });
+      ctx.globalAlpha = 1;
+      if (c.eyesBtnT > 0.6) drawText('X', b.x - 10, b.y + 5, '#8a86a0');
+    }
+    // the palette warms. first warm frame in the present.
+    if (this.warm > 0) {
+      ctx.fillStyle = 'rgba(232,176,74,' + (this.warm * 0.18).toFixed(3) + ')';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = 'rgba(217,165,160,' + (this.warm * 0.1).toFixed(3) + ')';
+      ctx.fillRect(0, 0, W, H);
+    }
+  },
+};
+
+/* ---- coda: 1 sheep ---- */
+SCENES.coda = {
+  enter() {
+    setAmbience('night');
+    this.baaDone = false;
+    this.lineDone = false;
+  },
+  update(dt) {
+    if (counting.flashT > 0) counting.flashT -= dt;
+    if (sceneTime > 3 && !this.baaDone) { this.baaDone = true; sfxBaa(1.15); }
+    if (sceneTime > 5 && !this.lineDone) { this.lineDone = true; flash(SCRIPT.coda1, 5); }
+    if (sceneTime > 26 || (sceneTime > 14 && pressed['action'])) goto_('title');
+  },
+  draw() {
+    // a warm little night. the fence. two of them on it.
+    px(0, 0, W, 60, '#141330'); px(0, 60, W, 50, '#1a1840'); px(0, 110, W, 70, '#221f4a');
+    ctx.fillStyle = 'rgba(232,176,74,0.06)';
+    ctx.fillRect(0, 0, W, H);
+    // stars, calm
+    srand(7);
+    for (let i = 0; i < 30; i++) {
+      const x = rndi(W), y = rndi(80), tw = rnd() * 6;
+      const a = 0.3 + 0.5 * Math.abs(Math.sin(T * 0.5 + tw));
+      ctx.fillStyle = 'rgba(232,220,200,' + a.toFixed(2) + ')';
+      ctx.fillRect(x, y, 1, 1);
+    }
+    // moon
+    px(250, 22, 22, 22, '#eee6c8'); px(248, 24, 2, 18, '#eee6c8'); px(272, 24, 2, 18, '#eee6c8');
+    px(250, 20, 22, 2, '#eee6c8'); px(250, 44, 22, 2, '#eee6c8');
+    // ground
+    px(0, 128, W, 52, '#1a1838');
+    // the fence
+    for (let i = 0; i < 7; i++) px(118 + i * 13, 106, 2, 24, '#453f6a');
+    px(112, 112, 100, 3, '#453f6a'); px(112, 122, 100, 3, '#453f6a');
+    px(112, 112, 100, 1, '#5a5284');
+    // the kid, sitting on the rail. breathing.
+    const breathe = Math.sin(T * 1.1) > 0 ? 1 : 0;
+    drawKid(142, 98 - breathe, 0, { pj: true, sit: true });
+    // one sheep, red scarf, sitting beside. uncounted.
+    drawSheep(158, 102 - (Math.sin(T * 1.1 + 0.4) > 0 ? 1 : 0), { lying: true, scarf: true, body: '#efe9df', face: '#2a2430', darkShade: '#c9c4b8' });
+    // the line, then the card
+    if (counting.flashText && counting.flashT > 0) {
+      const lines = wrapText(counting.flashText, 46);
+      lines.forEach((ln, i) => drawText(ln, W / 2, 56 + i * 9, '#b8a888', { align: 'center' }));
+    }
+    if (sceneTime > 12) {
+      drawText('1 SHEEP.', W / 2, 74, '#e8e4d0', { align: 'center' });
+    }
+    if (sceneTime > 15) {
+      drawText('for everyone still counting', W / 2, 150, '#4a4468', { align: 'center' });
+      drawText('goodnight', W / 2, 162, '#3a3654', { align: 'center' });
+    }
+    vignette(0.3);
+  },
+};
+
+/* ============================================================
+   the words. all of them.
+   ============================================================ */
+const SCRIPT = {
+  /* bedroom, night one */
+  bedroomIntro: [
+    "11:58. I've been awake so long the ceiling and I are basically friends.",
+    "Can't sleep. Again. There's a trick for that, though. There's a rule.",
+  ],
+  clock: "11:58. If I fall asleep right now I get... not enough. Okay. Falling asleep right now.",
+  window: "The streetlight. The empty street. The house makes noises when it thinks I'm asleep.",
+  door: "Mom stopped outside my door again. She does the thing where she doesn't knock. Then the floor creaks away.",
+  closet: "Winter stuff. Boots. And. ...Not that.",
+  stars: "Forty-one glow stars. I know because I count them every night. There used to be forty-two.",
+  drawing: "A drawing of two kids I did forever ago. One of them's gone smudgy. From the tape. Probably from the tape.",
+  bedIn: [
+    "Okay. Count one hundred sheep. That's the rule. I didn't make it up.",
+    "Eyes closed. No skipping. Skipping is basically cheating.",
+  ],
+
+  /* the count, night one */
+  countIntro: ["One hundred sheep. Here we go."],
+  c3: "One sheep. Two sheep. This is so dumb. Three sheep.",
+  c7: "Mom says counting makes you bored, and boredness is basically sleep. Mom says a lot of stuff through the door now.",
+  c13: "That one looked at me. They're not supposed to look.",
+  c22: "Wait. Two jumped. That's still one number. ...Is that allowed?",
+  c30: "You're going the wrong way. Hey. You're- fine. Counting is counting.",
+  c33: "That one didn't have a face. I didn't look. You're not supposed to look when you're It.",
+  c40: "It got quiet. Quiet like the inside of my ears.",
+  c43: "I skipped one. Did I skip one? You're not allowed to skip. Skipping is basically cheating.",
+  c50: "50. Halfway is where you stop looking hard. Sam said that.",
+  c60: "There's more of them than I counted. That's not how counting works.",
+  c66: "They freeze when they're scared. That's how you hide. Somebody told me that.",
+  c70: "Someone's counting ahead of me. That's my voice. Why am I ahead of me?",
+  c77after: "Okay. Nobody do that again.",
+  c80: "They're standing in rows now. Like they're waiting for something to start.",
+  c88: "I don't want to get to a hundred.",
+  c99: "Ninety-nine is a good number. Nothing bad ever happened at ninety-nine. If I say the next one, the game's over. Those are the rules.",
+
+  /* dream 1: the wrong bedroom */
+  d1intro: ["Oh. I'm here again.", "My room. Except the ceiling's too far away and the window forgot the street."],
+  d1clock: "The clock says 2:sheep. That's not a time. I've checked.",
+  d1window: "Nothing out there. Not dark-nothing. White-nothing. Like the world didn't load the rest.",
+  d1sheep: "There's a sheep where my desk goes. It's very polite about it.",
+  d1bed: "That's my bed. If I'm standing here, who's- nope. Not finishing that one.",
+  d1door: ["The door's too big. Doors are exactly door-sized. That's the whole deal with doors.", "Through it, then."],
+
+  /* dream 2: the hallway */
+  d2a: "A hallway. School's hallway, sort of. If school held its breath.",
+  d2b: "The lights hum like they're deciding something. The doors don't have rooms behind them. You can tell.",
+  d2c: "The sheep face the walls. When I walk past, they stop facing the walls. I don't look back anymore.",
+  d2d: "There's a door at the end with a 100 on it. Of course there is.",
+
+  /* dream 3: the pasture */
+  d3intro: ["The pasture. Hundreds of them. All standing. All looking.", "Fine. I'll count. It's the only thing I'm good at."],
+  d3a: "The fog isn't coming closer or going away. It's just deciding to be everywhere.",
+  d3count1: "I counted you already. Counted means you're supposed to be gone.",
+  d3count2: "Forty-three? No. You're not forty-three. Stop being forty-three.",
+  d3count3: "It's so quiet here it makes a sound.",
+  d3door: "My bedroom door. Out here. Locked. ...I could knock.",
+  d3knock: "...Something knocked back.",
+  d3bus: "Five sheep at a bus stop. There's no bus. There's no road. They're really committed.",
+  d3red: "That one's facing the wrong way. That one's wearing- I'm going to go look. I always go look.",
+  d3plankSee: "It went across the creek. Over the plank. Obviously it went over the plank.",
+  d3plank: "My feet won't. It's just a board. It's just water. My feet won't.",
+  d3wake: "it's always 1:00.",
+
+  /* morning */
+  morningIntro: ["Morning. Allegedly.", "The kitchen's grayer than my dream was. That feels backwards."],
+  momAfter: "Mom's got hospital-grade tired. We match now.",
+  cereal: "The milk's fine. Everything's fine. We're a very fine house.",
+  leaveHouse: "Bye mom. Say it back. ...The toaster popped. Close enough.",
+
+  /* the walk */
+  st_hoods: "Everybody walks to school in a clump now. Gray hoods. Nobody talks. A clump.",
+  st_sheepSee: "There's a sheep on the Hendersons' lawn. Standing very still.",
+  st_sheepLook: "They freeze when they're scared. That's how you hide.",
+  st_nobody: "Nobody else sees it. Or nobody else says it. Those are different things, and both are worse.",
+  st_guard: "The crossing guard counts us across. One... two... three... She counts like I count. I don't like that.",
+
+  /* the classroom */
+  sc_attend: "Her voice did the thing where it falls off a cliff at twenty-two. There used to be twenty-three of us.",
+  sc_samdesk: "They put his chair up on his desk like they do in summer. It's not summer.",
+  sc_notyet: "Not yet.",
+  sc_sheepdesk: "It has a tiny pencil. Nobody's saying anything about the tiny pencil.",
+  sc_baacap1: "(that means: it's okay.)",
+  sc_baacap2: "(that means: he's at peace.)",
+  sc_baacap3: "If one more person baas at me, I'm going to scream.",
+  sc_blink: "If I blink slow, they're there. If I blink fast, they're there faster.",
+  sc_note: [
+    "The counselor gave me a folded note. I'm keeping it folded.",
+    "Folded means it hasn't happened yet.",
+  ],
+
+  /* recess */
+  rc_enter: "They're playing hide-and-seek without me. That's fine. I retired.",
+  rc_freeze: "I can't move. Sheep freeze when they're scared.",
+
+  /* the memory */
+  mem_rules: "Okay, rules. You count to a hundred, eyes closed, no skipping. Skipping is basically cheating.",
+  mem_trick: "And you can't count sheep for real. They all look the same. That's the whole point of them. That's why the pasture's the best place to hide.",
+  mem_olly: "If you ever give up, you say olly olly oxen free. It means come out, nobody loses. You just come home. It's the best rule. It's basically magic.",
+  mem_ready: "Ready? Count!",
+  mem_splash: "...like a big fish.",
+  mem_readyornot: ["Ready or not, here I come."],
+  mem_sam: "Sam?",
+  mem_scarf: [
+    "His scarf. On the fence.",
+    "He ties it tighter than that. He always ties it tighter than that.",
+  ],
+
+  /* aftermath */
+  af_enter: "Everyone went home. I went back in.",
+  af_chair: "He's not lost. He's hiding. There's a difference. Lost is when nobody's looking for you.",
+  af_slow: "I count really slow, so he has more time.",
+  af_mom: "Mom's in the doorway. She doesn't say anything. She doesn't correct me. She just stays.",
+
+  /* night two */
+  n2intro: ["Count one hundred sheep. That's the rule.", "...Okay."],
+  n2mem: {
+    1: "One. You have to start somewhere.",
+    7: "Seven. His lucky number.",
+    12: "Twelve. The ice cream truck summer.",
+    20: "Twenty. He taught me to whistle. I still can't.",
+    26: "Twenty-six. He always hid in obvious places on purpose, so I'd win sometimes.",
+    34: "Thirty-four. He laughed with his whole face.",
+    43: "Forty-three. ...Forty-three.",
+    61: "Sixty-one. The fort we never finished. The plans are still under my bed.",
+    88: "Eighty-eight. I'm not scared of this number tonight.",
+  },
+  n2filler: ["I remember.", "No sheep tonight. Just us.", "I remember. I remember.", "Slow. Take it slow."],
+  olly: [
+    "Olly olly oxen free, Sam.",
+    "It means you can come out and nobody loses.",
+    "...You can come home now.",
+  ],
+  olly100: [
+    "One hundred. ...You win. You always win.",
+    "Olly olly oxen free anyway, Sam. Come home anyway.",
+  ],
+  goodDark: ["For the first time in forever: nothing. Just dark. Good dark."],
+
+  /* coda */
+  coda1: "One sheep. That's enough tonight. Just the one.",
+};
+
+/* ---------------- main loop ---------------- */
+
+let last = performance.now();
+function frame(now) {
+  let dt = (now - last) / 1000;
+  last = now;
+  if (dt > 0.1) dt = 0.1;
+  T += dt;
+  sceneTime += dt;
+
+  updateFade(dt);
+  updateTextbox(dt);
+  if (scene && scene.update && fade.v < 1) scene.update(dt);
+
+  ctx.fillStyle = '#06060e';
+  ctx.fillRect(0, 0, W, H);
+  if (scene && scene.draw) scene.draw();
+  drawTextbox();
+  drawFade();
+
+  pressed = {};
+  anyPressed = false;
+  pointerClick = null;
+  requestAnimationFrame(frame);
+}
+
+/* ---------------- boot ---------------- */
+hardGoto('title');
+fade.v = 1; fade.target = 0; fade.speed = 0.8;
+requestAnimationFrame((t) => { last = t; requestAnimationFrame(frame); });
+
+// tiny hook for automated testing
+window.__sheep = {
+  G, counting, SCENES,
+  goto: hardGoto,
+  scene: () => sceneName,
+  textActive: () => textboxActive(),
+  skipText: () => {
+    // flush queue but honor the completion callback
+    textbox.queue = []; textbox.current = null;
+    if (textbox.onEmpty) { const f = textbox.onEmpty; textbox.onEmpty = null; f(); }
+  },
+};
+</script>
+</body>
+</html>
