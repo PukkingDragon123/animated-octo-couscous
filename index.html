@@ -189,6 +189,7 @@ const KEYMAP = {
   'ArrowDown':'down','KeyS':'down',
   'Space':'action','KeyZ':'action','Enter':'action',
   'KeyX':'alt',
+  'KeyC':'name',
   'KeyM':'mute',
 };
 
@@ -693,17 +694,16 @@ function drawCine() {
   px(0, H - h, W, h, '#040308');
 }
 
-/* ---------------- It ----------------
-   The seeker. A tall, wrong-jointed figure made of the creek's black
-   static. The body never stops flickering. The eyes never move at all. */
-function drawIt(x, groundY, h, opts) {
+/* ---------------- The Butcher ----------------
+   The seeker. A tall, wrong-jointed body made of the creek's black
+   static, wearing a pale sheep's skull. The body never stops
+   flickering. The head never flickers at all. */
+function drawButcher(x, groundY, h, opts) {
   opts = opts || {};
   const fr = Math.floor(T * 20) * 131;
   const top = groundY - h;
   const c1 = '#141018', c2 = '#25202c', c3 = '#3a3444';
-  // silhouette: hunched head, long torso, arms past the knees, thin legs
   const D = 52000 * (opts.faint ? 0.5 : 1);
-  for (let yy = 0; yy < 5; yy++) for (let xx = -3; xx <= 3; xx++) blobPix(xx, yy + 1);
   function blobPix(bx, by) {
     let hh = (bx * 374761 + by * 668265 + fr) & 0xffff;
     hh = (hh * 48271) % 65537;
@@ -714,10 +714,10 @@ function drawIt(x, groundY, h, opts) {
   }
   const sway = Math.sin(T * 1.7) > 0 ? 1 : 0;
   // neck + torso
-  for (let by = 6; by < h * 0.58; by++)
-    for (let bx = -2 - (by > 10 ? 1 : 0); bx <= 2; bx++) blobPix(bx + sway, by);
+  for (let by = 7; by < h * 0.58; by++)
+    for (let bx = -2 - (by > 12 ? 1 : 0); bx <= 2; bx++) blobPix(bx + sway, by);
   // arms: too long
-  for (let by = 8; by < h * 0.86; by++) {
+  for (let by = 9; by < h * 0.86; by++) {
     blobPix(-5 + (by > h * 0.5 ? -1 : 0) + sway, by);
     blobPix(-4 + sway, by);
     blobPix(4 + sway, by);
@@ -733,12 +733,37 @@ function drawIt(x, groundY, h, opts) {
     ctx.fillStyle = c2;
     ctx.fillRect(Math.round(x - 5), Math.round(groundY - h * 0.1), 1, 2);
   }
-  // the eyes hold perfectly still
-  if (opts.eyes !== false) {
-    px(x - 3 + sway, top + 3, 2, 1, '#efe9df');
-    px(x + 2 + sway, top + 3, 2, 1, '#efe9df');
+  // the sheep skull. solid. still. slightly tilted.
+  if (h > 10) {
+    const hx = x + sway, hy = top;
+    const bone = opts.faint ? '#b8b2a2' : '#d8d2c0';
+    const boneLo = opts.faint ? '#948e7e' : '#aaa38e';
+    ctx.save();
+    ctx.translate(Math.round(hx), Math.round(hy));
+    // tilt: one column lower on the left
+    px(-4, 2, 9, 6, bone);          // skull mass
+    px(-4, 1, 8, 1, bone);
+    px(-4, 7, 9, 1, boneLo);        // jaw shade
+    px(-1, 8, 4, 2, bone);          // long muzzle, down
+    px(-1, 9, 4, 1, boneLo);
+    px(0, 10, 2, 1, boneLo);        // nose tip
+    // ear stubs, wrong angles
+    px(-6, 2, 2, 3, boneLo);
+    px(5, 1, 2, 4, boneLo);
+    // horn curls
+    px(-5, 0, 2, 2, boneLo); px(-6, 1, 1, 2, boneLo);
+    px(4, 0, 2, 2, boneLo); px(6, 1, 1, 2, boneLo);
+    // eye sockets: deep. the pupils hold perfectly still.
+    px(-3, 3, 3, 3, '#0c0a12');
+    px(1, 3, 3, 3, '#0c0a12');
+    if (opts.eyes !== false) {
+      px(-2, 4, 1, 1, '#efe9df');
+      px(2, 4, 1, 1, '#efe9df');
+    }
+    ctx.restore();
   }
 }
+const drawIt = drawButcher; // old name, kept for reach
 
 /* ---------------- sprites ---------------- */
 
@@ -761,6 +786,7 @@ function drawSheep(x, y, opts) {
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y + bob));
   if (opts.scale && opts.scale !== 1) ctx.scale(opts.scale, opts.scale);
+  if (opts.invert) { ctx.scale(1, -1); ctx.translate(0, -13); }
   if (flip) { ctx.scale(-1, 1); ctx.translate(-18, 0); }
   if (opts.lying) {
     px(1, 6, 16, 6, body); px(3, 4, 12, 2, body);
@@ -923,6 +949,7 @@ const textbox = {
 
 function say(lines, onEmpty) {
   if (!Array.isArray(lines)) lines = [lines];
+  lines = lines.flat(2);
   for (const l of lines) textbox.queue.push(typeof l === 'string' ? { text: l } : l);
   if (onEmpty) textbox.onEmpty = onEmpty;
   if (!textbox.current) nextLine();
@@ -934,7 +961,42 @@ function nextLine() {
     const f = textbox.onEmpty; textbox.onEmpty = null; f();
   }
 }
-function textboxActive() { return !!textbox.current; }
+function textboxActive() { return !!textbox.current || choice.active; }
+
+/* ---------------- dialogue choices ---------------- */
+const choice = { active: false, options: [], idx: 0, cb: null };
+function ask(options, cb) {
+  choice.active = true;
+  choice.options = options;
+  choice.idx = 0;
+  choice.cb = cb;
+}
+function updateChoice() {
+  if (!choice.active) return;
+  if (pressed['up']) { choice.idx = (choice.idx + choice.options.length - 1) % choice.options.length; pressed['up'] = false; }
+  if (pressed['down']) { choice.idx = (choice.idx + 1) % choice.options.length; pressed['down'] = false; }
+  if (pressed['action']) {
+    pressed['action'] = false;
+    choice.active = false;
+    const cb = choice.cb; choice.cb = null;
+    if (cb) cb(choice.idx);
+  }
+}
+function drawChoice() {
+  if (!choice.active) return;
+  const w = Math.max(...choice.options.map(o => o.length)) * CHAR_W + 24;
+  const h = choice.options.length * 11 + 10;
+  const x0 = W - w - 8, y0 = H - h - 8;
+  ctx.fillStyle = 'rgba(6,6,14,0.94)';
+  ctx.fillRect(x0, y0, w, h);
+  ctx.strokeStyle = '#8a86a0';
+  ctx.strokeRect(x0 + 0.5, y0 + 0.5, w - 1, h - 1);
+  choice.options.forEach((o, i) => {
+    const sel = i === choice.idx;
+    if (sel) drawText('>', x0 + 6, y0 + 6 + i * 11, '#e8d9a0');
+    drawText(o, x0 + 16, y0 + 6 + i * 11, sel ? '#e8e4ec' : '#8a86a0');
+  });
+}
 function clearText() { textbox.queue = []; textbox.current = null; textbox.onEmpty = null; }
 
 function updateTextbox(dt) {
@@ -1028,6 +1090,7 @@ const G = {
   wrongPresses: 0,
   sawExtra: 0,       // optional dream/school discoveries
   name: 'SAM',
+  flags: { byeMom: false, noteOpened: false },
 };
 
 /* ---------------- walk scene helper ----------------
@@ -1190,12 +1253,30 @@ SCENES.title = {
     px(0, 152, W, 28, '#08081a');
     speckle(0, 132, W, 44, '#12122e', 80, 31);
     speckle(0, 138, W, 38, '#050514', 50, 32);
-    // low fog drifting over the field
+    // floating sheep, way up. nobody's making a big deal out of it.
+    for (let i = 0; i < 3; i++) {
+      const fy = 22 + i * 16 + Math.sin(T * 0.4 + i * 2.1) * 3;
+      const fx2 = 40 + i * 96 + Math.sin(T * 0.13 + i) * 8;
+      ctx.globalAlpha = 0.5;
+      drawSheep(fx2, fy, { flip: i % 2 === 0, scale: 0.7, body: '#3a3a5e', face: '#14142e', eyes: '#3a3a5e' });
+      ctx.globalAlpha = 1;
+    }
+    // a tall sheep statue on the far hill
+    ctx.globalAlpha = 0.85;
+    px(28, 96, 20, 6, '#161430');
+    drawSheep(30, 74, { stare: true, scale: 1.6, body: '#1e1c3a', face: '#12102a', eyes: '#1e1c3a' });
+    ctx.globalAlpha = 1;
+    // low fog drifting over the field, two speeds
     const fx = Math.floor(T * 5) % 64;
     ctx.globalAlpha = 0.10;
     for (let i = -1; i < 6; i++) {
       px(i * 64 + fx, 120, 44, 6, '#8fa1d9');
       px(i * 64 + fx + 10, 118, 26, 4, '#8fa1d9');
+    }
+    ctx.globalAlpha = 0.06;
+    const fx3 = 64 - (Math.floor(T * 9) % 64);
+    for (let i = -1; i < 6; i++) {
+      px(i * 64 + fx3, 126, 50, 5, '#c9c4d8');
     }
     ctx.globalAlpha = 1;
     // fence
@@ -1777,9 +1858,12 @@ SCENES.bedroom = {
         { x: 0, w: 8, label: 'DOOR', onInteract: () => say(SCRIPT.door) },
         { x: 14, w: 18, label: 'CLOSET', onInteract: () => say(SCRIPT.closet) },
         { x: 44, w: 16, label: 'CLOCK', onInteract: () => say(SCRIPT.clock) },
+        { x: 78, w: 12, label: 'NIGHTLIGHT', onInteract: () => say(SCRIPT.nightlight) },
+        { x: 100, w: 12, label: 'MR BUTTONS', onInteract: () => say(SCRIPT.teddy) },
         { x: 120, w: 40, label: 'WINDOW', onInteract: () => say(SCRIPT.window) },
         { x: 166, w: 20, label: 'GLOW STARS', onInteract: () => say(SCRIPT.stars) },
         { x: 196, w: 22, label: 'DRAWING', onInteract: () => say(SCRIPT.drawing) },
+        { x: 222, w: 14, label: 'BLOCKS', onInteract: () => say(SCRIPT.blocks) },
         { x: 250, w: 56, label: 'BED', onInteract: () => {
             self.wk.locked = true;
             say(SCRIPT.bedIn, () => goto_('counting'));
@@ -1811,6 +1895,31 @@ SCENES.bedroom = {
       ctx.fillStyle = 'rgba(159,232,160,' + a.toFixed(2) + ')';
       ctx.fillRect(g.x, g.y, 1, 1);
     }
+    // the dead nightlight, low on the wall
+    px(78, 104, 8, 8, '#1a1730');
+    px(80, 106, 4, 4, '#241f3e');
+    px(81, 107, 2, 2, '#141126');
+    // mr buttons, slumped against the wall. one eye.
+    px(100, 122, 8, 8, '#6a4a34');
+    px(100, 122, 8, 1, liteOf('#6a4a34'));
+    px(99, 118, 7, 6, '#7a563c');
+    px(98, 117, 3, 3, '#6a4a34'); px(104, 117, 3, 3, '#6a4a34');
+    px(100, 120, 1, 1, '#12101c');
+    px(103, 120, 1, 1, '#241f2e'); // the missing eye. just thread.
+    px(98, 128, 3, 3, '#5a3e2c'); px(106, 128, 3, 3, '#5a3e2c');
+    // counting blocks: 1, 2, 3. one tipped over.
+    px(220, 124, 7, 7, '#7a4a5a'); px(220, 124, 7, 1, liteOf('#7a4a5a'));
+    drawText('1', 222, 125, '#d8d4e0');
+    px(229, 124, 7, 7, '#4a6a7a'); px(229, 124, 7, 1, liteOf('#4a6a7a'));
+    drawText('2', 231, 125, '#d8d4e0');
+    ctx.save();
+    ctx.translate(240, 128);
+    ctx.rotate(0.5);
+    px(0, 0, 7, 7, '#6a6a4a');
+    drawText('3', 2, 1, '#d8d4e0');
+    ctx.restore();
+    // crayons scattered under the desk
+    px(38, 128, 4, 1, '#a34a3f'); px(46, 130, 4, 1, '#4a6a7a'); px(54, 127, 1, 4, '#c9a24a');
     // warm light under the door
     const flicker = Math.sin(T * 3.1) > 0.85 ? 0.15 : 0.45;
     ctx.fillStyle = 'rgba(232,176,74,' + flicker + ')';
@@ -1894,75 +2003,96 @@ function drawSheepIcon(x, y, color) {
   px(x + 1, y + 4, 1, 2, color); px(x + 5, y + 4, 1, 2, color);
 }
 
-/* ---- dream 2: the fluorescent hallway ---- */
+/* ---- dream 2: the fluorescent hallway. it does not end. ---- */
 SCENES.dream2 = {
-  wk: null,
-  sheep: [],
-  panels: [],
   enter() {
     setAmbience('dream');
-    const LEN = 1400;
-    const self = this;
-    this.sheep = [];
-    for (let x = 200; x < LEN - 100; x += randi(100, 150)) {
-      this.sheep.push({ x, snapped: false });
-    }
-    this.panels = [];
-    for (let x = 0; x < LEN; x += 64) this.panels.push({ x, t: Math.random() * 10 });
-    this.wk = makeWalker({
-      startX: 16, groundY: 138, len: LEN, speed: 44,
-      triggers: [
-        { x: 60, run: () => say(SCRIPT.d2a) },
-        { x: 480, run: () => say(SCRIPT.d2b) },
-        { x: 900, run: () => say(SCRIPT.d2c) },
-        { x: LEN - 120, run: () => say(SCRIPT.d2d, () => { self.exitOpen = true; }) },
-      ],
-      things: [],
-    });
-    this.wk.groundHintY = 70;
-    this.exitOpen = false;
-    this.lightsOutX = -1;
+    this.SEG = 96;
+    this.NSEG = 8;                 // the pattern repeats every eight doors
+    this.LOOP = this.SEG * this.NSEG;
+    this.correct = 5;              // the one door with a kid-height handle
+    this.sheepSegs = [1, 3, 6];
+    this.snapped = {};
+    this.loops = 0;
+    this.saidLoop1 = false; this.saidLoop2 = false; this.saidB = false;
+    this.wrongIdx = 0;
+    this.exiting = false;
+    this.flicker = 0;
+    this.lastX = 16;
+    this.wk = makeWalker({ startX: 16, groundY: 138, len: 9e9, speed: 44, triggers: [], things: [] });
+    say(SCRIPT.d2a);
+  },
+  nearDoorSeg() {
+    const x = this.wk.x + 4;
+    const seg = Math.round((x - 55) / this.SEG);
+    const center = seg * this.SEG + 55;
+    return Math.abs(x - center) < 16 ? seg : null;
   },
   update(dt) {
     updateWalker(this.wk, dt);
-    for (const s of this.sheep) {
-      if (!s.snapped && this.wk.x + 4 > s.x + 9) {
-        s.snapped = true;
-        if (chance(0.5)) sfxBaa(0.6 + Math.random() * 0.2, true);
+    if (this.flicker > 0) this.flicker -= dt;
+    const x = this.wk.x;
+    // loop bookkeeping: same hallway, again and again
+    const newLoops = Math.floor(x / this.LOOP);
+    if (newLoops > this.loops) {
+      this.loops = newLoops;
+      if (this.loops === 1 && !this.saidLoop1) { this.saidLoop1 = true; say(SCRIPT.d2loop1); }
+      else if (this.loops >= 2 && !this.saidLoop2) { this.saidLoop2 = true; say(SCRIPT.d2loop2); }
+    }
+    if (x > 470 && this.loops === 0 && !this.saidB) { this.saidB = true; say(SCRIPT.d2b); }
+    // sheep snap when passed
+    for (let k = Math.floor(this.lastX / this.SEG); k <= Math.floor(x / this.SEG); k++) {
+      const pat = ((k % this.NSEG) + this.NSEG) % this.NSEG;
+      if (this.sheepSegs.includes(pat) && !this.snapped[k]) {
+        const sx = k * this.SEG + 84;
+        if (x + 4 > sx + 9) {
+          this.snapped[k] = true;
+          if (chance(0.5)) sfxBaa(0.6 + Math.random() * 0.2, true);
+        }
       }
     }
-    // once the far door opens, the lights start dying behind you
-    if (this.exitOpen) {
-      if (this.lightsOutX < 0) this.lightsOutX = 0;
-      this.lightsOutX += dt * 95;
+    this.lastX = x;
+    // doors
+    if (pressed['action'] && !textboxActive() && !this.exiting) {
+      const seg = this.nearDoorSeg();
+      if (seg !== null) {
+        pressed['action'] = false;
+        const pat = ((seg % this.NSEG) + this.NSEG) % this.NSEG;
+        if (pat === this.correct) {
+          this.exiting = true;
+          this.wk.locked = true;
+          sfxChime(true);
+          say(SCRIPT.d2found, () => goto_('dream3'));
+        } else {
+          sfxDeadClick();
+          sfxBaa(0.5, true);
+          this.flicker = 0.25;
+          say([SCRIPT.d2wrong1, SCRIPT.d2wrong2][this.wrongIdx++ % 2]);
+        }
+      }
     }
-    if (this.exitOpen && this.wk.x > this.wk.len - 30) goto_('dream3');
   },
   draw() {
-    const cam = this.wk.cam;
+    const cam = Math.round(this.wk.x) - 120;
     // walls
     px(0, 0, W, 146, DP.mid);
     speckle(0, 20, W, 120, DP.low, 50, 61);
-    // wall trim parallax layers
+    // wall trim parallax
     ctx.fillStyle = DP.low;
     for (let i = -1; i < 8; i++) {
       const x = Math.round((i * 96 - (cam * 0.3) % 96));
       ctx.fillRect(x, 30, 2, 100);
     }
-    ctx.fillStyle = DP.dim;
-    for (let i = -1; i < 8; i++) {
-      const x = Math.round((i * 96 - (cam * 0.6) % 96));
-      ctx.fillRect(x, 26, 2, 110);
-    }
-    // ceiling with fluorescent panels + light pools on the carpet
+    // ceiling with fluorescent panels + light pools
     px(0, 0, W, 18, DP.low);
     px(0, 17, W, 1, DP.dim);
-    for (const p of this.panels) {
-      const sx = p.x - cam;
-      if (sx < -40 || sx > W) continue;
-      const dead = this.lightsOutX >= 0 && p.x < this.lightsOutX;
-      const on = !dead && Math.sin(T * 7 + p.t * 13) > -0.92;
-      px(sx, 6, 40, 6, on ? DP.bright : (dead ? DP.dark : DP.dim));
+    const k2a = Math.floor(cam / 64) - 1;
+    for (let k2 = k2a; k2 < k2a + 8; k2++) {
+      const sx = k2 * 64 - cam;
+      if (sx < -44 || sx > W) continue;
+      const ph = (((k2 * 7919) % 97) + 97) % 97 / 10;
+      const on = this.flicker <= 0 ? Math.sin(T * 7 + ph * 13) > -0.92 : chance(0.4);
+      px(sx, 6, 40, 6, on ? DP.bright : DP.dim);
       if (on) {
         px(sx + 1, 12, 38, 1, DP.white);
         ctx.globalAlpha = 0.08;
@@ -1981,39 +2111,62 @@ SCENES.dream2 = {
     px(0, 144, W, 2, DP.dark);
     ditherRect(0, 150, W, 6, DP.dim, 3);
     speckle(0, 152, W, 26, shadeOf(DP.carpet), 70, 62);
-    // the dark eats the hallway behind you
-    if (this.lightsOutX > 0) {
-      const dx = this.lightsOutX - cam;
-      if (dx > 0) {
-        ctx.fillStyle = 'rgba(8,7,12,0.82)';
-        ctx.fillRect(0, 0, Math.min(dx, W), H);
-        ditherRect(Math.min(dx, W) - 4, 0, 4, H, '#080710', 2);
+    // door segments
+    const ka = Math.floor(cam / this.SEG) - 1;
+    for (let k = ka; k < ka + 6; k++) {
+      const wx = k * this.SEG;
+      const dx = wx + 40 - cam;
+      const pat = ((k % this.NSEG) + this.NSEG) % this.NSEG;
+      if (dx > -40 && dx < W) {
+        // the door
+        px(dx, 52, 30, 92, DP.low);
+        px(dx + 2, 54, 26, 88, DP.mid);
+        px(dx + 2, 54, 26, 1, liteOf(DP.mid));
+        if (pat === this.correct) {
+          px(dx + 22, 76, 3, 3, DP.dark);          // a handle a kid could reach
+          px(dx + 27, 54, 1, 88, DP.black);        // ajar, one pixel of dark
+        } else {
+          px(dx + 22, 66, 3, 3, DP.dark);          // handles too high
+        }
+        shadowUnder(dx + 2, 144, 26);
+      }
+      // children's drawings taped between the doors, sun-bleached
+      const px2 = wx + 8 - cam;
+      if (px2 > -20 && px2 < W && pat % 2 === 0) {
+        px(px2, 70, 12, 14, DP.bright);
+        px(px2 + 2, 73, 3, 3, DP.low);             // a faded sun
+        px(px2 + 3, 78, 6, 4, DP.low);             // a faded house
+        px(px2 + 1, 70, 1, 2, DP.dim);             // tape
+      }
+      // sheep facing the wall
+      if (this.sheepSegs.includes(pat)) {
+        const sx = wx + 84 - cam;
+        if (sx > -30 && sx < W + 10) {
+          shadowUnder(sx + 1, 143, 16);
+          const snapped = !!this.snapped[k];
+          drawSheep(sx, 130, { stare: snapped, flip: !snapped, body: DP.white, face: DP.dark, eyes: snapped ? DP.black : DP.white });
+        }
       }
     }
-    // identical doors every 96px, handles too high
-    for (let i = 0; i < Math.ceil(this.wk.len / 96); i++) {
-      const dx = i * 96 + 40 - cam;
-      if (dx < -40 || dx > W) continue;
-      px(dx, 52, 30, 92, DP.low);
-      px(dx + 2, 54, 26, 88, DP.mid);
-      px(dx + 22, 66, 3, 3, DP.dark); // handle, too high
-    }
-    // exit door at the end (dark, ajar when open)
-    const ex = this.wk.len - 50 - cam;
-    if (ex > -60 && ex < W) {
-      px(ex, 48, 34, 96, DP.dark);
-      if (this.exitOpen) { px(ex + 4, 52, 24, 90, DP.black); drawText('100', ex + 16, 36, DP.dark, { align: 'center' }); }
-    }
-    // sheep facing the walls; snap to stare when passed
-    for (const s of this.sheep) {
-      const sx = s.x - cam;
-      if (sx < -30 || sx > W + 10) continue;
-      shadowUnder(sx + 1, 143, 16);
-      drawSheep(sx, 130, { stare: s.snapped, flip: !s.snapped, body: DP.white, face: DP.dark, eyes: s.snapped ? DP.black : DP.white });
+    // after two loops, a wall of dark keeps pace behind you
+    if (this.loops >= 2) {
+      const dwx = this.wk.x - 250 - cam;
+      if (dwx > -W) {
+        ctx.fillStyle = 'rgba(8,7,12,0.85)';
+        ctx.fillRect(0, 0, Math.max(0, Math.min(dwx, W)), H);
+        ditherRect(Math.max(0, Math.min(dwx, W)) - 4, 0, 4, H, '#080710', 2);
+      }
     }
     shadowUnder(this.wk.x - cam, 138, 10);
     drawKid(this.wk.x - cam, 138 - 20, this.wk.frame, { pj: true, pale: true, flip: this.wk.facing < 0 });
-    drawInteractHint(this.wk, DP.dark);
+    // door hint
+    const seg = this.nearDoorSeg();
+    if (seg !== null && !textboxActive()) {
+      const hx = seg * this.SEG + 55 - cam;
+      if (Math.floor(T * 2) % 2 === 0) drawText('?', hx - 2, 42, DP.dark);
+      drawText('DOOR', hx, 32, DP.dim, { align: 'center' });
+    }
+    if (this.flicker > 0) { ctx.fillStyle = 'rgba(233,236,216,0.2)'; ctx.fillRect(0, 0, W, H); }
     grain(0.05);
     vignette(0.2);
   },
@@ -2052,11 +2205,34 @@ SCENES.dream3 = {
             if (!self.seen.door) { self.seen.door = true; say(SCRIPT.d3door); }
             else if (self.knockT < 0) { sfxKnock(false); self.knockT = 1.4; }
           } },
-        { x: 760, w: 40, label: 'BUS STOP', once: true, onInteract: () => { self.seen.bus = true; say(SCRIPT.d3bus); } },
+        { x: 760, w: 40, label: 'BUS STOP', once: true, onInteract: () => {
+            say(SCRIPT.d3bus, () => {
+              ask(['FIVE', 'SIX', "DON'T COUNT THEM"], (i) => {
+                self.seen.bus = true;
+                if (i === 0) { self.busCount = 6; sfxBaa(0.7, true); say(SCRIPT.d3busFive); }
+                else if (i === 1) { say(SCRIPT.d3busSix); }
+                else { say(SCRIPT.d3busRefuse); }
+              });
+            });
+          } },
+        { x: 548, w: 30, label: 'STATUE', once: true, onInteract: () => say(SCRIPT.d3statue) },
         { x: this.creekX - 132, w: 28, label: 'WOOL', once: true, onInteract: () => { sfxHeartbeat(); say(SCRIPT.d3wool); } },
       ],
     });
     this.wk.groundHintY = 118;
+    this.busCount = 5;
+    // sheep that float. nobody is making a big deal out of it.
+    this.floaters = [];
+    srand(88);
+    for (let i = 0; i < 6; i++) {
+      this.floaters.push({
+        x: 120 + rnd() * (LEN - 300),
+        y: 22 + rnd() * 40,
+        ph: rnd() * 6,
+        inv: i === 3, // one of them is upside down
+      });
+    }
+    this.wk.triggers.push({ x: 190, fired: false, run: () => say(SCRIPT.d3float) });
     say(SCRIPT.d3intro);
   },
   countSheepAt(px_) {
@@ -2134,6 +2310,18 @@ SCENES.dream3 = {
     px(0, 0, W, H, '#efe9df');
     ditherRect(0, 96, W, 10, '#dcd3c4', 2);
     ditherRect(0, 104, W, 8, '#b8ad9c', 3);
+    // floating sheep, drifting a little. one is upside down.
+    for (const f of this.floaters) {
+      const fx2 = f.x - cam * 0.8 + Math.sin(T * 0.15 + f.ph) * 6;
+      if (fx2 < -30 || fx2 > W + 10) continue;
+      const fy = f.y + Math.sin(T * 0.5 + f.ph) * 3;
+      ctx.globalAlpha = 0.85;
+      drawSheep(fx2, fy, { flip: f.ph > 3, invert: f.inv, scale: 0.8, body: '#e0d8c9', face: '#6b705c', eyes: '#e0d8c9' });
+      ctx.globalAlpha = 1;
+      // a soft wrong shadow directly below, too far down
+      ctx.fillStyle = 'rgba(107,112,92,0.25)';
+      ctx.fillRect(Math.round(fx2 + 4), 150, 10, 1);
+    }
     // repeating fence with copy-paste errors, sunk into the fog line
     for (let i = 0; i < 40; i++) {
       const fx = i * 90 - cam * 0.5;
@@ -2141,6 +2329,22 @@ SCENES.dream3 = {
       const err = (i % 7 === 3);
       px(fx, err ? 90 : 94, 2, 10, '#b8ad9c');
       px(fx, 98, err ? 40 : 60, 1, '#b8ad9c');
+    }
+    // tall sheep statues. older than anything else here.
+    for (const stx of [548, 1040]) {
+      const sx2 = stx - cam;
+      if (sx2 < -80 || sx2 > W + 40) continue;
+      // pedestal
+      px(sx2 - 4, 138, 48, 18, '#c4baa8');
+      px(sx2 - 4, 138, 48, 2, '#d0c7b8');
+      px(sx2 - 2, 154, 44, 2, '#a89d8c');
+      shadowUnder(sx2 - 2, 156, 44);
+      // the statue: a stare-variant sheep, three times too big, stone
+      drawSheep(sx2, 109, { stare: true, scale: 2.2, body: '#c4baa8', face: '#8d8375', eyes: '#6b705c' });
+      // cracks
+      px(sx2 + 12, 118, 1, 6, '#8d8375'); px(sx2 + 13, 124, 1, 4, '#8d8375');
+      px(sx2 + 30, 114, 1, 8, '#8d8375');
+      ditherRect(sx2 + 2, 134, 32, 4, '#8d8375', 3);
     }
     // the flock
     for (const s of this.flock) {
@@ -2447,12 +2651,6 @@ SCENES.chase = {
     // the kid, running for it
     shadowUnder(k.x - cam, this.groundY, 8);
     drawKid(k.x - cam, this.groundY - 20 + k.y, k.stumbleT > 0 ? 0 : k.frame, { pj: true, pale: true, flip: true });
-    // It
-    const ix = this.it.x - cam;
-    if (ix > -30 && ix < W + 40) {
-      shadowUnder(ix - 6, this.groundY, 14);
-      drawIt(ix, this.groundY, 48, { eyes: true });
-    }
     // the dark pours in from behind
     const gap = clamp((this.it.x - k.x) / 260, 0, 1);
     const dark = 0.65 - gap * 0.4;
@@ -2462,6 +2660,12 @@ SCENES.chase = {
     ctx.fillStyle = 'rgba(8,7,12,0.055)';
     for (let i = 0; i < 9; i++) {
       ctx.fillRect(W - 126 + i * 14, 0, 126 - i * 14, H);
+    }
+    // the Butcher, above the dark. the skull does not dim.
+    const ix = this.it.x - cam;
+    if (ix > -30 && ix < W + 40) {
+      shadowUnder(ix - 6, this.groundY, 14);
+      drawButcher(ix, this.groundY, 48, { eyes: true });
     }
     ctx.restore();
     // static blast when caught
@@ -2502,7 +2706,20 @@ SCENES.morning = {
                 { text: '. . .', who: 'MOM', color: '#8f8c7e' },
                 { text: 'Okay.', who: 'MOM', color: '#8f8c7e' },
                 SCRIPT.momAfter,
-              ]);
+              ], () => {
+                ask(['SAY BYE OUT LOUD', 'JUST GO'], (i) => {
+                  if (i === 0) {
+                    G.flags.byeMom = true;
+                    say([
+                      SCRIPT.byeSay,
+                      { text: '...Bye, baby.', who: 'MOM', color: '#8f8c7e' },
+                      SCRIPT.byeAfter,
+                    ]);
+                  } else {
+                    say(SCRIPT.byeNot);
+                  }
+                });
+              });
             } else say({ text: '. . .', who: 'MOM', color: '#8f8c7e' });
           } },
         { x: 150, w: 26, label: 'CEREAL', onInteract: () => say(SCRIPT.cereal) },
@@ -2813,6 +3030,21 @@ function drawClassroom(cam, seats, opts) {
   drawText('1 2 3', bx + 10, 32, '#e4efdc');
   drawSheepIcon(bx + 52, 31, '#e4efdc');
   drawText('COUNTING', bx + 10, 44, '#cfe0c8');
+  // MY SUMMER drawings, taped in a row. one is all black crayon.
+  const paperCols = ['#e8d9a0', '#d9a5a0', '#cfe0c8', '#3b4048', '#e8d9a0'];
+  for (let i = 0; i < 5; i++) {
+    const dwx = 380 + i * 34 - cam;
+    if (dwx < -20 || dwx > W) continue;
+    px(dwx, 72, 16, 18, '#f7f5ea');
+    px(dwx + 7, 71, 2, 2, '#8f8c7e'); // tape
+    if (i === 3) {
+      px(dwx + 2, 74, 12, 14, '#3b4048');
+      ditherRect(dwx + 2, 74, 12, 14, '#22251f', 2);
+    } else {
+      px(dwx + 3, 75, 4, 4, paperCols[i]);      // a sun
+      px(dwx + 4, 82, 8, 5, paperCols[(i + 1) % 5]); // a house
+    }
+  }
   // windows with light shafts and dust motes
   for (let i = 0; i < 4; i++) {
     const wx2 = 160 + i * 110 - cam;
@@ -2947,6 +3179,7 @@ SCENES.school = {
       },
     }));
     this.wk.things.push({ x: 60, w: 26, label: 'TEACHER', onInteract: () => say({ text: '. . .', who: 'TEACHER', color: '#7a6a98' }) });
+    this.wk.things.push({ x: 396, w: 60, label: 'DRAWINGS', once: true, onInteract: () => say(SCRIPT.sc_drawings) });
   },
   doBlink() {
     this.blinks++;
@@ -2985,9 +3218,22 @@ SCENES.school = {
       const self = this;
       this.wk.locked = true;
       say(SCRIPT.sc_note, () => {
-        sfxSchoolBell();
-        self.leaving = true;
-        goto_('recess');
+        ask(['KEEP IT FOLDED', 'OPEN IT'], (i) => {
+          const done = () => {
+            sfxSchoolBell();
+            self.leaving = true;
+            goto_('recess');
+          };
+          if (i === 1) {
+            G.flags.noteOpened = true;
+            say([
+              { text: "it's not your fault. nobody was It.", who: 'THE NOTE', color: '#7a6a98' },
+              SCRIPT.noteOpen,
+            ], done);
+          } else {
+            say(SCRIPT.noteFold, done);
+          }
+        });
       });
     }
     updateWalker(this.wk, dt);
@@ -3345,14 +3591,16 @@ SCENES.count2 = {
     this.fillerIdx = 0;
     say(SCRIPT.n2intro, () => flash('PRESS TO COUNT', 5));
   },
-  endGame(reached100) {
+  endGame(kind) {
     const c = counting;
     if (c.ended) return;
     c.ended = true;
+    this.endingKind = kind;
     const self = this;
-    say(reached100 ? SCRIPT.olly100 : SCRIPT.olly, () => {
+    const lines = kind === 'hundred' ? SCRIPT.olly100 : kind === 'name' ? SCRIPT.sayName : SCRIPT.olly;
+    say(lines, () => {
       self.warmTarget = 1;
-      say(SCRIPT.goodDark, () => goto_('coda'));
+      say(SCRIPT.goodDark, () => goto_('coda', kind));
     });
   },
   update(dt) {
@@ -3363,18 +3611,31 @@ SCENES.count2 = {
     if (c.ended) return;
     if (G.count >= 20) c.eyesBtnT = Math.min(1, c.eyesBtnT + dt * 0.1);
 
+    // the third way, if you were kind and honest: say his name
+    const nameReady = G.flags.byeMom && G.flags.noteOpened && G.count >= 43;
     // OPEN YOUR EYES: X key, or a click on the button
     let openPressed = pressed['alt'];
-    if (pressed['action'] && pointerClick && c.eyesBtnT > 0) {
+    let namePressed = pressed['name'] && nameReady;
+    if (pressed['action'] && pointerClick) {
       const b = this.eyesRect();
-      if (pointerClick.x >= b.x && pointerClick.x <= b.x + b.w && pointerClick.y >= b.y && pointerClick.y <= b.y + b.h) {
+      if (c.eyesBtnT > 0 && pointerClick.x >= b.x && pointerClick.x <= b.x + b.w && pointerClick.y >= b.y && pointerClick.y <= b.y + b.h) {
         openPressed = true;
         pressed['action'] = false;
       }
+      const nb = this.nameRect();
+      if (nameReady && pointerClick.x >= nb.x && pointerClick.x <= nb.x + nb.w && pointerClick.y >= nb.y && pointerClick.y <= nb.y + nb.h) {
+        namePressed = true;
+        pressed['action'] = false;
+      }
+    }
+    if (namePressed && !textboxActive()) {
+      pressed['name'] = false;
+      this.endGame('name');
+      return;
     }
     if (openPressed && c.eyesBtnT > 0 && !textboxActive()) {
       pressed['alt'] = false;
-      this.endGame(false);
+      this.endGame('eyes');
       return;
     }
 
@@ -3387,11 +3648,14 @@ SCENES.count2 = {
       const memory = SCRIPT.n2mem[n];
       if (memory) flash(memory, 4);
       else if (n % 4 === 0) flash(SCRIPT.n2filler[this.fillerIdx++ % SCRIPT.n2filler.length], 2.5);
-      if (n >= 100) this.endGame(true);
+      if (n >= 100) this.endGame('hundred');
     }
   },
   eyesRect() {
     return { x: W / 2 - 56, y: H - 48, w: 112, h: 16 };
+  },
+  nameRect() {
+    return { x: W / 2 - 56, y: H - 68, w: 112, h: 14 };
   },
   draw() {
     drawCountingWorld();
@@ -3408,6 +3672,17 @@ SCENES.count2 = {
       ctx.globalAlpha = 1;
       if (c.eyesBtnT > 0.6) drawText('X', b.x - 10, b.y + 5, '#8a86a0');
     }
+    // the quiet third button. only for the kid who said bye and read the note.
+    if (G.flags.byeMom && G.flags.noteOpened && G.count >= 43 && !c.ended) {
+      const nb = this.nameRect();
+      const a2 = 0.4 + 0.3 * Math.sin(T * 1.3);
+      ctx.globalAlpha = a2;
+      px(nb.x, nb.y, nb.w, nb.h, '#4a4470');
+      px(nb.x + 1, nb.y + 1, nb.w - 2, nb.h - 2, '#241f42');
+      drawText('SAY HIS NAME', W / 2, nb.y + 4, '#e8d9a0', { align: 'center' });
+      ctx.globalAlpha = 1;
+      drawText('C', nb.x - 10, nb.y + 4, '#8a86a0');
+    }
     // the palette warms. first warm frame in the present.
     if (this.warm > 0) {
       ctx.fillStyle = 'rgba(232,176,74,' + (this.warm * 0.18).toFixed(3) + ')';
@@ -3418,18 +3693,29 @@ SCENES.count2 = {
   },
 };
 
-/* ---- coda: 1 sheep ---- */
+/* ---- coda: 1 sheep. or 100. or 2 kids. ---- */
 SCENES.coda = {
-  enter() {
+  enter(kind) {
     setAmbience('night');
+    this.kind = kind || 'eyes';
     this.baaDone = false;
     this.lineDone = false;
+    // in the 'hundred' ending the sheep is late. it comes anyway.
+    this.sheepX = this.kind === 'hundred' ? W + 30 : 158;
+    this.sheepHere = this.kind !== 'hundred';
   },
   update(dt) {
     if (counting.flashT > 0) counting.flashT -= dt;
-    if (sceneTime > 3 && !this.baaDone) { this.baaDone = true; sfxBaa(1.15); }
-    if (sceneTime > 5 && !this.lineDone) { this.lineDone = true; flash(SCRIPT.coda1, 5); }
-    if (sceneTime > 26 || (sceneTime > 14 && pressed['action'])) goto_('title');
+    if (this.kind === 'hundred' && !this.sheepHere && sceneTime > 6) {
+      this.sheepX -= dt * 22;
+      if (this.sheepX <= 158) { this.sheepX = 158; this.sheepHere = true; sfxBaa(1.15); }
+    }
+    if (sceneTime > 3 && !this.baaDone && this.sheepHere) { this.baaDone = true; sfxBaa(1.15); }
+    if (sceneTime > 5 && !this.lineDone) {
+      this.lineDone = true;
+      flash(this.kind === 'hundred' ? SCRIPT.coda100 : this.kind === 'name' ? SCRIPT.codaName : SCRIPT.coda1, 6);
+    }
+    if (sceneTime > 28 || (sceneTime > 16 && pressed['action'])) goto_('title');
   },
   draw() {
     // a warm little night. the fence. two of them on it.
@@ -3468,17 +3754,29 @@ SCENES.coda = {
     // the kid, sitting on the rail. breathing.
     const breathe = Math.sin(T * 1.1) > 0 ? 1 : 0;
     drawKid(142, 98 - breathe, 0, { pj: true, sit: true });
-    // one sheep, red scarf, sitting beside. uncounted.
-    drawSheep(158, 102 - (Math.sin(T * 1.1 + 0.4) > 0 ? 1 : 0), { lying: true, scarf: true, body: '#efe9df', face: '#2a2430', darkShade: '#c9c4b8' });
+    // one sheep, red scarf. beside them, or on its way.
+    if (this.sheepHere) {
+      drawSheep(158, 102 - (Math.sin(T * 1.1 + 0.4) > 0 ? 1 : 0), { lying: true, scarf: true, body: '#efe9df', face: '#2a2430', darkShade: '#c9c4b8' });
+    } else if (this.sheepX < W + 20) {
+      drawSheep(this.sheepX, 115, { scarf: true, body: '#efe9df', face: '#2a2430', bob: Math.sin(T * 6) * 0.6 });
+    }
     // the line, then the card
     if (counting.flashText && counting.flashT > 0) {
       const lines = wrapText(counting.flashText, 46);
-      lines.forEach((ln, i) => drawText(ln, W / 2, 56 + i * 9, '#b8a888', { align: 'center' }));
+      lines.forEach((ln, i) => drawText(ln, W / 2, 52 + i * 9, '#b8a888', { align: 'center' }));
     }
-    if (sceneTime > 12) {
-      drawText('1 SHEEP.', W / 2, 74, '#e8e4d0', { align: 'center' });
+    if (sceneTime > 13) {
+      if (this.kind === 'name') {
+        drawText('1 SHEEP.', W / 2, 70, '#e8e4d0', { align: 'center' });
+        drawText('2 KIDS.', W / 2, 82, '#d9a5a0', { align: 'center' });
+      } else if (this.kind === 'hundred') {
+        drawText('100 SHEEP.', W / 2, 70, '#e8e4d0', { align: 'center' });
+        drawText('THEN ONE MORE.', W / 2, 82, '#b8a888', { align: 'center' });
+      } else {
+        drawText('1 SHEEP.', W / 2, 74, '#e8e4d0', { align: 'center' });
+      }
     }
-    if (sceneTime > 15) {
+    if (sceneTime > 16) {
       drawText('for everyone still counting', W / 2, 150, '#4a4468', { align: 'center' });
       drawText('goodnight', W / 2, 162, '#3a3654', { align: 'center' });
     }
@@ -3505,6 +3803,9 @@ const SCRIPT = {
     "Okay. Count one hundred sheep. That's the rule. I didn't make it up.",
     "Eyes closed. No skipping. Skipping is basically cheating.",
   ],
+  nightlight: "The nightlight burned out in October. We never got a new one. I said I didn't need it. I say a lot of stuff.",
+  teddy: "Mr. Buttons. His eye came off in the wash and mom sewed an X. He's seen everything and he's still here. Respect.",
+  blocks: "My old counting blocks. One, two, three. Counting used to be this small. It used to fit in one hand.",
 
   /* the count, night one */
   countIntro: ["One hundred sheep. Here we go."],
@@ -3536,8 +3837,11 @@ const SCRIPT = {
   /* dream 2: the hallway */
   d2a: "A hallway. School's hallway, sort of. If school held its breath.",
   d2b: "The lights hum like they're deciding something. The doors don't have rooms behind them. You can tell.",
-  d2c: "The sheep face the walls. When I walk past, they stop facing the walls. I don't look back anymore.",
-  d2d: "There's a door at the end with a 100 on it. Of course there is.",
+  d2loop1: "I passed that drawing already. Or its twin. The handles are all grown-up height here. ...All of them?",
+  d2loop2: "Okay. The hallway repeats. The dark behind me doesn't. Find the door a kid can open.",
+  d2wrong1: "Locked. Or worse: not really a door. Something baa'd behind it and I'm choosing not to think about that.",
+  d2wrong2: "Nope. The handle's too high anyway. Sam-height doors. Look for Sam-height doors.",
+  d2found: "This one. The handle's at MY height. And it's already open a crack, like someone left it for me.",
 
   /* dream 3: the pasture */
   d3intro: ["The pasture. Hundreds of them. All standing. All looking.", "Fine. I'll count. It's the only thing I'm good at."],
@@ -3547,21 +3851,29 @@ const SCRIPT = {
   d3count3: "It's so quiet here it makes a sound.",
   d3door: "My bedroom door. Out here. Locked. ...I could knock.",
   d3knock: "...Something knocked back.",
-  d3bus: "Five sheep at a bus stop. There's no bus. There's no road. They're really committed.",
+  d3bus: "Sheep at a bus stop. There's no bus. There's no road. They're really committed. ...How many are there?",
+  d3busFive: "Five. There were five. ...Now there's six. That's what I get for counting.",
+  d3busSix: "Six? It was five until I said that. This place counts back.",
+  d3busRefuse: "Sam said you can't count sheep for real. They all look the same. ...Good. I'm learning.",
+  d3float: "Some of them float now. Nobody down here is making a big deal out of it, so I won't either.",
+  d3statue: "A statue of a sheep. Taller than my house. Somebody built this. Somebody WORSHIPPED this. I'm not asking who.",
   d3red: "That one's facing the wrong way. That one's wearing- I'm going to go look. I always go look.",
   d3plankSee: "It went across the creek. Over the plank. Obviously it went over the plank.",
   d3plank: "My feet won't. It's just a board. It's just water. My feet won't.",
-  d3wool: "Wool. Everywhere. And the grass is the wrong color underneath. Sheep don't cross the creek. Something crosses to THEM.",
-  d3surface: "The static is standing up. The static is IT. RUN.",
+  d3wool: "Wool. Everywhere. The grass is the wrong color underneath. Something eats sheep out here. ...The Butcher. That's what I'd call a thing that does this.",
+  d3surface: "The static is standing up. It has a sheep's head. THE BUTCHER. RUN.",
   ch_caught: "COLD. GET UP. RUN.",
-  ch_eat: "IT STOPPED TO FEED. RUN.",
+  ch_eat: "THE BUTCHER STOPPED TO FEED. RUN.",
   d3wake: "it's always 1:00.",
 
   /* morning */
   morningIntro: ["Morning. Allegedly.", "The kitchen's grayer than my dream was. That feels backwards."],
   momAfter: "Mom's got hospital-grade tired. We match now.",
+  byeSay: "Bye, mom. Out loud. With my whole voice.",
+  byeAfter: "She heard me. She looked like she woke up for one second. Worth it.",
+  byeNot: "I did the wave at her back. The wave doesn't count. I know the wave doesn't count.",
   cereal: "The milk's fine. Everything's fine. We're a very fine house.",
-  leaveHouse: "Bye mom. Say it back. ...The toaster popped. Close enough.",
+  leaveHouse: "Okay. School. Where everything is normal and fine.",
 
   /* the walk */
   st_hoods: "Everybody walks to school in a clump now. Gray hoods. Nobody talks. A clump.",
@@ -3579,10 +3891,15 @@ const SCRIPT = {
   sc_baacap2: "(that means: he's at peace.)",
   sc_baacap3: "If one more person baas at me, I'm going to scream.",
   sc_blink: "If I blink slow, they're there. If I blink fast, they're there faster.",
-  sc_longblink: "That blink lasted too long. Something was standing in it. Counting.",
+  sc_longblink: "That blink lasted too long. Something with a sheep's head was standing in it. Counting on its fingers. It doesn't have fingers.",
+  sc_drawings: "Everyone drew MY SUMMER. One of them is just black crayon. All of it. Corner to corner. Teacher hung it up anyway. Teachers are brave.",
   sc_note: [
-    "The counselor gave me a folded note. I'm keeping it folded.",
-    "Folded means it hasn't happened yet.",
+    "The counselor gave me a folded note.",
+  ],
+  noteFold: ["I'm keeping it folded. Folded means it hasn't happened yet."],
+  noteOpen: [
+    "...I read it. It happened. It already happened, didn't it.",
+    "Reading it didn't make it more true. That's not how true works. Okay. Okay.",
   ],
 
   /* recess */
@@ -3632,9 +3949,17 @@ const SCRIPT = {
     "Olly olly oxen free anyway, Sam. Come home anyway.",
   ],
   goodDark: ["For the first time in forever: nothing. Just dark. Good dark."],
+  sayName: [
+    "Sam.",
+    "Out loud. With my whole voice. Like bye-mom. Like a real word.",
+    "Sam Sam Sam. The dark didn't eat it. Names are too heavy for the dark to carry off.",
+    "Olly olly oxen free, Sam. Nobody loses. Come home whenever.",
+  ],
 
   /* coda */
   coda1: "One sheep. That's enough tonight. Just the one.",
+  coda100: "He took the long way. He always takes the long way. Showoff.",
+  codaName: "I can say it now. It costs one breath. It gives back everything.",
 };
 
 /* ---------------- main loop ---------------- */
@@ -3649,6 +3974,7 @@ function frame(now) {
 
   updateFade(dt);
   updateCine(dt);
+  updateChoice();
   updateTextbox(dt);
   if (scene && scene.update && fade.v < 1) scene.update(dt);
 
@@ -3657,6 +3983,7 @@ function frame(now) {
   if (scene && scene.draw) scene.draw();
   drawCine();
   drawTextbox();
+  drawChoice();
   drawFade();
 
   pressed = {};
@@ -3672,7 +3999,7 @@ requestAnimationFrame((t) => { last = t; requestAnimationFrame(frame); });
 
 // tiny hook for automated testing
 window.__sheep = {
-  G, counting, SCENES,
+  G, counting, SCENES, choice,
   goto: hardGoto,
   scene: () => sceneName,
   textActive: () => textboxActive(),
