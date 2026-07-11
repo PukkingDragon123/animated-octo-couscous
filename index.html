@@ -356,6 +356,29 @@ function sfxWrongBaa() {
   }
 }
 
+// wet, short, wrong. used when It feeds.
+function sfxSplat() {
+  if (!AC || muted) return;
+  const t = AC.currentTime;
+  const src = AC.createBufferSource(); src.buffer = noiseBuf();
+  const lp = AC.createBiquadFilter(); lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(900, t);
+  lp.frequency.exponentialRampToValueAtTime(200, t + 0.16);
+  const g = AC.createGain();
+  env(g, t, 0.003, 0.22, 0.04, 0.08, 0.08, t + 0.2);
+  src.connect(lp); lp.connect(g); g.connect(master);
+  src.start(t); src.stop(t + 0.22);
+  // a bleat that cuts off mid-note
+  const o = AC.createOscillator(), og = AC.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(240, t);
+  o.frequency.linearRampToValueAtTime(180, t + 0.12);
+  og.gain.setValueAtTime(0.12, t);
+  og.gain.setValueAtTime(0.0001, t + 0.12);
+  o.connect(og); og.connect(master);
+  o.start(t); o.stop(t + 0.13);
+}
+
 // deliberately ugly little alarm
 function sfxAlarm() {
   if (!AC || muted) return;
@@ -626,18 +649,20 @@ function grain(alpha) {
 // the moon, with soft glow halo, rounded rim and craters
 function drawMoon(x, y, s, base, crater) {
   base = base || '#e8e4d0'; crater = crater || '#cfcab2';
-  // halo: two dithered rings, no hard box
-  ctx.globalAlpha = 0.14;
-  ditherRect(x - 5, y - 5, s + 10, 5, base, 3);
-  ditherRect(x - 5, y + s, s + 10, 5, base, 3);
-  ditherRect(x - 5, y, 5, s, base, 3);
-  ditherRect(x + s, y, 5, s, base, 3);
-  ctx.globalAlpha = 0.3;
-  ditherRect(x - 2, y - 2, s + 4, 2, base, 2);
-  ditherRect(x - 2, y + s, s + 4, 2, base, 2);
-  ditherRect(x - 2, y, 2, s, base, 2);
-  ditherRect(x + s, y, 2, s, base, 2);
-  ctx.globalAlpha = 1;
+  // halo: two dithered rings, no hard box (only worth it on big moons)
+  if (s >= 16) {
+    ctx.globalAlpha = 0.14;
+    ditherRect(x - 5, y - 5, s + 10, 5, base, 3);
+    ditherRect(x - 5, y + s, s + 10, 5, base, 3);
+    ditherRect(x - 5, y, 5, s, base, 3);
+    ditherRect(x + s, y, 5, s, base, 3);
+    ctx.globalAlpha = 0.3;
+    ditherRect(x - 2, y - 2, s + 4, 2, base, 2);
+    ditherRect(x - 2, y + s, s + 4, 2, base, 2);
+    ditherRect(x - 2, y, 2, s, base, 2);
+    ditherRect(x + s, y, 2, s, base, 2);
+    ctx.globalAlpha = 1;
+  }
   // disc with knocked corners
   px(x + 2, y, s - 4, s, base);
   px(x, y + 2, s, s - 4, base);
@@ -814,7 +839,7 @@ function drawKid(x, y, frame, opts) {
   const pants = opts.pj ? '#5a6494' : '#4a4a5e';
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y));
-  if (opts.flip) { ctx.scale(-1, 1); ctx.translate(-8, 0); }
+  if (opts.flip) { ctx.scale(-1, 1); ctx.translate(-10, 0); }
   if (opts.lying) {
     // lying in bed, drawn horizontal: just head + blanket handled by scene
     px(0, 0, 5, 5, skin);
@@ -824,42 +849,63 @@ function drawKid(x, y, frame, opts) {
     ctx.restore();
     return;
   }
-  // head
-  px(1, 0, 6, 5, skin);
-  px(1, 4, 6, 1, shadeOf(skin));
-  px(0, 0, 8, 2, hair); px(0, 2, 1, 2, hair); px(7, 2, 1, 1, hair);
-  px(1, 0, 5, 1, liteOf(hair));
-  px(2, 1, 1, 1, hair); // fringe notch
-  // eyes (dark circles under from insomnia)
-  if (!opts.eyesClosed) {
-    px(3, 3, 1, 1, '#1a1420'); px(6, 3, 1, 1, '#1a1420');
-  } else {
-    px(3, 3, 1, 1, '#8a6a58'); px(6, 3, 1, 1, '#8a6a58');
-  }
-  if (opts.tired) { px(3, 4, 1, 1, '#9a8ab0'); px(6, 4, 1, 1, '#9a8ab0'); }
-  // body with fold shading
-  px(1, 5, 6, 5, shirt);
-  px(1, 9, 6, 1, shadeOf(shirt));
-  px(1, 5, 6, 1, liteOf(shirt));
-  px(4, 6, 1, 3, shadeOf(shirt)); // center fold
-  if (opts.pj) { px(1, 7, 6, 1, liteOf(shirt)); } // pajama stripe
-  // arms
-  px(0, 6, 1, 3, shirt); px(7, 6, 1, 3, shadeOf(shirt));
-  px(0, 9, 1, 1, skin); px(7, 9, 1, 1, shadeOf(skin)); // hands
-  // legs walk cycle + shoes
+  // ---- taller kid: 10 x 20, gaunt ----
   const f = Math.floor(frame) % 4;
   const shoe = '#241d2c';
-  if (opts.sit) {
-    px(1, 10, 6, 2, pants);
-  } else if (f === 0 || f === 2) {
-    px(2, 10, 2, 4, pants); px(5, 10, 2, 4, pants);
-    px(2, 13, 2, 1, shoe); px(5, 13, 2, 1, shoe);
-  } else if (f === 1) {
-    px(1, 10, 2, 4, pants); px(5, 10, 2, 3, pants); px(6, 13, 2, 1, pants);
-    px(1, 13, 2, 1, shoe); px(6, 13, 2, 1, shoe);
+  const sockets = opts.pale ? '#8a7a98' : '#9a8ab0';
+  const hunch = opts.tired || opts.pale ? 1 : 0;
+  // hair: messy cap with strands
+  px(1, 0 + hunch, 7, 3, hair);
+  px(1, 0 + hunch, 6, 1, liteOf(hair));
+  px(0, 1 + hunch, 1, 3, hair); px(8, 1 + hunch, 1, 2, hair);
+  px(2, 3 + hunch, 1, 1, hair); px(6, 3 + hunch, 1, 1, hair); // fringe strands
+  // face
+  px(1, 2 + hunch, 7, 5, skin);
+  px(1, 6 + hunch, 7, 1, shadeOf(skin));       // jaw
+  px(1, 2 + hunch, 1, 4, shadeOf(skin));       // cheek shadow
+  if (!opts.eyesClosed) {
+    px(3, 4 + hunch, 1, 1, '#12101c'); px(6, 4 + hunch, 1, 1, '#12101c');
   } else {
-    px(2, 10, 2, 3, pants); px(1, 13, 2, 1, pants); px(5, 10, 2, 4, pants);
-    px(1, 13, 2, 1, shoe); px(5, 13, 2, 1, shoe);
+    px(3, 4 + hunch, 2, 1, shadeOf(skin)); px(6, 4 + hunch, 1, 1, shadeOf(skin));
+  }
+  if (opts.tired || opts.pale) {
+    // hollow sockets
+    px(3, 5 + hunch, 1, 1, sockets); px(6, 5 + hunch, 1, 1, sockets);
+    px(3, 3 + hunch, 1, 1, shadeOf(skin)); px(6, 3 + hunch, 1, 1, shadeOf(skin));
+  }
+  px(4, 5 + hunch, 1, 1, shadeOf(skin)); // nose
+  // neck
+  px(4, 7 + hunch, 2, 1, shadeOf(skin));
+  // torso, thin
+  px(2, 8, 6, 6, shirt);
+  px(2, 8, 6, 1, liteOf(shirt));
+  px(2, 13, 6, 1, shadeOf(shirt));
+  px(5, 9, 1, 4, shadeOf(shirt));              // fold
+  px(7, 9, 1, 5, shadeOf(shirt));              // side shade
+  if (opts.pj) { px(2, 10, 6, 1, liteOf(shirt)); px(2, 12, 6, 1, liteOf(shirt)); }
+  // arms swing opposite the legs
+  const swing = f === 1 ? 1 : f === 3 ? -1 : 0;
+  px(1 - (swing > 0 ? 1 : 0), 9, 1, 5, shirt);
+  px(8 + (swing < 0 ? 1 : 0), 9, 1, 5, shadeOf(shirt));
+  px(1 - (swing > 0 ? 1 : 0), 14, 1, 1, skin);
+  px(8 + (swing < 0 ? 1 : 0), 14, 1, 1, shadeOf(skin));
+  // legs: long, thin, striding
+  if (opts.sit) {
+    px(2, 14, 6, 2, pants);
+    px(2, 16, 2, 3, pants); px(6, 16, 2, 3, pants);
+    px(2, 18, 2, 1, shoe); px(6, 18, 2, 1, shoe);
+  } else if (f === 0 || f === 2) {
+    px(3, 14, 2, 5, pants); px(5, 14, 2, 5, pants);
+    px(3, 14, 1, 5, liteOf(pants));
+    px(3, 19, 2, 1, shoe); px(5, 19, 2, 1, shoe);
+  } else if (f === 1) {
+    px(2, 14, 2, 3, pants); px(1, 17, 2, 2, pants);
+    px(5, 14, 2, 4, pants); px(6, 18, 2, 1, pants);
+    px(1, 19, 2, 1, shoe); px(6, 19, 2, 1, shoe);
+  } else {
+    px(5, 14, 2, 3, pants); px(6, 17, 2, 2, pants);
+    px(3, 14, 2, 4, pants); px(2, 18, 2, 1, pants);
+    px(6, 19, 2, 1, shoe); px(2, 19, 2, 1, shoe);
   }
   ctx.restore();
 }
@@ -1163,6 +1209,12 @@ SCENES.title = {
     const jt = (T * 0.25) % 1;
     const p = sheepArc(jt);
     drawSheep(p.x, p.y - 10, { bob: 0 });
+    // every so often, something in the far field is watching
+    const cyc = T % 24;
+    if (cyc > 23.6) {
+      px(46, 114, 2, 1, '#efe9df');
+      px(52, 114, 2, 1, '#efe9df');
+    }
     // title counts itself in, at the counting cadence
     if (sceneTime > 0.9) drawText('1 SHEEP', W / 2, 48, '#e8e4ec', { align: 'center' });
     if (sceneTime > 2.0) drawText('2 SHEEP', W / 2, 60, '#c9c4d8', { align: 'center' });
@@ -1467,6 +1519,14 @@ function drawCountingWorld() {
   const mx = 246, my = big ? 30 : 24;
   drawMoon(mx, my, ms, hexLerp('#e8e4d0', '#f2f0e6', t), hexLerp('#cfcab2', '#dcd3c4', t));
 
+  // distant hills on the horizon
+  ctx.fillStyle = hexLerp('#0d0d2a', '#d0c7b8', t);
+  for (let i = 0; i < 7; i++) {
+    const hx = i * 56 - 20, hw = 70, hh = 6 + (i * 37) % 8;
+    ctx.beginPath();
+    ctx.moveTo(hx, 128); ctx.lineTo(hx + hw / 2, 128 - hh); ctx.lineTo(hx + hw, 128);
+    ctx.closePath(); ctx.fill();
+  }
   // ground texture: sparse grass tufts, fading with the palette
   px(0, 152, W, 28, groundLo);
   ditherRect(0, 150, W, 4, groundLo, 2);
@@ -1759,7 +1819,7 @@ SCENES.bedroom = {
     drawText('11:58', 40, 89, '#8fa1d9');
     // the kid
     shadowUnder(this.wk.x, BEDROOM.groundY, 8);
-    drawKid(this.wk.x, BEDROOM.groundY - 14, this.wk.frame, { pj: true, tired: true, flip: this.wk.facing < 0 });
+    drawKid(this.wk.x, BEDROOM.groundY - 20, this.wk.frame, { pj: true, tired: true, flip: this.wk.facing < 0 });
     drawInteractHint(this.wk, '#8fa1d9');
     grain(0.03);
     vignette(0.45);
@@ -1819,7 +1879,7 @@ SCENES.dream1 = {
     drawText('2:', 44, 89, DP.dark);
     drawSheepIcon(58, 89, DP.dark);
     shadowUnder(this.wk.x, 132, 8);
-    drawKid(this.wk.x, 132 - 14, this.wk.frame, { pj: true, pale: true, flip: this.wk.facing < 0 });
+    drawKid(this.wk.x, 132 - 20, this.wk.frame, { pj: true, pale: true, flip: this.wk.facing < 0 });
     drawInteractHint(this.wk, DP.dark);
     // fluorescent flicker overlay
     if (fl) { ctx.fillStyle = 'rgba(233,236,216,0.25)'; ctx.fillRect(0, 0, W, H); }
@@ -1948,10 +2008,13 @@ SCENES.dream2 = {
     for (const s of this.sheep) {
       const sx = s.x - cam;
       if (sx < -30 || sx > W + 10) continue;
+      shadowUnder(sx + 1, 143, 16);
       drawSheep(sx, 130, { stare: s.snapped, flip: !s.snapped, body: DP.white, face: DP.dark, eyes: s.snapped ? DP.black : DP.white });
     }
-    drawKid(this.wk.x - cam, 138 - 14, this.wk.frame, { pj: true, pale: true, flip: this.wk.facing < 0 });
+    shadowUnder(this.wk.x - cam, 138, 10);
+    drawKid(this.wk.x - cam, 138 - 20, this.wk.frame, { pj: true, pale: true, flip: this.wk.facing < 0 });
     drawInteractHint(this.wk, DP.dark);
+    grain(0.05);
     vignette(0.2);
   },
 };
@@ -1990,6 +2053,7 @@ SCENES.dream3 = {
             else if (self.knockT < 0) { sfxKnock(false); self.knockT = 1.4; }
           } },
         { x: 760, w: 40, label: 'BUS STOP', once: true, onInteract: () => { self.seen.bus = true; say(SCRIPT.d3bus); } },
+        { x: this.creekX - 132, w: 28, label: 'WOOL', once: true, onInteract: () => { sfxHeartbeat(); say(SCRIPT.d3wool); } },
       ],
     });
     this.wk.groundHintY = 118;
@@ -2114,6 +2178,15 @@ SCENES.dream3 = {
       drawText('BUS', busX + 1, 93, '#22251f', { align: 'center' });
       for (let i = 0; i < 5; i++) drawSheep(busX + 12 + i * 20, 145, { flip: true, body: '#f2f0e6', face: '#3f4438' });
     }
+    // the feeding site: wool everywhere, the grass wrong-colored underneath
+    const wx = this.creekX - 132 - cam;
+    if (wx > -40 && wx < W + 20) {
+      speckle(wx - 6, 148, 40, 10, '#7a2020', 26, 55);
+      speckle(wx - 4, 146, 36, 12, '#5a1818', 16, 56);
+      speckle(wx - 8, 144, 44, 14, '#f2f0e6', 22, 57);
+      px(wx + 4, 142, 3, 2, '#f2f0e6'); px(wx + 18, 145, 4, 2, '#f2f0e6');
+      px(wx + 11, 149, 2, 2, '#e0d8c9');
+    }
     // the creek: vertical band of black static, one plank
     const ckX = this.creekX - cam;
     if (ckX > -80 && ckX < W + 40) {
@@ -2150,7 +2223,7 @@ SCENES.dream3 = {
       ctx.fillRect(0, 0, W, H);
     }
     shadowUnder(this.wk.x - cam, 158, 8);
-    drawKid(this.wk.x - cam, 158 - 14, this.wk.frame, { pj: true, pale: true, flip: this.wk.facing < 0 });
+    drawKid(this.wk.x - cam, 158 - 20, this.wk.frame, { pj: true, pale: true, flip: this.wk.facing < 0 });
     drawInteractHint(this.wk, '#3a352d');
     if (counting.flashText && counting.flashT > 0) {
       const lines = wrapText(counting.flashText, 46);
@@ -2187,8 +2260,29 @@ SCENES.chase = {
     this.hb = 0.4;
     this.endT = -1;
     this.alarmed = false;
+    // stragglers on the path. It stops for them. that's your head start.
+    this.stragglers = [{ x: 850 }, { x: 590 }, { x: 350 }].map(s => ({ ...s, state: 'idle', t: 0 }));
+    this.itPauseT = 0;
+    this.blood = [];   // {x, y, vx, vy}
+    this.stains = [];  // {x, y, c}
+    this.eatSaid = false;
     setCine(true);
     flash('RUN.', 2);
+  },
+  spawnBlood(x, y) {
+    for (let i = 0; i < 26; i++) {
+      this.blood.push({
+        x: x + rand(-2, 2), y: y + rand(-3, 3),
+        vx: rand(-46, 46), vy: rand(-80, -6),
+      });
+    }
+    // wool scatters too
+    for (let i = 0; i < 8; i++) {
+      this.blood.push({
+        x: x + rand(-2, 2), y: y + rand(-4, 0),
+        vx: rand(-30, 30), vy: rand(-60, -10), wool: true,
+      });
+    }
   },
   update(dt) {
     if (counting.flashT > 0) counting.flashT -= dt;
@@ -2229,9 +2323,32 @@ SCENES.chase = {
       }
     }
     counting.shake = Math.max(0, counting.shake - dt * 2);
+    // blood physics
+    for (const b of this.blood) {
+      b.x += b.vx * dt; b.y += b.vy * dt; b.vy += 260 * dt;
+      if (b.y >= this.groundY - 1) {
+        this.stains.push({ x: b.x, y: this.groundY - 1 + rand(0, 3), c: b.wool ? '#e6e0d2' : (chance(0.4) ? '#6a1717' : '#8a1f1f') });
+        b.dead = true;
+      }
+    }
+    this.blood = this.blood.filter(b => !b.dead);
+    // stragglers: It stops to feed. don't waste it.
+    for (const s of this.stragglers) {
+      if (s.state === 'idle' && this.it.x - s.x < 8) {
+        s.state = 'taken'; s.t = 0;
+        this.itPauseT = 0.85;
+        sfxSplat();
+        this.spawnBlood(s.x + 9, this.groundY - 10);
+        if (!this.eatSaid) { this.eatSaid = true; flash(SCRIPT.ch_eat, 2.6); }
+      } else if (s.state === 'taken') {
+        s.t += dt;
+        if (s.t > 0.5) s.state = 'gone';
+      }
+    }
     // It gains
     this.it.spd += dt * 4.2;
-    this.it.x -= this.it.spd * dt;
+    if (this.itPauseT > 0) this.itPauseT -= dt;
+    else this.it.x -= this.it.spd * dt;
     if (this.it.x - k.x < 9) {
       this.caught++;
       this.staticT = 0.5;
@@ -2290,6 +2407,33 @@ SCENES.chase = {
       px(hx + 6, 144, 3, 8, '#8a7f6c');
       shadowUnder(hx - 8, 154, 24);
     }
+    // ground stains: blood and wool where It fed
+    for (const st of this.stains) {
+      const sx = st.x - cam;
+      if (sx < -4 || sx > W + 4) continue;
+      px(sx, st.y, 1, 1, st.c);
+    }
+    // stragglers: too slow, too still
+    for (const s of this.stragglers) {
+      const sx = s.x - cam;
+      if (sx < -30 || sx > W + 20) continue;
+      if (s.state === 'idle') {
+        shadowUnder(sx + 1, this.groundY, 16);
+        drawSheep(sx, this.groundY - 13, { stare: true, body: '#e6e0d2', face: '#2a2620', eyes: '#e6e0d2' });
+      } else if (s.state === 'taken') {
+        // yanked upward into the static
+        const lift = s.t * 46;
+        ctx.globalAlpha = clamp(1 - s.t * 1.8, 0, 1);
+        drawSheep(sx, this.groundY - 13 - lift, { stare: true, body: '#e6e0d2', face: '#2a2620', eyes: '#8a1f1f', bob: Math.sin(T * 40) * 1.5 });
+        ctx.globalAlpha = 1;
+      }
+    }
+    // blood in the air
+    for (const b of this.blood) {
+      const bx = b.x - cam;
+      if (bx < -4 || bx > W + 4) continue;
+      px(bx, b.y, 1, 1, b.wool ? '#e6e0d2' : '#8a1f1f');
+    }
     // the door home, far left: the only warm thing in the dream
     const dx = this.doorX - cam;
     if (dx > -40 && dx < W) {
@@ -2302,7 +2446,7 @@ SCENES.chase = {
     }
     // the kid, running for it
     shadowUnder(k.x - cam, this.groundY, 8);
-    drawKid(k.x - cam, this.groundY - 14 + k.y, k.stumbleT > 0 ? 0 : k.frame, { pj: true, pale: true, flip: true });
+    drawKid(k.x - cam, this.groundY - 20 + k.y, k.stumbleT > 0 ? 0 : k.frame, { pj: true, pale: true, flip: true });
     // It
     const ix = this.it.x - cam;
     if (ix > -30 && ix < W + 40) {
@@ -2332,7 +2476,8 @@ SCENES.chase = {
       }
     }
     if (counting.flashText && counting.flashT > 0) {
-      drawTextBig(counting.flashText, W / 2, 52, '#d8cfc0', 2, 1);
+      if (counting.flashText.length <= 26) drawTextBig(counting.flashText, W / 2, 52, '#d8cfc0', 2, 1);
+      else wrapText(counting.flashText, 48).forEach((ln, i) => drawText(ln, W / 2, 52 + i * 9, '#d8cfc0', { align: 'center' }));
     }
     if (sceneTime < 3.5) drawText('Z TO JUMP', W / 2, 160, '#b8ad9c', { align: 'center' });
     grain(0.09);
@@ -2376,36 +2521,95 @@ SCENES.morning = {
     const M = { wall: '#b9b4a0', wallLo: '#aca795', floor: '#8f8c7e', dark: '#3b4048', mid: '#6f7d88' };
     px(0, 0, W, 124, M.wall);
     px(0, 44, W, 80, M.wallLo);
+    ditherRect(0, 42, W, 4, M.wallLo, 2);
+    speckle(0, 6, W, 112, shadeOf(M.wallLo), 60, 81);
+    px(0, 120, W, 4, shadeOf(M.wallLo));
+    // checkerboard tile floor
     px(0, 124, W, 56, M.floor);
     px(0, 122, W, 2, M.dark);
-    // window over the counter: flat gray light
-    px(24, 22, 40, 34, M.dark);
+    ctx.fillStyle = shadeOf(M.floor);
+    for (let ty = 0; ty < 5; ty++)
+      for (let tx = 0; tx < 24; tx++)
+        if ((tx + ty) % 2 === 0) ctx.fillRect(tx * 14, 124 + ty * 12, 14, 12);
+    ctx.fillStyle = liteOf(M.floor);
+    for (let ty = 0; ty < 5; ty++) ctx.fillRect(0, 124 + ty * 12, W, 1);
+    // upper cabinets with handles
+    for (let i = 0; i < 3; i++) {
+      px(102 + i * 30, 30, 28, 26, '#a29d89');
+      px(102 + i * 30, 30, 28, 1, liteOf('#a29d89'));
+      px(103 + i * 30, 31, 26, 24, '#948f7b');
+      px(114 + i * 30, 42, 2, 4, M.dark);
+    }
+    // window over the counter: flat gray light + shaft
+    px(22, 20, 44, 38, M.dark);
+    px(24, 22, 40, 34, '#948f7b');
     px(26, 24, 36, 30, '#d8d3bd');
+    px(43, 24, 2, 30, '#948f7b'); px(26, 38, 36, 2, '#948f7b');
+    ctx.globalAlpha = 0.12;
+    ctx.fillStyle = '#d8d3bd';
+    ctx.beginPath();
+    ctx.moveTo(26, 58); ctx.lineTo(62, 58); ctx.lineTo(80, 124); ctx.lineTo(36, 124);
+    ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+    // wall clock
+    px(210, 26, 14, 14, '#a29d89');
+    px(211, 27, 12, 12, '#d8d3bd');
+    px(216, 29, 1, 5, M.dark); px(217, 33, 3, 1, M.dark);
+    // mom at the sink first, so the counter hides her legs
+    px(36, 72, 8, 6, '#8a7a66');
+    px(36, 72, 8, 1, liteOf('#8a7a66'));
+    px(35, 78, 10, 17, '#7a7488');
+    px(35, 78, 10, 1, liteOf('#7a7488'));
+    px(43, 80, 2, 13, shadeOf('#7a7488'));
+    px(36, 95, 3, 10, M.dark); px(41, 95, 3, 10, M.dark);
     // counter with sink, left
     px(8, 96, 88, 6, '#a29d89');
+    px(8, 96, 88, 1, liteOf('#a29d89'));
     px(10, 102, 84, 30, '#7d7868');
+    px(10, 102, 84, 2, shadeOf('#7d7868'));
+    px(28, 112, 2, 4, M.dark); px(58, 112, 2, 4, M.dark); // cabinet handles
     px(60, 92, 20, 4, M.mid);
-    // toaster
+    px(62, 90, 2, 2, M.mid); // faucet
+    // toaster with slot
     px(76, 86, 16, 10, M.mid);
-    // two coffee cups. one untouched.
+    px(76, 86, 16, 1, liteOf(M.mid));
+    px(79, 87, 10, 1, M.dark);
+    // fridge, humming, one magnet drawing nobody looks at
+    px(238, 58, 30, 66, '#a8a390');
+    px(238, 58, 30, 1, liteOf('#a8a390'));
+    px(239, 59, 28, 30, '#b3ae9a');
+    px(239, 92, 28, 31, '#b3ae9a');
+    px(263, 66, 2, 8, M.dark); px(263, 96, 2, 8, M.dark);
+    px(244, 68, 8, 10, '#d8d3bd'); // the drawing on the fridge
+    px(246, 71, 2, 3, '#a34a3f'); px(249, 71, 2, 3, '#6f7d88'); // two stick kids
+    // two coffee cups. one untouched, gone cold.
     px(30, 90, 6, 6, '#d8d3bd'); px(42, 90, 6, 6, '#d8d3bd');
     px(43, 88, 4, 1, '#8f8c7e');
-    // mom at the sink, facing away
-    px(36, 68, 8, 5, '#8a7a66');
-    px(35, 73, 10, 16, '#7a7488');
-    px(36, 89, 3, 12, M.dark); px(41, 89, 3, 12, M.dark);
+    // steam off only one of them
+    for (let i = 0; i < 3; i++) {
+      const st = (T * 0.4 + i * 0.33) % 1;
+      ctx.fillStyle = 'rgba(216,211,189,' + (0.5 * (1 - st)).toFixed(2) + ')';
+      ctx.fillRect(Math.round(32 + Math.sin(T * 2 + i * 2) * 2), Math.round(88 - st * 14), 1, 2);
+    }
     // table, center
     px(130, 108, 64, 4, '#a29d89');
+    px(130, 108, 64, 1, liteOf('#a29d89'));
     px(134, 112, 3, 24, '#7d7868'); px(187, 112, 3, 24, '#7d7868');
-    // cereal bowl
+    shadowUnder(132, 136, 60);
+    // cereal bowl + spoon
     px(152, 102, 12, 6, '#d8d3bd');
+    px(153, 106, 10, 2, shadeOf('#d8d3bd'));
+    px(166, 104, 5, 1, M.mid); px(170, 103, 2, 2, M.mid);
     // door, right
     px(292, 60, 26, 76, M.dark);
     px(294, 62, 22, 72, '#4d5560');
+    px(294, 62, 22, 1, liteOf('#4d5560'));
     px(296, 96, 3, 3, '#d8d3bd');
     // the kid
-    drawKid(this.wk.x, 140 - 14, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
+    shadowUnder(this.wk.x, 140, 10);
+    drawKid(this.wk.x, 140 - 20, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
     drawInteractHint(this.wk, M.dark);
+    grain(0.02);
     vignette(0.18);
   },
 };
@@ -2503,10 +2707,37 @@ SCENES.street = {
       px(sx + 34, 100, 24, 32, '#3b4048');
       drawText('SCHOOL', sx + 46, 50, '#6f7d88', { align: 'center' });
     }
-    // lawns + sidewalk
+    // power poles with sagging lines
+    for (let i = 0; i < Math.ceil(this.wk.len / 240) + 1; i++) {
+      const px1 = i * 240 + 60 - cam, px2 = (i + 1) * 240 + 60 - cam;
+      if (px2 < -20 || px1 > W + 260) continue;
+      px(px1, 34, 3, 106, '#6a6456');
+      px(px1 - 8, 40, 19, 2, '#6a6456');
+      px(px1 - 8, 38, 2, 2, '#3b4048'); px(px1 + 9, 38, 2, 2, '#3b4048');
+      // sagging cable to the next pole
+      ctx.fillStyle = '#55504a';
+      for (let s = 0; s <= 20; s++) {
+        const t2 = s / 20;
+        const cx = lerp(px1 + 2, px2 + 2, t2);
+        const cy = 40 + Math.sin(Math.PI * t2) * 10;
+        if (cx > -2 && cx < W + 2) ctx.fillRect(Math.round(cx), Math.round(cy), 2, 1);
+      }
+    }
+    // lawns + sidewalk with cracks and seams
     px(0, 132, W, 8, '#a9b7a0');
+    speckle(0, 132, W, 8, '#8a9884', 40, 73);
     px(0, 140, W, 40, '#b3ae9a');
     px(0, 139, W, 1, '#6f7d88');
+    ctx.fillStyle = '#9a9584';
+    for (let i = 0; i < Math.ceil(this.wk.len / 64) + 1; i++) {
+      const seam = i * 64 - cam;
+      if (seam >= -2 && seam <= W) ctx.fillRect(Math.round(seam), 140, 1, 40);
+    }
+    for (let i = 0; i < 8; i++) {
+      const crx = ((i * 173) % this.wk.len) - cam;
+      if (crx < -10 || crx > W) continue;
+      px(crx, 148, 1, 3, '#8a8574'); px(crx + 1, 151, 1, 4, '#8a8574'); px(crx, 155, 1, 3, '#8a8574');
+    }
     // crosswalk + guard at 700
     const gx = 700 - cam;
     if (gx > -60 && gx < W) {
@@ -2545,7 +2776,7 @@ SCENES.street = {
       drawSheep(spx, 121, { stare: s.stare, body: '#f2f0e6', face: '#3b4048', eyes: '#f2f0e6' });
     }
     shadowUnder(this.wk.x - cam, 140, 8);
-    drawKid(this.wk.x - cam, 140 - 14, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
+    drawKid(this.wk.x - cam, 140 - 20, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
     drawInteractHint(this.wk, '#3b4048');
     grain(0.02);
     vignette(0.12);
@@ -2764,7 +2995,7 @@ SCENES.school = {
   draw() {
     drawClassroom(this.wk.cam, this.seats, { backRow: this.backRow });
     shadowUnder(this.wk.x - this.wk.cam, 148, 8);
-    drawKid(this.wk.x - this.wk.cam, 148 - 14, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
+    drawKid(this.wk.x - this.wk.cam, 148 - 20, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
     drawInteractHint(this.wk, '#3b4048');
     if (this.blinkFlash > 0) {
       px(0, 0, W, H, '#08060c');
@@ -2841,9 +3072,20 @@ SCENES.recess = {
     for (let yy = 24; yy < 144; yy += 8)
       for (let xx = 222 + ((yy / 8) % 2) * 5; xx < 318; xx += 11)
         px(xx, yy, 9, 1, '#a08a76');
+    // basketball hoop on the wall, net torn
+    px(232, 34, 18, 12, '#d8d3bd');
+    px(233, 35, 16, 10, '#c4bfa8');
+    px(238, 44, 8, 2, '#a34a3f');
+    px(238, 46, 1, 4, '#b3ae9a'); px(241, 46, 1, 3, '#b3ae9a'); px(245, 46, 1, 5, '#b3ae9a');
+    // pavement cracks
+    px(60, 158, 1, 4, '#9a9584'); px(61, 162, 1, 5, '#9a9584'); px(59, 154, 1, 4, '#9a9584');
+    px(190, 148, 1, 3, '#9a9584'); px(191, 151, 1, 4, '#9a9584');
     // the counter, face to the wall
-    px(292, 106, 8, 5, '#e0b48c');
-    px(291, 111, 10, 13, '#8f8c7e');
+    shadowUnder(291, 135, 10);
+    px(292, 104, 8, 6, '#e0b48c');
+    px(292, 102, 8, 3, '#5a4a3a');
+    px(291, 110, 10, 14, '#8f8c7e');
+    px(299, 112, 2, 10, shadeOf('#8f8c7e'));
     px(292, 124, 3, 12, '#3b4048'); px(297, 124, 3, 12, '#3b4048');
     // hiders darting behind things
     for (const h of this.hiders) {
@@ -2869,7 +3111,7 @@ SCENES.recess = {
     if (counting.flashText && counting.flashT > 0) {
       drawText(counting.flashText, 260, 60, '#6f7d88', { align: 'center' });
     }
-    drawKid(this.wk.x - this.wk.cam, 146 - 14, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
+    drawKid(this.wk.x - this.wk.cam, 146 - 20, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
     // sluggishness reads on the sprite: darkening edges
     if (this.slow < 0.8) vignette((1 - this.slow) * 0.5);
   },
@@ -2958,22 +3200,28 @@ SCENES.memory = {
         drawSheep(180 + i * 22 + (i % 3) * 6, 95 + (i % 2) * 4, { flip: i % 2 === 0, body: '#f2f0e6', face: '#4a2c22', bob: Math.sin(T * 2 + i) * 0.8, scale: 0.8 });
       }
       // the kid (younger: no tired eyes)
-      drawKid(120, 138, 0, { flip: false });
-      // SAM: red scarf, gap-tooth grin
+      drawKid(120, 132, 0, { flip: false });
+      // SAM: red scarf, gap-tooth grin. taller in the remembering.
       const sx = this.samX;
       ctx.save();
-      ctx.translate(Math.round(sx), 136);
-      px(1, 0, 6, 5, '#e0b48c');
-      px(0, 0, 8, 2, '#6e4a2a'); px(0, 2, 1, 2, '#6e4a2a'); px(7, 2, 1, 1, '#6e4a2a'); // messy hair
-      px(3, 3, 1, 1, '#1a1420'); px(6, 3, 1, 1, '#1a1420');
-      px(4, 4, 1, 1, '#f2f0e6'); // the gap tooth
-      px(0, 5, 8, 2, '#b7443e'); // the scarf
-      px(6, 6, 3, 1, '#b7443e'); // scarf tail
-      px(1, 7, 6, 5, '#7a9e5a');
+      ctx.translate(Math.round(sx), 132);
+      px(1, 2, 7, 5, '#e0b48c');
+      px(1, 6, 7, 1, shadeOf('#e0b48c'));
+      px(1, 0, 7, 3, '#6e4a2a'); px(0, 1, 1, 3, '#6e4a2a'); px(8, 1, 1, 2, '#6e4a2a');
+      px(1, 0, 6, 1, liteOf('#6e4a2a'));
+      px(3, 4, 1, 1, '#1a1420'); px(6, 4, 1, 1, '#1a1420');
+      px(4, 5, 2, 1, '#f2f0e6'); // the gap tooth
+      px(1, 7, 8, 2, '#b7443e'); // the scarf
+      px(7, 9, 3, 1, '#b7443e'); // scarf tail
+      px(2, 9, 6, 6, '#7a9e5a');
+      px(2, 9, 6, 1, liteOf('#7a9e5a'));
+      px(7, 10, 1, 4, shadeOf('#7a9e5a'));
       const f = this.samRun ? Math.floor(T * 10) % 2 : 0;
-      if (f === 0) { px(2, 12, 2, 4, '#4a2c22'); px(5, 12, 2, 4, '#4a2c22'); }
-      else { px(1, 12, 2, 4, '#4a2c22'); px(5, 12, 2, 3, '#4a2c22'); px(6, 15, 2, 1, '#4a2c22'); }
+      if (f === 0) { px(3, 15, 2, 4, '#4a2c22'); px(5, 15, 2, 4, '#4a2c22'); }
+      else { px(2, 15, 2, 4, '#4a2c22'); px(5, 15, 2, 3, '#4a2c22'); px(6, 18, 2, 1, '#4a2c22'); }
+      px(3, 19, 2, 1, '#2c1a14'); px(5, 19, 2, 1, '#2c1a14');
       ctx.restore();
+      shadowUnder(120, 152, 10); shadowUnder(sx, 152, 10);
       vignette(0.1);
     } else if (this.stage === 3) {
       // eyes closed. black. numbers rise.
@@ -2989,11 +3237,12 @@ SCENES.memory = {
         drawText('Z / SPACE', W / 2, 150, '#4a3626', { align: 'center' });
       }
     } else {
-      // the gray after. same field, day palette.
+      // the gray after. same field, day palette. it was raining by then.
       const cam = this.wk ? this.wk.cam : 0;
-      px(0, 0, W, 110, '#d8d3bd');
+      px(0, 0, W, 110, '#c9c4b0');
       ditherRect(0, 104, W, 8, '#8f8c7e', 2);
-      px(0, 110, W, 70, '#a9b7a0');
+      px(0, 110, W, 70, '#9aa894');
+      speckle(0, 112, W, 66, '#8a9884', 80, 58);
       // the creek, far right, quiet now
       const ckX = 560 - cam;
       px(ckX, 116, 60, 64, '#6f7d88');
@@ -3014,8 +3263,17 @@ SCENES.memory = {
       }
       // no sheep anywhere. the field is empty.
       if (this.wk) {
-        drawKid(this.wk.x - cam, 152 - 14, this.wk.frame, { flip: this.wk.facing < 0 });
+        shadowUnder(this.wk.x - cam, 152, 10);
+        drawKid(this.wk.x - cam, 152 - 20, this.wk.frame, { flip: this.wk.facing < 0 });
         drawInteractHint(this.wk, '#3b4048');
+      }
+      // thin rain, falling slantwise
+      ctx.fillStyle = 'rgba(120,130,140,0.4)';
+      for (let i = 0; i < 44; i++) {
+        const rx = ((i * 53 + Math.floor(T * 160) * 2) % (W + 20)) - 10;
+        const ry = (i * 97 + Math.floor(T * 160) * 3) % H;
+        ctx.fillRect(rx, ry, 1, 4);
+        ctx.fillRect(rx - 1, ry + 4, 1, 2);
       }
       if (this.stage === 5) {
         ctx.fillStyle = 'rgba(242,240,230,' + clamp(this.whiteT / 2, 0, 1).toFixed(2) + ')';
@@ -3060,7 +3318,7 @@ SCENES.aftermath = {
       px(mx + 6, 111, 10, 16, '#7a7488');
       px(mx + 7, 127, 3, 12, '#3b4048'); px(mx + 12, 127, 3, 12, '#3b4048');
     }
-    drawKid(this.wk.x - this.wk.cam, 148 - 14, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
+    drawKid(this.wk.x - this.wk.cam, 148 - 20, this.wk.frame, { tired: true, flip: this.wk.facing < 0 });
     drawInteractHint(this.wk, '#3b4048');
     vignette(0.3);
   },
@@ -3195,6 +3453,18 @@ SCENES.coda = {
     for (let i = 0; i < 7; i++) px(118 + i * 13, 106, 2, 24, '#453f6a');
     px(112, 112, 100, 3, '#453f6a'); px(112, 122, 100, 3, '#453f6a');
     px(112, 112, 100, 1, '#5a5284');
+    // fireflies. there didn't used to be fireflies.
+    for (let i = 0; i < 6; i++) {
+      const ft = T * 0.3 + i * 1.7;
+      const fx = 60 + ((i * 47) % 200) + Math.sin(ft) * 14;
+      const fy = 100 + (i % 3) * 14 + Math.cos(ft * 1.3) * 8;
+      const on = Math.sin(T * 2 + i * 2.2) > 0.3;
+      if (on) {
+        px(fx, fy, 1, 1, '#e8d9a0');
+        ctx.fillStyle = 'rgba(232,217,160,0.25)';
+        ctx.fillRect(fx - 1, fy - 1, 3, 3);
+      }
+    }
     // the kid, sitting on the rail. breathing.
     const breathe = Math.sin(T * 1.1) > 0 ? 1 : 0;
     drawKid(142, 98 - breathe, 0, { pj: true, sit: true });
@@ -3281,8 +3551,10 @@ const SCRIPT = {
   d3red: "That one's facing the wrong way. That one's wearing- I'm going to go look. I always go look.",
   d3plankSee: "It went across the creek. Over the plank. Obviously it went over the plank.",
   d3plank: "My feet won't. It's just a board. It's just water. My feet won't.",
+  d3wool: "Wool. Everywhere. And the grass is the wrong color underneath. Sheep don't cross the creek. Something crosses to THEM.",
   d3surface: "The static is standing up. The static is IT. RUN.",
   ch_caught: "COLD. GET UP. RUN.",
+  ch_eat: "IT STOPPED TO FEED. RUN.",
   d3wake: "it's always 1:00.",
 
   /* morning */

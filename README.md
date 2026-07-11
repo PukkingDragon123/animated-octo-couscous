@@ -51,9 +51,11 @@ no dependencies. Works from disk or any static host (GitHub Pages, itch.io).
 ## Content note
 
 This game deals honestly with grief and the loss of a friend, and it has
-grown teeth: a stalking creature made of static, one chase sequence, and a
-handful of dread-heavy cutscenes. No gore — the horror is the quiet kind,
-until it stands up. The red scarf is still the only red in the game.
+grown teeth: a stalking creature made of static, a chase sequence in which
+it catches and eats sheep (pixel blood splatter, wool scattered on the
+grass), and a handful of dread-heavy cutscenes. The horror is the quiet
+kind, until it stands up. The red scarf used to be the only red in the
+game. It isn't anymore. That's the point.
 
 ---
 
