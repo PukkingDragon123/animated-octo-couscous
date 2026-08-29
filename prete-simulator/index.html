@@ -1,0 +1,2109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Prete Simulator</title>
+<style>
+  html, body { margin:0; padding:0; height:100%; background:#0d0c1a; overflow:hidden; }
+  #wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#0d0c1a; }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; cursor:default; touch-action:none; }
+  .tbtn {
+    position:fixed; z-index:10; border:1px solid rgba(255,210,120,.35); border-radius:50%;
+    background:rgba(30,22,48,.45); color:#ffd98a; font:bold 16px 'Courier New',monospace;
+    width:52px; height:52px; display:none; align-items:center; justify-content:center;
+    user-select:none; -webkit-user-select:none; touch-action:none;
+  }
+  body.touch .tbtn { display:flex; }
+  #tUp{ left:64px; bottom:118px; } #tDn{ left:64px; bottom:14px; }
+  #tLf{ left:12px; bottom:66px; }  #tRt{ left:116px; bottom:66px; }
+  #tE { right:16px; bottom:24px; width:64px; height:64px; font-size:20px; }
+  #tQ { right:92px; bottom:80px; }
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="screen"></canvas></div>
+<div class="tbtn" id="tUp">▲</div><div class="tbtn" id="tDn">▼</div>
+<div class="tbtn" id="tLf">◀</div><div class="tbtn" id="tRt">▶</div>
+<div class="tbtn" id="tE">E</div><div class="tbtn" id="tQ">Q</div>
+<script>
+'use strict';
+
+/* ============================================================
+   PRETE SIMULATOR — เปรตซิมูเลเตอร์
+   a cozy hungry-ghost tale
+
+   You were not a good person. You took, you drank, you laughed
+   past the temple gate. So the ledger tipped, and you woke tall
+   as the palm trees with a mouth the size of a needle's eye.
+
+   Earn merit (บุญ). Help the village. Go home.
+
+   One file. No assets. All pixels placed by hand, all sound
+   synthesized live.
+   ============================================================ */
+
+const W = 320, H = 180;                 // virtual screen
+const WW = 960, WH = 640;               // world size in px
+
+// ---------- tiny helpers ----------
+const clamp = (v,a,b)=> v<a?a : v>b?b : v;
+const lerp  = (a,b,t)=> a+(b-a)*t;
+const dist  = (x1,y1,x2,y2)=> Math.hypot(x2-x1, y2-y1);
+const rnd   = (a=1,b)=> b===undefined ? Math.random()*a : a+Math.random()*(b-a);
+const pick  = arr => arr[(Math.random()*arr.length)|0];
+const TAU   = Math.PI*2;
+
+function mkCv(w,h){ const c=document.createElement('canvas'); c.width=w; c.height=h; return c; }
+function G(c){ const g=c.getContext('2d'); g.imageSmoothingEnabled=false; return g; }
+function flipCv(c){ const f=mkCv(c.width,c.height); const g=G(f); g.translate(c.width,0); g.scale(-1,1); g.drawImage(c,0,0); return f; }
+
+// fonts: Courier for latin (typewriter), system Thai fonts for Thai glyphs
+const FONT = "'Courier New','Sarabun','Leelawadee UI',Tahoma,monospace";
+
+// ---------- canvas / scaling ----------
+const canvas = document.getElementById('screen');
+const ctx = canvas.getContext('2d');
+let S = 3; // integer scale factor (in device px)
+function resize(){
+  const dpr = window.devicePixelRatio || 1;
+  const cssS = Math.min(window.innerWidth/W, window.innerHeight/H);
+  S = Math.max(1, Math.floor(cssS*dpr));
+  canvas.width = W*S; canvas.height = H*S;
+  canvas.style.width  = (W*S/dpr)+'px';
+  canvas.style.height = (H*S/dpr)+'px';
+  ctx.imageSmoothingEnabled = false;
+}
+window.addEventListener('resize', resize); resize();
+
+// ---------- input ----------
+const keys = {};        // held
+let presses = [];       // edge-triggered this frame
+const KEYMAP = {
+  arrowup:'up', w:'up', arrowdown:'down', s:'down',
+  arrowleft:'left', a:'left', arrowright:'right', d:'right',
+  e:'act', ' ':'act', enter:'act', q:'wail', m:'mute', h:'help', p:'help',
+  r:'restart', n:'newgame'
+};
+window.addEventListener('keydown', ev=>{
+  const k = KEYMAP[ev.key.toLowerCase()];
+  if(!k) return;
+  ev.preventDefault();
+  AU.ensure();
+  if(!keys[k]) presses.push(k);
+  keys[k] = true;
+});
+window.addEventListener('keyup', ev=>{
+  const k = KEYMAP[ev.key.toLowerCase()];
+  if(k) keys[k] = false;
+});
+canvas.addEventListener('pointerdown', ()=>{ AU.ensure(); presses.push('act'); });
+
+// touch controls
+if (matchMedia('(pointer:coarse)').matches) document.body.classList.add('touch');
+function bindBtn(id, key){
+  const el = document.getElementById(id);
+  const on = ev=>{ ev.preventDefault(); AU.ensure(); if(!keys[key]) presses.push(key); keys[key]=true; };
+  const off= ev=>{ ev.preventDefault(); keys[key]=false; };
+  el.addEventListener('pointerdown', on);
+  el.addEventListener('pointerup', off);
+  el.addEventListener('pointercancel', off);
+  el.addEventListener('pointerleave', off);
+}
+bindBtn('tUp','up'); bindBtn('tDn','down'); bindBtn('tLf','left'); bindBtn('tRt','right');
+bindBtn('tE','act'); bindBtn('tQ','wail');
+function popPress(k){ const i=presses.indexOf(k); if(i>=0){ presses.splice(i,1); return true; } return false; }
+
+// ---------- save ----------
+const SAVE_KEY = 'prete-sim-v1';
+function loadSave(){
+  try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return (s && s.v===1) ? s : null; }
+  catch(e){ return null; }
+}
+function writeSave(){
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      v:1, merit, mute:AU.muted,
+      q:{ metTani:Q.metTani, pole:Q.pole, cat:Q.cat, spirits:Q.spirits, monk:Q.monk,
+          prayers:Q.prayers, pets:Q.pets, offerings:Q.offerings, done:Q.done }
+    }));
+  } catch(e){}
+}
+function clearSave(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+
+/* ============================================================
+   AUDIO — everything synthesized, everything quiet
+   ============================================================ */
+const AU = {
+  ctx:null, out:null, muted:false, started:false,
+  nextCricket:0, nextPluck:2, padOsc:[],
+  ensure(){
+    if(this.ctx){ if(this.ctx.state==='suspended') this.ctx.resume(); return; }
+    try{
+      this.ctx = new (window.AudioContext||window.webkitAudioContext)();
+      this.out = this.ctx.createGain();
+      this.out.gain.value = this.muted ? 0 : 0.55;
+      this.out.connect(this.ctx.destination);
+      this.startPad();
+    }catch(e){}
+  },
+  setMute(m){ this.muted=m; if(this.out) this.out.gain.value = m?0:0.55; },
+  toggleMute(){ this.setMute(!this.muted); writeSave(); },
+  startPad(){
+    // two soft detuned voices, a warm hum under the night
+    const freqs=[110, 164.8];
+    for(const f of freqs){
+      const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+      o.type='triangle'; o.frequency.value=f; o.detune.value=rnd(-6,6);
+      g.gain.value=0.014;
+      const lfo=this.ctx.createOscillator(), lg=this.ctx.createGain();
+      lfo.frequency.value=rnd(0.05,0.11); lg.gain.value=0.006;
+      lfo.connect(lg); lg.connect(g.gain);
+      o.connect(g); g.connect(this.out); o.start(); lfo.start();
+      this.padOsc.push(o);
+    }
+  },
+  env(gain, t0, a, d, peak){
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(peak, t0+a);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0+a+d);
+  },
+  tone(freq, dur, type='sine', peak=0.05, slideTo=null, when=0){
+    if(!this.ctx) return;
+    const t0=this.ctx.currentTime+when;
+    const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq,t0);
+    if(slideTo) o.frequency.exponentialRampToValueAtTime(Math.max(30,slideTo), t0+dur);
+    this.env(g,t0,0.012,dur,peak);
+    o.connect(g); g.connect(this.out);
+    o.start(t0); o.stop(t0+dur+0.1);
+  },
+  noise(dur, peak=0.05, hp=0, lp=8000, when=0){
+    if(!this.ctx) return;
+    const t0=this.ctx.currentTime+when;
+    const n = this.ctx.createBufferSource();
+    const len = Math.max(1, (dur*this.ctx.sampleRate)|0);
+    const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+    n.buffer=buf;
+    const f=this.ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=lp;
+    const f2=this.ctx.createBiquadFilter(); f2.type='highpass'; f2.frequency.value=hp;
+    const g=this.ctx.createGain(); this.env(g,t0,0.01,dur,peak);
+    n.connect(f); f.connect(f2); f2.connect(g); g.connect(this.out);
+    n.start(t0);
+  },
+  // ambience scheduler (called from update)
+  tick(dt, t){
+    if(!this.ctx || this.muted) return;
+    this.nextCricket -= dt;
+    if(this.nextCricket<=0){
+      const f = rnd(4100,4700);
+      for(let i=0;i<3;i++) this.tone(f, .05, 'triangle', .009, null, i*.09);
+      this.nextCricket = rnd(0.9, 2.6);
+    }
+    this.nextPluck -= dt;
+    if(this.nextPluck<=0){
+      const scale=[220, 261.6, 293.7, 329.6, 392, 440];
+      this.tone(pick(scale), 1.3, 'triangle', .032);
+      this.nextPluck = rnd(4.5, 9.5);
+    }
+  },
+  // sfx
+  blip(){ this.tone(340,.045,'square',.02); },
+  ding(){ this.tone(880,.5,'sine',.05); this.tone(1320,.4,'sine',.02,null,.03); },
+  bigDing(){ this.tone(660,.9,'sine',.06); this.tone(990,.8,'sine',.035,null,.05); this.tone(1320,.7,'sine',.02,null,.1); },
+  orb(){ this.tone(rnd(1150,1450),.22,'sine',.028); },
+  wail(){ // the famous prete whistle: วี้ดดดดด
+    this.tone(1900,.9,'sine',.05,900);
+    this.tone(1912,.9,'sine',.03,905,.02);
+  },
+  poof(){ this.noise(.3,.05,80,900); this.tone(160,.3,'sine',.04,60); },
+  spark(){ this.noise(.08,.045,1200,7000); },
+  fixdone(){ this.tone(523,.3,'sine',.05); this.tone(784,.5,'sine',.05,null,.12); },
+  meow(){ this.tone(760,.16,'sine',.05,620); this.tone(640,.22,'sine',.045,760,.16); },
+  purr(){ this.noise(.35,.02,60,300); },
+  pour(){ this.noise(1.4,.022,400,2400); },
+  step(){ this.noise(.05,.012,60,500); },
+  chant(){ this.tone(147,1.6,'sine',.03,140); this.tone(220,1.6,'sine',.018,215,.1); },
+  ceremonySeq(){
+    const seq=[261.6,329.6,392,440,523.3,659.3,784];
+    seq.forEach((f,i)=> this.tone(f,1.2,'triangle',.04,null,i*.55));
+  }
+};
+
+/* ============================================================
+   SPRITES — hand-placed rectangles, three-tone shading
+   ============================================================ */
+function painter(w,h,fn){ const c=mkCv(w,h); const g=G(c); fn(g,(x,y,ww,hh,col)=>{g.fillStyle=col;g.fillRect(x,y,ww,hh);}); return c; }
+
+// ----- THE PRETE (you) — canvas 20x52, feet at y=50 -----
+// pale lavender body, pot belly, long arms, big hands, needle mouth
+function drawPrete(frame, opt={}){
+  const gold = opt.gold;
+  const B = gold?'#f4e3b2':'#cdbfd8', Sh= gold?'#cfb27a':'#a08fb4',
+        BL= gold?'#fff3d0':'#e0d5ea', M='#c96a75', E='#332a4a', Wt='#fff7ea';
+  return painter(20,52,(g,px)=>{
+    const top = 8;                    // headroom so raised arms fit
+    // --- legs & feet ---
+    const legL=(dx,lift)=>{ px(7+dx, top+29, 2, 17-lift, Sh); px(7+dx,top+29,1,17-lift,B); px(5+dx, top+45-lift, 4, 1, B); };
+    const legR=(dx,lift)=>{ px(11+dx,top+29, 2, 17-lift, Sh); px(11+dx,top+29,1,17-lift,B); px(11+dx,top+45-lift, 4, 1, B); };
+    if(frame==='w1'){ legL(-1,1); legR(0,0); }
+    else if(frame==='w2'){ legL(0,0); legR(1,1); }
+    else { legL(0,0); legR(0,0); }
+    // --- hips ---
+    px(8, top+26, 4, 3, B); px(11, top+26, 1, 3, Sh);
+    // --- pot belly (the ledger's interest) ---
+    px(7, top+16, 6, 1, B);
+    px(6, top+17, 8, 1, B);
+    px(5, top+18, 10, 5, B);
+    px(6, top+23, 8, 1, B);
+    px(7, top+24, 6, 1, B);
+    px(8, top+25, 4, 1, B);
+    px(13, top+18, 2, 5, Sh); px(12, top+17, 2, 1, Sh);
+    px(7, top+18, 3, 3, BL);                    // moon-glow highlight
+    px(9, top+21, 1, 1, Sh);                    // navel
+    // --- chest & ribs ---
+    px(8, top+12, 4, 4, B); px(11, top+12, 1, 4, Sh);
+    px(8, top+13, 1, 1, Sh); px(10, top+13, 1, 1, Sh);
+    // --- arms (long, hands big as palm leaves) ---
+    const armY0 = top+12;
+    if(frame==='reach'){
+      px(5, top+2, 1, 11, B); px(6, top+11, 1, 2, B);
+      px(14, top+2, 1, 11, Sh); px(13, top+11, 1, 2, Sh);
+      px(3, top-2, 3, 4, B);  px(14, top-2, 3, 4, Sh);   // hands above head
+      px(4, top-3, 1, 1, B);  px(15, top-3, 1, 1, Sh);
+    } else {
+      const sway = frame==='w1' ? -1 : frame==='w2' ? 1 : 0;
+      px(6, armY0, 1, 2, B);  px(5+ (sway<0?-1:0), armY0+2, 1, 16, B);
+      px(13, armY0, 1, 2, Sh); px(14+(sway>0? 1:0), armY0+2, 1, 16, Sh);
+      px(3+(sway<0?-1:0), armY0+18, 3, 4, B);           // left hand
+      px(14+(sway>0?1:0), armY0+18, 3, 4, Sh);          // right hand
+    }
+    // --- neck ---
+    px(9, top+9, 2, 3, B); px(10, top+9, 1, 3, Sh);
+    // --- head ---
+    px(7, top+1, 6, 8, B);
+    px(6, top+2, 1, 6, B); px(13, top+2, 1, 6, Sh);
+    px(12, top+1, 1, 8, Sh);
+    px(7, top+1, 6, 1, Sh);                     // scalp shade (bald, poor thing)
+    px(5, top+4, 1, 2, B); px(14, top+4, 1, 2, Sh);   // ears
+    // face
+    if(opt.blink){
+      px(7, top+5, 2, 1, Sh); px(11, top+5, 2, 1, Sh);
+    } else {
+      px(7, top+4, 2, 2, E); px(11, top+4, 2, 2, E);
+      px(7, top+4, 1, 1, Wt); px(11, top+4, 1, 1, Wt);
+    }
+    px(7, top+3, 2, 1, Sh); px(11, top+3, 2, 1, Sh);  // sad brows
+    px(9, top+7, 2, 1, M);                             // a mouth the size of a needle's eye
+  });
+}
+const SPR_PRETE = {};
+for(const f of ['idle','w1','w2','reach']){
+  SPR_PRETE[f]      = drawPrete(f);
+  SPR_PRETE[f+'_g'] = drawPrete(f,{gold:true});
+}
+SPR_PRETE.blink   = drawPrete('idle',{blink:true});
+SPR_PRETE.blink_g = drawPrete('idle',{blink:true,gold:true});
+
+// ----- villagers — 12 wide, 18 tall (kids 14) -----
+function drawPerson(cfg, frame){
+  const h = cfg.kid ? 14 : 18;
+  return painter(12,h,(g,px)=>{
+    const skin=cfg.skin, shirt=cfg.shirt, shD=cfg.shirtD, legC=cfg.legs;
+    const torsoY = cfg.kid ? 7 : 7, torsoH = cfg.kid ? 4 : 6;
+    const legY = torsoY+torsoH, legH = h-1-legY;
+    // legs / skirt
+    if(cfg.skirt){
+      px(3, legY-1, 6, legH, legC); px(7, legY-1, 2, legH, cfg.legsD||legC);
+      if(frame==='w1') px(3, h-1, 2, 1, skin), px(7, h-1, 2, 1, skin);
+      else px(4, h-1, 2, 1, skin), px(6, h-1, 2, 1, skin);
+    } else {
+      const spread = frame==='w1'?1:0;
+      px(4-spread, legY, 2, legH, legC); px(6+spread, legY, 2, legH, legC);
+      px(4-spread, h-1, 2, 1, '#3a2c26'); px(6+spread, h-1, 2, 1, '#3a2c26');
+    }
+    // torso
+    px(3, torsoY, 6, torsoH, shirt); px(7, torsoY, 2, torsoH, shD);
+    // arms
+    if(frame==='wai'){
+      px(2, torsoY+1, 1, 3, shD); px(9, torsoY+1, 1, 3, shD);
+      px(5, torsoY+1, 2, 2, skin);            // hands pressed together 🙏
+    } else {
+      const sw = frame==='w1' ? 1 : 0;
+      px(2, torsoY+sw, 1, 4, shD); px(9, torsoY+(1-sw), 1, 4, shD);
+      px(2, torsoY+4+sw, 1, 1, skin); px(9, torsoY+5-sw, 1, 1, skin);
+    }
+    // head
+    px(3, 1, 6, 6, skin); px(8, 1, 1, 6, cfg.skinD||skin);
+    px(4, 4, 1, 1, '#2c2020'); px(7, 4, 1, 1, '#2c2020');   // eyes
+    // hair
+    const hc = cfg.hairC || '#241c18';
+    if(cfg.hair==='bun'){ px(3,1,6,2,hc); px(4,0,4,1,hc); px(5,-0,2,1,hc); px(5,0,2,1,hc); px(5,1,2,1,hc); px(5,0,2,1,'#3f3630'); }
+    else if(cfg.hair==='short'){ px(3,1,6,2,hc); px(3,3,1,1,hc); px(8,3,1,1,hc); }
+    else if(cfg.hair==='tails'){ px(3,1,6,2,hc); px(2,2,1,3,hc); px(9,2,1,3,hc); }
+    else if(cfg.hair==='bald'){ px(3,1,6,1,cfg.skinD||skin); }
+    if(cfg.hat){ px(2,0,8,2,cfg.hat); px(4,-0,4,1,cfg.hat); }
+  });
+}
+function personFrames(cfg){
+  const o={};
+  for(const f of ['idle','w1','w2','wai']) o[f]=drawPerson(cfg,f);
+  return o;
+}
+
+// ----- Nang Tani — the banana-grove lady, 16x26 -----
+const SPR_TANI = (frame)=> painter(16,26,(g,px)=>{
+  const HAIR='#1d1830', HAIR2='#2c2545', SK='#efe2c4', SKD='#d8c8a8', DR='#57a869', DRD='#3b7a4c', LIP='#c04a55';
+  // long hair, framing the face and falling to her waist
+  px(4,0,8,2,HAIR); px(3,1,10,3,HAIR);
+  px(3,3,2,15,HAIR); px(11,3,2,15,HAIR);
+  px(4,3,1,7,HAIR); px(11,3,1,7,HAIR);
+  px(3,18,1,2,HAIR); px(12,18,1,2,HAIR);
+  px(4,2,1,4,HAIR2); px(3,10,1,4,HAIR2);            // soft sheen
+  // face
+  px(5,3,6,6,SK); px(10,3,1,6,SKD);
+  px(6,5,1,1,'#2a2238'); px(9,5,1,1,'#2a2238');
+  px(7,7,2,1,LIP);
+  // dress torso + sabai sash catching moonlight
+  px(5,9,6,8,DR); px(9,9,2,8,DRD);
+  px(6,9,1,1,'#7cc98c'); px(7,10,1,1,'#7cc98c'); px(8,11,1,1,'#7cc98c');
+  // arms
+  if(frame==='wave'){
+    px(12,7,1,4,SK); px(12,5,2,2,SK);               // raised, saying hello
+    px(4,11,1,4,SK); px(7,14,2,2,SK);
+  } else {
+    px(4,11,1,4,SK); px(11,11,1,4,SKD);
+    px(6,14,4,2,SK);                                // hands folded
+  }
+  // skirt tapering to ghost-mist
+  px(5,17,6,2,DRD); px(6,19,5,2,DR); px(6,21,4,1,DRD);
+  px(7,22,3,1,DR); px(7,23,2,1,DRD);
+  px(6,24,1,1,DRD); px(10,24,1,1,DRD); px(8,25,1,1,DR);
+});
+const SPR_TANI_IDLE = SPR_TANI('idle'), SPR_TANI_WAVE = SPR_TANI('wave');
+
+// ----- cat — Meow-Meow, 12x9 -----
+function drawCat(frame){
+  return painter(14,10,(g,px)=>{
+    const O='#e8984a', OD='#b96f2e', WT='#f5ead8';
+    if(frame==='sit'||frame==='sit2'){
+      px(3,4,7,5,O); px(8,4,2,5,OD);
+      px(4,5,1,3,OD); px(6,5,1,3,OD);
+      px(7,1,5,5,O); px(11,2,1,3,OD);
+      px(7,0,1,2,O); px(11,0,1,2,OD);         // ears
+      px(8,3,1,1,'#243'); px(10,3,1,1,'#243'); // eyes
+      px(9,5,2,1,WT);
+      if(frame==='sit2'){ px(1,1,2,4,OD); px(2,0,1,2,OD); } else { px(1,4,2,3,OD); px(0,6,2,2,OD); }
+      px(4,8,2,1,WT); px(7,8,2,1,WT);          // paws
+    } else { // walk
+      const sp = frame==='w1'?1:0;
+      px(2,3,8,4,O); px(8,3,2,4,OD);
+      px(9,0,4,4,O); px(9,-0,1,2,O); px(12,0,1,2,OD);
+      px(10,2,1,1,'#243'); px(12,2,1,1,'#243');
+      px(3-sp,7,1,2,O); px(5+sp,7,1,2,OD); px(7-sp,7,1,2,O); px(9+sp,7,1,2,OD);
+      px(0,1,2,3,OD); px(1,0,1,2,O);
+      px(4,4,1,2,OD); px(6,4,1,2,OD);
+    }
+  });
+}
+const SPR_CAT = { sit:drawCat('sit'), sit2:drawCat('sit2'), w1:drawCat('w1'), w2:drawCat('w2') };
+
+/* ---------- static object sprites ---------- */
+
+// Thai stilt house
+function drawHouse(wall, wallD, roof, roofD){
+  return painter(64,62,(g,px)=>{
+    // stilts
+    for(const sx of [8,22,40,52]) px(sx,48,4,13,'#4c3a2c');
+    // floor platform
+    px(4,45,56,4,'#5d4735'); px(4,45,56,1,'#6f5640');
+    // walls (plank stripes)
+    px(6,22,52,23,wall);
+    for(let y=24;y<44;y+=4) px(6,y,52,1,wallD);
+    px(50,22,8,23,wallD);
+    // door
+    px(12,28,10,17,'#38291f'); px(13,29,8,15,'#2a1e16');
+    // window, warm with life
+    px(34,27,12,10,'#3a2b20'); px(35,28,10,8,'#ffd98a'); px(39,28,1,8,'#e8b45f'); px(35,32,10,1,'#e8b45f');
+    // roof — layered gable
+    const rw=[64,58,50,42,34,26,18,10];
+    rw.forEach((w2,i)=>{ px((64-w2)>>1, 20-i*2.0-2, w2, 3, i%2?roofD:roof); });
+    px(28,2,8,3,roofD); px(31,0,2,3,'#e8b45f');  // ridge finial
+    // steps
+    px(14,45,6,3,'#4c3a2c'); px(12,50,10,3,'#4c3a2c'); px(10,55,14,3,'#4c3a2c');
+  });
+}
+const SPR_HOUSE_A = drawHouse('#8a6142','#6d4a33','#7a3b30','#5c2b24');
+const SPR_HOUSE_B = drawHouse('#7a6a52','#5f5140','#4f5d6e','#3a4553');
+const SPR_HOUSE_C = drawHouse('#916b49','#71533a','#6e5d33','#544726');
+
+// spirit house — ศาลพระภูมิ, with red Fanta and all
+const SPR_SHRINE = painter(30,40,(g,px)=>{
+  // post & platform
+  px(13,24,4,14,'#cfc4ae'); px(15,24,2,14,'#a89c86');
+  px(5,22,20,3,'#cfc4ae'); px(5,24,20,1,'#a89c86');
+  // little temple
+  px(8,10,14,12,'#f2e6c8'); px(19,10,3,12,'#d8c9a4');
+  px(12,13,6,9,'#4a3140');                    // doorway (someone lives here)
+  px(14,15,2,2,'#ffd98a');                    // votive glow inside
+  // roof, red & gold
+  px(5,8,20,3,'#c0392f'); px(7,6,16,2,'#a12c24'); px(10,4,10,2,'#c0392f'); px(13,2,4,2,'#a12c24');
+  px(14,0,2,2,'#ffce54');                      // chofa spike
+  px(5,8,20,1,'#ffce54');
+  // garland
+  px(7,11,1,2,'#ffce54'); px(7,13,1,1,'#ff8c42'); px(22,11,1,2,'#ffce54'); px(22,13,1,1,'#ff8c42');
+  // offerings on the platform ledge
+  px(2,19,3,4,'#e03a3a'); px(3,18,1,1,'#f5ead8'); px(3,16,1,2,'#f5ead8');   // red fanta + straw
+  px(25,20,4,2,'#f5ead8'); px(26,19,2,1,'#e8e0c8');                          // rice bowl
+  px(9,22,1,1,'#caa'); px(11,22,1,1,'#caa');                                 // incense stubs
+});
+
+// banana tree — where Tani lives
+function drawBanana(seed){
+  return painter(26,36,(g)=>{
+    const r = mulberry(seed);
+    g.fillStyle='#7d9b5a'; g.fillRect(12,16,3,19);
+    g.fillStyle='#5f7a44'; g.fillRect(14,16,1,19);
+    const L1='#3f7a52', L2='#57996b';
+    for(let i=0;i<6;i++){
+      const a = (i/6)*TAU + r()*0.5;
+      const lx = 13 + Math.cos(a)*7, ly = 12 + Math.sin(a)*4 - 3;
+      g.save(); g.translate(lx,ly); g.rotate(a*0.5 + (Math.cos(a)>0? 0.5:-0.5));
+      g.fillStyle = i%2? L1:L2;
+      g.beginPath(); g.ellipse(0,0,8,3,0,0,TAU); g.fill();
+      g.fillStyle='#2e5940'; g.fillRect(-7,0,14,1);
+      g.restore();
+    }
+    g.fillStyle='#57996b'; g.beginPath(); g.ellipse(13,9,4,5,0,0,TAU); g.fill();
+  });
+}
+function mulberry(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const SPR_BANANAS = [drawBanana(11), drawBanana(23), drawBanana(37), drawBanana(51)];
+
+// big tamarind tree (the cat one) + regular trees
+function drawTree(w,h,seed){
+  return painter(w,h,(g)=>{
+    const r=mulberry(seed);
+    const tw = Math.max(4, w>>3);
+    g.fillStyle='#4c3a2c'; g.fillRect((w-tw)>>1, h*0.55|0, tw, h*0.45|0);
+    g.fillStyle='#3b2c21'; g.fillRect(((w-tw)>>1)+tw-1, h*0.55|0, 1, h*0.45|0);
+    const blobs = 5+(r()*3|0);
+    for(let i=0;i<blobs;i++){
+      const bx=w/2+(r()-0.5)*w*0.4, by=h*0.30+(r()-0.5)*h*0.22;
+      const br=w*0.17+r()*w*0.10;
+      g.fillStyle = i%2 ? '#2e5d44' : '#3f7a5a';
+      g.beginPath(); g.ellipse(bx,by,br,br*0.8,0,0,TAU); g.fill();
+    }
+    g.fillStyle='#57996b';
+    for(let i=0;i<14;i++){ g.fillRect(w*0.2+r()*w*0.6, h*0.12+r()*h*0.35, 1,1); }
+  });
+}
+const SPR_BIGTREE = drawTree(44,52, 7);
+const SPR_TREE1 = drawTree(30,38, 13), SPR_TREE2 = drawTree(28,40, 29);
+
+// power pole — เสาไฟฟ้า
+const SPR_POLE = painter(18,52,(g,px)=>{
+  px(8,4,3,48,'#8b8fa3'); px(10,4,1,48,'#63677a');
+  px(2,6,15,2,'#8b8fa3'); px(2,7,15,1,'#63677a');       // crossarm
+  px(3,4,1,2,'#d8d4c8'); px(9,4,1,2,'#d8d4c8'); px(15,4,1,2,'#d8d4c8'); // insulators
+  px(11,12,6,2,'#63677a');                              // lamp arm
+  px(15,14,3,3,'#4a4e5e');                              // lamp head (lens drawn live)
+});
+
+// noodle cart, lantern-lit
+const SPR_CART = painter(32,26,(g,px)=>{
+  px(2,20,5,5,'#3a2c22'); px(24,20,5,5,'#3a2c22');       // wheels
+  px(3,21,3,3,'#5d4735'); px(25,21,3,3,'#5d4735');
+  px(1,10,30,11,'#8a6142'); px(1,10,30,1,'#a1764f'); px(26,10,5,11,'#6d4a33');
+  px(0,8,32,2,'#b8534a');                                // counter/canopy base
+  for(let i=0;i<8;i++) px(i*4,4,4,4, i%2 ? '#c0392f' : '#e8dfc8');  // striped canopy
+  px(0,3,32,1,'#8a2c24');
+  px(4,12,4,2,'#f5ead8'); px(10,12,4,2,'#f5ead8');       // bowls
+  px(17,12,3,4,'#e03a3a');                               // fanta for the spirits
+  px(28,0,1,4,'#4c3a2c'); px(27,4,3,4,'#ffb85c'); px(28,8,1,1,'#e8923f'); // lantern
+});
+
+// water jar (โอ่งมังกร)
+const SPR_JAR = painter(10,12,(g,px)=>{
+  px(2,2,6,1,'#7a4527'); px(1,3,8,7,'#9a5e3a'); px(2,10,6,1,'#7a4527');
+  px(7,3,2,7,'#7a4527'); px(2,4,2,3,'#b5764e');
+  px(3,2,4,1,'#25476b');
+});
+
+// fence segment
+const SPR_FENCE = painter(20,12,(g,px)=>{
+  for(const fx of [1,8,15]){ px(fx,2,3,10,'#6d5138'); px(fx,2,3,1,'#856448'); }
+  px(0,4,20,2,'#5d4735'); px(0,8,20,2,'#5d4735');
+});
+
+// north shrine: bell sala where the monk keeps vigil
+const SPR_SALA = painter(36,34,(g,px)=>{
+  px(4,30,4,4,'#cfc4ae'); px(28,30,4,4,'#cfc4ae');
+  px(4,12,4,18,'#e8dfc8'); px(28,12,4,18,'#e8dfc8');
+  px(6,12,2,18,'#c4b89e'); px(30,12,2,18,'#c4b89e');
+  px(0,8,36,4,'#c0392f'); px(2,5,32,3,'#a12c24'); px(6,2,24,3,'#c0392f'); px(14,0,8,2,'#ffce54');
+  px(0,8,36,1,'#ffce54');
+  px(16,12,4,3,'#4c3a2c');                              // bell mount
+  px(14,15,8,8,'#d8a53f'); px(15,23,6,2,'#b5822a'); px(17,25,2,2,'#8a6220'); // the bell
+  px(14,15,2,8,'#f0c66a');
+});
+
+// ================= WORLD =================
+const groundCv = mkCv(WW,WH); const gg = G(groundCv);
+const colliders = [];   // {x,y,w,h}
+const objects = [];     // {img,x,y,base,shadowW}  y = top-left draw pos, base = sort baseline
+const lights = [];      // {x,y,r,warm,id,on}
+function addObj(img, x, y, opt={}){
+  const o = { img, x, y, base: opt.base ?? (y+img.height-1), sh: opt.sh ?? Math.floor(img.width*0.6) };
+  objects.push(o);
+  if(opt.col) colliders.push(opt.col);
+  return o;
+}
+
+const paths = [
+  {x:20,  y:298, w:930, h:34},   // main road
+  {x:718, y:96,  w:30,  h:236},  // to the banana grove
+  {x:380, y:330, w:26,  h:96},   // south to cart
+  {x:148, y:150, w:24,  h:152},  // north-west to the sala
+];
+const POND = {cx:150, cy:472, rx:88, ry:44};
+function inPond(x,y,pad=0){
+  const dx=(x-POND.cx)/(POND.rx-pad), dy=(y-POND.cy)/(POND.ry-pad);
+  return dx*dx+dy*dy < 1;
+}
+
+function paintGround(){
+  gg.fillStyle='#2c4636'; gg.fillRect(0,0,WW,WH);
+  // mottled moonlit grass
+  for(let i=0;i<9000;i++){
+    const x=rnd(WW)|0, y=rnd(WH)|0;
+    gg.fillStyle = pick(['#31503c','#2a4132','#365546','#2f4a3a']);
+    gg.fillRect(x,y,rnd()<0.3?2:1,1);
+  }
+  // grass tufts
+  for(let i=0;i<380;i++){
+    const x=rnd(10,WW-10)|0, y=rnd(10,WH-10)|0;
+    gg.fillStyle='#3a5c45'; gg.fillRect(x,y,1,2); gg.fillRect(x+2,y+1,1,2); gg.fillRect(x-2,y+1,1,1);
+  }
+  // dirt paths, edges jittered so nothing looks ruled
+  for(const p of paths){
+    for(let y=p.y; y<p.y+p.h; y++){
+      const j1 = Math.sin(y*0.7)*2 + Math.sin(y*0.23)*2;
+      const j2 = Math.cos(y*0.5)*2 + Math.sin(y*0.31)*2;
+      gg.fillStyle='#6b543f'; gg.fillRect(p.x+j1, y, p.w+j2-j1, 1);
+    }
+    for(let i=0;i<p.w*p.h/28;i++){
+      gg.fillStyle=pick(['#7a6249','#5c4735','#75604a']);
+      gg.fillRect(p.x+rnd(p.w)|0, p.y+rnd(p.h)|0, rnd()<0.4?2:1, 1);
+    }
+  }
+  // pond
+  gg.fillStyle='#6f6046';
+  gg.beginPath(); gg.ellipse(POND.cx,POND.cy,POND.rx+4,POND.ry+4,0,0,TAU); gg.fill();
+  gg.fillStyle='#1d3a52';
+  gg.beginPath(); gg.ellipse(POND.cx,POND.cy,POND.rx,POND.ry,0,0,TAU); gg.fill();
+  gg.fillStyle='#25476b';
+  gg.beginPath(); gg.ellipse(POND.cx-8,POND.cy-4,POND.rx*0.7,POND.ry*0.6,0,0,TAU); gg.fill();
+  for(let i=0;i<7;i++){ // lily pads
+    const a=rnd(TAU), rr=rnd(0.3,0.85);
+    const x=POND.cx+Math.cos(a)*POND.rx*rr, y=POND.cy+Math.sin(a)*POND.ry*rr;
+    gg.fillStyle='#3f7a52'; gg.fillRect(x-2,y-1,5,3); gg.fillStyle='#57996b'; gg.fillRect(x-1,y-1,2,1);
+  }
+  // rice paddy, SE — wet rows catching the moon
+  for(let ry=430; ry<560; ry+=10){
+    gg.fillStyle='#233b31'; gg.fillRect(660, ry, 250, 7);
+    gg.fillStyle='#2b4a63'; gg.fillRect(660, ry+5, 250, 2);
+    for(let rx=666; rx<905; rx+=7){
+      gg.fillStyle='#4c8a5c'; gg.fillRect(rx, ry+1, 1,3); gg.fillRect(rx+2, ry+2, 1,2);
+    }
+  }
+  gg.fillStyle='#6f6046'; gg.fillRect(655,425,4,140); gg.fillRect(908,425,4,140);
+  // flower patches
+  for(let i=0;i<26;i++){
+    const cx=rnd(30,WW-30), cy=rnd(30,WH-30);
+    if(inPond(cx,cy,-8)) continue;
+    for(let j=0;j<6;j++){
+      gg.fillStyle=pick(['#ffce54','#ff8c9e','#e8dfc8','#c58aff']);
+      gg.fillRect(cx+rnd(-7,7)|0, cy+rnd(-5,5)|0, 1,1);
+    }
+  }
+  // stones
+  for(let i=0;i<40;i++){
+    const x=rnd(WW)|0,y=rnd(WH)|0; if(inPond(x,y,-6))continue;
+    gg.fillStyle='#55606a'; gg.fillRect(x,y,2,1); gg.fillStyle='#6d7a86'; gg.fillRect(x,y-0,1,1);
+  }
+}
+paintGround();
+
+// ---------- place objects ----------
+const houses = [
+  {img:SPR_HOUSE_A, x:100, y:186}, {img:SPR_HOUSE_B, x:236, y:176},
+  {img:SPR_HOUSE_C, x:470, y:182}, {img:SPR_HOUSE_A, x:596, y:192},
+  {img:SPR_HOUSE_B, x:286, y:392},
+];
+for(const h of houses){
+  addObj(h.img, h.x, h.y, {col:{x:h.x+4, y:h.y+30, w:56, h:28}});
+  lights.push({x:h.x+40, y:h.y+31, r:26, warm:1, on:true});
+}
+const SHRINE_POS = {x:396, y:236};
+addObj(SPR_SHRINE, SHRINE_POS.x, SHRINE_POS.y, {col:{x:SHRINE_POS.x+6,y:SHRINE_POS.y+22,w:18,h:16}});
+lights.push({x:SHRINE_POS.x+15, y:SHRINE_POS.y+16, r:30, warm:1, on:true});
+const SHRINE_SPOT = {x:SHRINE_POS.x+15, y:SHRINE_POS.y+52};  // where villagers stand to pray
+
+// banana grove — north-east, Tani's place
+const bananaSpots = [];
+{
+  const r = mulberry(99);
+  for(let i=0;i<26;i++){
+    const bx = 620 + r()*300, by = 30 + r()*170;
+    if(dist(bx,by,830,130) < 42) continue;                 // clearing for Tani
+    if(bx>716 && bx<752 && by>90) continue;                // keep the path clear
+    bananaSpots.push({x:bx,y:by});
+  }
+  bananaSpots.sort((a,b)=>a.y-b.y);
+  for(const s of bananaSpots){
+    addObj(pick(SPR_BANANAS), s.x, s.y, {col:{x:s.x+11, y:s.y+30, w:5, h:5}});
+  }
+}
+// a few strays south + west
+for(const s of [{x:60,y:280},{x:566,y:420},{x:920,y:300}]) addObj(pick(SPR_BANANAS), s.x, s.y, {col:{x:s.x+11,y:s.y+30,w:5,h:5}});
+
+// big tamarind tree (cat rescue)
+const BIGTREE = {x:800, y:322};
+addObj(SPR_BIGTREE, BIGTREE.x, BIGTREE.y, {col:{x:BIGTREE.x+17, y:BIGTREE.y+42, w:10, h:10}});
+// scattered trees
+for(const t of [[46,86,SPR_TREE1],[380,60,SPR_TREE2],[530,58,SPR_TREE1],[250,540,SPR_TREE2],[420,520,SPR_TREE1],[60,560,SPR_TREE2],[560,560,SPR_TREE1],[930,560,SPR_TREE2]]){
+  addObj(t[2], t[0], t[1], {col:{x:t[0]+t[2].width/2-4, y:t[1]+t[2].height-8, w:8, h:8}});
+}
+
+// power poles along the road — one of them is broken
+const POLES = [];
+const POLE_XS = [90, 230, 370, 510, 650, 790];
+const BROKEN_POLE = 3;   // index — x 510, the dark stretch
+POLE_XS.forEach((px0,i)=>{
+  const o = addObj(SPR_POLE, px0, 250, {col:{x:px0+8, y:250+46, w:4, h:6}});
+  POLES.push({obj:o, x:px0, i, lampX:px0+16, lampY:250+15});
+  if(i!==BROKEN_POLE) lights.push({x:px0+16, y:250+16, r:34, warm:0.8, on:true, pole:i});
+});
+const FIXLIGHT = {x:POLE_XS[BROKEN_POLE]+16, y:250+16, r:38, warm:1, on:false, pole:BROKEN_POLE};
+lights.push(FIXLIGHT);
+
+// cart
+const CART = {x:452, y:398};
+addObj(SPR_CART, CART.x, CART.y, {col:{x:CART.x, y:CART.y+12, w:32, h:12}});
+lights.push({x:CART.x+28, y:CART.y+5, r:26, warm:1, on:true});
+
+// north sala + bell
+const SALA = {x:112, y:88};
+addObj(SPR_SALA, SALA.x, SALA.y, {col:{x:SALA.x+2, y:SALA.y+26, w:32, h:8}});
+lights.push({x:SALA.x+18, y:SALA.y+18, r:24, warm:1, on:true});
+
+// jars & fences dressing
+// water jars snug against house corners
+for(const j of [[162,234],[300,224],[534,230],[588,240],[350,440],[274,446]]) addObj(SPR_JAR, j[0], j[1], {col:{x:j[0]+1,y:j[1]+6,w:8,h:5}});
+for(const f of [[60,336],[82,336],[560,336],[582,336],[604,336],[840,268],[862,268]]) addObj(SPR_FENCE, f[0], f[1], {col:{x:f[0],y:f[1]+6,w:20,h:4}});
+
+objects.sort((a,b)=>a.base-b.base);
+
+/* ============================================================
+   CHARACTERS
+   ============================================================ */
+const player = {
+  x: 742, y: 356, dir: 1, moving:false, animT:0, frame:'idle',
+  blinkT: rnd(2,5), reach:0, wailCd:0, holdFix:0, spd:56,
+  rise:0, gold:false,
+};
+
+function npc(name, cfg, x, y, opts={}){
+  return Object.assign({
+    name, cfg, frames: personFrames(cfg),
+    x, y, home:{x,y}, dir:1, state:'idle', t:rnd(1,4), animT:0,
+    path:[], marker:null, bubble:null, prayT:0, kind:'villager',
+  }, opts);
+}
+const NPCS = [
+  npc('Yai Pen',   {skin:'#d8a878', skinD:'#bf8f60', shirt:'#a86f9e', shirtD:'#8a5580', legs:'#4a3550', skirt:true, hair:'bun', hairC:'#b9b4ae'}, 200, 330),
+  npc("P'Nok",     {skin:'#e0b088', skinD:'#c69670', shirt:'#d8b04a', shirtD:'#b08c32', legs:'#7a3b50', skirt:true, hair:'short'}, 560, 340),
+  npc('Loong Dam', {skin:'#c69670', skinD:'#a87c58', shirt:'#4a7a9e', shirtD:'#35607e', legs:'#3a3a44', hair:'short'}, 330, 350),
+  npc('Mali',      {skin:'#e0b088', skinD:'#c69670', shirt:'#d05a4a', shirtD:'#a83f33', legs:'#3f5878', hair:'tails', kid:true}, 812, 372, {kind:'mali'}),
+  npc('Lung Somchai', {skin:'#c69670', skinD:'#a87c58', shirt:'#e8dfc8', shirtD:'#c4b89e', legs:'#5d4735', hair:'short', hairC:'#6a6058'}, CART.x-10, CART.y+22, {kind:'uncle'}),
+  npc('Luang Pi',  {skin:'#d8a878', skinD:'#bf8f60', shirt:'#e8923f', shirtD:'#b56a28', legs:'#e8923f', hair:'bald'}, 150, 146, {kind:'monk'}),
+];
+const MALI = NPCS.find(n=>n.kind==='mali');
+const UNCLE = NPCS.find(n=>n.kind==='uncle');
+const MONK = NPCS.find(n=>n.kind==='monk');
+
+const TANI = { x: 830, y: 130, bob:0, frame:'idle', waveT:0 };
+lights.push({x:TANI.x, y:TANI.y-8, r:26, warm:0, green:1, on:true});
+
+const CAT = { x: BIGTREE.x+34, y: BIGTREE.y+11, state:'tree', animT:0, t:0, dir:-1 };
+
+const SPIRITS = [
+  {x:60,  y:200, alive:true, t:rnd(9), shake:0},
+  {x:894, y:470, alive:true, t:rnd(9), shake:0},
+  {x:500, y:64,  alive:true, t:rnd(9), shake:0},
+];
+
+// fireflies — ambient, love the grove and the pond
+const FIREFLIES = [];
+for(let i=0;i<26;i++){
+  const zone = i<14 ? {x:rnd(640,930), y:rnd(40,200)} : {x:rnd(70,260), y:rnd(410,540)};
+  FIREFLIES.push({hx:zone.x, hy:zone.y, x:zone.x, y:zone.y, t:rnd(TAU), sp:rnd(0.4,1.1)});
+}
+
+/* ============================================================
+   QUEST / STORY STATE
+   ============================================================ */
+let merit = 0;
+const Q = { metTani:false, pole:false, cat:false, spirits:0, monk:false,
+            prayers:0, pets:0, offerings:0, done:false,
+            poleIntro:false, spiritIntro:false, ceremonyReady:false, maliMet:false };
+let offering = null;      // {x,y,t} bowl by the cart
+let offeringTimer = 40;
+let prayerTimer = 12;
+let activePrayer = null;  // npc currently on shrine duty
+
+function gainMerit(n, opts={}){
+  const before = merit;
+  merit = clamp(merit+n, 0, 100);
+  if(merit>before){
+    meritFlash = 1;
+    if(!opts.quiet) AU.ding();
+  }
+  writeSave();
+}
+let meritFlash = 0;
+
+/* ============================================================
+   DIALOG & TOASTS
+   ============================================================ */
+let dlg = null;  // {lines:[{who,text}], i, chars, onDone}
+function say(lines, onDone){
+  dlg = { lines, i:0, chars:0, onDone: onDone||null };
+}
+function dlgUpdate(dt){
+  if(!dlg) return;
+  const line = dlg.lines[dlg.i];
+  dlg.chars += dt*46;
+  if(popPress('act')){
+    AU.blip();
+    if(dlg.chars < line.text.length) dlg.chars = line.text.length;
+    else {
+      dlg.i++;
+      dlg.chars = 0;
+      if(dlg.i >= dlg.lines.length){
+        const cb = dlg.onDone; dlg = null;
+        if(cb) cb();
+      }
+    }
+  }
+}
+const toasts = [];
+function toast(text, col='#ffd257'){ toasts.push({text, col, t:0}); }
+
+/* ============================================================
+   MOVEMENT & COLLISION
+   ============================================================ */
+function blocked(x, y){
+  if(x<10 || x>WW-10 || y<14 || y>WH-6) return true;
+  if(inPond(x, y, 6)) return true;
+  for(const c of colliders){
+    if(x>c.x-2 && x<c.x+c.w+2 && y>c.y && y<c.y+c.h) return true;
+  }
+  return false;
+}
+function tryMove(e, dx, dy){
+  if(dx && !blocked(e.x+dx, e.y)) e.x += dx;
+  if(dy && !blocked(e.x, e.y+dy)) e.y += dy;
+}
+
+// villager walk-a-path
+function npcUpdate(n, dt){
+  n.animT += dt;
+  if(n.marker){ n.marker.t -= dt; if(n.marker.t<=0) n.marker=null; }
+  if(n.bubble){ n.bubble.t -= dt; if(n.bubble.t<=0) n.bubble=null; }
+  switch(n.state){
+    case 'idle':
+      n.t -= dt;
+      if(n.kind==='villager' && n.t<=0){
+        // wander somewhere on the road
+        const tx = clamp(n.home.x + rnd(-90,90), 60, 880);
+        n.path = [{x:tx, y: rnd(306,326)}];
+        n.state='walk';
+      }
+      if(n.kind==='mali' && !Q.cat){ /* stays crying by the tree */ }
+      break;
+    case 'walk': {
+      const p = n.path[0];
+      if(!p){ n.state='idle'; n.t=rnd(3,9); break; }
+      const d = dist(n.x,n.y,p.x,p.y);
+      if(d<2){ n.path.shift(); if(!n.path.length){ n.state = n.then||'idle'; n.then=null; n.t=rnd(3,9); if(n.state==='pray') startPray(n); } break; }
+      const sp = 26*dt;
+      n.dir = p.x<n.x ? -1 : 1;
+      n.x += (p.x-n.x)/d*sp; n.y += (p.y-n.y)/d*sp;
+      break;
+    }
+    case 'pray':
+      n.prayT -= dt;
+      if(n.prayT<=0){
+        n.state='walk'; n.path=[{x:n.x, y:316},{x:clamp(n.home.x,60,880), y:316}];
+        if(activePrayer===n) activePrayer=null;
+      }
+      break;
+  }
+}
+function sendToPray(n){
+  n.state='walk';
+  n.then='pray';
+  n.path = [{x:n.x, y:316},{x:SHRINE_SPOT.x, y:316},{x:SHRINE_SPOT.x, y:SHRINE_SPOT.y}];
+  n.marker = {ch:'✦', t:3, col:'#ffd257'};
+  activePrayer = n;
+  AU.blip();
+}
+function startPray(n){
+  n.prayT = 5.5;
+  n.bubble = {text:'…อุทิศส่วนกุศล… for any hungry soul near…', t:5};
+  for(let i=0;i<4;i++) spawnSmoke(SHRINE_POS.x+15, SHRINE_POS.y+20, 0.6+i*0.3);
+  const d = dist(player.x, player.y, SHRINE_SPOT.x, SHRINE_SPOT.y);
+  if(d < 140){
+    Q.prayers++;
+    for(let i=0;i<5;i++) spawnOrb(SHRINE_POS.x+15+rnd(-6,6), SHRINE_POS.y+14+rnd(-4,4), i*0.22);
+  } else if(Q.metTani){
+    n.bubble = {text:'…อุทิศส่วนกุศล…', t:4};
+  }
+}
+
+/* ============================================================
+   PARTICLES
+   ============================================================ */
+const parts = [];
+function spawnOrb(x,y,delay=0){ parts.push({k:'orb', x,y, vx:0,vy:0, t:-delay, life:6}); }
+function spawnSmoke(x,y,delay=0){ parts.push({k:'smoke', x,y, t:-delay, life:3.2, sway:rnd(TAU)}); }
+function spawnSparkle(x,y,n=6,col='#ffd257'){
+  for(let i=0;i<n;i++) parts.push({k:'sparkle', x:x+rnd(-6,6), y:y+rnd(-8,2), vy:-rnd(6,16), t:0, life:rnd(.6,1.2), col});
+}
+function spawnHeart(x,y){ parts.push({k:'heart', x,y, vy:-10, t:0, life:1.4}); }
+function spawnPoof(x,y){ for(let i=0;i<10;i++) parts.push({k:'poof', x:x+rnd(-4,4), y:y+rnd(-4,4), vx:rnd(-14,14), vy:rnd(-18,-4), t:0, life:rnd(.4,.8)}); }
+function spawnSpark(x,y){ for(let i=0;i<5;i++) parts.push({k:'spark', x,y, vx:rnd(-22,22), vy:rnd(-30,4), t:0, life:rnd(.2,.45)}); }
+function spawnRing(x,y){ parts.push({k:'ring', x,y, t:0, life:.55}); }
+function spawnTear(x,y){ parts.push({k:'tear', x,y, vy:12, t:0, life:.7}); }
+function spawnSteam(x,y){ parts.push({k:'steam', x,y, t:0, life:2.2, sway:rnd(TAU)}); }
+function spawnPour(x,y){ for(let i=0;i<3;i++) parts.push({k:'pour', x:x+rnd(-1,1), y:y+i, vy:22, t:0, life:.6}); }
+function spawnPetal(x,y){ parts.push({k:'petal', x:x+rnd(-30,30), y:y-rnd(20,50), vy:rnd(8,14), vx:rnd(-4,4), t:0, life:rnd(2,3.5), sway:rnd(TAU)}); }
+
+function partsUpdate(dt){
+  for(let i=parts.length-1;i>=0;i--){
+    const p = parts[i];
+    p.t += dt;
+    if(p.t<0) continue;
+    if(p.k==='orb'){
+      // golden merit orb, drifts then homes to the prete's chest
+      const tx = player.x, ty = player.y-26;
+      const d = dist(p.x,p.y,tx,ty);
+      const sp = Math.min(140, 30+p.t*90);
+      if(d < 5){ gainMerit(1,{quiet:true}); AU.orb(); spawnSparkle(tx,ty,3); parts.splice(i,1); continue; }
+      p.x += (tx-p.x)/d*sp*dt + Math.sin(p.t*6)*0.4;
+      p.y += (ty-p.y)/d*sp*dt;
+    }
+    else if(p.k==='smoke'||p.k==='steam'){ p.y -= dt*9; p.x += Math.sin(p.t*2+p.sway)*0.25; }
+    else if(p.k==='sparkle'){ p.y += p.vy*dt; }
+    else if(p.k==='heart'){ p.y += p.vy*dt; }
+    else if(p.k==='poof'){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=30*dt; }
+    else if(p.k==='spark'){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=90*dt; }
+    else if(p.k==='tear'){ p.y+=p.vy*dt; }
+    else if(p.k==='pour'){ p.y+=p.vy*dt; }
+    else if(p.k==='petal'){ p.y+=p.vy*dt; p.x+=p.vx*dt + Math.sin(p.t*3+p.sway)*0.4; }
+    if(p.t>=p.life) parts.splice(i,1);
+  }
+}
+
+/* ============================================================
+   DIALOG CONTENT
+   ============================================================ */
+const D = {
+  taniMeet: [
+    {who:'???', text:'Oh. OH. A new face! Well — a new very tall face. Hello up there.'},
+    {who:'Tani', text:"I'm Tani. นางตานี — I live in these banana trees. And you… you're a prete. เปรต. A fresh one, by the look of you."},
+    {who:'You', text:'วี้ดดด… วี้ด… (You try to explain yourself. It comes out as a long, thin whistle.)'},
+    {who:'Tani', text:"I know, I know. A mouth the size of a needle's eye — can't eat, can barely talk. That's the karma, friend."},
+    {who:'Tani', text:"In your last life you took what wasn't yours. Drank what wasn't offered. The ledger tipped. กรรม — karma — always counts."},
+    {who:'Tani', text:'But karma is a ledger, not a cage. Fill the other side with merit — บุญ — and even a prete walks free. One hundred merit should do it.'},
+    {who:'Tani', text:'When villagers pray at the spirit house — the ศาลพระภูมิ — hurry over and stand close. Merit dedicated to "any hungry soul" means YOU.'},
+    {who:'Tani', text:"And help them! You're enormous. Reach what they can't. Chase off what they fear. Big body, big บุญ."},
+    {who:'Tani', text:'Here — a welcome gift. Five merit, ghost to ghost. Now go. The night is soft, and the village could use a giant.'},
+  ],
+  taniReady: [
+    {who:'Tani', text:'…Oh. Oh! Look at you. You are glowing at the seams, tall one.'},
+    {who:'Tani', text:'One hundred merit. The ledger is full — do you feel it? Light as a banana leaf.'},
+    {who:'Tani', text:'Go to the spirit house. The monk is already walking there. Monks always know. It is time to go home.'},
+  ],
+  taniDone: [
+    {who:'Tani', text:'Told you karma was a ledger. …I will miss you, you know.'},
+    {who:'Tani', text:'Come haunt my grove any morning you like. The bananas are terrible. The company is excellent.'},
+  ],
+  monk: [
+    {who:'Luang Pi', text:'Hm. A cold wind… no. A hungry one. And so very tall.'},
+    {who:'Luang Pi', text:'Be at peace, wanderer. Whatever you were before, tonight you are only a neighbor.'},
+    {who:'Luang Pi', text:'I pour this water for you — กรวดน้ำ. May the merit flow where the thirst is greatest.'},
+  ],
+  maliCry: [
+    {who:'Mali', text:'M-Meow-Meow climbed too high… nobody can reach her… even Papa\'s ladder is too short… *sniff*'},
+    {who:'You', text:'วี้ด. (You crack your knuckles. It sounds like bamboo in the wind.)'},
+    {who:'Mali', text:'…are YOU going to try? You ARE very tall. Please be careful, giant ghost พี่!'},
+  ],
+  maliThanks: [
+    {who:'Mali', text:'WHOA. You are like a walking เสาไฟฟ้า!! Thank you, giant ghost พี่!!'},
+    {who:'Mali', text:'Meow-Meow says thank you too. She promises to only climb SHORT trees from now on.'},
+  ],
+  poleIntro: [
+    {who:'', text:'The streetlamp sputters and dies. This stretch of road is pitch dark — villagers hurry past it, clutching their bags.'},
+    {who:'', text:'The junction box hangs just under the lamp. Far too high for any ladder. Not too high for you.'},
+  ],
+  poleDone: [
+    {who:'', text:'Click. The lamp hums awake, and warm light spills across the road. Somewhere behind you, an aunty stops hurrying.'},
+  ],
+  spiritIntro: [
+    {who:'', text:"A lesser spirit — all smoke and spite — gnaws at the village's sleep. It hasn't noticed you."},
+    {who:'', text:'Few things frighten a thing like this. A nine-foot hungry ghost with a good set of lungs is one of them.'},
+  ],
+  uncle: [
+    {who:'Lung Somchai', text:'Strange wind tonight… warm, though. Like something big and kind keeps walking past my cart.'},
+    {who:'Lung Somchai', text:"Grandmother always said: feed the spirits you can't see. Extra bowl's on the end, friend. Mind the chili."},
+  ],
+  ceremony: [
+    {who:'Luang Pi', text:'Neighbors — tonight we pour water for a tall, quiet friend who has been minding this village.'},
+    {who:'Mali', text:'The lamppost ghost!! I KNEW it!'},
+    {who:'Luang Pi', text:'May this merit reach you. May hunger loosen its hands. May the road home be short and lit the whole way.'},
+    {who:'Luang Pi', text:'ไปสู่สุคติเถิด — go gently. Go home.'},
+    {who:'Tani', text:'See you around, tall one. …Somewhere better, I mean.'},
+  ],
+};
+const TANI_TIPS = ()=>{
+  const tips = [];
+  if(!Q.pole) tips.push('The streetlight past the third house keeps dying. Everyone walks fast through the dark there. You could reach it, you know.');
+  if(!Q.cat) tips.push('I heard a cat crying near the big tamarind tree, east along the road. And a little girl crying louder.');
+  if(Q.spirits<3) tips.push('Something sour drifts at the village edges. Lesser spirits. One good วี้ดดด from you (press Q) would send them off.');
+  if(!Q.monk) tips.push('The monk at the north sala — he senses things. Go stand near him. Politely. You are somewhat noticeable.');
+  tips.push('Stand close when they pray at the shrine. Merit dedicated to any hungry soul nearby means YOU, tall one.');
+  tips.push('Comfy night, no? The fireflies like you. They think you are a very slow lamppost.');
+  return [{who:'Tani', text:pick(tips)}];
+};
+
+/* ============================================================
+   GAME STATES
+   ============================================================ */
+let state = 'title';    // title | intro | play | ceremony | end
+let stateT = 0;
+let introPanel = 0, introChars = 0;
+let dawn = 0;           // 0=night … 1=morning (post-ceremony)
+let ceremony = null;
+let camX = 0, camY = 0, camInit=false;
+let helpOpen = false;
+let time = 0;
+
+const INTRO = [
+  { cap:"In your last life, you took what wasn't yours… and drank what wasn't offered.", scene:1 },
+  { cap:'You laughed past the temple gate. The bell rang for you anyway.', scene:2 },
+  { cap:'Then one night, the counting ended. กรรม — karma — is patient. And karma is exact.', scene:3 },
+  { cap:"You woke beneath the moon. Tall as the palms. Hungry as a drought. A mouth the size of a needle's eye.", scene:4 },
+  { cap:'You are a PRETE — เปรต — now. But even a hungry ghost can earn its way home. They say the village still prays…', scene:4 },
+];
+
+function startNewGame(){
+  merit = 0;
+  Object.assign(Q,{metTani:false,pole:false,cat:false,spirits:0,monk:false,prayers:0,pets:0,offerings:0,done:false,poleIntro:false,spiritIntro:false,ceremonyReady:false,maliMet:false});
+  FIXLIGHT.on=false; dawn=0; player.gold=false;
+  player.x=742; player.y=356; player.rise=0;
+  CAT.state='tree'; CAT.x=BIGTREE.x+30; CAT.y=BIGTREE.y+14;
+  SPIRITS.forEach(s=>{s.alive=true; s.shake=0;});
+  state='intro'; stateT=0; introPanel=0; introChars=0;
+  writeSave();
+}
+function continueGame(sv){
+  merit = sv.merit|0;
+  Object.assign(Q, sv.q);
+  if(Q.pole) FIXLIGHT.on = true;
+  if(Q.cat){ CAT.state='wander'; CAT.x=470; CAT.y=350; }
+  if(Q.done){ dawn=1; player.gold=true; }
+  if(merit>=100 && Q.metTani && !Q.done) Q.ceremonyReady = true;
+  let n=0; SPIRITS.forEach((s,i)=>{ if(i < Q.spirits){ s.alive=false; } });
+  state='play'; stateT=0;
+}
+
+/* ============================================================
+   UPDATE
+   ============================================================ */
+function update(dt){
+  time += dt;
+  stateT += dt;
+  AU.tick(dt, time);
+
+  if(popPress('mute')) { AU.toggleMute(); toast(AU.muted?'sound off':'sound on ♪','#9ecbff'); }
+
+  if(state==='title'){ updateTitle(dt); return; }
+  if(state==='intro'){ updateIntro(dt); return; }
+  if(state==='end'){ updateEnd(dt); return; }
+
+  if(popPress('help')) helpOpen = !helpOpen;
+  if(helpOpen){ if(popPress('act')) helpOpen=false; presses=[]; return; }
+
+  if(state==='ceremony'){ updateCeremony(dt); partsUpdate(dt); return; }
+
+  // ---------- PLAY ----------
+  dlgUpdate(dt);
+  const talking = !!dlg;
+
+  // player movement
+  let dx=0, dy=0;
+  if(!talking && player.reach<=0){
+    if(keys.left) dx=-1; if(keys.right) dx=1;
+    if(keys.up) dy=-1;   if(keys.down) dy=1;
+  }
+  player.moving = !!(dx||dy);
+  if(player.moving){
+    const sp = player.spd*dt * (dx&&dy ? 0.72 : 1);
+    tryMove(player, dx*sp, dy*sp);
+    if(dx) player.dir = dx;
+    player.animT += dt;
+  } else player.animT = 0;
+  player.blinkT -= dt;
+  if(player.blinkT<0) player.blinkT = rnd(2.5,6);
+  if(player.reach>0) player.reach -= dt;
+  if(player.wailCd>0) player.wailCd -= dt;
+
+  // wail — the famous prete whistle
+  if(!talking && popPress('wail') && player.wailCd<=0){
+    player.wailCd = 1.4;
+    AU.wail();
+    spawnRing(player.x, player.y-30);
+    for(const n of NPCS){ if(dist(n.x,n.y,player.x,player.y)<70 && n.state!=='pray') n.marker={ch:'?!', t:1.2, col:'#ffd98a'}; }
+    for(const s of SPIRITS){
+      if(s.alive && dist(s.x,s.y,player.x,player.y)<74){
+        s.shake = 0.8;
+      }
+    }
+  }
+  for(const s of SPIRITS){
+    if(s.alive && s.shake>0){
+      s.shake -= dt;
+      if(s.shake<=0){
+        s.alive=false; AU.poof(); spawnPoof(s.x,s.y);
+        Q.spirits++;
+        gainMerit(10);
+        toast('+10 บุญ · the shadows thin');
+        if(Q.spirits>=3) setTimeout(()=> toast('the night feels swept clean ✦','#9ecbff'), 900);
+      }
+    }
+    s.t += dt;
+  }
+
+  // NPCs
+  for(const n of NPCS) npcUpdate(n, dt);
+
+  // Mali cries until the cat is safe
+  if(!Q.cat && Math.random()<dt*0.7) spawnTear(MALI.x+3, MALI.y-8);
+
+  // prayer scheduling
+  prayerTimer -= dt;
+  if(prayerTimer<=0){
+    prayerTimer = rnd(16, 26);
+    const cands = NPCS.filter(n=> (n.kind==='villager' || (n.kind==='mali'&&Q.cat)) && (n.state==='idle'||n.state==='walk') && n!==activePrayer);
+    if(cands.length && !activePrayer) sendToPray(pick(cands));
+  }
+
+  // noodle offerings
+  offeringTimer -= dt;
+  if(offeringTimer<=0 && !offering){
+    offering = {x:CART.x+38, y:CART.y+22, t:0};
+    UNCLE.bubble = {text:'for the spirits ~', t:3};
+    offeringTimer = rnd(45, 70);
+  }
+  if(offering){
+    offering.t += dt;
+    if(offering.t%0.5 < dt) spawnSteam(offering.x+2, offering.y-2);
+    if(dist(player.x,player.y,offering.x,offering.y) < 14){
+      offering=null; Q.offerings++;
+      gainMerit(2);
+      toast('+2 บุญ · noodles for the unseen (the steam is enough)');
+      AU.purr();
+    }
+    else if(offering && offering.t>34) offering=null;
+  }
+
+  // cat behavior
+  CAT.animT += dt; CAT.t -= dt;
+  if(CAT.state==='wander'){
+    if(CAT.t<=0){
+      CAT.t = rnd(2,6);
+      const nearPl = dist(CAT.x,CAT.y,player.x,player.y)<64 && Math.random()<0.5;
+      CAT.tx = nearPl ? player.x+rnd(-10,10) : clamp(CAT.x+rnd(-50,50), 380, 620);
+      CAT.ty = nearPl ? player.y+rnd(-6,6)   : clamp(CAT.y+rnd(-30,30), 320, 400);
+    }
+    if(CAT.tx!==undefined){
+      const d = dist(CAT.x,CAT.y,CAT.tx,CAT.ty);
+      if(d>3){ CAT.x += (CAT.tx-CAT.x)/d*22*dt; CAT.y += (CAT.ty-CAT.y)/d*22*dt; CAT.dir = CAT.tx<CAT.x?-1:1; CAT.walk=true; }
+      else CAT.walk=false;
+    }
+  }
+
+  // interactions
+  if(!talking) checkInteractions(dt);
+
+  partsUpdate(dt);
+
+  // fireflies
+  for(const f of FIREFLIES){
+    f.t += dt*f.sp;
+    f.x = f.hx + Math.sin(f.t*0.9)*14 + Math.sin(f.t*0.37)*8;
+    f.y = f.hy + Math.cos(f.t*0.7)*9 + Math.sin(f.t*0.53)*5;
+  }
+
+  // toasts & flash
+  for(let i=toasts.length-1;i>=0;i--){ toasts[i].t += dt; if(toasts[i].t>2.6) toasts.splice(i,1); }
+  if(meritFlash>0) meritFlash -= dt*2;
+
+  // camera
+  const tx = clamp(player.x - W/2, 0, WW-W);
+  const ty = clamp(player.y - 26 - H/2, 0, WH-H);
+  if(!camInit){ camX=tx; camY=ty; camInit=true; }
+  camX += (tx-camX)*Math.min(1, dt*6);
+  camY += (ty-camY)*Math.min(1, dt*6);
+
+  presses = [];
+}
+
+/* ---------- interactions ---------- */
+let prompt = null;   // {x,y,text}
+function checkInteractions(dt){
+  prompt = null;
+  const px=player.x, py=player.y;
+
+  // 1. Nang Tani
+  if(dist(px,py,TANI.x,TANI.y+10) < 30){
+    prompt = {x:TANI.x, y:TANI.y-24, text:'E — talk'};
+    if(popPress('act')){
+      TANI.waveT = 1.5;
+      if(!Q.metTani){
+        say(D.taniMeet, ()=>{
+          Q.metTani = true;
+          gainMerit(5);
+          toast('+5 บุญ · a gift, ghost to ghost');
+          writeSave();
+        });
+      } else if(merit>=100 && !Q.ceremonyReady && !Q.done){
+        say(D.taniReady, ()=>{ Q.ceremonyReady=true; writeSave(); });
+      } else if(Q.done){
+        say(D.taniDone);
+      } else {
+        say(TANI_TIPS());
+      }
+      return;
+    }
+  }
+
+  // 2. Mali + the cat in the tree
+  if(!Q.cat){
+    if(!Q.maliMet && dist(px,py,MALI.x,MALI.y)<26){
+      prompt = {x:MALI.x+6, y:MALI.y-16, text:'E — talk'};
+      if(popPress('act')){ say(D.maliCry, ()=>{ Q.maliMet=true; }); return; }
+    }
+    if(Q.maliMet && dist(px,py,BIGTREE.x+25,BIGTREE.y+40)<30){
+      prompt = {x:BIGTREE.x+22, y:BIGTREE.y-6, text:'E — reach up for the cat'};
+      if(popPress('act')){
+        player.reach = 1.3;
+        AU.meow();
+        setTimeout(()=>{
+          Q.cat = true;
+          CAT.state='wander'; CAT.x = px; CAT.y = py+6; CAT.tx=MALI.x; CAT.ty=MALI.y+4;
+          spawnHeart(px, py-40); spawnHeart(MALI.x, MALI.y-14);
+          say(D.maliThanks, ()=>{
+            gainMerit(15);
+            toast('+15 บุญ · Meow-Meow rescued ♥');
+            MALI.home = {x:500, y:330};
+            MALI.state='walk'; MALI.path=[{x:MALI.x,y:316},{x:500,y:316}];
+          });
+        }, 900);
+        return;
+      }
+    }
+  } else if(CAT.state==='wander' && dist(px,py,CAT.x,CAT.y)<16 && !prompt){
+    prompt = {x:CAT.x+2, y:CAT.y-14, text:'E — pet'};
+    if(popPress('act')){
+      AU.purr(); spawnHeart(CAT.x+2, CAT.y-8);
+      if(Q.pets<3){ Q.pets++; gainMerit(1,{quiet:true}); toast('+1 บุญ · purr'); }
+      else toast('purr','#ff9eb0');
+      return;
+    }
+  }
+
+  // 3. the broken streetlight
+  const pole = POLES[BROKEN_POLE];
+  if(!Q.pole && dist(px,py,pole.x+9, 250+48)<32){
+    if(!Q.poleIntro){ Q.poleIntro=true; say(D.poleIntro); return; }
+    prompt = {x:pole.x+9, y:250+2, text:'hold E — fix the streetlight'};
+    if(keys.act){
+      player.holdFix += dt;
+      player.reach = 0.15;
+      if(Math.random()<dt*7) { spawnSpark(pole.lampX, pole.lampY); AU.spark(); }
+      if(player.holdFix > 1.6){
+        Q.pole = true; FIXLIGHT.on = true;
+        AU.fixdone();
+        spawnSparkle(pole.lampX, pole.lampY+4, 10);
+        say(D.poleDone, ()=>{ gainMerit(15); toast('+15 บุญ · the dark stretch glows'); });
+        for(const n of NPCS){ if(dist(n.x,n.y,px,py)<120) n.marker={ch:'!', t:2, col:'#ffd257'}; }
+        player.holdFix = 0;
+      }
+    }
+  } else if(!keys.act) player.holdFix = Math.max(0, player.holdFix - dt*0.5);
+
+  // 4. spirits — hint prompt
+  for(const s of SPIRITS){
+    if(s.alive && dist(px,py,s.x,s.y)<62 && !prompt){
+      if(!Q.spiritIntro){ Q.spiritIntro=true; say(D.spiritIntro); return; }
+      prompt = {x:s.x, y:s.y-20, text:'Q — วี้ดดด (wail)'};
+    }
+  }
+
+  // 5. monk
+  if(dist(px,py,MONK.x,MONK.y)<26 && !prompt){
+    prompt = {x:MONK.x+6, y:MONK.y-16, text:'E — approach politely'};
+    if(popPress('act')){
+      if(!Q.monk){
+        AU.chant();
+        say(D.monk, ()=>{
+          Q.monk = true;
+          AU.pour();
+          for(let i=0;i<14;i++) setTimeout(()=>spawnPour(MONK.x+8, MONK.y-2), i*90);
+          gainMerit(10);
+          toast('+10 บุญ · กรวดน้ำ — the water finds you');
+        });
+      } else {
+        say([{who:'Luang Pi', text: Q.spirits>=3 ? 'The night feels swept clean. Your doing, I think.' : 'The water finds its way. So will you.'}]);
+      }
+      return;
+    }
+  }
+
+  // 6. uncle at the cart
+  if(dist(px,py,UNCLE.x,UNCLE.y)<24 && !prompt){
+    prompt = {x:UNCLE.x+6, y:UNCLE.y-16, text:'E — talk'};
+    if(popPress('act')){
+      say(D.uncle, ()=>{
+        if(!offering){ offering = {x:CART.x+38, y:CART.y+22, t:0}; }
+      });
+      return;
+    }
+  }
+
+  // 7. the ceremony
+  if(Q.ceremonyReady && !Q.done && dist(px,py,SHRINE_SPOT.x,SHRINE_SPOT.y)<40){
+    startCeremony();
+  }
+}
+
+/* ---------- ceremony ---------- */
+function startCeremony(){
+  state='ceremony'; stateT=0;
+  ceremony = { t:0, lineI:-1, lineT:1.2, chars:0, rise:0, flash:0 };
+  // gather everyone
+  const spots = [
+    [SHRINE_SPOT.x-26, SHRINE_SPOT.y+8], [SHRINE_SPOT.x-14, SHRINE_SPOT.y+18],
+    [SHRINE_SPOT.x+34, SHRINE_SPOT.y+12], [SHRINE_SPOT.x+22, SHRINE_SPOT.y+22],
+    [SHRINE_SPOT.x+44, SHRINE_SPOT.y+24],
+  ];
+  let si=0;
+  for(const n of NPCS){
+    if(n.kind==='monk'){ n.x=SHRINE_SPOT.x-4; n.y=SHRINE_SPOT.y+2; }
+    else { const s=spots[si++%spots.length]; n.x=s[0]; n.y=s[1]; }
+    n.state='idle'; n.path=[]; n.bubble=null; n.ceremonyWai = n.kind!=='monk';
+  }
+  CAT.state='wander'; CAT.x=SHRINE_SPOT.x+30; CAT.y=SHRINE_SPOT.y+30; CAT.tx=undefined; CAT.walk=false;
+  TANI.cx = SHRINE_SPOT.x+58; TANI.cy = SHRINE_SPOT.y+6;
+  player.x = SHRINE_SPOT.x+12; player.y = SHRINE_SPOT.y+10;
+  AU.ceremonySeq();
+}
+function updateCeremony(dt){
+  const c = ceremony;
+  c.t += dt;
+  dawn = clamp(c.t/14, 0, 1);
+  // script lines
+  c.lineT -= dt;
+  if(c.lineI>=0 && c.lineI<D.ceremony.length) c.chars += dt*40;
+  if(c.lineT<=0){
+    c.lineI++;
+    c.chars=0;
+    if(c.lineI < D.ceremony.length){
+      c.lineT = 1.4 + D.ceremony[c.lineI].text.length/34;
+      if(c.lineI===2){ AU.pour(); for(let i=0;i<20;i++) setTimeout(()=>spawnPour(MONK.x+8, MONK.y-2), i*80); }
+      if(c.lineI===3) AU.bigDing();
+    } else c.lineT = 999;
+  }
+  // petals & sparkles
+  if(Math.random()<dt*8) spawnPetal(player.x, player.y-30);
+  if(Math.random()<dt*5) spawnSparkle(player.x+rnd(-8,8), player.y-rnd(10,40), 1);
+  // rise
+  if(c.lineI >= D.ceremony.length){
+    c.rise += dt;
+    player.rise = Math.min(44, c.rise*8);
+    if(c.rise > 6.5){
+      c.flash += dt;
+      if(c.flash > 1.4){
+        Q.done = true; player.gold = true; player.rise = 0; dawn = 1;
+        writeSave();
+        state='end'; stateT=0;
+      }
+    }
+  }
+  const tx = clamp(SHRINE_SPOT.x - W/2 + 10, 0, WW-W);
+  const ty = clamp(SHRINE_SPOT.y - H/2 - 10, 0, WH-H);
+  camX += (tx-camX)*Math.min(1,dt*3); camY += (ty-camY)*Math.min(1,dt*3);
+  presses=[];
+}
+
+/* ---------- title / intro / end ---------- */
+function updateTitle(dt){
+  if(popPress('act')){
+    const sv = loadSave();
+    if(sv && (sv.merit>0 || (sv.q&&sv.q.metTani))) continueGame(sv);
+    else startNewGame();
+    AU.ding();
+  }
+  if(popPress('newgame')){ clearSave(); startNewGame(); AU.ding(); }
+  presses=[];
+}
+function updateIntro(dt){
+  introChars += dt*40;
+  if(popPress('act')){
+    AU.blip();
+    const cap = INTRO[introPanel].cap;
+    if(introChars < cap.length) introChars = cap.length;
+    else {
+      introPanel++;
+      introChars=0;
+      if(introPanel>=INTRO.length){
+        state='play'; stateT=0;
+        setTimeout(()=> toast('a glow flickers behind the banana grove…','#9ee8b0'), 800);
+      }
+    }
+  }
+  presses=[];
+}
+function updateEnd(dt){
+  if(stateT<1) { presses=[]; return; }
+  if(popPress('act')){
+    state='play'; stateT=0;
+    for(const n of NPCS){ n.ceremonyWai=false; n.state='idle'; n.t=rnd(1,4); }
+    toast('a soft morning ☀ wander as long as you like','#ffd98a');
+  }
+  if(popPress('restart')){ clearSave(); state='title'; stateT=0; }
+  presses=[];
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const vignette = mkCv(W,H);
+{
+  const vg = G(vignette);
+  const grad = vg.createRadialGradient(W/2,H/2, H*0.42, W/2,H/2, H*0.95);
+  grad.addColorStop(0,'rgba(8,6,20,0)');
+  grad.addColorStop(1,'rgba(8,6,20,0.5)');
+  vg.fillStyle=grad; vg.fillRect(0,0,W,H);
+}
+const lightCv = mkCv(W,H); const lg = G(lightCv);
+
+function nightAmount(){ return 1-dawn; }
+
+function render(){
+  ctx.setTransform(S,0,0,S,0,0);
+  ctx.imageSmoothingEnabled = false;
+
+  if(state==='title'){ renderTitle(); return; }
+  if(state==='intro'){ renderIntro(); return; }
+
+  const cx = Math.floor(camX), cy = Math.floor(camY);
+  ctx.save();
+  ctx.translate(-cx,-cy);
+
+  // ground
+  ctx.drawImage(groundCv, cx, cy, W, H, cx, cy, W, H);
+
+  // pond ripples
+  ctx.strokeStyle='rgba(160,200,255,0.16)';
+  for(let i=0;i<3;i++){
+    const rr = ((time*8 + i*22) % 66);
+    ctx.beginPath();
+    ctx.ellipse(POND.cx, POND.cy, rr*POND.rx/70, rr*POND.ry/70, 0, 0, TAU);
+    ctx.stroke();
+  }
+
+  // power wires
+  ctx.strokeStyle='#16182a'; ctx.lineWidth=1;
+  for(let i=0;i<POLES.length-1;i++){
+    const a=POLES[i], b=POLES[i+1];
+    ctx.beginPath();
+    ctx.moveTo(a.x+9, 250+6);
+    ctx.quadraticCurveTo((a.x+b.x)/2+9, 250+14, b.x+9, 250+6);
+    ctx.stroke();
+  }
+
+  // offering bowl
+  if(offering){
+    ctx.fillStyle='#f5ead8'; ctx.fillRect(offering.x-3, offering.y-2, 7, 3);
+    ctx.fillStyle='#d8b04a'; ctx.fillRect(offering.x-2, offering.y-3, 5, 1);
+  }
+
+  // ---- y-sorted drawables ----
+  const draws = [];
+  for(const o of objects){
+    if(o.x+o.img.width<cx-8||o.x>cx+W+8||o.base<cy-70||o.base>cy+H+70) continue;
+    draws.push({base:o.base, fn:()=>{
+      ctx.fillStyle='rgba(10,8,24,0.35)';
+      ctx.beginPath(); ctx.ellipse(o.x+o.img.width/2, o.base+1, o.sh/2, 2.4, 0,0,TAU); ctx.fill();
+      ctx.drawImage(o.img, Math.floor(o.x), Math.floor(o.y));
+    }});
+  }
+  for(const n of NPCS) draws.push({base:n.y, fn:()=>drawNpc(n)});
+  draws.push({base:player.y, fn:drawPlayer});
+  draws.push({base:TANI.y+12, fn:drawTani});
+  draws.push({base: CAT.state==='tree' ? BIGTREE.y+SPR_BIGTREE.height : CAT.y+6, fn:drawCatE});
+  for(const s of SPIRITS) if(s.alive) draws.push({base:s.y+8, fn:()=>drawSpirit(s)});
+  draws.sort((a,b)=>a.base-b.base);
+  for(const d of draws) d.fn();
+
+  // particles (world space)
+  drawParts();
+
+  ctx.restore();
+
+  // ---- lighting ----
+  renderLights(cx,cy);
+
+  // fireflies glow above darkness
+  ctx.save(); ctx.translate(-cx,-cy);
+  ctx.globalCompositeOperation='lighter';
+  for(const f of FIREFLIES){
+    const blink = 0.5+0.5*Math.sin(f.t*2.3);
+    if(blink<0.25) continue;
+    ctx.fillStyle=`rgba(190,255,150,${0.5*blink})`;
+    ctx.fillRect(f.x, f.y, 1, 1);
+    const g2 = ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,5);
+    g2.addColorStop(0,`rgba(150,255,120,${0.25*blink})`); g2.addColorStop(1,'rgba(150,255,120,0)');
+    ctx.fillStyle=g2; ctx.fillRect(f.x-5,f.y-5,10,10);
+  }
+  ctx.globalCompositeOperation='source-over';
+  ctx.restore();
+
+  // vignette
+  ctx.drawImage(vignette,0,0);
+
+  // world-anchored UI (prompts, markers, bubbles)
+  ctx.save(); ctx.translate(-cx,-cy);
+  drawWorldUI();
+  ctx.restore();
+
+  // screen UI
+  drawHUD();
+  if(state==='ceremony') drawCeremonyUI();
+  if(state==='end') drawEndCard();
+  if(helpOpen) drawHelp();
+}
+
+/* ---------- characters ---------- */
+function preteFrame(){
+  if(player.reach>0) return 'reach';
+  if(player.moving) return (player.animT*6|0)%2 ? 'w1' : 'w2';
+  if(player.blinkT < 0.13) return 'blink';
+  return 'idle';
+}
+function drawPlayer(){
+  const f = preteFrame();
+  let img = SPR_PRETE[player.gold ? f+'_g' : f] || SPR_PRETE[f];
+  if(player.dir<0) img = flipOf(img);
+  const bob = player.moving ? 0 : Math.sin(time*1.8)*1;
+  const x = Math.floor(player.x-10), y = Math.floor(player.y-51 + bob - player.rise);
+  // shadow
+  ctx.fillStyle='rgba(10,8,24,0.4)';
+  ctx.beginPath(); ctx.ellipse(player.x, player.y+1, 7, 2.4, 0,0,TAU); ctx.fill();
+  ctx.drawImage(img, x, y);
+  if(player.gold && Math.random()<0.15) spawnSparkle(player.x+rnd(-6,6), player.y-rnd(6,44), 1, '#ffe9b3');
+  // fix progress
+  if(player.holdFix>0 && !Q.pole){
+    const p = clamp(player.holdFix/1.6, 0, 1);
+    ctx.fillStyle='rgba(20,16,40,0.7)'; ctx.fillRect(player.x-11, y-8, 22, 4);
+    ctx.fillStyle='#ffd257'; ctx.fillRect(player.x-10, y-7, 20*p, 2);
+  }
+}
+const flipCache = new Map();
+function flipOf(img){
+  if(!flipCache.has(img)) flipCache.set(img, flipCv(img));
+  return flipCache.get(img);
+}
+function drawNpc(n){
+  const walking = n.state==='walk';
+  let f = 'idle';
+  if(n.state==='pray' || n.ceremonyWai) f='wai';
+  else if(walking) f = (n.animT*7|0)%2 ? 'w1':'w2';
+  let img = n.frames[f];
+  if(n.dir<0) img = flipOf(img);
+  const h = img.height;
+  ctx.fillStyle='rgba(10,8,24,0.4)';
+  ctx.beginPath(); ctx.ellipse(n.x, n.y+1, 5, 1.8, 0,0,TAU); ctx.fill();
+  ctx.drawImage(img, Math.floor(n.x-6), Math.floor(n.y-h+1));
+  if(n.state==='pray' && Math.random()<0.05) spawnSmoke(SHRINE_POS.x+15, SHRINE_POS.y+21);
+}
+function drawTani(){
+  TANI.bob = Math.sin(time*1.6)*2;
+  if(TANI.waveT>0) TANI.waveT -= 1/60;
+  const img = TANI.waveT>0 ? SPR_TANI_WAVE : SPR_TANI_IDLE;
+  const dx = (state==='ceremony'&&TANI.cx) ? TANI.cx : TANI.x;
+  const dy = (state==='ceremony'&&TANI.cy) ? TANI.cy : TANI.y;
+  // green glow
+  const g2 = ctx.createRadialGradient(dx,dy-2,2, dx,dy-2,16);
+  g2.addColorStop(0,'rgba(120,230,140,0.18)'); g2.addColorStop(1,'rgba(120,230,140,0)');
+  ctx.fillStyle=g2; ctx.fillRect(dx-16,dy-18,32,32);
+  ctx.globalAlpha = 0.94;
+  ctx.drawImage(img, Math.floor(dx-8), Math.floor(dy-24+TANI.bob));
+  ctx.globalAlpha = 1;
+}
+function drawCatE(){
+  if(CAT.state==='tree'){
+    // a little branch to sit on, poking out of the canopy
+    ctx.fillStyle='#3b2c21'; ctx.fillRect(Math.floor(CAT.x-9), Math.floor(CAT.y+1), 16, 2);
+    ctx.fillStyle='#4c3a2c'; ctx.fillRect(Math.floor(CAT.x-9), Math.floor(CAT.y+1), 16, 1);
+    ctx.drawImage(SPR_CAT[(time*2|0)%2?'sit':'sit2'], Math.floor(CAT.x-7), Math.floor(CAT.y-9));
+    return;
+  }
+  let img = CAT.walk ? SPR_CAT[(CAT.animT*8|0)%2?'w1':'w2'] : SPR_CAT[(time*1.4|0)%3===2?'sit2':'sit'];
+  if(CAT.dir<0) img = flipOf(img);
+  ctx.fillStyle='rgba(10,8,24,0.35)';
+  ctx.beginPath(); ctx.ellipse(CAT.x, CAT.y+1, 5, 1.6, 0,0,TAU); ctx.fill();
+  ctx.drawImage(img, Math.floor(CAT.x-7), Math.floor(CAT.y-8));
+}
+function drawSpirit(s){
+  const wob = Math.sin(s.t*3)*2, sh = s.shake>0 ? Math.sin(s.t*60)*2 : 0;
+  const x = s.x+sh, y = s.y+wob;
+  ctx.fillStyle='rgba(18,10,40,0.25)';
+  ctx.beginPath(); ctx.ellipse(x,y,13,10,0,0,TAU); ctx.fill();
+  ctx.fillStyle='rgba(28,16,58,0.9)';
+  ctx.beginPath(); ctx.ellipse(x,y,7,6,0,0,TAU); ctx.fill();
+  for(let i=0;i<3;i++){
+    ctx.beginPath(); ctx.ellipse(x-4+i*4, y+5+Math.sin(s.t*4+i)*1.5, 2,2.6, 0,0,TAU); ctx.fill();
+  }
+  // eerie violet haze so it reads in the dark
+  const hz = ctx.createRadialGradient(x,y,2, x,y,15);
+  hz.addColorStop(0,'rgba(140,90,220,0.14)'); hz.addColorStop(1,'rgba(140,90,220,0)');
+  ctx.fillStyle=hz; ctx.fillRect(x-15,y-15,30,30);
+  const gl = 0.6+0.4*Math.sin(s.t*5);
+  ctx.fillStyle=`rgba(255,90,106,${gl})`;
+  ctx.fillRect(x-3, y-2, 2,2); ctx.fillRect(x+2, y-2, 2,2);
+  if(Math.random()<0.03) parts.push({k:'smoke', x:x, y:y-4, t:0, life:1.4, sway:rnd(TAU)});
+}
+
+/* ---------- particles ---------- */
+function drawParts(){
+  for(const p of parts){
+    if(p.t<0) continue;
+    const lt = p.t/p.life;
+    if(p.k==='orb'){
+      ctx.fillStyle='#ffd257'; ctx.fillRect(p.x-1,p.y-1,2,2);
+      ctx.fillStyle='rgba(255,230,140,0.5)'; ctx.fillRect(p.x-2,p.y,1,1); ctx.fillRect(p.x+1,p.y-2,1,1);
+    } else if(p.k==='smoke'){
+      ctx.fillStyle=`rgba(190,180,210,${0.35*(1-lt)})`;
+      ctx.fillRect(p.x, p.y, 2-lt, 2-lt);
+    } else if(p.k==='steam'){
+      ctx.fillStyle=`rgba(240,240,235,${0.4*(1-lt)})`;
+      ctx.fillRect(p.x, p.y, 2, 1);
+    } else if(p.k==='sparkle'){
+      ctx.fillStyle = p.col||'#ffd257';
+      ctx.globalAlpha = 1-lt;
+      ctx.fillRect(p.x,p.y,1,1);
+      if(lt<0.5){ ctx.fillRect(p.x-1,p.y,1,1); ctx.fillRect(p.x+1,p.y,1,1); ctx.fillRect(p.x,p.y-1,1,1); ctx.fillRect(p.x,p.y+1,1,1); }
+      ctx.globalAlpha=1;
+    } else if(p.k==='heart'){
+      ctx.fillStyle=`rgba(255,120,150,${1-lt})`;
+      ctx.fillRect(p.x-1,p.y-1,1,1); ctx.fillRect(p.x+1,p.y-1,1,1);
+      ctx.fillRect(p.x-1,p.y,3,1); ctx.fillRect(p.x,p.y+1,1,1);
+    } else if(p.k==='poof'){
+      ctx.fillStyle=`rgba(60,40,100,${0.7*(1-lt)})`;
+      ctx.fillRect(p.x,p.y,2,2);
+    } else if(p.k==='spark'){
+      ctx.fillStyle = lt<0.5?'#fff3b0':'#ffb85c';
+      ctx.fillRect(p.x,p.y,1,1);
+    } else if(p.k==='tear'){
+      ctx.fillStyle=`rgba(150,200,255,${1-lt})`; ctx.fillRect(p.x,p.y,1,1);
+    } else if(p.k==='pour'){
+      ctx.fillStyle=`rgba(150,200,255,${0.8*(1-lt)})`; ctx.fillRect(p.x,p.y,1,2);
+    } else if(p.k==='ring'){
+      ctx.strokeStyle=`rgba(255,240,200,${0.6*(1-lt)})`;
+      ctx.beginPath(); ctx.arc(p.x,p.y, 4+lt*70, 0, TAU); ctx.stroke();
+    } else if(p.k==='petal'){
+      ctx.fillStyle=`rgba(255,210,120,${0.9*(1-lt)})`;
+      ctx.fillRect(p.x, p.y, 2,1);
+    }
+  }
+}
+
+/* ---------- lighting ---------- */
+function renderLights(cx,cy){
+  const na = nightAmount();
+  const darkA = 0.14 + 0.46*na;
+  lg.globalCompositeOperation='source-over';
+  lg.clearRect(0,0,W,H);
+  lg.fillStyle = `rgba(14,12,44,${darkA})`;
+  lg.fillRect(0,0,W,H);
+  lg.globalCompositeOperation='destination-out';
+  const punch=(x,y,r,a)=>{
+    const g2 = lg.createRadialGradient(x-cx,y-cy,1, x-cx,y-cy,r);
+    g2.addColorStop(0,`rgba(0,0,0,${a})`); g2.addColorStop(1,'rgba(0,0,0,0)');
+    lg.fillStyle=g2; lg.fillRect(x-cx-r, y-cy-r, r*2, r*2);
+  };
+  for(const l of lights){
+    if(!l.on) continue;
+    punch(l.x, l.y, l.r, 0.9);
+  }
+  // flickering broken lamp
+  if(!Q.pole && Math.random()<0.06){
+    punch(FIXLIGHT.x, FIXLIGHT.y, 20, 0.5);
+  }
+  punch(player.x, player.y-26, 34, 0.55);   // your faint aura
+  for(const s of SPIRITS) if(s.alive) punch(s.x, s.y, 22, 0.4);
+  for(const p of parts) if(p.k==='orb'&&p.t>=0) punch(p.x,p.y,8,0.6);
+  ctx.drawImage(lightCv, 0, 0);
+
+  // warm additive glow on sources
+  ctx.save(); ctx.translate(-cx,-cy);
+  ctx.globalCompositeOperation='lighter';
+  for(const l of lights){
+    if(!l.on) continue;
+    const warmA = (l.green?0:0.10*(l.warm||1)) * (0.4+0.6*na);
+    if(warmA>0){
+      const g2 = ctx.createRadialGradient(l.x,l.y,1, l.x,l.y,l.r*0.8);
+      g2.addColorStop(0,`rgba(255,185,90,${warmA})`); g2.addColorStop(1,'rgba(255,185,90,0)');
+      ctx.fillStyle=g2; ctx.fillRect(l.x-l.r, l.y-l.r, l.r*2, l.r*2);
+    }
+  }
+  // lamp lenses
+  for(const P of POLES){
+    const on = P.i!==BROKEN_POLE || Q.pole;
+    ctx.fillStyle = on ? '#ffd98a' : (Math.random()<0.05 ? '#8a7a5c':'#4a4e5e');
+    ctx.fillRect(P.lampX-1, P.lampY, 3, 2);
+  }
+  ctx.globalCompositeOperation='source-over';
+  ctx.restore();
+
+  // dawn wash
+  if(dawn>0){
+    ctx.fillStyle=`rgba(255,166,110,${0.14*dawn})`;
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+/* ---------- world-anchored UI ---------- */
+function drawWorldUI(){
+  // interaction prompt
+  if(prompt && state==='play' && !dlg){
+    drawLabel(prompt.x, prompt.y, prompt.text);
+  }
+  // markers over npc heads
+  for(const n of NPCS){
+    if(n.marker){
+      pxText(n.marker.ch, n.x-2, n.y-22, n.marker.col, 7, 'left');
+    }
+    if(n.bubble){
+      drawLabel(n.x, n.y-22, n.bubble.text, '#cfe8ff');
+    }
+  }
+  // exclaim over praying walk
+  if(activePrayer && activePrayer.state==='walk'){
+    pxText('✦', activePrayer.x-2, activePrayer.y-20 - Math.sin(time*4)*1.5, '#ffd257', 7,'left');
+  }
+}
+function drawLabel(wx, wy, text, col='#ffe9b3'){
+  ctx.font = `7px ${FONT}`;
+  const w2 = ctx.measureText(text).width+6;
+  const x = Math.floor(wx-w2/2), y = Math.floor(wy);
+  ctx.fillStyle='rgba(16,12,34,0.82)';
+  ctx.fillRect(x, y-1, w2, 10);
+  ctx.strokeStyle='rgba(255,210,120,0.4)'; ctx.lineWidth=0.5;
+  ctx.strokeRect(x+0.5, y-0.5, w2-1, 9);
+  ctx.fillStyle=col;
+  ctx.fillText(text, x+3, y+6.5);
+}
+function pxText(text, x, y, col, size=7, align='left'){
+  ctx.font = `${size}px ${FONT}`;
+  ctx.textAlign = align;
+  ctx.fillStyle = 'rgba(10,8,22,0.85)';
+  ctx.fillText(text, x+0.7, y+0.7);
+  ctx.fillStyle = col;
+  ctx.fillText(text, x, y);
+  ctx.textAlign = 'left';
+}
+
+/* ---------- HUD ---------- */
+function wrapText(text, maxW, font){
+  ctx.font = font;
+  const words = text.split(' ');
+  const lines=[]; let cur='';
+  for(const w2 of words){
+    const test = cur ? cur+' '+w2 : w2;
+    if(ctx.measureText(test).width > maxW && cur){ lines.push(cur); cur=w2; }
+    else cur=test;
+  }
+  if(cur) lines.push(cur);
+  return lines;
+}
+function drawHUD(){
+  if(state!=='play' && state!=='ceremony') { drawDialogBox(); return; }
+
+  // merit bar
+  if(Q.metTani || merit>0){
+    const bw = 78;
+    ctx.fillStyle='rgba(14,10,30,0.75)';
+    ctx.fillRect(6,6, bw+34, 17);
+    ctx.strokeStyle='rgba(255,210,120,0.35)'; ctx.lineWidth=0.5;
+    ctx.strokeRect(6.5,6.5, bw+33, 16);
+    pxText('บุญ  MERIT', 10, 13, '#ffd98a', 6);
+    ctx.fillStyle='#241c3a'; ctx.fillRect(10, 15, bw, 5);
+    const p = merit/100;
+    const flash = meritFlash>0 ? meritFlash*0.5 : 0;
+    ctx.fillStyle = `rgb(255,${200+Math.floor(flash*55)},87)`;
+    ctx.fillRect(10, 15, bw*p, 5);
+    ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.fillRect(10, 15, bw*p, 1);
+    pxText(`${merit}/100`, 10+bw+4, 20, '#ffe9b3', 6);
+  }
+
+  // objective line
+  let obj = '';
+  if(!Q.metTani) obj = 'follow the glow behind the banana grove ↗';
+  else if(Q.done) obj = 'a soft morning — wander as long as you like';
+  else if(Q.ceremonyReady) obj = 'return to the spirit house ศาลพระภูมิ';
+  else if(merit>=100) obj = 'tell Tani — the ledger is full';
+  else obj = 'earn merit บุญ — help the village · H: deeds';
+  if(state==='play'){
+    ctx.font=`6px ${FONT}`;
+    const ow = ctx.measureText(obj).width;
+    const ocx = Math.max(W/2, 124+ow/2+4);   // keep clear of the merit bar
+    ctx.fillStyle='rgba(14,10,30,0.6)';
+    ctx.fillRect(ocx-ow/2-4, 5, ow+8, 10);
+    pxText(obj, ocx, 12, '#cfc4ae', 6, 'center');
+  }
+
+  // guide arrows at screen edge
+  if(state==='play' && !dlg){
+    let target=null;
+    if(!Q.metTani) target={x:TANI.x, y:TANI.y, col:'#9ee8b0'};
+    else if(Q.ceremonyReady && !Q.done) target={x:SHRINE_SPOT.x, y:SHRINE_SPOT.y, col:'#ffd257'};
+    else if(activePrayer) target={x:SHRINE_SPOT.x, y:SHRINE_SPOT.y, col:'#ffd257'};
+    if(target){
+      const sx = target.x-camX, sy = target.y-camY;
+      if(sx<8||sx>W-8||sy<8||sy>H-8){
+        const ex = clamp(sx, 12, W-12), ey = clamp(sy, 20, H-20);
+        const ang = Math.atan2(sy-ey, sx-ex);
+        ctx.save(); ctx.translate(ex,ey); ctx.rotate(ang);
+        ctx.globalAlpha = 0.6+0.4*Math.sin(time*5);
+        ctx.fillStyle=target.col;
+        ctx.beginPath(); ctx.moveTo(5,0); ctx.lineTo(-3,-4); ctx.lineTo(-3,4); ctx.fill();
+        ctx.restore(); ctx.globalAlpha=1;
+      }
+    }
+  }
+
+  // toasts
+  toasts.forEach((t,i)=>{
+    const a = t.t<0.2 ? t.t/0.2 : t.t>2.1 ? (2.6-t.t)/0.5 : 1;
+    ctx.globalAlpha = clamp(a,0,1);
+    pxText(t.text, W/2, 34+i*10 - t.t*4, t.col, 7, 'center');
+    ctx.globalAlpha = 1;
+  });
+
+  drawDialogBox();
+
+  // hints
+  if(state==='play' && !dlg && !Q.metTani && stateT<12){
+    pxText('arrows/WASD move · E talk · Q whistle · M sound · H help', W/2, H-6, 'rgba(207,196,174,0.75)', 6, 'center');
+  }
+}
+function drawDialogBox(){
+  if(!dlg) return;
+  const line = dlg.lines[dlg.i];
+  const bx=12, bw=W-24, bh=44, by=H-bh-8;
+  ctx.fillStyle='rgba(22,14,26,0.93)';
+  ctx.fillRect(bx,by,bw,bh);
+  ctx.strokeStyle='#d9a34a'; ctx.lineWidth=1;
+  ctx.strokeRect(bx+1.5,by+1.5,bw-3,bh-3);
+  ctx.strokeStyle='rgba(217,163,74,0.35)';
+  ctx.strokeRect(bx+3.5,by+3.5,bw-7,bh-7);
+  let ty = by+12;
+  if(line.who){
+    pxText(line.who, bx+8, ty, line.who==='You' ? '#cdbfd8' : line.who==='Tani' ? '#9ee8b0' : '#ffd98a', 7);
+    ty += 9;
+  }
+  const shown = line.text.slice(0, dlg.chars|0);
+  const lines = wrapText(shown, bw-18, `7px ${FONT}`);
+  for(const l of lines.slice(0,3)){
+    pxText(l, bx+8, ty, '#efe6d8', 7);
+    ty += 9;
+  }
+  if((dlg.chars|0) >= line.text.length){
+    ctx.globalAlpha = 0.5+0.5*Math.sin(time*6);
+    pxText('▾', bx+bw-10, by+bh-5, '#d9a34a', 7);
+    ctx.globalAlpha = 1;
+  }
+}
+function drawCeremonyUI(){
+  const c = ceremony;
+  if(c.lineI>=0 && c.lineI<D.ceremony.length){
+    const line = D.ceremony[c.lineI];
+    const shown = line.text.slice(0, c.chars|0);
+    const bx=12, bw=W-24, bh=40, by=H-bh-8;
+    ctx.fillStyle='rgba(22,14,26,0.9)';
+    ctx.fillRect(bx,by,bw,bh);
+    ctx.strokeStyle='#d9a34a'; ctx.strokeRect(bx+1.5,by+1.5,bw-3,bh-3);
+    pxText(line.who, bx+8, by+11, line.who==='Tani'?'#9ee8b0':line.who==='Mali'?'#ffb0a0':'#ffd98a', 7);
+    let ty=by+20;
+    for(const l of wrapText(shown, bw-18, `7px ${FONT}`).slice(0,2)){ pxText(l, bx+8, ty, '#efe6d8', 7); ty+=9; }
+  }
+  // golden column as you rise
+  if(c.rise>0){
+    const a = clamp(c.rise/3,0,0.5);
+    const g2 = ctx.createLinearGradient(0,0,0,H);
+    g2.addColorStop(0,`rgba(255,220,130,${a})`); g2.addColorStop(1,'rgba(255,220,130,0)');
+    const sx = player.x-camX;
+    ctx.fillStyle=g2; ctx.fillRect(sx-14, 0, 28, H);
+  }
+  if(c.flash>0){
+    ctx.fillStyle=`rgba(255,248,230,${clamp(c.flash/1.2,0,1)})`;
+    ctx.fillRect(0,0,W,H);
+  }
+}
+function drawEndCard(){
+  const a = clamp(stateT/1.2, 0, 1);
+  ctx.fillStyle=`rgba(24,18,20,${0.88*a})`;
+  ctx.fillRect(0,0,W,H);
+  if(a<0.6) return;
+  ctx.textAlign='center';
+  pxText('PRETE NO MORE', W/2, 34, '#ffd257', 14, 'center');
+  ctx.font=`7px ${FONT}`;
+  const storyLines = [
+    'The hungry ghost smiled — a smile the size',
+    "of a needle's eye — and it was enough.",
+  ];
+  storyLines.forEach((l,i)=> pxText(l, W/2, 52+i*10, '#efe6d8', 7, 'center'));
+  const stats = [
+    `merit gathered ${merit} บุญ · prayers received ${Q.prayers}`,
+    `${Q.pole?'streetlight fixed ✓':'streetlight, still dark'} · ${Q.cat?'Meow-Meow rescued ✓':'a cat, still up a tree'}`,
+    `spirits becalmed ${Q.spirits}/3 · ${Q.monk?'blessed by Luang Pi ✓':''}`,
+    `${Q.offerings} bowls of noodles, inhaled politely`,
+  ];
+  stats.forEach((l,i)=> pxText(l, W/2, 82+i*10, '#b8ab98', 6, 'center'));
+  pxText('ขอให้ไปสู่สุคติ — may you go to a good place', W/2, 128, '#9ee8b0', 7, 'center');
+  ctx.globalAlpha = 0.6+0.4*Math.sin(time*4);
+  pxText('Enter — stay for the morning · R — begin again', W/2, 152, '#ffd98a', 7, 'center');
+  ctx.globalAlpha=1;
+  ctx.textAlign='left';
+}
+function drawHelp(){
+  ctx.fillStyle='rgba(12,10,26,0.92)'; ctx.fillRect(0,0,W,H);
+  pxText('— THE LEDGER —', W/2, 22, '#ffd257', 10, 'center');
+  const rows = [
+    ['merit บุญ', `${merit} / 100`],
+    ['streetlight เสาไฟฟ้า', Q.pole?'fixed ✓':'still flickering'],
+    ['Meow-Meow the cat', Q.cat?'rescued ✓':'up the big tamarind tree, east'],
+    ['sour spirits', `${Q.spirits} / 3 becalmed`],
+    ['Luang Pi\'s blessing', Q.monk?'received ✓':'north sala'],
+    ['prayers received', `${Q.prayers}`],
+  ];
+  rows.forEach((r,i)=>{
+    pxText(r[0], 40, 44+i*12, '#b8ab98', 7);
+    pxText(r[1], 180, 44+i*12, '#efe6d8', 7);
+  });
+  pxText('move arrows/WASD · E interact · Q whistle วี้ดดด', W/2, 132, '#cfc4ae', 7,'center');
+  pxText('M sound · H close', W/2, 144, '#cfc4ae', 7,'center');
+  pxText('stand near the shrine when someone prays ✦', W/2, 162, '#ffd98a', 7,'center');
+}
+
+/* ---------- title & intro scenes ---------- */
+function skyGrad(topCol, midCol, botCol){
+  // dithered night sky bands
+  const bands = [[0,52,topCol],[52,64,midCol],[116,64,botCol]];
+  for(const [y,h2,c] of bands){ ctx.fillStyle=c; ctx.fillRect(0,y,W,h2); }
+  ctx.fillStyle=midCol;
+  for(let x=0;x<W;x+=2) ctx.fillRect(x+(x%4?1:0), 50, 1, 2);
+  ctx.fillStyle=botCol;
+  for(let x=0;x<W;x+=2) ctx.fillRect(x+(x%4?0:1), 114, 1, 2);
+}
+let titleStars = null;
+function renderTitle(){
+  if(!titleStars){ titleStars=[]; for(let i=0;i<70;i++) titleStars.push([rnd(W)|0, rnd(110)|0, rnd(TAU)]); }
+  skyGrad('#0d0c22','#16143a','#241c4e');
+  // stars
+  for(const s of titleStars){
+    const tw = 0.4+0.6*Math.sin(time*1.5+s[2]);
+    ctx.fillStyle=`rgba(255,245,220,${0.7*tw})`;
+    ctx.fillRect(s[0], s[1], 1, 1);
+  }
+  // moon
+  ctx.fillStyle='#f4ecd4'; ctx.beginPath(); ctx.arc(258, 38, 17, 0, TAU); ctx.fill();
+  ctx.fillStyle='#ddd2b4';
+  ctx.beginPath(); ctx.arc(252, 34, 4, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(263, 44, 3, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(260, 30, 2, 0, TAU); ctx.fill();
+  const mg = ctx.createRadialGradient(258,38,16, 258,38,40);
+  mg.addColorStop(0,'rgba(244,236,212,0.25)'); mg.addColorStop(1,'rgba(244,236,212,0)');
+  ctx.fillStyle=mg; ctx.fillRect(218,0,80,80);
+  // ground
+  ctx.fillStyle='#141228'; ctx.fillRect(0,140,W,40);
+  ctx.fillStyle='#1b1834'; for(let x=0;x<W;x+=3) ctx.fillRect(x,140,2,1);
+  // banana silhouettes
+  ctx.globalAlpha=0.9;
+  for(const [bx,sc] of [[16,1.4],[52,1.1],[288,1.3],[252,1.0]]){
+    ctx.save(); ctx.translate(bx,146); ctx.scale(sc,sc);
+    ctx.fillStyle='#0a0918';
+    ctx.fillRect(-2,-26,4,26);
+    for(let i=0;i<5;i++){
+      const a=(i/5)*TAU;
+      ctx.save(); ctx.translate(Math.cos(a)*6, -28+Math.sin(a)*3); ctx.rotate(Math.cos(a)>0?0.5:-0.5);
+      ctx.beginPath(); ctx.ellipse(0,0,9,3,0,0,TAU); ctx.fill(); ctx.restore();
+    }
+    ctx.restore();
+  }
+  ctx.globalAlpha=1;
+  // the prete, swaying
+  const sway = Math.sin(time*1.2)*2;
+  ctx.drawImage(SPR_PRETE[(Math.sin(time*2)>0.9)?'blink':'idle'], 150+sway|0, 88);
+  // fireflies
+  for(let i=0;i<10;i++){
+    const fx = W/2 + Math.sin(time*0.5+i*2.1)*100 + Math.sin(time*0.23+i)*30;
+    const fy = 100 + Math.cos(time*0.4+i*1.7)*30;
+    const bl = 0.5+0.5*Math.sin(time*2+i*3);
+    ctx.fillStyle=`rgba(190,255,150,${0.6*bl})`; ctx.fillRect(fx,fy,1,1);
+  }
+  // title
+  ctx.textAlign='center';
+  ctx.font=`bold 26px ${FONT}`;
+  ctx.fillStyle='rgba(10,8,22,0.9)'; ctx.fillText('P R E T E', W/2+1, 45);
+  ctx.fillStyle='#ffd257'; ctx.fillText('P R E T E', W/2, 44);
+  ctx.font=`bold 13px ${FONT}`;
+  ctx.fillStyle='rgba(10,8,22,0.9)'; ctx.fillText('S I M U L A T O R', W/2+1, 60);
+  ctx.fillStyle='#ffe9b3'; ctx.fillText('S I M U L A T O R', W/2, 59);
+  pxText('เปรตซิมูเลเตอร์ · a cozy hungry-ghost tale', W/2, 72, '#b8ab98', 7, 'center');
+  const sv = loadSave();
+  ctx.globalAlpha = 0.6+0.4*Math.sin(time*4);
+  const hasSave = sv && (sv.merit>0 || (sv.q&&sv.q.metTani));
+  pxText(hasSave ? (sv.q&&sv.q.done ? 'Enter — a morning stroll' : 'Enter — continue') : 'Press Enter', W/2, 152, '#ffd98a', 8, 'center');
+  ctx.globalAlpha=1;
+  if(hasSave) pxText('N — new night', W/2, 164, '#8a8098', 6, 'center');
+  pxText('M sound · a handmade little haunting', W/2, hasSave?173:164, '#665f75', 6, 'center');
+  ctx.textAlign='left';
+}
+function renderIntro(){
+  ctx.fillStyle='#0b0a18'; ctx.fillRect(0,0,W,H);
+  const p = INTRO[introPanel];
+  const t = time;
+  ctx.save();
+  ctx.translate(0,-6);
+  if(p.scene===1){
+    // a dim room, a table, bottles, a money pouch
+    ctx.fillStyle='#161226'; ctx.fillRect(60,40,200,80);
+    ctx.fillStyle='#0e0b1c'; ctx.fillRect(60,40,200,4);
+    ctx.fillStyle='#3a2c22'; ctx.fillRect(90,90,140,6); ctx.fillRect(96,96,6,20); ctx.fillRect(218,96,6,20);
+    ctx.fillStyle='#2a4a3a'; ctx.fillRect(120,76,6,14); ctx.fillStyle='#1d3529'; ctx.fillRect(122,72,2,4);
+    ctx.fillStyle='#2a4a3a'; ctx.fillRect(132,80,6,10);
+    ctx.fillStyle='#8a6a2a'; ctx.fillRect(180,80,14,10); ctx.fillStyle='#ffd257'; ctx.fillRect(184,78,6,3);
+    const fig = personFrames({skin:'#d8a878',shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
+    ctx.save(); ctx.scale(2,2); ctx.drawImage(fig.idle, 76, 40); ctx.restore();
+    // candle pool
+    const g2 = ctx.createRadialGradient(160,95,4, 160,95,70);
+    g2.addColorStop(0,'rgba(255,190,90,0.16)'); g2.addColorStop(1,'rgba(255,190,90,0)');
+    ctx.fillStyle=g2; ctx.fillRect(80,30,160,120);
+  } else if(p.scene===2){
+    skyGrad('#0d0c22','#16143a','#241c4e');
+    ctx.fillStyle='#f4ecd4'; ctx.beginPath(); ctx.arc(60,34,12,0,TAU); ctx.fill();
+    ctx.fillStyle='#141228'; ctx.fillRect(0,120,W,60);
+    // temple silhouette with gold roof edge
+    ctx.fillStyle='#0a0918'; ctx.fillRect(190,66,110,60);
+    ctx.fillStyle='#0a0918';
+    ctx.beginPath(); ctx.moveTo(180,70); ctx.lineTo(245,30); ctx.lineTo(310,70); ctx.fill();
+    ctx.strokeStyle='#8a6a2a'; ctx.beginPath(); ctx.moveTo(180,70); ctx.lineTo(245,30); ctx.lineTo(310,70); ctx.stroke();
+    ctx.fillStyle='#ffce54'; ctx.fillRect(243,24,3,8);
+    // donation box + beggar
+    ctx.fillStyle='#241c3a'; ctx.fillRect(206,108,16,14); ctx.fillStyle='#8a6a2a'; ctx.fillRect(212,106,4,4);
+    const beg = personFrames({skin:'#c69670',shirt:'#4a4452',shirtD:'#353043',legs:'#2c2836',hair:'short'});
+    ctx.drawImage(beg.wai, 240,106);
+    const fig2 = personFrames({skin:'#d8a878',shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
+    ctx.save(); ctx.scale(2,2); ctx.drawImage(flipOf(fig2.w1), 50, 47); ctx.restore();
+  } else if(p.scene===3){
+    // the scales
+    ctx.fillStyle='#050410'; ctx.fillRect(0,0,W,H);
+    const tip = Math.min(1, stateT*0.4) * 10;
+    ctx.strokeStyle='#cfc4ae'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(160,50); ctx.lineTo(160,100); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(120,60+tip); ctx.lineTo(200,60-tip); ctx.stroke();
+    ctx.strokeRect(108,64+tip,24,10); ctx.strokeRect(188,54-tip,24,10);
+    ctx.fillStyle='#241c3a'; ctx.fillRect(110,66+tip,20,7);
+    ctx.fillStyle='#ffd257'; ctx.fillRect(194,58-tip,4,3);
+    ctx.fillStyle='#cfc4ae'; ctx.fillRect(146,100,28,4);
+    pxText('กรรม', 160, 130, '#8a8098', 9, 'center');
+  } else {
+    // the field where you woke
+    skyGrad('#0d0c22','#16143a','#241c4e');
+    for(let i=0;i<50;i++){ ctx.fillStyle=`rgba(255,245,220,${0.5*(0.4+0.6*Math.sin(time+i*2.3))})`; ctx.fillRect((i*37)%W, (i*23)%100, 1,1); }
+    ctx.fillStyle='#f4ecd4'; ctx.beginPath(); ctx.arc(240,36,16,0,TAU); ctx.fill();
+    ctx.fillStyle='#141228'; ctx.fillRect(0,130,W,50);
+    ctx.globalAlpha=0.9; ctx.fillStyle='#0a0918';
+    for(const [bx,sc] of [[30,1.3],[70,1.0],[280,1.2]]){
+      ctx.save(); ctx.translate(bx,136); ctx.scale(sc,sc);
+      ctx.fillRect(-2,-24,4,24);
+      for(let i=0;i<5;i++){ const a=(i/5)*TAU; ctx.save(); ctx.translate(Math.cos(a)*6,-26+Math.sin(a)*3); ctx.rotate(Math.cos(a)>0?0.5:-0.5); ctx.beginPath(); ctx.ellipse(0,0,9,3,0,0,TAU); ctx.fill(); ctx.restore(); }
+      ctx.restore();
+    }
+    ctx.globalAlpha=1;
+    // the tall silhouette (you)
+    ctx.save(); ctx.translate(150,30); ctx.scale(1.8,1.8);
+    ctx.globalAlpha=0.92;
+    const sil = SPR_PRETE.idle;
+    ctx.filter='brightness(0.25)';
+    ctx.drawImage(sil, 0, 0);
+    ctx.filter='none';
+    ctx.globalAlpha=1; ctx.restore();
+    if(p===INTRO[4]){
+      const g2 = ctx.createRadialGradient(168,70,6, 168,70,60);
+      g2.addColorStop(0,'rgba(205,191,216,0.18)'); g2.addColorStop(1,'rgba(205,191,216,0)');
+      ctx.fillStyle=g2; ctx.fillRect(100,10,140,130);
+    }
+  }
+  ctx.restore();
+  // caption
+  const shown = p.cap.slice(0, introChars|0);
+  ctx.fillStyle='rgba(10,8,20,0.85)'; ctx.fillRect(0,H-40,W,40);
+  ctx.fillStyle='#d9a34a'; ctx.fillRect(0,H-40,W,1);
+  let ty=H-28;
+  for(const l of wrapText(shown, W-40, `7px ${FONT}`).slice(0,3)){ pxText(l, 20, ty, '#efe6d8', 7); ty+=10; }
+  ctx.globalAlpha=0.5+0.5*Math.sin(time*5);
+  pxText(`${introPanel+1}/${INTRO.length} ▾`, W-28, H-6, '#8a8098', 6);
+  ctx.globalAlpha=1;
+  pxText('E / Enter', 8, H-6, '#665f75', 6);
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+{
+  const sv = loadSave();
+  if(sv && typeof sv.mute==='boolean') AU.muted = sv.mute;
+}
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(0.05, (now-last)/1000);
+  last = now;
+  update(dt);
+  render();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
