@@ -102,7 +102,7 @@ const KEYMAP = {
   ' ':'jump', z:'light', j:'light', x:'heavy', k:'heavy',
   c:'whistle', l:'whistle', shift:'block',
   e:'act', enter:'act', tab:'tree', t:'tree',
-  h:'help', m:'mute', escape:'back', r:'restart', n:'newgame',
+  h:'help', m:'mute', escape:'back', r:'restart', n:'newgame', g:'give', f:'give',
 };
 function keyDown(k){ if(!K[k]) PRESS[k]=true; K[k]=true; }
 function keyUp(k){ K[k]=false; }
@@ -129,10 +129,9 @@ function tLayout(){
   TPADS.push({id:'right', x:m+bs*1.9,      y:H-m-bs*0.5, r:bs*0.62, key:'right', lbl:'▶'});
   TPADS.push({id:'jump',  x:W-m-bs*0.55,   y:H-m-bs*1.9, r:bs*0.62, key:'jump',  lbl:'↑'});
   TPADS.push({id:'act',   x:W-m-bs*1.85,   y:H-m-bs*0.5, r:bs*0.62, key:'act',   lbl:'E'});
-  TPADS.push({id:'light', x:W-m-bs*0.55,   y:H-m-bs*0.5, r:bs*0.62, key:'light', lbl:'A'});
-  TPADS.push({id:'heavy', x:W-m-bs*3.1,    y:H-m-bs*0.9, r:bs*0.58, key:'heavy', lbl:'B'});
+  TPADS.push({id:'give',  x:W-m-bs*0.55,   y:H-m-bs*0.5, r:bs*0.62, key:'give',  lbl:'♥'});
   TPADS.push({id:'whistle',x:m+bs*1.2,     y:H-m-bs*1.85,r:bs*0.58, key:'whistle',lbl:'วี้ด'});
-  TPADS.push({id:'block', x:W-m-bs*2.9,    y:H-m-bs*2.1, r:bs*0.52, key:'block', lbl:'⛨'});
+  TPADS.push({id:'tree',  x:W-m-bs*3.0,    y:H-m-bs*1.0, r:bs*0.52, key:'tree',  lbl:'☰'});
 }
 tLayout();
 function cvPos(ev){
@@ -285,14 +284,6 @@ const AU = {
    SAVE
    ============================================================ */
 const SAVE_KEY = 'prete-sim-v2';
-function saveGame(){
-  try{
-    localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v:2, merit:GS.merit, spent:GS.spent, mute:AU.muted,
-      skills:GS.skills, cos:GS.cos, q:GS.q, x:P?P.x:0, seen:GS.seen,
-    }));
-  }catch(e){}
-}
 function loadSaveRaw(){
   try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)); return (s&&s.v===2)?s:null; }catch(e){ return null; }
 }
@@ -783,6 +774,155 @@ function artOffering(){ const c=mkCv(30,22),g=G2(c);
   for(let i=0;i<3;i++){ pR(g,25,7+i,1,7,'#b8a894'); pR(g,25,6+i,1,1,PAL.ember); }
   return c; }
 /* ============================================================
+   MORE OF THE VILLAGE — the cozy half
+   ============================================================ */
+
+/* an outdoor kitchen: clay stove, wok, mortar, chopping block */
+function artKitchen(){
+  const c=mkCv(112,84), g=G2(c);
+  // bamboo lean-to roof
+  for(let i=0;i<7;i++) pR(g,4+i*15,2+ (i%2),16,6, i%2?'#8a6f42':'#a3874f');
+  pR(g,0,7,112,3,'#6b5334'); pR(g,0,7,112,1,'#c2a266');
+  pR(g,6,9,4,52,'#7d5a3c'); pR(g,102,9,4,52,'#7d5a3c');
+  // work bench
+  pR(g,4,58,104,7,'#8a6142'); pR(g,4,58,104,2,'#a97f56'); pR(g,4,64,104,2,'#5f4029');
+  pR(g,10,65,5,18,'#6d4a33'); pR(g,97,65,5,18,'#6d4a33');
+  // เตาอั้งโล่ — the clay bucket stove, with fire
+  pR(g,18,40,26,19,'#a8633a'); pR(g,18,40,26,2,'#c47c4c'); pR(g,40,40,4,19,'#7d4426');
+  pR(g,20,44,22,3,'#5c3220');
+  for(let i=0;i<4;i++) pR(g,22+i*5,52,3,7,'#7d4426');
+  // wok on top
+  pEll(g,31,38,17,6,'#4a4a52'); pEll(g,31,36,15,5,'#6a6a74'); pEll(g,31,35,12,3,'#3a3a42');
+  pR(g,46,36,9,2,'#5a5a64');
+  // mortar and pestle (ครก) — for som tam
+  pR(g,60,46,15,13,'#7a8088'); pR(g,60,46,15,2,'#9aa0aa'); pEll(g,67,46,8,3,'#4a5058');
+  pTaper(g,72,44,78,28,4,3,'#8a6f52'); pEll(g,78,27,3,3,'#a3865f');
+  // chopping block with greens
+  pEll(g,90,52,11,7,'#8a6142'); pEll(g,90,50,10,5,'#a97f56');
+  pR(g,85,46,5,3,PAL.jade); pR(g,91,45,4,3,PAL.jadeL); pR(g,95,47,4,3,'#c0392f');
+  // hanging pots and a bundle of chillies
+  pR(g,52,10,1,9,'#4a4a52'); pEll(g,52,22,6,5,'#6a6a74'); pEll(g,52,20,5,3,'#3a3a42');
+  for(let i=0;i<5;i++) pTaper(g,84+i*2,11,82+i*2.4,20+ (i%2)*3,3,1, i%2?'#c0392f':'#d8483a');
+  // baskets of rice under the bench
+  pEll(g,26,74,11,7,'#c9a86a'); pEll(g,26,71,10,4,'#e0c184'); pEll(g,26,70,7,2,'#f2ecd8');
+  pEll(g,70,75,9,6,'#b8985c'); pEll(g,70,72,8,3,'#d3b478');
+  return c;
+}
+
+/* a night-market stall — colour on the road */
+function artStall(seed){
+  const r=mulberry(seed), c=mkCv(96,74), g=G2(c);
+  const A=[['#c0392f','#e8dfc8'],['#2f6a8f','#f2e6c8'],['#3f8f5f','#f6f0dc']][seed%3];
+  pR(g,8,58,80,10,'#8a6142'); pR(g,8,58,80,2,'#a97f56'); pR(g,8,66,80,2,'#5f4029');
+  pR(g,12,68,5,6,'#5f4029'); pR(g,79,68,5,6,'#5f4029');
+  pR(g,6,20,4,40,'#6d5138'); pR(g,86,20,4,40,'#6d5138');
+  for(let i=0;i<8;i++) pR(g,4+i*11,12,11,9, i%2?A[0]:A[1]);
+  pR(g,2,10,92,3, shade(A[0],-0.25));
+  pR(g,2,21,92,2, shade(A[0],-0.25));
+  // scalloped valance
+  for(let i=0;i<11;i++) pEll(g,6+i*8,23,4,3, i%2?A[0]:A[1]);
+  // goods on the counter
+  for(let i=0;i<5;i++){
+    const gx=16+i*15, kind=(r()*3)|0;
+    if(kind===0){ pEll(g,gx,54,6,4,'#f5ead8'); pEll(g,gx,52,5,3,pick(['#e8b13c','#c0392f','#3f8f5f'])); }
+    else if(kind===1){ for(let k=0;k<3;k++) pEll(g,gx-2+k*2,52-k*2,4,3,'#e8c15c'); }
+    else { pR(g,gx-4,48,8,10,'#d8b04a'); pR(g,gx-4,48,8,2,'#f0d074'); }
+  }
+  // a lamp on a wire
+  pR(g,48,22,1,8,'#3a3630'); pEll(g,48,33,6,7,'#ffd98a'); pEll(g,48,32,4,5,'#fff3d0');
+  return c;
+}
+
+/* flowering tree — the colour the village needed */
+function artBlossom(seed, col){
+  const r=mulberry(seed), w=150,h=150, c=mkCv(w,h), g=G2(c), cx=w/2;
+  pTaper(g,cx,h,cx-5,h*0.46,17,9,'#5a4436');
+  pTaper(g,cx-2,h,cx-9,h*0.56,7,3,'#6d5442');
+  pTaper(g,cx,h-3,cx-20,h-1,9,3,'#5a4436');
+  pTaper(g,cx,h-3,cx+19,h-1,9,3,'#4a382c');
+  const nodes=[];
+  for(const [dx,dy,len] of [[-1,-0.6,38],[1,-0.65,42],[-0.6,-0.95,34],[0.75,-1,32],[0.05,-1.2,28]]){
+    const ex=cx-5+dx*len*1.4, ey=h*0.46+dy*len;
+    pTaper(g,cx-4,h*0.48,ex,ey,8,3,'#4f3c2e'); nodes.push([ex,ey]);
+    pTaper(g,ex,ey,ex+dx*14,ey-13,3,2,'#5a4436'); nodes.push([ex+dx*14,ey-13]);
+  }
+  // blossom masses
+  for(let i=0;i<30;i++){
+    const n=nodes[(r()*nodes.length)|0];
+    const bx=n[0]+(r()-0.5)*44, by=n[1]+(r()-0.5)*34-8;
+    pEll(g,bx,by,11+r()*8,9+r()*6, i%3? shade(col,-0.12):col);
+  }
+  for(let i=0;i<22;i++){
+    const n=nodes[(r()*nodes.length)|0];
+    pEll(g,n[0]+(r()-0.5)*38,n[1]-6+(r()-0.5)*28,7+r()*5,5+r()*4, shade(col,0.16));
+  }
+  // individual petals catching the light
+  for(let i=0;i<220;i++){
+    const bx=cx+(r()-0.5)*w*0.8, by=h*0.1+r()*h*0.44;
+    g.fillStyle = r()<0.4? shade(col,0.32) : shade(col,0.08);
+    g.fillRect(R(bx),R(by),1,1);
+    if(r()<0.25) g.fillRect(R(bx+1),R(by),1,1);
+  }
+  for(let i=0;i<40;i++){ const bx=cx+(r()-0.5)*w*0.7, by=h*0.12+r()*h*0.4;
+    g.fillStyle='#fff6e0'; g.fillRect(R(bx),R(by),1,1); }
+  return c;
+}
+
+/* a chilli / herb garden patch you can pick from */
+function artGarden(kind){
+  const c=mkCv(52,40), g=G2(c);
+  pEll(g,26,34,24,7,'#5a4030'); pEll(g,26,32,22,5,'#6b4e39');
+  for(let i=0;i<5;i++){
+    const x=7+i*9, hh=14+((i*7)%9);
+    pTaper(g,x,34,x+((i%3)-1)*2,34-hh,3,2,'#3f7a52');
+    for(let k=0;k<3;k++) pEll(g,x+((k%2)?3:-3),34-hh+k*5+3,4,2.6, k%2?PAL.jade:PAL.jadeL);
+    if(kind==='chili'){ for(let k=0;k<2;k++) pTaper(g,x,34-hh+7+k*5,x+3,34-hh+12+k*5,3,1, k%2?'#c0392f':'#e0483a'); }
+    if(kind==='lemongrass'){ for(let k=0;k<4;k++) pTaper(g,x,34,x-6+k*4,34-hh-5,3,1,'#7fa86a'); }
+    if(kind==='lime'){ pEll(g,x+2,34-hh+8,4,4,'#8fbf4a'); pEll(g,x+1,34-hh+7,2,2,'#b3e06a'); }
+  }
+  return c;
+}
+
+/* clay jar of drinking water with a dipper — and a drying rack */
+function artRack(){
+  const c=mkCv(74,52), g=G2(c);
+  pR(g,4,10,3,42,'#7d5a3c'); pR(g,67,10,3,42,'#7d5a3c');
+  pR(g,2,10,70,3,'#8a6142'); pR(g,2,26,70,2,'#6d4a33');
+  const cols=['#c0392f','#2f6a8f','#e8b13c','#3f8f5f','#e8dfc8'];
+  for(let i=0;i<5;i++){ const x=8+i*13;
+    pR(g,x,13,10,14+((i*5)%7), cols[i]); pR(g,x,13,10,2, shade(cols[i],-0.3));
+    pR(g,x,13,2,14+((i*5)%7), shade(cols[i],0.2)); }
+  for(let i=0;i<4;i++){ const x=12+i*15; pR(g,x,29,11,9,'#c9a86a'); pR(g,x,29,11,2,'#e0c184'); }
+  return c;
+}
+
+/* strings of lanterns across the road */
+function artLantern(col){
+  const c=mkCv(16,22), g=G2(c);
+  pR(g,7,0,2,4,'#3a3630');
+  pEll(g,8,11,7,9, col);
+  pEll(g,8,10,5,7, shade(col,0.28));
+  pEll(g,8,9,3,4, shade(col,0.5));
+  pR(g,4,4,9,2, shade(col,-0.3)); pR(g,4,18,9,2, shade(col,-0.3));
+  for(let i=0;i<3;i++) pR(g,5+i*3,20,1,3, PAL.gold);
+  return c;
+}
+
+/* a little roadside spirit shrine you build for Uncle Tai Hong */
+function artRoadShrine(){
+  const c=mkCv(38,52), g=G2(c);
+  pR(g,16,26,6,26,'#8a6f52'); pR(g,20,26,2,26,'#6b5340');
+  pR(g,6,22,26,5,'#a3865f'); pR(g,6,26,26,2,'#7d6449');
+  pR(g,10,8,18,15,'#c9a86a'); pR(g,24,8,4,15,'#a3865f');
+  pR(g,13,12,12,11,'#4a3a2c');
+  for(let i=0;i<5;i++){ const t=i/4, ww=lerp(30,10,t); pR(g,19-ww/2,8-t*7,ww,3, i%2?'#a83f33':'#c0392f'); }
+  pTri(g,19,-1,13,5,25,5,'#c0392f');
+  pR(g,4,20,4,3,PAL.gold); pR(g,30,20,4,3,PAL.gold);
+  pEll(g,10,24,3,3,'#f6f0dc'); pEll(g,28,24,3,3,'#ffce54');
+  pR(g,17,18,1,5,'#b8a894'); pR(g,17,17,1,1,PAL.ember);
+  return c;
+}
+/* ============================================================
    THE WORLD — one long road through a village at 2am
    ============================================================ */
 const WORLD_W = 5600;
@@ -843,6 +983,10 @@ function artPool(){
   ART.shrine = artSpiritHouse(); ART.chedi = artChedi(); ART.sala = artSala();
   ART.cart   = artCart();
   ART.lamp   = artLamp(false); ART.lampBroken = artLamp(true);
+  ART.kitchen= artKitchen(); ART.rack = artRack(); ART.roadShrine = artRoadShrine();
+  ART.stall  = [0,1,2].map(artStall);
+  ART.blossom= [[7,'#e88fb0'],[19,'#f0a860'],[31,'#d8a0e0'],[43,'#f0c0c8']].map(a=>artBlossom(a[0],a[1]));
+  ART.garden = {chili:artGarden('chili'), lemongrass:artGarden('lemongrass'), lime:artGarden('lime')};
 }
 const apick = (arr,i)=> arr[(i|0)%arr.length];
 
@@ -1019,9 +1163,16 @@ function paintPlay(){
     pR(g,x-40,groundY(x)-8,80,9,'#3f463c');
     for(let i=0;i<24;i++) pEll(g, x+r()*90-45, groundY(x)-r()*6, 2+r()*3, 1+r()*2, r()<0.5?'#6a7060':'#535a4e');
   }
-  for(let i=0;i<7;i++){    // grave markers
-    const x=180+i*70+r()*24, gy=groundY(x);
+  for(let i=0;i<9;i++){    // grave markers, and somebody still lights them
+    const x=150+i*62+r()*20, gy=groundY(x);
     pR(g,x,gy-13,4,14,'#8d8f80'); pEll(g,x+2,gy-13,3,3,'#a4a695'); pR(g,x,gy-8,4,1,'#6f7164');
+    pR(g,x-1,gy-14,6,1,'#b4b6a5');
+    if(i%2===0){
+      pR(g,x+7,gy-6,3,7,'#e8dfc8'); pR(g,x+7,gy-7,3,1,'#f6f0dc');
+      addLight(x+8, gy-9, 26, PAL.lamp, 0.42, {flick:0.22});
+      pEll(g,x+5,gy-1,7,2,'#5a5f52');
+    }
+    if(i%3===0){ pEll(g,x-6,gy-2,4,3,'#c0392f'); pEll(g,x-6,gy-3,3,2,'#e05a48'); }  // a red drink, left out
   }
   // --- paddy: dikes, scarecrow, buffalo skull on a post ---
   stamp(ART.scare, 980, groundY(980)+2, 1);
@@ -1035,6 +1186,9 @@ function paintPlay(){
     for(const [dx,dy] of [[-30,-9],[6,-14],[38,-19]]) pTaper(g,x+dx,gy+dy,x+dx+14,gy+dy-16,4,2,'#413124');
     for(let i=0;i<26;i++) pEll(g,x+r()*90-46, gy-r()*26-4, 5+r()*5,4+r()*3,'#2e5d44');
   }
+  // flowering trees first, so they stand behind the houses
+  for(const [x,i] of [[1450,0],[2100,1],[2560,2],[3160,3],[3880,0],[4480,2],[5020,1]])
+    stamp(ART.blossom[i], x, groundY(x)+4, 0.8+((x%5)/16));
   // --- village: houses, lamps, jars, fences, a sleeping dog ---
   HOUSE_XS.forEach((x,i)=>{
     const img=ART.house[i%ART.house.length];
@@ -1085,6 +1239,23 @@ function paintPlay(){
     for(let i=0;i<7;i++){ const cx2=4000+i*40, cy=groundY(cx2);
       pR(g,cx2,cy-14,3,14,'#b8a894'); pR(g,cx2,cy-16,3,3,'#f6e2a0'); }
   }
+  // Lung Somchai's outdoor kitchen, beside the cart
+  { const k=ART.kitchen; stamp(k, KITCHEN_X, groundY(KITCHEN_X)+2, 1);
+    addLight(KITCHEN_X-24, groundY(KITCHEN_X)-26, 46, PAL.ember, 0.55, {id:'kitchen', flick:0.12});
+    addLight(KITCHEN_X+18, groundY(KITCHEN_X)-56, 30, PAL.lamp, 0.4); }
+  // the weaving mat outside the stall
+  { const s=ART.stall[0]; stamp(s, CRAFT_X, groundY(CRAFT_X)+2, 1);
+    addLight(CRAFT_X, groundY(CRAFT_X)-46, 44, PAL.lamp, 0.55);
+    const gy=groundY(CRAFT_X);
+    pEll(playG, CRAFT_X+34, gy-2, 26, 7, '#8a6f52'); pEll(playG, CRAFT_X+34, gy-4, 24, 6, '#a3865f');
+    for(let i=0;i<7;i++) pR(playG, CRAFT_X+14+i*6, gy-9, 4, 6, i%2?'#c9a86a':'#b8985c');
+    pEll(playG, CRAFT_X+22, gy-10, 6, 4, '#d3b478');
+    for(let i=0;i<4;i++) pTaper(playG, CRAFT_X+44, gy-6, CRAFT_X+50+i*2, gy-18-i*3, 3, 1, '#c2b46a'); }
+  stamp(ART.stall[1], 2620, groundY(2620)+2, 1);
+  addLight(2620, groundY(2620)-46, 42, PAL.lamp, 0.5);
+  stamp(ART.stall[2], 1760, groundY(1760)+2, 1);
+  addLight(1760, groundY(1760)-46, 42, PAL.lamp, 0.5);
+  for(const x of [1680, 2260, 2860]) stamp(ART.rack, x, groundY(x)+2, 1);
   // offering tables through the village
   for(const x of [1666,2380,2960,4180]) stamp(ART.offer, x, groundY(x)+2, 1);
   // --- old forest: bamboo, dark giants ---
@@ -1110,6 +1281,46 @@ function buildStep(){
   BUILD_I++;
   if(BUILD_I>=BUILD_STEPS.length) WORLD_READY=true;
   return WORLD_READY;
+}
+
+/* ---------- mist: it pools in the graveyard, the paddy and the deep forest ---------- */
+const MIST=[];
+for(let i=0;i<54;i++){
+  const zone = i<20? rnd(0,760) : i<36? rnd(760,1480) : rnd(4600,WORLD_W);
+  MIST.push({x:zone, y:groundY(zone)-rnd(2,16), w:rnd(40,120), h:rnd(5,13), sp:rnd(1.5,5), ph:rnd(TAU), a:rnd(0.05,0.14)});
+}
+function drawMist(g){
+  for(const m of MIST){
+    const x = m.x + Math.sin(GS.t*0.12+m.ph)*m.sp*3;
+    if(x-GS.camX<-140||x-GS.camX>W+140) continue;
+    const a=m.a*(0.6+0.4*Math.sin(GS.t*0.4+m.ph))*(1-GS.dawn*0.5);
+    const y=m.y+Math.sin(GS.t*0.3+m.ph)*2;
+    g.fillStyle=`rgba(168,196,224,${a})`;
+    pEll(g,x,y,m.w/2,m.h/2,`rgba(168,196,224,${a})`);
+    pEll(g,x+m.w*0.18,y-m.h*0.16,m.w/3,m.h/2.6,`rgba(196,216,238,${a*0.7})`);
+  }
+}
+/* spirit-motes, drifting where the dead are */
+const MOTES=[];
+for(let i=0;i<40;i++){
+  const x = i<22? rnd(0,760) : rnd(4600,WORLD_W);
+  MOTES.push({hx:x, hy:groundY(x)-rnd(10,64), x, y:0, t:rnd(TAU), sp:rnd(0.2,0.6), c: Math.random()<0.5?'#8fd8f0':'#c4b0e8'});
+}
+function drawMotes(g){
+  g.globalCompositeOperation='lighter';
+  for(const m of MOTES){
+    m.x=m.hx+Math.sin(m.t*0.7)*18+Math.sin(m.t*0.23)*7;
+    m.y=m.hy+Math.cos(m.t*0.5)*12;
+    if(m.x-GS.camX<-14||m.x-GS.camX>W+14) continue;
+    const bl=0.4+0.6*Math.sin(m.t*1.4);
+    if(bl<0.2) continue;
+    g.fillStyle=rgba(m.c,0.5*bl*(1-GS.dawn));
+    g.fillRect(R(m.x),R(m.y),1,1);
+    const gr=g.createRadialGradient(m.x,m.y,0,m.x,m.y,5);
+    gr.addColorStop(0,rgba(m.c,0.18*bl*(1-GS.dawn))); gr.addColorStop(1,rgba(m.c,0));
+    g.fillStyle=gr; g.fillRect(m.x-5,m.y-5,10,10);
+  }
+  g.globalCompositeOperation='source-over';
 }
 
 /* ---------- foreground: grass blades and drifting leaves ---------- */
@@ -1287,7 +1498,9 @@ function drawPrete(g, p, o={}){
     if(!p.onGround){ fx=(back?-5:5)*face; fy = p.vy<0? -3:1; }
     else if(p.state==='block'){ fx=(back?-8:7)*face; fy=0; }
     else { const ph=p.phase+i*Math.PI, c=Math.cos(ph), s=Math.sin(ph);
-      fx=c*stride*face; fy = s>0? -Math.sin(ph)*lift : 0; }
+      // cos falls while the foot is planted (it slides back under you) and
+      // rises while it swings through — lift on the rising half, or you moonwalk
+      fx=c*stride*face; fy = s<0? -Math.abs(s)*lift : 0; }
     return {back, fx:bx+fx, fy:by+fy};
   }
   function drawLeg(i){
@@ -1309,7 +1522,7 @@ function drawPrete(g, p, o={}){
     else if(p.state==='block'){ hx2=chestX+(back?6:11)*face; hy2=chestY+(back?8:1); }
     else if(p.state==='wail'){ hx2=chestX+(back?-12:14)*face; hy2=chestY-15+(back?8:0); }
     else if(!p.onGround){ hx2=chestX-(back?4:8)*face; hy2=chestY+(p.vy<0?9:22); }
-    else { const ph=p.phase+(back?0:Math.PI);
+    else { const ph=p.phase+(back?Math.PI:0);
       hx2=chestX+Math.cos(ph)*stride*0.8*face-4.5*face;
       hy2=chestY+28+Math.abs(Math.sin(ph))*2; }
     return {hx2,hy2};
@@ -1559,9 +1772,13 @@ function drawKongKoi(g,e){
   // head: one big eye and a thirsty tongue
   const hy=y-33-hop;
   pEll(g,x,hy,5,5.4,sk); pEll(g,x+2*f,hy+0.5,2.8,3.8,skD);
-  pEll(g,x+1*f,hy-1,2.4,2.6,'#f6f0dc'); pEll(g,x+1.6*f,hy-1,1.3,1.5,'#c02a2a');
+  pEll(g,x+1*f,hy-1,2.4,2.6,'#f6f0dc');
+  pEll(g,x+1.6*f,hy-1,1.3,1.5, e.friendly?'#2f5a3a':'#c02a2a');
+  pR(g,x+1.2*f,hy-1.8,1,1,'#ffffff');
   pR(g,x-3*f,hy-2,3,1,skD);
-  pTaper(g,x+1*f,hy+3,x+4*f,hy+7+Math.sin(t*6)*1.5,2,1,'#c05a6a');
+  if(e.friendly){ pEll(g,x+0.6*f,hy+3,2.4,1.2,'#c05a6a'); pEll(g,x+0.6*f,hy+2.4,2,0.8,'#8f3f4c'); }
+  else pTaper(g,x+1*f,hy+3,x+4*f,hy+7+Math.sin(t*6)*1.5,2,1,'#c05a6a');
+  pEll(g,x-3.4*f,hy+1.6,1.4,1,'#e89aa4'); pEll(g,x+4.2*f,hy+1.6,1.4,1,'#e89aa4');
   if(e.hurtT>0){ g.globalAlpha=0.5; pEll(g,x,y-24-hop,10,14,'#ff5a5a'); g.globalAlpha=1; }
 }
 function drawKrahang(g,e){
@@ -1593,8 +1810,10 @@ function drawKrahang(g,e){
   const hy=y-26;
   pEll(g,x,hy,4.8,5.2,sk); pEll(g,x+2.2*f,hy+0.4,2.6,3.6,skD);
   pEll(g,x,hy-2.4,5,3,'#1a1420');
-  pEll(g,x+1.4*f,hy-1,1.5,1.6,PAL.ember); pEll(g,x-1.4*f,hy-1,1.3,1.4,PAL.ember);
-  pR(g,x,hy+2.4,3,1,'#3a1a1a');
+  const ke = e.friendly? '#2f3a5a' : PAL.ember;
+  pEll(g,x+1.4*f,hy-1,1.5,1.6,ke); pEll(g,x-1.4*f,hy-1,1.3,1.4,ke);
+  if(e.friendly){ pR(g,x+1*f,hy-1.7,1,1,'#fff'); pEll(g,x+0.4*f,hy+2.6,2.2,1.1,'#8f3f4c'); }
+  else pR(g,x,hy+2.4,3,1,'#3a1a1a');
   if(e.hurtT>0){ g.globalAlpha=0.5; pEll(g,x,y-18,12,16,'#ff5a5a'); g.globalAlpha=1; }
 }
 function drawPhiPop(g,e){
@@ -1621,11 +1840,18 @@ function drawPhiPop(g,e){
   pEll(g,x,hy,4.6,5,sk); pEll(g,x+2.2*f,hy+0.4,2.6,3.6,skD);
   for(let i=0;i<4;i++) pTaper(g,x-2+i*1.4,hy+4,x-3+i*2,yy-16,1.4,1,'#2a1a2a');
   pEll(g,x,hy-2.2,4.9,2.8,'#1a1420');
-  pEll(g,x+1.4*f,hy-1,1.6,1.7,'#ff3a3a'); pEll(g,x-1.4*f,hy-1,1.4,1.5,'#ff3a3a');
+  const pe = e.friendly? '#3a4a6a' : '#ff3a3a';
+  pEll(g,x+1.4*f,hy-1,1.6,1.7,pe); pEll(g,x-1.4*f,hy-1,1.4,1.5,pe);
+  if(e.friendly){ pR(g,x+1*f,hy-1.7,1,1,'#fff'); pR(g,x-1.8*f,hy-1.7,1,1,'#fff'); }
   // the mouth opens further than a mouth should
-  const mo=1+Math.sin(t*3)*0.5+(e.attackT>0?2:0);
-  pEll(g,x,hy+3.4,2.4,1.4+mo,'#2a0a12');
-  for(let i=0;i<4;i++) pR(g,x-2+i*1.3,hy+2.2,1,1.6,'#f6f0dc');
+  if(e.friendly){
+    pEll(g,x,hy+3.2,2.6,1.2,'#8f3f4c'); pEll(g,x,hy+2.8,2.2,0.8,'#5e2530');
+    pEll(g,x-3.6*f,hy+1.4,1.4,1,'#e89aa4'); pEll(g,x+3.6*f,hy+1.4,1.4,1,'#e89aa4');
+  } else {
+    const mo=1+Math.sin(t*3)*0.5+(e.attackT>0?2:0);
+    pEll(g,x,hy+3.4,2.4,1.4+mo,'#2a0a12');
+    for(let i=0;i<4;i++) pR(g,x-2+i*1.3,hy+2.2,1,1.6,'#f6f0dc');
+  }
   if(e.hurtT>0){ g.globalAlpha=0.5; pEll(g,x,yy-18,11,17,'#ff5a5a'); g.globalAlpha=1; }
 }
 function drawKrasue(g,e){
@@ -1653,10 +1879,11 @@ function drawKrasue(g,e){
     pTaper(g,x-1,y-4,x-1-Math.cos(a)*len*f,y-4-Math.sin(a)*len*0.7,3,1,'#120e1c');
   }
   pEll(g,x,y-3.4,6.2,3.6,'#120e1c');
-  pEll(g,x+1.8*f,y-1,1.8,2,'#ffd257'); pEll(g,x-1.8*f,y-1,1.6,1.8,'#ffd257');
-  pEll(g,x+1.8*f,y-1,0.9,1,'#c02a2a');
-  pEll(g,x+0.5*f,y+3.4,2.4,1.6,'#4a0f16');
-  pR(g,x-1,y+2.6,1,2,'#f6f0dc'); pR(g,x+1,y+2.6,1,2,'#f6f0dc');
+  pEll(g,x+1.8*f,y-1,1.8,2,'#3a2f4a'); pEll(g,x-1.8*f,y-1,1.6,1.8,'#3a2f4a');
+  pR(g,x+1.4*f,y-1.8,1,1,'#fff'); pR(g,x-2.2*f,y-1.8,1,1,'#fff');
+  if(e.friendly){ pEll(g,x+0.5*f,y+3.2,2.4,1.1,'#8f3f4c'); pEll(g,x+0.5*f,y+2.8,2,0.7,'#5e2530'); }
+  else { pEll(g,x+0.5*f,y+3.4,2.4,1.6,'#4a0f16'); pR(g,x-1,y+2.6,1,2,'#f6f0dc'); pR(g,x+1,y+2.6,1,2,'#f6f0dc'); }
+  pEll(g,x-4.4*f,y+1.4,1.5,1,'#f0a0a8'); pEll(g,x+4.4*f,y+1.4,1.5,1,'#f0a0a8');
   if(e.hurtT>0){ g.globalAlpha=0.5; pEll(g,x,y+6,12,22,'#ffdd5a'); g.globalAlpha=1; }
 }
 function drawTaiHong(g,e){
@@ -1686,11 +1913,13 @@ function drawTaiHong(g,e){
   pEll(g,x,hy,8,9,'#180f2c');
   pEll(g,x,hy-3,8.4,5,'#0e0818');
   const eg=0.7+0.3*Math.sin(t*5);
-  pEll(g,x+2.6*f,hy-1,2.2,2.4,`rgba(255,60,60,${eg})`);
-  pEll(g,x-2.6*f,hy-1,2,2.2,`rgba(255,60,60,${eg})`);
+  const tc = e.friendly? `rgba(150,200,255,${eg})` : `rgba(255,60,60,${eg})`;
+  pEll(g,x+2.6*f,hy-1,2.2,2.4,tc);
+  pEll(g,x-2.6*f,hy-1,2,2.2,tc);
   pEll(g,x+2.6*f,hy-1,1,1.1,'#fff0d0'); pEll(g,x-2.6*f,hy-1,0.9,1,'#fff0d0');
-  pEll(g,x,hy+4.4,3.4,2.2,'#0a0512');
-  for(let i=0;i<5;i++) pR(g,x-3+i*1.5,hy+3.4,1,2,'#c8bcb0');
+  if(e.friendly){ pEll(g,x,hy+4.2,3,1.3,'#3a2a4c'); pEll(g,x,hy+3.7,2.4,0.8,'#1a1028'); }
+  else { pEll(g,x,hy+4.4,3.4,2.2,'#0a0512');
+    for(let i=0;i<5;i++) pR(g,x-3+i*1.5,hy+3.4,1,2,'#c8bcb0'); }
   for(let i=0;i<8;i++){ if(Math.random()<0.4) pR(g,x+rnd(-11,11), hy+rnd(-8,H2*0.5), 1,2,'#3a2a5c'); }
   if(e.hurtT>0){ g.globalAlpha=0.45; pEll(g,x,y-H2*0.5,16,H2*0.6,'#ff7a7a'); g.globalAlpha=1; }
 }
@@ -1725,52 +1954,110 @@ function drawCat(g,c){
   }
 }
 /* ============================================================
-   GAME STATE
+   GAME STATE — a cozy ledger. Nothing here fights anything.
    ============================================================ */
 const GOAL = 108;                       // as many beads as a prayer mala
 const GS = {
   state:'title', t:0, merit:0, spent:0,
-  skills:{}, cos:{skirt:'ash'}, q:{prayers:0,offerings:0,pets:0,ghosts:0},
-  seen:{}, dawn:0, shake:0, hitstop:0, camX:0, camY:0, wind:0,
-  msg:null, toasts:[], zoneName:0,
+  skills:{}, cos:{skirt:'ash'}, q:{prayers:0,offerings:0,pets:0,gifts:0},
+  seen:{}, bag:{}, friends:{}, learned:{}, dawn:0, shake:0, hitstop:0,
+  camX:0, camY:0, wind:0, toasts:[], zoneName:0, tut:0,
 };
 const has = s => !!GS.skills[s];
 const avail = ()=> GS.merit - GS.spent;
+const bagCount = ()=> Object.values(GS.bag).reduce((a,b)=>a+b,0);
+const bagMax = ()=> has('carry')? 48 : 30;
+function bagAdd(id,n=1,force){
+  // anything you made or were given always fits — only foraging is capped
+  if(!force){
+    const room = bagMax()-bagCount();
+    if(room<=0){ toast('your basket is full — cook or give something away','#c8888a'); return 0; }
+    n=Math.min(n,room);
+  }
+  GS.bag[id]=(GS.bag[id]||0)+n; saveGame(); return n;
+}
+function bagTake(id,n=1){
+  if((GS.bag[id]||0)<n) return false;
+  GS.bag[id]-=n; if(GS.bag[id]<=0) delete GS.bag[id]; saveGame(); return true;
+}
+const bagHas=(id,n=1)=>(GS.bag[id]||0)>=n;
+
+/* ---------- what the village is made of ---------- */
+const ITEMS = {
+  rice:      {th:'ข้าวเหนียว', en:'sticky rice',   c:'#f2ecd8', k:'grain'},
+  banana:    {th:'กล้วย',      en:'banana',        c:'#e8c15c', k:'fruit'},
+  mango:     {th:'มะม่วง',     en:'mango',         c:'#e8a13c', k:'fruit'},
+  papaya:    {th:'มะละกอ',     en:'green papaya',  c:'#8fbf4a', k:'fruit'},
+  coconut:   {th:'มะพร้าว',    en:'coconut',       c:'#b08a5e', k:'fruit'},
+  chili:     {th:'พริก',       en:'chilli',        c:'#d8483a', k:'herb'},
+  lemongrass:{th:'ตะไคร้',     en:'lemongrass',    c:'#9fc46a', k:'herb'},
+  lime:      {th:'มะนาว',      en:'lime',          c:'#7fb83c', k:'herb'},
+  herb:      {th:'ผักชี',      en:'coriander',     c:'#4f9e5c', k:'herb'},
+  flower:    {th:'ดอกมะลิ',    en:'jasmine',       c:'#f6f0dc', k:'craft'},
+  leaf:      {th:'ใบตอง',      en:'banana leaf',   c:'#3f8f5f', k:'craft'},
+  bamboo:    {th:'ไม้ไผ่',     en:'bamboo',        c:'#c2b46a', k:'craft'},
+  clay:      {th:'ดินเหนียว',  en:'river clay',    c:'#9a6b4a', k:'craft'},
+  // cooked
+  somtam:      {th:'ส้มตำ',            en:'green papaya salad', c:'#c9d84a', k:'dish'},
+  stickyMango: {th:'ข้าวเหนียวมะม่วง', en:'mango sticky rice',  c:'#f0c860', k:'dish'},
+  tomyum:      {th:'ต้มยำ',            en:'tom yum',            c:'#e0603c', k:'dish'},
+  friedBanana: {th:'กล้วยทอด',         en:'fried banana',       c:'#d89a48', k:'dish'},
+  khanomkrok:  {th:'ขนมครก',           en:'coconut pancakes',   c:'#f2e2c0', k:'dish'},
+  // made
+  garland:  {th:'พวงมาลัย',   en:'jasmine garland', c:'#f6f0dc', k:'craft'},
+  krathong: {th:'กระทง',      en:'krathong float',  c:'#4f9e5c', k:'craft'},
+  basket:   {th:'กระด้ง',     en:'rice basket',     c:'#d3b478', k:'craft'},
+  lantern:  {th:'โคมไฟ',      en:'paper lantern',   c:'#ffc44d', k:'craft'},
+  shrine:   {th:'ศาลเพียงตา', en:'roadside shrine', c:'#c0392f', k:'craft'},
+};
+const RECIPES = {
+  somtam:      {out:'somtam',      need:{papaya:1,chili:1,lime:1},           steps:['pound','mix'],  th:'ส้มตำ',            en:'Green Papaya Salad', d:'Pound it. Keep pounding. That is the whole secret.'},
+  stickyMango: {out:'stickyMango', need:{rice:1,mango:1,coconut:1},          steps:['steam','plate'],th:'ข้าวเหนียวมะม่วง', en:'Mango Sticky Rice',  d:'Soft enough that even a needle-mouth can manage the smell of it.'},
+  tomyum:      {out:'tomyum',      need:{lemongrass:1,chili:1,lime:1,herb:1},steps:['boil','mix'],   th:'ต้มยำ',            en:'Tom Yum',            d:'Sour, hot, and loud. A soup that argues back.'},
+  friedBanana: {out:'friedBanana', need:{banana:2,coconut:1},                steps:['fry','plate'],  th:'กล้วยทอด',         en:'Fried Banana',       d:'The smell alone brings children from three houses away.'},
+  khanomkrok:  {out:'khanomkrok',  need:{coconut:2,rice:1},                  steps:['pour','fry'],   th:'ขนมครก',           en:'Coconut Pancakes',   d:'Little coconut puddings in a dimpled pan. Two make a pair.'},
+};
+const CRAFTS = {
+  garland:  {out:'garland',  need:{flower:3},                 steps:['thread','tie'],  th:'พวงมาลัย',   en:'Jasmine Garland', d:'Thread the jasmine, tie the marigold, hang it where it will be seen.'},
+  krathong: {out:'krathong', need:{leaf:2,flower:1},          steps:['fold','pin'],    th:'กระทง',      en:'Krathong',        d:'Banana leaf folded into a lotus. It carries what you would rather not keep.'},
+  basket:   {out:'basket',   need:{bamboo:3},                 steps:['split','weave'], th:'กระด้ง',     en:'Winnowing Basket',d:'Split the bamboo fine, then over, under, over, under.'},
+  lantern:  {out:'lantern',  need:{bamboo:1,leaf:1,flower:1}, steps:['frame','light'], th:'โคมไฟ',      en:'Paper Lantern',   d:'A small light to carry home by.'},
+  shrine:   {out:'shrine',   need:{bamboo:2,clay:1,flower:1}, steps:['build','bless'], th:'ศาลเพียงตา', en:'Roadside Shrine', d:'"Eye-level shrine" — built where somebody needs remembering.'},
+};
 
 const SKILLS = {
-  // กาย — body
-  stride:{br:0,i:0, cost:4,  th:'ก้าวยักษ์',   en:'Giant Stride', d:'You cover ground like a storm cloud. +35% walk speed.'},
-  reach: {br:0,i:1, cost:5,  th:'แขนใบลาน',   en:'Palm-Leaf Reach', d:'Your arms find what ladders cannot. Longer reach in every task.', need:'stride'},
-  belly: {br:0,i:2, cost:7,  th:'พุงเหล็ก',   en:'Iron Belly', d:'That belly was earned. Guarding halves the damage again.', need:'reach'},
-  palm:  {br:0,i:3, cost:9,  th:'ฝ่ามือยักษ์', en:'Giant Palm', d:'Heavy strikes hit like a falling roof. +60% heavy damage.', need:'belly'},
-  float: {br:0,i:4, cost:11, th:'กายเบา',     en:'Light Body', d:'Hunger made you hollow. Hollow things jump twice.', need:'palm'},
-  // วาจา — speech
-  wail:  {br:1,i:0, cost:3,  th:'วี้ดดด',      en:'The Whistle', d:'The cry every prete knows. A ranged wail that carries.'},
-  rattle:{br:1,i:1, cost:6,  th:'เสียงสั่น',   en:'Rattling Cry', d:'Your whistle rattles bone. Wailed enemies stagger.', need:'wail'},
-  chant: {br:1,i:2, cost:8,  th:'สวดมนต์',     en:'Old Chant', d:'Words you half-remember from a life you wasted. Heals you before a fight.', need:'rattle'},
-  shout: {br:1,i:3, cost:10, th:'ตะโกนบุญ',   en:'Blessing Shout', d:'Merit, shouted. Damages everything unkind nearby.', need:'chant'},
-  // ใจ — mind
-  magnet:{br:2,i:0, cost:4,  th:'แม่เหล็กบุญ', en:'Merit Magnet', d:'Merit finds you from three times as far.'},
-  eye:   {br:2,i:1, cost:6,  th:'ตาใน',        en:'Inner Eye', d:'You see what a thing fears. Enemy weaknesses shown in fights.', need:'magnet'},
-  calm:  {br:2,i:2, cost:9,  th:'ใจนิ่ง',      en:'Still Mind', d:'A guard timed exactly right slows the whole night down.', need:'eye'},
-  metta: {br:2,i:3, cost:12, th:'เมตตา',       en:'Loving-Kindness', d:'The last skill, and the only one that matters: release a spirit instead of breaking it.', need:'calm'},
+  // กาย — the body you woke up in
+  stride:{br:0,i:0,cost:4, th:'ก้าวยักษ์',  en:'Giant Stride',    d:'You cover ground like a slow storm cloud. +35% walking speed.'},
+  reach: {br:0,i:1,cost:5, th:'แขนใบลาน',  en:'Palm-Leaf Reach', d:'Your arms find what ladders cannot. Longer reach in every helping job.', need:'stride'},
+  carry: {br:0,i:2,cost:6, th:'หาบหาม',    en:'Carrying Pole',   d:'A bigger basket. Twenty-four things instead of fourteen.', need:'reach'},
+  float: {br:0,i:3,cost:8, th:'กายเบา',    en:'Light Body',      d:'Hunger made you hollow, and hollow things jump twice.', need:'carry'},
+  // ฝีมือ — what your hands learn
+  steady:{br:1,i:0,cost:5, th:'มือนิ่ง',   en:'Steady Hands',    d:'Helping jobs forgive a wobble. Everything goes slower and kinder.'},
+  taste: {br:1,i:1,cost:6, th:'ลิ้นเทวดา', en:'Divine Tongue',   d:'You cannot eat, but you know. Cooking timing windows get wider.', need:'steady'},
+  weave: {br:1,i:2,cost:6, th:'สานเก่ง',   en:'Deft Weaving',    d:'Over, under, over, under. Crafting gets easier.', need:'taste'},
+  two:   {br:1,i:3,cost:9, th:'สองมือ',    en:'Two Hands',       d:'Palm-leaf hands are big enough to make two of a thing at once.', need:'weave'},
+  // ใจ — the part that got you here
+  magnet:{br:2,i:0,cost:4, th:'แม่เหล็กบุญ',en:'Merit Magnet',   d:'Merit finds you from three times as far.'},
+  eye:   {br:2,i:1,cost:5, th:'ตาใน',      en:'Inner Eye',       d:'You see what a person is quietly hoping for. Wishes shown above their heads.', need:'magnet'},
+  cool:  {br:2,i:2,cost:7, th:'ใจเย็น',    en:'Cool Heart',      d:'Cats, children and shy spirits stop being startled by you.', need:'eye'},
+  metta: {br:2,i:3,cost:10,th:'เมตตา',     en:'Loving-Kindness', d:'The last one, and the only one that matters: sit with a lonely spirit until it is no longer lonely.', need:'cool'},
 };
 const BRANCHES = [
-  {th:'กาย', en:'BODY', d:'what your enormous body can do', c:PAL.red},
-  {th:'วาจา', en:'SPEECH', d:'the only voice you have left', c:PAL.gold},
-  {th:'ใจ',  en:'MIND', d:'the part that got you here', c:PAL.jadeL},
+  {th:'กาย',   en:'BODY',  d:'the body you woke up in', c:'#e07a5f'},
+  {th:'ฝีมือ', en:'HANDS', d:'what your hands learn',   c:PAL.gold},
+  {th:'ใจ',    en:'HEART', d:'the part that got you here', c:PAL.jadeL},
 ];
 const COSMETICS = {
-  skirt_ash:   {slot:'skirt', v:'ash',    cost:0,  th:'ผ้าเก่า',     en:'Old Rag', d:'What you woke in.'},
-  skirt_plaid: {slot:'skirt', v:'plaid',  cost:3,  th:'ผ้าขาวม้า',   en:'Red Check', d:'A pha khao ma, left on a fence to dry. Nobody came back for it.'},
-  skirt_mudmee:{slot:'skirt', v:'mudmee', cost:6,  th:'ผ้ามัดหมี่',  en:'Indigo Ikat', d:'Tied and dyed by hand. Somebody counted every knot.'},
-  skirt_jade:  {slot:'skirt', v:'jade',   cost:8,  th:'ผ้าเขียว',    en:'Jade Weave', d:'The green of a banana grove at midnight.'},
-  skirt_gold:  {slot:'skirt', v:'gold',   cost:16, th:'ผ้าไหมทอง',  en:'Gold Silk', d:'Silk for a ghost. Ridiculous. Wear it.'},
-  garland:     {slot:'garland', v:1, cost:4,  th:'พวงมาลัย',  en:'Jasmine Garland', d:'Jasmine and marigold. It smells like being forgiven.'},
-  sash:        {slot:'sash',   v:1, cost:7,  th:'สไบ',        en:'Sabai Sash', d:'Worn over one shoulder, the old way.'},
+  skirt_ash:   {slot:'skirt', v:'ash',    cost:0,  th:'ผ้าเก่า',     en:'Old Rag',        d:'What you woke in.'},
+  skirt_plaid: {slot:'skirt', v:'plaid',  cost:3,  th:'ผ้าขาวม้า',   en:'Red Check',      d:'A pha khao ma left on a fence to dry. Nobody came back for it.'},
+  skirt_mudmee:{slot:'skirt', v:'mudmee', cost:6,  th:'ผ้ามัดหมี่',  en:'Indigo Ikat',    d:'Tied and dyed by hand. Somebody counted every knot.'},
+  skirt_jade:  {slot:'skirt', v:'jade',   cost:8,  th:'ผ้าเขียว',    en:'Jade Weave',     d:'The green of a banana grove at midnight.'},
+  skirt_gold:  {slot:'skirt', v:'gold',   cost:14, th:'ผ้าไหมทอง',  en:'Gold Silk',      d:'Silk for a hungry ghost. Ridiculous. Wear it.'},
+  garland:     {slot:'garland', v:1, cost:4,  th:'พวงมาลัย',  en:'Worn Garland', d:'Jasmine and marigold. It smells like being forgiven.'},
+  sash:        {slot:'sash',   v:1, cost:6,  th:'สไบ',        en:'Sabai Sash',   d:'Worn over one shoulder, the old way.'},
   beads:       {slot:'beads',  v:1, cost:5,  th:'ลูกประคำ',   en:'Prayer Beads', d:'One hundred and eight of them. You know the number now.'},
-  goldleaf:    {slot:'goldleaf',v:1,cost:11, th:'ปิดทอง',     en:'Gold Leaf', d:'Pressed onto you, square by square, the way people gild a Buddha.'},
-  halo:        {slot:'halo',   v:1, cost:0,  th:'รัศมี',      en:'Radiance', d:'Not bought. Earned, at the very end.', locked:'metta'},
+  goldleaf:    {slot:'goldleaf',v:1,cost:10, th:'ปิดทอง',     en:'Gold Leaf',    d:'Pressed on square by square, the way people gild a Buddha.'},
+  halo:        {slot:'halo',   v:1, cost:0,  th:'รัศมี',      en:'Radiance',     d:'Not bought. Earned, at the very end.', locked:'metta'},
 };
 
 /* ============================================================
@@ -1778,37 +2065,89 @@ const COSMETICS = {
    ============================================================ */
 const P = makePrete();
 P.x = 300; P.y = groundY(300);
-P.hp = 100; P.maxhp = 100; P.breath = 100;
-P.coyote=0; P.buf=0; P.jumps=0; P.wailCd=0; P.atkCd=0; P.invuln=0;
+P.coyote=0; P.buf=0; P.jumps=0; P.wailCd=0;
 
 const NPCS = [];
 function addNpc(o){ const v=makeVillager(o); v.y=groundY(v.x); v.home=v.x; NPCS.push(v); return v; }
-const MALI  = addNpc({id:'mali', x:TAMARIND_X+52, skin:'#e0b088',skinD:'#c69670',shirt:'#d05a4a',shirtD:'#a83f33',legs:'#3f5878',hair:'tails',kid:1,name:'Mali'});
-const UNCLE = addNpc({id:'uncle',x:CART_X-26, skin:'#c69670',skinD:'#a87c58',shirt:'#e8dfc8',shirtD:'#c4b89e',legs:'#5d4735',hair:'short',hairC:'#6a6058',name:'Lung Somchai'});
-const MONK  = addNpc({id:'monk', x:SALA_X+62, skin:'#d8a878',skinD:'#bf8f60',shirt:'#e8923f',shirtD:'#b56a28',legs:'#e8923f',hair:'bald',monk:1,name:'Luang Pi'});
-const YAI   = addNpc({id:'yai',  x:1880, skin:'#d8a878',skinD:'#bf8f60',shirt:'#a86f9e',shirtD:'#8a5580',legs:'#4a3550',skirt:1,skirtPat:'plaid',hair:'bun',hairC:'#b9b4ae',name:'Yai Pen'});
-const NOK   = addNpc({id:'nok',  x:2380, skin:'#e0b088',skinD:'#c69670',shirt:'#d8b04a',shirtD:'#b08c32',legs:'#7a3b50',skirt:1,skirtPat:'mudmee',hair:'short',name:"P'Nok"});
-const DAM   = addNpc({id:'dam',  x:2900, skin:'#c69670',skinD:'#a87c58',shirt:'#4a7a9e',shirtD:'#35607e',legs:'#3a3a44',hair:'short',name:'Loong Dam'});
+const MALI  = addNpc({id:'mali', x:TAMARIND_X+52, skin:'#e8bc92',skinD:'#c99a6e',shirt:'#e06a58',shirtD:'#b34a3c',legs:'#3f5878',hair:'tails',kid:1,name:'Mali',
+                      wants:'friedBanana', line:'Mali (7) has been promised fried banana by three different adults and received none.'});
+const UNCLE = addNpc({id:'uncle',x:CART_X-26, skin:'#c9986f',skinD:'#a87c58',shirt:'#f0e8d2',shirtD:'#c4b89e',legs:'#5d4735',hair:'short',hairC:'#6a6058',name:'Lung Somchai',
+                      wants:'somtam', line:'He has fed this village for thirty years and never once eaten sitting down.'});
+const MONK  = addNpc({id:'monk', x:SALA_X+62, skin:'#d8a878',skinD:'#bf8f60',shirt:'#f09a42',shirtD:'#b56a28',legs:'#f09a42',hair:'bald',monk:1,name:'Luang Pi',
+                      wants:'krathong', line:'He is not supposed to want anything. He would still like a krathong.'});
+const YAI   = addNpc({id:'yai',  x:1880, skin:'#dcae7e',skinD:'#bf8f60',shirt:'#b47ba8',shirtD:'#8a5580',legs:'#4a3550',skirt:1,skirtPat:'plaid',hair:'bun',hairC:'#c9c4be',name:'Yai Pen',
+                      wants:'garland', line:'Yai Pen is 81 and can still climb a ladder, which is exactly the problem.'});
+const NOK   = addNpc({id:'nok',  x:2380, skin:'#e8bc92',skinD:'#c69670',shirt:'#e8bc52',shirtD:'#b08c32',legs:'#7a3b50',skirt:1,skirtPat:'mudmee',hair:'short',name:"P'Nok",
+                      wants:'khanomkrok', line:'Runs the stall, knows everything, tells you most of it.'});
+const DAM   = addNpc({id:'dam',  x:2900, skin:'#c9986f',skinD:'#a87c58',shirt:'#5288ad',shirtD:'#35607e',legs:'#3a3a44',hair:'short',name:'Loong Dam',
+                      wants:'tomyum', line:'Drove the rice truck for forty years. Misses it loudly.'});
 const VILLAGERS = [YAI,NOK,DAM];
 
 const TANI = {x:TANI_X, y:groundY(TANI_X)-4, anim:0, face:-1, waveT:0};
 const PHRA = {x:SHRINE_X+2, y:groundY(SHRINE_X)-64, anim:0, shown:false};
 const CAT  = {x:TAMARIND_X+16, y:groundY(TAMARIND_X)-104, state:'tree', anim:0, phase:0, face:-1, tx:0};
 
-/* world ghosts — walk up to one and the night narrows to a fight */
-const GHOSTS = [
-  {id:'kongkoi', x:430,  name:'ผีกองกอย', en:'Kong Koi',  dead:false, hp:70,  dmg:7,  rew:10,
-   weak:'Cross your legs — guard low when it lunges for your feet.', zone:'charnel'},
-  {id:'krahang', x:1180, name:'ผีกระหัง', en:'Krahang',   dead:false, hp:95,  dmg:9,  rew:14,
-   weak:'Break the rice baskets. Grounded, he is only a rude man.', zone:'paddy'},
-  {id:'phipop',  x:2160, name:'ผีปอบ',    en:'Phi Pop',   dead:false, hp:120, dmg:11, rew:16,
-   weak:'It wears a neighbour. Drive it out with sound, not force.', zone:'villageW'},
-  {id:'krasue',  x:4840, name:'ผีกระสือ', en:'Krasue',    dead:false, hp:150, dmg:13, rew:20,
-   weak:'She fears garlic and holy water. Both grow at the temple.', zone:'forest'},
-  {id:'taihong', x:5320, name:'ผีตายโหง', en:'Phi Tai Hong', dead:false, hp:210, dmg:16, rew:26,
-   weak:'It died badly and stayed. Only mercy ends it.', zone:'forest', boss:1},
+/* the guide: a ขวัญ, the small life-spirit that lives in everyone */
+const KHWAN = {x:300, y:groundY(300)-60, tx:0, ty:0, anim:0, mood:'happy', blink:2, bub:null, bubT:0};
+
+/* ---------- the neighbours who happen to be dead ---------- */
+const SPIRITS = [
+  {id:'kongkoi', x:430,  name:'น้องกองกอย', en:'Little Kong Koi', art:'kongkoi',
+   wants:'stickyMango', met:false, friend:false, y:0,
+   hi:['กอย… กอย…? Oh! Oh, you are ALSO dead. Hello. Hello!'],
+   about:'A one-legged forest spirit the size of a child. The stories say he drinks from the toes of sleeping travellers. In fact he is far too shy to try, and permanently hungry.',
+   wish:'Something soft. He has no teeth to speak of and is very sensitive about it.',
+   thanks:['…it is soft. It is SOFT. I can eat it.','Nobody has cooked for me in one hundred and forty years. I counted.'],
+   gift:'khanomkrok'},
+  {id:'krahang', x:1180, name:'พี่กระหัง', en:'Krahang', art:'krahang',
+   wants:'basket', met:false, friend:false, y:0,
+   hi:['Do not laugh. I have had a very difficult evening.'],
+   about:'A man who flies at night on two rice-winnowing baskets. He came down hard in the paddy and both baskets are kindling.',
+   wish:'New baskets. Woven properly, not the loose ones they sell at market.',
+   thanks:['These are… these are BETTER than my old ones.','I will fly over your house sometimes. As a courtesy. You will barely notice.'],
+   gift:'bamboo'},
+  {id:'phipop',  x:2160, name:'ปอบปอ', en:'Por the Phi Pop', art:'phipop',
+   wants:'tomyum', met:false, friend:false, y:0,
+   hi:['You are not running. Everyone runs. Are you sure you have looked at me properly?'],
+   about:'Blamed for every stomach ache in four villages. Has never actually possessed anybody; simply looks the part and has given up arguing.',
+   wish:'To be handed something hot, by somebody who is not backing away while they do it.',
+   thanks:['You handed it to me. With both hands. Like a person.','I will remember this for a very long time. I have a very long time.'],
+   gift:'chili'},
+  {id:'krasue',  x:4840, name:'พี่กระสือ', en:'Krasue', art:'krasue',
+   wants:'lantern', met:false, friend:false, y:0,
+   hi:['Oh good, someone tall. Listen — have you seen a body? Mine, specifically.'],
+   about:'A floating head who leaves her body sleeping in the forest each night and can never quite find it again before dawn. Cheerful about it. Terrible sense of direction.',
+   wish:'A lantern. Something to carry, so she can see the path back before the sun catches her.',
+   thanks:['A light of my very own. Do you know how long I have been navigating by VIBES?','If you ever need gossip, tall one, I hear absolutely everything.'],
+   gift:'flower'},
+  {id:'taihong', x:5320, name:'ลุงตายโหง', en:'Uncle Tai Hong', art:'taihong',
+   wants:'shrine', met:false, friend:false, y:0,
+   hi:['…', 'You can see me. Nobody has been able to see me in a long while.'],
+   about:'He died on this road at night, a long time ago, and simply stayed. Not angry. Not anything, really. Just still there, at the spot, waiting to be noticed.',
+   wish:'A shrine at the roadside — small, eye-level — so that people passing know somebody was here.',
+   thanks:['They will see it. They will slow down. Somebody will leave a drink, one day.','That is all it was. That is all it ever was.'],
+   gift:'clay'},
 ];
-for(const g of GHOSTS){ g.y=groundY(g.x); g.anim=rnd(9); g.face=-1; g.hurtT=0; g.attackT=0; g.hop=0; }
+for(const s of SPIRITS){ s.y=groundY(s.x); s.anim=rnd(9); s.face=-1; s.hurtT=0; s.attackT=0; s.hop=0; s.bob=rnd(TAU); }
+const SPIRIT_BY_ID = {}; for(const s of SPIRITS) SPIRIT_BY_ID[s.id]=s;
+const GIFTEES = ()=> [...SPIRITS, MALI, UNCLE, MONK, YAI, NOK, DAM];
+
+/* ---------- things growing that you can pick ---------- */
+const NODES = [];
+function addNode(x,item,n=1,art='bush'){ NODES.push({x,y:groundY(x),item,n,art,ready:true,t:0}); }
+addNode(960,'rice',2,'paddy');  addNode(1060,'rice',2,'paddy'); addNode(1290,'herb',2,'paddy');
+addNode(1390,'herb',2,'paddy'); addNode(1120,'clay',2,'clay');  addNode(1180,'clay',2,'clay');
+addNode(1620,'chili',2,'chili');addNode(1960,'lemongrass',2,'lemongrass'); addNode(2210,'lime',2,'lime');
+addNode(2460,'chili',2,'chili'); addNode(2560,'papaya',2,'bush'); addNode(2960,'papaya',2,'bush');
+addNode(1740,'flower',3,'flowers'); addNode(2320,'flower',3,'flowers'); addNode(3600,'flower',3,'flowers');
+addNode(3120,'banana',3,'banana'); addNode(3260,'banana',3,'banana'); addNode(3480,'mango',2,'banana');
+addNode(3560,'leaf',3,'leaf');   addNode(3700,'leaf',3,'leaf');  addNode(3420,'mango',2,'banana');
+addNode(1490,'coconut',2,'coconut'); addNode(2680,'coconut',2,'coconut'); addNode(4200,'coconut',2,'coconut');
+addNode(4700,'bamboo',3,'bamboo'); addNode(4880,'bamboo',3,'bamboo'); addNode(5100,'bamboo',3,'bamboo');
+addNode(5240,'leaf',3,'leaf');    addNode(4640,'herb',2,'paddy');
+
+/* the two places you work */
+const KITCHEN_X = 2790, CRAFT_X = 2340;
 
 /* ============================================================
    PARTICLES
@@ -1820,12 +2159,12 @@ function pSpark(x,y,n=6,c=PAL.gold){ for(let i=0;i<n;i++) part({k:'sp',x:x+rnd(-
 function pDust(x,y,n=5){ for(let i=0;i<n;i++) part({k:'dust',x:x+rnd(-5,5),y,vx:rnd(-26,26),vy:rnd(-16,-3),life:rnd(.3,.7)}); }
 function pSmoke(x,y,d=0){ part({k:'smoke',x,y,t:-d,life:3,sw:rnd(TAU)}); }
 function pHeart(x,y){ part({k:'heart',x,y,vy:-14,life:1.4}); }
-function pPoof(x,y,c='#4a2a7c'){ for(let i=0;i<14;i++) part({k:'poof',x:x+rnd(-6,6),y:y+rnd(-8,8),vx:rnd(-30,30),vy:rnd(-40,-6),life:rnd(.5,1),c}); }
-function pHit(x,y,heavy){ for(let i=0;i<(heavy?14:8);i++) part({k:'hit',x,y,vx:rnd(-90,90),vy:rnd(-90,40),life:rnd(.12,.3),c:heavy?'#fff0b0':'#ffd257'}); }
 function pRing(x,y,c='#fff0c0',r=70){ part({k:'ring',x,y,life:.6,c,r}); }
-function pPetal(x,y){ part({k:'petal',x:x+rnd(-40,40),y:y-rnd(20,70),vx:rnd(-6,6),vy:rnd(10,20),life:rnd(2,3.6),sw:rnd(TAU)}); }
+function pPetal(x,y,c){ part({k:'petal',x:x+rnd(-40,40),y:y-rnd(20,70),vx:rnd(-6,6),vy:rnd(10,20),life:rnd(2,3.6),sw:rnd(TAU),c:c||PAL.goldL}); }
 function pSplash(x,y){ for(let i=0;i<8;i++) part({k:'water',x,y,vx:rnd(-40,40),vy:rnd(-60,-15),life:rnd(.3,.7)}); }
 function pEmber(x,y){ part({k:'ember',x,y,vx:rnd(-8,8),vy:rnd(-22,-8),life:rnd(.8,1.7)}); }
+function pPop(x,y,c){ for(let i=0;i<10;i++) part({k:'pop',x,y,vx:rnd(-40,40),vy:rnd(-60,-10),life:rnd(.4,.8),c}); }
+function pMoth(x,y){ part({k:'moth',x,y,life:99,sw:rnd(TAU),hx:x,hy:y}); }
 function stepParts(dt){
   for(let i=PT.length-1;i>=0;i--){
     const p=PT[i]; p.t+=dt;
@@ -1838,15 +2177,17 @@ function stepParts(dt){
         p.x+=(tx-p.x)/d*sp2*dt+Math.sin(p.t*7)*0.5; p.y+=(ty-p.y)/d*sp2*dt;
         break; }
       case 'smoke': p.y-=dt*11; p.x+=Math.sin(p.t*2+p.sw)*0.3; break;
-      case 'sp': case 'dust': case 'poof': case 'hit': case 'water':
-        p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+= (p.k==='hit'?260:p.k==='water'?300:110)*dt;
+      case 'sp': case 'dust': case 'pop': case 'water':
+        p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=(p.k==='water'?300:120)*dt;
         if(p.k==='dust') p.vx*=Math.pow(0.1,dt);
         break;
       case 'heart': p.y+=p.vy*dt; break;
       case 'petal': p.y+=p.vy*dt; p.x+=p.vx*dt+Math.sin(p.t*3+p.sw)*0.5; break;
       case 'ember': p.x+=p.vx*dt+Math.sin(p.t*3)*0.3; p.y+=p.vy*dt; break;
+      case 'moth': p.x=p.hx+Math.sin(p.t*2.2+p.sw)*13+Math.sin(p.t*0.7)*5;
+                   p.y=p.hy+Math.cos(p.t*3.1+p.sw)*7; break;
     }
-    if(p.t>=p.life) PT.splice(i,1);
+    if(p.k!=='moth' && p.t>=p.life) PT.splice(i,1);
   }
 }
 function drawParts(g){
@@ -1857,22 +2198,23 @@ function drawParts(g){
       case 'orb':
         pR(g,p.x-1,p.y-1,3,3,PAL.gold); pR(g,p.x,p.y-2,1,5,rgba(PAL.goldL,0.6)); pR(g,p.x-2,p.y,5,1,rgba(PAL.goldL,0.6));
         break;
-      case 'smoke': g.globalAlpha=0.35*a; pEll(g,p.x,p.y,2-lt,2-lt,'#b8b0cc'); g.globalAlpha=1; break;
+      case 'smoke': g.globalAlpha=0.3*a; pEll(g,p.x,p.y,2-lt,2-lt,'#c8c0d8'); g.globalAlpha=1; break;
       case 'sp': g.globalAlpha=a; pR(g,p.x,p.y,1,1,p.c); if(lt<0.4){pR(g,p.x-1,p.y,1,1,p.c);pR(g,p.x+1,p.y,1,1,p.c);} g.globalAlpha=1; break;
       case 'dust': g.globalAlpha=a*0.6; pEll(g,p.x,p.y,1+lt*2,1+lt,'#9a8f7a'); g.globalAlpha=1; break;
-      case 'poof': g.globalAlpha=a*0.8; pEll(g,p.x,p.y,2.4-lt,2.4-lt,p.c); g.globalAlpha=1; break;
-      case 'hit': g.globalAlpha=a; pR(g,p.x,p.y,lt<0.4?2:1,lt<0.4?2:1,p.c); g.globalAlpha=1; break;
-      case 'heart': g.globalAlpha=a; pR(g,p.x-1,p.y-1,1,1,'#ff789e'); pR(g,p.x+1,p.y-1,1,1,'#ff789e'); pR(g,p.x-1,p.y,3,1,'#ff789e'); pR(g,p.x,p.y+1,1,1,'#ff789e'); g.globalAlpha=1; break;
+      case 'pop': g.globalAlpha=a; pEll(g,p.x,p.y,1.6-lt,1.6-lt,p.c); g.globalAlpha=1; break;
+      case 'heart': g.globalAlpha=a; pR(g,p.x-1,p.y-1,1,1,'#ff8fae'); pR(g,p.x+1,p.y-1,1,1,'#ff8fae'); pR(g,p.x-1,p.y,3,1,'#ff8fae'); pR(g,p.x,p.y+1,1,1,'#ff8fae'); g.globalAlpha=1; break;
       case 'ring': g.globalAlpha=a*0.7; g.strokeStyle=p.c; g.lineWidth=1; g.beginPath(); g.arc(R(p.x),R(p.y),4+lt*p.r,0,TAU); g.stroke(); g.globalAlpha=1; break;
-      case 'petal': g.globalAlpha=a; pR(g,p.x,p.y,2,1,PAL.goldL); g.globalAlpha=1; break;
+      case 'petal': g.globalAlpha=a; pR(g,p.x,p.y,2,1,p.c||PAL.goldL); g.globalAlpha=1; break;
       case 'water': g.globalAlpha=a; pR(g,p.x,p.y,1,2,'#8fc4e8'); g.globalAlpha=1; break;
       case 'ember': g.globalAlpha=a*0.9; pR(g,p.x,p.y,1,1,lt<0.5?'#ffd257':PAL.ember); g.globalAlpha=1; break;
+      case 'moth': { const f=Math.sin(p.t*22)*2.2;
+        pR(g,p.x,p.y,2,1,'#e8dfc8'); pR(g,p.x-1,p.y-f*0.5,1,1,'#f6f0dc'); pR(g,p.x+2,p.y+f*0.5,1,1,'#f6f0dc'); break; }
     }
   }
 }
 
 /* ============================================================
-   MERIT & MESSAGING
+   MERIT, TOASTS, DIALOGUE
    ============================================================ */
 let meritFlash=0;
 function addMerit(n, quiet){
@@ -1882,21 +2224,53 @@ function addMerit(n, quiet){
   saveGame();
 }
 function toast(text, c=PAL.gold){ GS.toasts.push({text,c,t:0}); if(GS.toasts.length>4) GS.toasts.shift(); }
-
-/* dialogue */
 let DLG=null;
 function say(lines, done){ DLG={lines,i:0,ch:0,done:done||null}; }
 function stepDlg(dt){
   if(!DLG) return;
   const L=DLG.lines[DLG.i];
   DLG.ch += dt*52;
-  if(press('act')||press('light')||press('tap')){
+  if(press('act')||press('tap')){
     AU.blip();
     if(DLG.ch < L.t.length) DLG.ch = L.t.length;
     else { DLG.i++; DLG.ch=0;
       if(DLG.i>=DLG.lines.length){ const d=DLG.done; DLG=null; if(d) d(); } }
   }
 }
+
+/* ============================================================
+   THE GUIDE — ขวัญ follows you and explains the world
+   ============================================================ */
+const TUT = [
+  {id:'walk',  test:()=>Math.abs(P.x-300)>90,           say:'Hold ← and → to walk. Your legs are new. Take your time.'},
+  {id:'gather',test:()=>bagCount()>0,                    say:'That green over there is worth picking. Stand at a plant and hold E — everything cooks from something.'},
+  {id:'guide2',test:()=>GS.q.metPhra,                    say:'The little gold house on the pillar east of here is a ศาลพระภูมิ. The spirit inside keeps the ledger. Go and be polite.'},
+  {id:'cook',  test:()=>Object.keys(GS.learned).length>0,say:'There is a kitchen by the noodle cart. Stand at it and press E — cooking is just paying attention in order.'},
+  {id:'give',  test:()=>GS.q.gifts>0,                    say:'Now give it to somebody. Press E to talk, then G to hand over what you made. That is the whole game, really.'},
+  {id:'ledger',test:()=>!!GS.seen.ledger,                say:'Press TAB for your ledger — merit spent on skills still counts as merit earned. Karma is bookkeeping, not punishment.'},
+];
+function stepKhwan(dt){
+  const K2=KHWAN;
+  K2.anim+=dt; K2.blink-=dt; if(K2.blink<-0.14) K2.blink=rnd(2.5,6);
+  // float along behind your shoulder
+  const side = -P.face;
+  const tx = P.x + side*22, ty = P.y - 46 + Math.sin(K2.anim*1.5)*3;
+  K2.x = lerp(K2.x, tx, 1-Math.pow(0.004,dt));
+  K2.y = lerp(K2.y, ty, 1-Math.pow(0.006,dt));
+  if(K2.bubT>0){ K2.bubT-=dt; if(K2.bubT<=0) K2.bub=null; }
+  // tutorial, one gentle nudge at a time
+  if(GS.tut < TUT.length && !DLG && GS.state==='play'){
+    const step=TUT[GS.tut];
+    if(step.test()){ GS.tut++; saveGame();
+      const nxt=TUT[GS.tut];
+      if(nxt){ K2.bub=nxt.say; K2.bubT=7.5; AU.blip(); }
+    } else if(!K2.bub && !GS.seen['tut'+step.id]){
+      GS.seen['tut'+step.id]=true; K2.bub=step.say; K2.bubT=8;
+    }
+  }
+  if(Math.random()<dt*1.4) part({k:'sp',x:K2.x+rnd(-5,5),y:K2.y+rnd(-5,5),vx:rnd(-6,6),vy:rnd(-10,-2),life:rnd(.5,1),c:'#bfe8ff'});
+}
+function khwanSay(txt,t=6){ KHWAN.bub=txt; KHWAN.bubT=t; AU.blip(); }
 
 /* ============================================================
    PLAYER
@@ -1911,58 +2285,51 @@ function stepPlayer(dt){
   P.vx += clamp(target-P.vx, -acc*dt, acc*dt);
   if(ax!==0) P.face = ax;
 
-  // jump — coyote time and a buffer, because fair jumps feel good
   P.coyote = P.onGround ? 0.1 : Math.max(0,P.coyote-dt);
   if(!busy && (press('jump')||press('up'))) P.buf=0.13; else P.buf=Math.max(0,P.buf-dt);
   const maxJumps = has('float')?2:1;
-  if(P.buf>0 && (P.coyote>0 || P.jumps<maxJumps-(P.onGround?0:0))){
-    if(P.coyote>0 || P.jumps<maxJumps){
-      P.vy = -238; P.buf=0; P.coyote=0; P.onGround=false;
-      P.jumps = P.coyote>0?1:P.jumps+1;
-      P.squash=-0.5; AU.jump(); pDust(P.x,P.y,5);
-    }
+  if(P.buf>0 && (P.coyote>0 || P.jumps<maxJumps)){
+    P.vy=-238; P.buf=0; P.coyote=0; P.onGround=false;
+    P.jumps = P.coyote>0?1:P.jumps+1;
+    P.squash=-0.5; AU.jump(); pDust(P.x,P.y,5);
   }
-  if(P.vy<0 && !(K.jump||K.up)) P.vy += 640*dt;      // let go, fall sooner
-  P.vy += 760*dt;
-  P.vy = Math.min(P.vy, 420);
-
+  if(P.vy<0 && !(K.jump||K.up)) P.vy += 640*dt;
+  P.vy += 760*dt; P.vy = Math.min(P.vy, 420);
   P.x = clamp(P.x + P.vx*dt, 16, WORLD_W-16);
   P.y += P.vy*dt;
   const gy = groundY(P.x);
   if(P.y >= gy){
-    if(!P.onGround){
-      const f=clamp(P.vy/380,0,1);
-      P.squash = 0.35+f*0.5; AU.land(); pDust(P.x,gy,4+f*8);
-      if(f>0.5) GS.shake=Math.max(GS.shake,2.2);
-    }
+    if(!P.onGround){ const f=clamp(P.vy/380,0,1);
+      P.squash=0.35+f*0.5; AU.land(); pDust(P.x,gy,4+f*8);
+      if(f>0.5) GS.shake=Math.max(GS.shake,2); }
     P.y=gy; P.vy=0; P.onGround=true; P.jumps=0;
   } else P.onGround=false;
 
-  // footsteps
-  const oldStep = P._sf||0, nf = Math.floor(P.phase/Math.PI);
-  if(P.onGround && nf!==oldStep && Math.abs(P.vx)>18){ AU.step(Math.abs(P.vx)>100); pDust(P.x,P.y,2); }
+  const nf = Math.floor(P.phase/Math.PI);
+  if(P.onGround && nf!==(P._sf||0) && Math.abs(P.vx)>18){ AU.step(Math.abs(P.vx)>100); pDust(P.x,P.y,2); }
   P._sf = nf;
 
-  // whistle
+  // the whistle is a greeting now, nothing more
   P.wailCd=Math.max(0,P.wailCd-dt);
-  if(!busy && has('wail') && press('whistle') && P.wailCd<=0){
-    P.wailCd=1.2; P.state='wail'; P.wailT=0.5; AU.wail();
+  if(!busy && press('whistle') && P.wailCd<=0){
+    P.wailCd=1.2; P.wailT=0.5; AU.wail();
     pRing(P.x,P.y-38,'#fff0c0',80);
-    for(const n of NPCS) if(Math.abs(n.x-P.x)<80) n.mark={c:'?!',t:1.2};
-    for(const gh of GHOSTS) if(!gh.dead && Math.abs(gh.x-P.x)<90) gh.spooked=1.2;
+    let greeted=0;
+    for(const n of NPCS) if(Math.abs(n.x-P.x)<110){ n.mark={c:'♪',t:1.6}; greeted++; }
+    for(const s of SPIRITS) if(Math.abs(s.x-P.x)<130 && s.met){ s.wave=1.4; greeted++; }
+    if(Math.abs(CAT.x-P.x)<110 && CAT.state==='wander'){ CAT.tx=P.x; AU.meow(); }
+    if(greeted && !GS.seen.greet){ GS.seen.greet=true; khwanSay('They heard that. A prete\'s whistle is just a hello with the volume stuck on.'); }
   }
   if(P.wailT>0){ P.wailT-=dt; P.state='wail'; }
   else if(HT) P.state='reach';
   else if(!P.onGround) P.state='jump';
   else if(Math.abs(P.vx)>10) P.state='walk';
   else P.state='idle';
-
   stepPrete(P,dt);
-  P.breath = Math.min(100, P.breath + dt*14);
 }
 
 /* ============================================================
-   NPC LIFE
+   NPC + SPIRIT LIFE
    ============================================================ */
 let prayTimer=14, activePray=null, offering=null, offerTimer=40;
 function stepNpcs(dt){
@@ -1977,7 +2344,7 @@ function stepNpcs(dt){
       else { n.vx=sign(d)*22; n.face=sign(d); n.x+=n.vx*dt; }
     } else {
       n.vx = lerp(n.vx,0,1-Math.pow(0.001,dt));
-      if(n.id==='yai'||n.id==='nok'||n.id==='dam'){
+      if(VILLAGERS.indexOf(n)>=0){
         n.t=(n.t||rnd(2,7))-dt;
         if(n.t<=0 && n.state==='idle'){ n.tx=clamp(n.home+rnd(-90,90),1500,3060); n.state='walk'; }
       }
@@ -1985,14 +2352,12 @@ function stepNpcs(dt){
     }
     n.y=groundY(n.x);
   }
-  // somebody comes to pray at the shrine
   prayTimer-=dt;
   if(prayTimer<=0 && !activePray){
     prayTimer=rnd(15,26);
     const c=VILLAGERS.filter(v=>v.state==='idle'||v.state==='walk');
     if(c.length){ const n=pick(c); n.state='walk'; n.tx=SHRINE_X+rnd(-16,16); n.then='pray'; n.mark={c:'✦',t:3}; activePray=n; AU.blip(); }
   }
-  // noodles left out for the unseen
   offerTimer-=dt;
   if(offerTimer<=0 && !offering && GS.q.metPhra){
     offering={x:CART_X+40, y:groundY(CART_X+40), t:0}; UNCLE.bub={t:3.2,txt:'for the spirits ~'};
@@ -2006,6 +2371,14 @@ function stepNpcs(dt){
       toast('+3 บุญ · noodles for the unseen (the steam is enough)');
     } else if(offering.t>40) offering=null;
   }
+  // spirits drift gently about their business
+  for(const s of SPIRITS){
+    s.anim+=dt;
+    if(s.wave>0) s.wave-=dt;
+    s.hop = s.id==='kongkoi'? Math.abs(Math.sin(s.anim*2.6))*5 : 0;
+    s.face = P.x<s.x?-1:1;
+    if(s.bub){ s.bub.t-=dt; if(s.bub.t<=0) s.bub=null; }
+  }
   // the cat
   CAT.anim+=dt;
   if(CAT.state==='wander'){
@@ -2015,10 +2388,11 @@ function stepNpcs(dt){
     if(Math.abs(d)>3){ CAT.x+=sign(d)*26*dt; CAT.face=sign(d); CAT.phase+=dt*9; CAT.walking=true; }
     else CAT.walking=false;
     CAT.y=groundY(CAT.x);
-    CAT.state2 = CAT.walking?'walk':'sit';
   }
   TANI.anim+=dt; if(TANI.waveT>0) TANI.waveT-=dt;
   PHRA.anim+=dt;
+  // things regrow
+  for(const nd of NODES){ if(!nd.ready){ nd.t-=dt; if(nd.t<=0){ nd.ready=true; } } }
 }
 function beginPray(n){
   n.prayT=6; n.bub={t:5,txt:'…อุทิศส่วนกุศล ให้สัมภเวสี…'};
@@ -2031,107 +2405,95 @@ function beginPray(n){
 }
 
 /* ============================================================
-   HAND TASKS — you are enormous. Use it carefully.
+   HELPING — the hand tasks
    ============================================================ */
 let HT=null;
 const HAND_R = ()=> has('reach')? 1.35 : 1;
+const EASY   = ()=> has('steady')? 1.4 : 1;
 function startTask(kind, x){
   const gy=groundY(x);
-  HT={kind, t:0, prog:0, grabbed:false, fail:0, done:false,
-      hx:x, hy:gy-40, vx:0, vy:0, hold:0, extra:{}};
+  HT={kind, t:0, prog:0, grabbed:false, fail:0, hx:x, hy:gy-40, vx:0, vy:0};
   P.y=gy; P.vx=0; P.vy=0; P.onGround=true;
   if(kind==='lamp'){ HT.a={x:x+9,y:gy-136}; HT.b={x:x+22,y:gy-142}; HT.hx=x-20; HT.hy=gy-90; P.x=x-42; }
   if(kind==='cat'){ HT.cat={x:CAT.x,y:CAT.y,fear:0}; HT.hx=CAT.x-40; HT.hy=CAT.y+30; P.x=CAT.x-52; }
   if(kind==='tree'){ HT.lift=0; HT.bal=0; HT.balV=0; HT.hx=x; HT.hy=gy-40; P.x=x-70; }
-  if(kind==='garland'){ HT.hook={x:SHRINE_X-16,y:groundY(SHRINE_X)-86}; HT.hx=SHRINE_X+34; HT.hy=groundY(SHRINE_X)-52; HT.held=true; P.x=SHRINE_X+46; }
-  GS.state='task';
-  AU.sel();
+  if(kind==='garland'){ HT.hook={x:SHRINE_X-16,y:groundY(SHRINE_X)-86}; HT.hx=SHRINE_X+34; HT.hy=groundY(SHRINE_X)-52; P.x=SHRINE_X+46; }
+  GS.state='task'; AU.sel();
 }
 function stepTask(dt){
   const t=HT; t.t+=dt;
-  // steer the hand — arrows, or drag anywhere on a touchscreen
   let dx=0,dy=0;
   if(K.left)dx-=1; if(K.right)dx+=1; if(K.up)dy-=1; if(K.down)dy+=1;
   if(TOUCH.on && TOUCH.aim.active){
-    const wx = TOUCH.aim.x+GS.camX, wy=TOUCH.aim.y+GS.camY;
-    dx = clamp((wx-t.hx)/26,-1,1); dy = clamp((wy-t.hy)/26,-1,1);
+    const wx=TOUCH.aim.x+GS.camX, wy=TOUCH.aim.y+GS.camY;
+    dx=clamp((wx-t.hx)/26,-1,1); dy=clamp((wy-t.hy)/26,-1,1);
   }
   const acc=420;
   t.vx += dx*acc*dt; t.vy += dy*acc*dt;
   t.vx *= Math.pow(0.0016,dt); t.vy *= Math.pow(0.0016,dt);
   t.hx += t.vx*dt; t.hy += t.vy*dt;
-  const speed = Math.hypot(t.vx,t.vy);
-  const grip = K.act || K.light || (TOUCH.on && TOUCH.pts.size>0 && K.act);
-  t.grip = grip;
+  const speed=Math.hypot(t.vx,t.vy);
+  const grip = K.act || K.light;
+  t.grip=grip;
 
   if(t.kind==='lamp'){
-    // two loose wire ends. bring them together and hold steady.
     const nearA = dist(t.hx,t.hy,t.a.x,t.a.y) < 20*HAND_R();
     if(!t.grabbed && nearA && grip){ t.grabbed=true; AU.spark(); }
     if(t.grabbed){
       const d=dist(t.hx,t.hy,t.b.x,t.b.y);
-      if(d < 13*HAND_R() && grip){
-        t.prog += dt*0.62;
+      if(d < 13*HAND_R()*EASY() && grip){
+        t.prog += dt*0.62*EASY();
         if(Math.random()<dt*22){ pSpark(t.b.x,t.b.y,2,'#fff0b0'); AU.spark(); }
-        // the current kicks
-        t.vx += rnd(-160,160)*dt*6; t.vy += rnd(-160,160)*dt*6;
-      } else t.prog = Math.max(0, t.prog-dt*0.3);
+        t.vx += rnd(-160,160)*dt*6/EASY(); t.vy += rnd(-160,160)*dt*6/EASY();
+      } else t.prog=Math.max(0,t.prog-dt*0.3);
       if(!grip) t.grabbed=false;
     }
     if(Math.random()<dt*6) pSpark(t.a.x,t.a.y,1,PAL.ember);
     if(t.prog>=1) finishTask();
   }
   else if(t.kind==='cat'){
-    // she is not scared of your size. she is scared of sudden.
-    const c=t.cat;
-    const d=dist(t.hx,t.hy,c.x,c.y);
-    const gentle = speed < 46;
-    if(d<38) c.fear += (gentle? -0.5 : 1.6)*dt;
-    else c.fear -= 0.7*dt;
+    const c=t.cat, d=dist(t.hx,t.hy,c.x,c.y);
+    const gentle = speed < (has('cool')?70:46);
+    if(d<38) c.fear += (gentle? -0.5 : 1.6)*dt; else c.fear -= 0.7*dt;
     c.fear=clamp(c.fear,0,1);
     if(c.fear>=1){ t.fail=1.2; c.fear=0.55; AU.meow(); t.prog=Math.max(0,t.prog-0.4); }
-    if(d < 16*HAND_R() && gentle && grip){
-      t.prog += dt*0.75;
-      if(Math.random()<dt*4) pHeart(c.x+rnd(-4,4), c.y-8);
-    } else if(!grip) t.prog = Math.max(0,t.prog-dt*0.15);
+    if(d < 16*HAND_R() && gentle && grip){ t.prog += dt*0.75*EASY();
+      if(Math.random()<dt*4) pHeart(c.x+rnd(-4,4), c.y-8); }
+    else if(!grip) t.prog=Math.max(0,t.prog-dt*0.15);
     if(t.fail>0) t.fail-=dt;
     if(t.prog>=1) finishTask();
   }
   else if(t.kind==='tree'){
-    // grip, then push up — and keep the trunk level or it rolls back
-    const near = Math.abs(t.hy - (groundY(t.hx)-14-t.lift*30)) < 26 && Math.abs(t.hx-FALLEN_TREE_X)<60;
+    const near = Math.abs(t.hy-(groundY(t.hx)-14-t.lift*30))<26 && Math.abs(t.hx-FALLEN_TREE_X)<60;
     if(near && grip){
-      t.lift = clamp(t.lift + dt*0.42*(has('palm')?1.35:1), 0, 1);
-      t.balV += (dx*0.9 + Math.sin(t.t*2.3)*0.5 + rnd(-0.5,0.5))*dt*2.4;
+      t.lift=clamp(t.lift+dt*0.42*EASY(),0,1);
+      t.balV += (dx*0.9 + Math.sin(t.t*2.3)*0.5 + rnd(-0.5,0.5))*dt*2.4/EASY();
       if(Math.random()<dt*8) pDust(t.hx+rnd(-30,30), groundY(t.hx));
     } else t.lift=Math.max(0,t.lift-dt*0.5);
-    t.balV += -t.bal*2.2*dt;
-    t.balV *= Math.pow(0.35,dt);
-    t.bal = clamp(t.bal + t.balV*dt, -1.4, 1.4);
-    if(Math.abs(t.bal)>1){ t.lift=Math.max(0,t.lift-dt*1.4); t.fail=0.6; AU.hit(true); GS.shake=3; }
+    t.balV += -t.bal*2.2*dt; t.balV*=Math.pow(0.35,dt);
+    t.bal=clamp(t.bal+t.balV*dt,-1.4,1.4);
+    if(Math.abs(t.bal)>1){ t.lift=Math.max(0,t.lift-dt*1.4); t.fail=0.6; GS.shake=3; AU.land(); }
     if(t.fail>0) t.fail-=dt;
     t.prog=t.lift;
     if(t.lift>=1) finishTask();
   }
   else if(t.kind==='garland'){
-    // thread the loop over the hook. steady hands.
     const d=dist(t.hx,t.hy,t.hook.x,t.hook.y);
-    if(d < 11*HAND_R() && speed<40){ t.prog += dt*0.9; if(Math.random()<dt*6) pSpark(t.hook.x,t.hook.y,1,'#fff0dc'); }
-    else t.prog = Math.max(0,t.prog-dt*0.5);
+    if(d < 11*HAND_R()*EASY() && speed<40*EASY()){ t.prog+=dt*0.9*EASY();
+      if(Math.random()<dt*6) pSpark(t.hook.x,t.hook.y,1,'#fff0dc'); }
+    else t.prog=Math.max(0,t.prog-dt*0.5);
     if(t.prog>=1) finishTask();
   }
-  // camera hugs the work
-  GS.camX = lerp(GS.camX, clamp(t.hx-W/2, 0, WORLD_W-W), 1-Math.pow(0.002,dt));
-  GS.camY = lerp(GS.camY, clamp(t.hy-H/2-10, -30, 40), 1-Math.pow(0.004,dt));
+  GS.camX = lerp(GS.camX, clamp(t.hx-W/2,0,WORLD_W-W), 1-Math.pow(0.002,dt));
+  GS.camY = lerp(GS.camY, clamp(t.hy-H/2-10,-30,40), 1-Math.pow(0.004,dt));
   if(press('back')){ GS.state='play'; HT=null; }
   clearPress();
 }
 function finishTask(){
-  const k=HT.kind;
-  HT=null; GS.state='play';
+  const k=HT.kind; HT=null; GS.state='play';
   if(k==='lamp'){
-    GS.q.lamp=true; LIGHTS.find(l=>l.broken).on=true;
-    AU.fix(); pSpark(LAMP_XS[BROKEN_LAMP]+16, groundY(LAMP_XS[BROKEN_LAMP])-140, 16);
+    GS.q.lamp=true; LIGHTS.find(l=>l.broken).on=true; AU.fix();
+    pSpark(LAMP_XS[BROKEN_LAMP]+16, groundY(LAMP_XS[BROKEN_LAMP])-140, 16);
     say([{w:'',t:'Click. The lamp hums awake and warm light spills down the road. Somewhere behind you, an aunty stops hurrying.'}],
       ()=>{ addMerit(12); toast('+12 บุญ · the dark stretch glows'); unlockCos('skirt_plaid',true); });
   }
@@ -2154,390 +2516,296 @@ function finishTask(){
   }
   saveGame();
 }
-function recordGhost(gh, freed){
-  GS.q.ghostsList = GS.q.ghostsList||[];
-  GS.q.freedList  = GS.q.freedList||[];
-  if(GS.q.ghostsList.indexOf(gh.id)<0) GS.q.ghostsList.push(gh.id);
-  if(freed && GS.q.freedList.indexOf(gh.id)<0) GS.q.freedList.push(gh.id);
-  saveGame();
-}
 function unlockCos(id, free){
-  if(GS.seen['cos_'+id]) return;
+  if(GS.seen['own_'+id]) return;
   GS.seen['cos_'+id]=true;
   if(free){ GS.seen['own_'+id]=true; toast('unlocked: '+COSMETICS[id].th+' · '+COSMETICS[id].en, PAL.jadeL); AU.unlock(); }
   saveGame();
 }
 /* ============================================================
-   FIGHTS — a hungry ghost against the things that go wrong
-   in the dark. Nobody dies. Some are let go.
+   ITEM ICONS — every ingredient drawn, not lettered
    ============================================================ */
-let FT = null;
-const GHOST_LINES = {
-  kongkoi:{ in:['กอย… กอย… กอย…','It hops out of the bone-grass on its one long leg, sniffing for toes.'],
-            weak:'It goes for the feet. GUARD LOW — hold ⬇ with guard, the way travellers cross their feet to sleep safe.',
-            free:'Free at last of the road it died beside, the Kong Koi hops once, politely, and is gone.' },
-  krahang:{ in:['A rude man with two rice baskets for wings.','By day he greets you at the market. By night he flies.'],
-            weak:'Strike the baskets while he is airborne. Grounded, he is only a rude man.',
-            free:'The baskets fall to the paddy and become baskets again. He bows, ashamed, and goes home.' },
-  phipop:{ in:['It is wearing someone. A neighbour. Their hands are not their hands.',"Hitting it hits them too — you can feel that."],
-            weak:'Do NOT punch a neighbour. Drive it out with sound: วี้ดดด (whistle) does full damage, fists barely scratch.',
-            free:'The Pop leaves like smoke leaving a jar. The neighbour drops asleep, whole, and will wake with a headache and no memory.' },
-  krasue:{ in:['Her head comes through the trees first. Everything else she owns trails beneath it, glowing.','She is not hunting you. But she is hunting.'],
-            weak:'She fears garlic and holy water. Stand by an offering pot and press HEAVY to throw one.',
-            free:'She finds her body before dawn, which is all she ever wanted. The glow goes out kindly.' },
-  taihong:{ in:['It died badly, on a road, at night, and simply stayed.','ผีตายโหง. The most feared of all of them, and the most stuck.'],
-            weak:'Force will never finish this one — it stands back up. Only เมตตา ends it.',
-            free:'The rags come apart into ordinary night. Whatever happened on that road finally finishes happening.' },
+function drawIcon(g,id,x,y,s=1){
+  const it=ITEMS[id]; if(!it) return;
+  const S2=v=>v*s;
+  switch(id){
+    case 'rice': pEll(g,x,y+S2(2),S2(6),S2(4),'#e8dfc4'); pEll(g,x,y+S2(1),S2(5),S2(3),'#f6f0dc');
+      for(let i=0;i<5;i++) pR(g,x-S2(3)+S2(i*1.6),y,S2(1),S2(2),'#fffaf0'); break;
+    case 'banana': for(let i=0;i<3;i++) pTaper(g,x-S2(4)+S2(i*1.4),y+S2(4),x+S2(3)+S2(i*1.2),y-S2(3),S2(3),S2(2),i%2?'#e8c15c':'#f0d074');
+      pR(g,x+S2(3),y-S2(4),S2(2),S2(2),'#8a6f42'); break;
+    case 'mango': pEll(g,x,y,S2(5),S2(6),'#e8a13c'); pEll(g,x-S2(1),y-S2(1),S2(3),S2(3),'#f0c860'); pR(g,x,y-S2(6),S2(1),S2(2),'#5a7a3c'); break;
+    case 'papaya': pEll(g,x,y,S2(5),S2(7),'#8fbf4a'); pEll(g,x-S2(1),y-S2(2),S2(2),S2(3),'#b3e06a'); pR(g,x,y-S2(7),S2(1),S2(2),'#5a7a3c'); break;
+    case 'coconut': pEll(g,x,y,S2(6),S2(6),'#7d5a3c'); pEll(g,x-S2(1),y-S2(1),S2(3),S2(3),'#a08464');
+      pR(g,x-S2(2),y-S2(2),S2(1),S2(1),'#3a2c1e'); pR(g,x+S2(1),y-S2(2),S2(1),S2(1),'#3a2c1e'); break;
+    case 'chili': pTaper(g,x-S2(3),y-S2(4),x+S2(2),y+S2(5),S2(4),S2(1),'#d8483a');
+      pTaper(g,x-S2(3),y-S2(4),x-S2(4),y-S2(6),S2(2),S2(1),'#4f9e5c'); break;
+    case 'lemongrass': for(let i=0;i<3;i++) pTaper(g,x-S2(2)+S2(i*2),y+S2(6),x-S2(4)+S2(i*4),y-S2(6),S2(2),S2(1),i%2?'#9fc46a':'#7fa84c');
+      pEll(g,x,y+S2(5),S2(3),S2(2),'#d8e8b0'); break;
+    case 'lime': pEll(g,x,y,S2(5),S2(5),'#7fb83c'); pEll(g,x-S2(1),y-S2(1),S2(2),S2(2),'#a8d860');
+      pTaper(g,x,y-S2(5),x+S2(2),y-S2(7),S2(2),S2(1),'#4f9e5c'); break;
+    case 'herb': for(let i=0;i<3;i++){ pTaper(g,x,y+S2(6),x-S2(4)+S2(i*4),y-S2(3),S2(2),S2(1),'#3f8f5f');
+      pEll(g,x-S2(4)+S2(i*4),y-S2(4),S2(2.5),S2(2),'#4f9e5c'); } break;
+    case 'flower': for(let i=0;i<5;i++){ const a=i/5*TAU; pEll(g,x+Math.cos(a)*S2(3),y+Math.sin(a)*S2(3),S2(2.4),S2(2.4),'#f6f0dc'); }
+      pEll(g,x,y,S2(2),S2(2),'#ffce54'); break;
+    case 'leaf': pEll(g,x,y,S2(7),S2(4),'#3f8f5f'); pEll(g,x,y-S2(1),S2(6),S2(3),'#4f9e5c'); pR(g,x-S2(7),y,S2(14),S2(1),'#2e6b44'); break;
+    case 'bamboo': for(let i=0;i<2;i++){ pR(g,x-S2(3)+S2(i*4),y-S2(6),S2(3),S2(12),i%2?'#c2b46a':'#a89a52');
+      pR(g,x-S2(3)+S2(i*4),y-S2(2),S2(3),S2(1),'#7d7038'); pR(g,x-S2(3)+S2(i*4),y+S2(3),S2(3),S2(1),'#7d7038'); } break;
+    case 'clay': pEll(g,x,y+S2(2),S2(6),S2(4),'#9a6b4a'); pEll(g,x,y,S2(5),S2(4),'#b0805c'); pEll(g,x-S2(1),y-S2(1),S2(2),S2(1),'#c9a07c'); break;
+    case 'somtam': pEll(g,x,y+S2(2),S2(8),S2(4),'#e8dfc8'); pEll(g,x,y,S2(7),S2(4),'#c9d84a');
+      pR(g,x-S2(3),y-S2(2),S2(2),S2(1),'#d8483a'); pR(g,x+S2(2),y-S2(1),S2(2),S2(1),'#d8483a');
+      for(let i=0;i<4;i++) pR(g,x-S2(4)+S2(i*2.4),y-S2(1),S2(1),S2(3),'#8fbf4a'); break;
+    case 'stickyMango': pEll(g,x,y+S2(3),S2(8),S2(3),'#f6f0dc'); pR(g,x-S2(6),y,S2(6),S2(4),'#f2ecd8');
+      pEll(g,x+S2(3),y,S2(4),S2(4),'#e8a13c'); pEll(g,x+S2(2),y-S2(1),S2(2),S2(2),'#f0c860'); break;
+    case 'tomyum': pEll(g,x,y+S2(2),S2(8),S2(5),'#c9c4b8'); pEll(g,x,y+S2(1),S2(7),S2(4),'#e0603c');
+      pR(g,x-S2(3),y,S2(3),S2(1),'#f0a860'); pEll(g,x+S2(2),y,S2(2),S2(1.4),'#f6f0dc');
+      pR(g,x-S2(1),y-S2(2),S2(1),S2(2),'#4f9e5c'); break;
+    case 'friedBanana': for(let i=0;i<3;i++) pEll(g,x-S2(4)+S2(i*4),y+S2(1),S2(3),S2(4),i%2?'#d89a48':'#e8b45c');
+      pEll(g,x,y+S2(5),S2(8),S2(2),'#c9a86a'); break;
+    case 'khanomkrok': for(let i=0;i<3;i++){ pEll(g,x-S2(4)+S2(i*4),y,S2(3),S2(3),'#f2e2c0'); pEll(g,x-S2(4)+S2(i*4),y-S2(1),S2(2),S2(1.4),'#fff6e0');
+      pR(g,x-S2(4)+S2(i*4),y-S2(1),S2(1),S2(1),'#4f9e5c'); } break;
+    case 'garland': for(let i=0;i<7;i++){ const a=Math.PI*(i/6);
+      pEll(g,x+Math.cos(a+Math.PI)*S2(6),y-S2(3)+Math.sin(a)*S2(5),S2(1.8),S2(1.8), i%3===0?'#ffce54':'#f6f0dc'); }
+      pEll(g,x,y+S2(4),S2(2),S2(3),'#4f9e5c'); break;
+    case 'krathong': pEll(g,x,y+S2(2),S2(8),S2(3),'#3f8f5f'); pEll(g,x,y+S2(1),S2(7),S2(2.4),'#4f9e5c');
+      for(let i=0;i<5;i++){ const a=i/5*TAU; pEll(g,x+Math.cos(a)*S2(4),y-S2(1)+Math.sin(a)*S2(1.6),S2(1.6),S2(1.4),'#f6f0dc'); }
+      pR(g,x,y-S2(5),S2(1),S2(4),'#e8dfc8'); pEll(g,x,y-S2(6),S2(1.4),S2(2),PAL.lamp); break;
+    case 'basket': pEll(g,x,y,S2(8),S2(4),'#d3b478'); pEll(g,x,y-S2(1),S2(7),S2(3),'#e0c184');
+      for(let i=-6;i<=6;i+=2) pR(g,x+S2(i),y-S2(3),S2(1),S2(5),'#a8863f');
+      for(let i=-2;i<=2;i+=2) pR(g,x-S2(7),y+S2(i),S2(14),S2(1),'#a8863f'); break;
+    case 'lantern': pR(g,x,y-S2(8),S2(1),S2(3),'#3a3630'); pEll(g,x,y,S2(5),S2(6),'#ffc44d');
+      pEll(g,x,y-S2(1),S2(3),S2(4),'#ffe0a0'); pR(g,x-S2(4),y-S2(5),S2(8),S2(1),'#c0392f'); pR(g,x-S2(4),y+S2(5),S2(8),S2(1),'#c0392f');
+      for(let i=0;i<3;i++) pR(g,x-S2(2)+S2(i*2),y+S2(6),S2(1),S2(3),PAL.gold); break;
+    case 'shrine': pR(g,x-S2(1),y+S2(1),S2(3),S2(6),'#8a6f52'); pR(g,x-S2(5),y-S2(1),S2(11),S2(2),'#a3865f');
+      pR(g,x-S2(4),y-S2(6),S2(9),S2(5),'#c9a86a'); pR(g,x-S2(2),y-S2(5),S2(5),S2(4),'#4a3a2c');
+      pTri(g,x,y-S2(10),x-S2(6),y-S2(6),x+S2(6),y-S2(6),'#c0392f'); break;
+    default: pEll(g,x,y,S2(5),S2(5),it.c);
+  }
+}
+
+/* ============================================================
+   ACTIVITIES — cooking and crafting. Same engine, different smell.
+   ============================================================ */
+let ACT = null;
+const STEP_KIND = {
+  pound:{t:'timing',n:5,th:'ตำ',en:'pound it'},          fry:{t:'timing',n:3,th:'ทอด',en:'flip when golden'},
+  pin:{t:'timing',n:3,th:'กลัด',en:'pin the folds'},      split:{t:'timing',n:4,th:'ผ่า',en:'split the bamboo'},
+  light:{t:'timing',n:2,th:'จุดไฟ',en:'catch the wick'},
+  mix:{t:'rhythm',n:6,th:'คลุก',en:'toss it, left and right'},
+  tie:{t:'rhythm',n:5,th:'ผูก',en:'tie it off'},          weave:{t:'rhythm',n:8,th:'สาน',en:'over, under, over, under'},
+  steam:{t:'hold',dur:4,th:'นึ่ง',en:'hold the steam steady'},
+  boil:{t:'hold',dur:4,th:'ต้ม',en:'keep it just below a boil'},
+  pour:{t:'hold',dur:3.5,th:'หยอด',en:'fill each mould to the line'},
+  bless:{t:'hold',dur:3,th:'เจิม',en:'hold still and mean it'},
+  plate:{t:'place',n:3,th:'จัดจาน',en:'plate it nicely'},
+  thread:{t:'place',n:4,th:'ร้อย',en:'thread the jasmine'},
+  fold:{t:'place',n:3,th:'พับ',en:'fold the leaf'},
+  frame:{t:'place',n:3,th:'ขึ้นโครง',en:'set the frame'},
+  build:{t:'place',n:4,th:'ประกอบ',en:'build it square'},
 };
-function startFight(gh){
-  const gy = groundY(gh.x);
-  FT = {
-    gh, t:0, phase:'intro', ptimer:0, over:0, combo:0, comboT:0, meter:0,
-    x0: gh.x-140, x1: gh.x+140, gy,
-    p:{ x: gh.x-70, y:gy, vx:0, vy:0, hp:P.hp, max:P.maxhp, st:'idle', atk:0, atkT:0, rec:0,
-        blockT:0, hurtT:0, inv:0, onG:true, jumps:0 },
-    e:{ x: gh.x+62, y:gy, vx:0, vy:0, hp:gh.hp, max:gh.hp, st:'idle', tell:0, atk:0, rec:0,
-        hurtT:0, anim:0, face:-1, hop:0, fly: (gh.id==='krahang'||gh.id==='krasue')?1:0,
-        alt:gy-(gh.id==='krasue'?58:44), baskets:2, stagger:0, attackT:0, cd:1.2, dead:0 },
-    pots: gh.id==='krasue' ? [{x:gh.x-100,y:gy,used:0},{x:gh.x+96,y:gy,used:0}] : [],
-    hold:null, fin:null, flash:0, banner:1.6,
-  };
-  P.vx=0; P.x=FT.p.x; P.y=gy; P.face=1; P.onGround=true;
-  if(has('chant')){ FT.p.hp = Math.min(FT.p.max, FT.p.hp+22); AU.chant(); }
-  GS.state='fight'; AU.fightStart();
-  say([{w:gh.name+' · '+gh.en, t:GHOST_LINES[gh.id].in[0]},
-       {w:'', t:GHOST_LINES[gh.id].in[1]}], ()=>{ FT.phase='fight'; });
+function canMake(r){ for(const k in r.need) if(!bagHas(k,r.need[k])) return false; return true; }
+function startActivity(mode){
+  const book = mode==='cook'? RECIPES : CRAFTS;
+  ACT = {mode, phase:'pick', pick:0, ids:Object.keys(book), book, t:0,
+         step:0, score:0, hits:0, m:0, dir:1, need:0, held:0, gauge:0.5, band:0.5, bandV:0.4,
+         slot:0, placed:0, cursor:0, cdir:1, flash:0, doneT:0, quality:0, out:null};
+  GS.state='act'; AU.sel();
 }
-function fEndReach(){ return 30; }
-function pAtkBox(f){
-  const p=f.p, dir=P.face;
-  const reach = p.atk==='heavy'? 40 : 30;
-  return {x:p.x+dir*18, y:p.y-34, w:reach, h:30, dir};
+function actRecipe(){ return ACT.book[ACT.ids[ACT.pick]]; }
+function beginSteps(){
+  const r=actRecipe();
+  for(const k in r.need) bagTake(k, r.need[k]);
+  ACT.phase='do'; ACT.step=0; ACT.score=0; ACT.t=0;
+  setupStep();
 }
-function hitPlayer(f, dmg){
-  const p=f.p;
-  if(p.inv>0) return;
-  const guarding = (K.block||K.down) && p.st!=='atk';
-  if(guarding && p.blockT<0.16 && has('calm')){    // a guard timed exactly right
-    AU.block(); pRing(p.x+P.face*16,p.y-30,'#bfe8ff',40); GS.hitstop=0.22; f.slowmo=1.1;
-    f.e.stagger=1.1; f.meter=Math.min(100,f.meter+18); toast('ใจนิ่ง · perfect guard', '#bfe8ff'); return;
+function setupStep(){
+  const r=actRecipe(), k=STEP_KIND[r.steps[ACT.step]];
+  ACT.k=k; ACT.hits=0; ACT.m=0; ACT.dir=1; ACT.held=0; ACT.placed=0; ACT.cursor=0; ACT.cdir=1;
+  ACT.gauge=0.5; ACT.band=0.5; ACT.bandV=0.35;
+  ACT.stepScore=0; ACT.stepT=0;
+  ACT.need = k.n||1;
+  AU.blip();
+}
+function stepAct(dt){
+  const A=ACT; A.t+=dt;
+  if(A.flash>0) A.flash-=dt;
+  if(press('back')){
+    if(A.phase==='pick'){ GS.state='play'; ACT=null; clearPress(); return; }
+    A.phase='pick'; clearPress(); return;
   }
-  let d = dmg;
-  if(guarding){ d *= has('belly')? 0.2 : 0.4; AU.block(); pSpark(p.x+P.face*14,p.y-30,5,'#bfe8ff'); f.meter=Math.min(100,f.meter+7); }
-  else { AU.hit(true); pHit(p.x,p.y-30,true); GS.shake=5; GS.hitstop=0.1; p.hurtT=0.4; p.inv=0.55; f.combo=0; }
-  p.hp=Math.max(0,p.hp-d);
-  P.hp=p.hp;
-  if(p.hp<=0){ f.phase='lost'; f.ptimer=0; AU.poof(); }
-}
-function hitEnemy(f, dmg, kind){
-  const e=f.e, gh=f.gh;
-  let d=dmg;
-  // the folklore is the mechanic
-  if(gh.id==='phipop'){ d = kind==='sound' ? dmg*2.1 : dmg*0.28; }
-  if(gh.id==='krahang' && kind!=='basket' && e.baskets>0 && e.fly) d*=0.55;
-  if(gh.id==='krasue' && kind!=='garlic') d*=0.6;
-  if(gh.id==='taihong' && e.hp-d<=1) d = Math.min(d, e.hp-1);      // force never finishes this one
-  e.hp=Math.max(gh.id==='taihong'?1:0, e.hp-d);
-  e.hurtT=0.24; e.stagger=Math.max(e.stagger, kind==='heavy'?0.5:0.16);
-  f.combo++; f.comboT=1.4; f.meter=Math.min(100,f.meter+ (kind==='sound'?14:9));
-  AU.hit(kind==='heavy'||kind==='garlic'); pHit(e.x,e.y-(e.fly?e.alt-e.y+10:26), kind==='heavy');
-  GS.shake=kind==='heavy'?4:2; GS.hitstop=kind==='heavy'?0.09:0.05;
-  if(e.hp<=0 && gh.id!=='taihong'){ f.phase='beaten'; f.ptimer=0; }
-  if(gh.id==='taihong' && e.hp<=1 && f.meter>=100) { f.phase='beaten'; f.ptimer=0; }
-}
-function stepFight(dt){
-  const f=FT, p=f.p, e=f.e, gh=f.gh;
-  f.t+=dt; e.anim+=dt; f.banner=Math.max(0,f.banner-dt);
-  if(f.comboT>0){ f.comboT-=dt; if(f.comboT<=0) f.combo=0; }
-  if(f.slowmo>0) f.slowmo-=dt;
-  if(DLG){ stepDlg(dt); clearPress(); return; }
-
-  /* ---- won / lost / finisher ---- */
-  if(f.phase==='beaten'){
-    f.ptimer+=dt;
-    if(has('metta') && !f.fin && f.ptimer>0.6){
-      f.fin={seq:[['light','A'],['heavy','B'],['whistle','วี้ด']], i:0, t:0, ok:0};
-      AU.gong(110,0,0.08);
+  if(A.phase==='pick'){
+    if(press('left')||press('up')){ A.pick=(A.pick+A.ids.length-1)%A.ids.length; AU.blip(); }
+    if(press('right')||press('down')){ A.pick=(A.pick+1)%A.ids.length; AU.blip(); }
+    if(press('act')){
+      const r=actRecipe();
+      if(canMake(r)) beginSteps();
+      else { toast('you are missing something','#c8888a'); AU.blip(); A.flash=0.4; }
     }
-    if(f.fin){
-      f.fin.t+=dt;
-      const step=f.fin.seq[f.fin.i];
-      if(step && press(step[0])){ f.fin.i++; f.fin.t=0; AU.ranat(660+f.fin.i*130,0,0.06); pSpark(e.x,e.y-24,10,PAL.goldL);
-        if(f.fin.i>=f.fin.seq.length) doMetta(); }
-      else if(f.fin.t>3.2 && f.fin.i<f.fin.seq.length){ doBanish(); }
-    } else if(!has('metta') && f.ptimer>1.4) doBanish();
-    e.dead=Math.min(1,e.dead+dt*0.4);
     clearPress(); return;
   }
-  if(f.phase==='lost'){
-    f.ptimer+=dt;
-    if(f.ptimer>2.2 && (press('act')||press('light')||press('tap'))) loseFight();
+  if(A.phase==='done'){
+    A.doneT+=dt;
+    if(A.doneT>0.8 && (press('act')||press('tap'))) finishActivity();
     clearPress(); return;
   }
-  if(f.phase!=='fight'){ clearPress(); return; }
 
-  const sdt = f.slowmo>0? dt*0.35 : dt;
-
-  /* ---- player ---- */
-  let ax=0; if(K.left)ax-=1; if(K.right)ax+=1;
-  const guarding = (K.block||K.down) && p.atk===0;
-  if(guarding) p.blockT+=sdt; else p.blockT=0;
-  const spd = guarding? 26 : (has('stride')?128:104);
-  p.vx += clamp(ax*spd - p.vx, -1400*sdt, 1400*sdt);
-  if(p.atk!==0) p.vx*=Math.pow(0.02,sdt);
-  p.x=clamp(p.x+p.vx*sdt, f.x0, f.x1);
-  if(ax!==0 && p.atk===0) P.face = e.x>p.x?1:-1;
-  else P.face = e.x>p.x?1:-1;
-  // jump
-  if((press('jump')||press('up')) && (p.onG || (has('float')&&p.jumps<2))){
-    p.vy=-250; p.onG=false; p.jumps=p.onG?1:p.jumps+1; AU.jump();
-  }
-  p.vy += 780*sdt; p.y+=p.vy*sdt;
-  if(p.y>=f.gy){ if(!p.onG){ AU.land(); pDust(p.x,f.gy,5); } p.y=f.gy; p.vy=0; p.onG=true; p.jumps=0; }
-  p.inv=Math.max(0,p.inv-sdt); p.hurtT=Math.max(0,p.hurtT-sdt);
-  // attacks
-  if(p.atk===0 && !guarding){
-    if(press('light')){ p.atk='light'; p.atkT=0; AU.whiff(); }
-    else if(press('heavy')){ p.atk='heavy'; p.atkT=0; AU.whiff(); }
-    else if(press('whistle') && has('wail') && P.breath>=34){
-      p.atk='wail'; p.atkT=0; P.breath-=34; AU.wail(); pRing(p.x+P.face*14,p.y-34,'#fff0c0',90);
-    }
-    else if(press('act') && f.pots.length){          // garlic and holy water, as the stories say
-      const pot=f.pots.find(q=>!q.used && Math.abs(q.x-p.x)<26);
-      if(pot){ f.hold='garlic'; pot.used=1; AU.sel(); toast('picked up กระเทียม + น้ำมนต์','#dfe8b0'); }
-    }
-    else if(press('heavy') && f.hold){ /* handled below */ }
-  }
-  if(p.atk){
-    p.atkT+=sdt;
-    const D = p.atk==='light'?{s:0.09,a:0.13,r:0.2}: p.atk==='heavy'?{s:0.2,a:0.14,r:0.36}:{s:0.12,a:0.3,r:0.28};
-    if(p.atkT>D.s && p.atkT<D.s+D.a && !p.hitDone){
-      const dirOK = sign(e.x-p.x)===P.face || Math.abs(e.x-p.x)<26;
-      const ey = e.fly? e.alt : e.y-22;
-      if(p.atk==='wail'){
-        if(Math.abs(e.x-p.x)<108 && dirOK){ p.hitDone=1; hitEnemy(f, 13, 'sound'); if(has('rattle')) e.stagger=0.8; }
-      } else if(f.hold==='garlic' && p.atk==='heavy'){
-        if(Math.abs(e.x-p.x)<120){ p.hitDone=1; f.hold=null; hitEnemy(f, 34, 'garlic'); e.stagger=1.3;
-          pSpark(e.x,ey,18,'#eef6c0'); toast('the garlic finds her','#dfe8b0'); }
-      } else {
-        const reach=p.atk==='heavy'?42:32;
-        const inRange = Math.abs(e.x-p.x)<reach && Math.abs(ey-(p.y-32))<34 && dirOK;
-        if(inRange){
-          p.hitDone=1;
-          const isBasket = gh.id==='krahang' && e.fly && e.baskets>0;
-          let dmg = p.atk==='heavy' ? (has('palm')?26:16) : 8;
-          if(isBasket){ e.baskets--; hitEnemy(f,dmg*0.8,'basket');
-            pPoof(e.x,ey,'#c9a86a');
-            if(e.baskets<=0){ e.fly=0; e.stagger=1.4; toast('the baskets break — he falls','#e0c184'); AU.poof(); }
-          } else hitEnemy(f, dmg, p.atk);
-        } else if(p.atkT>D.s+D.a*0.8) p.hitDone=1;
-      }
-    }
-    if(p.atkT> D.s+D.a+D.r){ p.atk=0; p.hitDone=0; }
-  }
-  P.x=p.x; P.y=p.y; P.vx=p.vx; P.vy=p.vy; P.onGround=p.onG;
-  P.state = p.atk? 'atk' : guarding? 'block' : !p.onG? 'jump' : Math.abs(p.vx)>10?'walk':'idle';
-  stepPrete(P,sdt);
-  P.breath=Math.min(100,P.breath+sdt*12);
-
-  /* ---- enemy AI ---- */
-  e.hurtT=Math.max(0,e.hurtT-sdt);
-  if(e.stagger>0){ e.stagger-=sdt; e.vx*=Math.pow(0.02,sdt); }
-  else {
-    e.cd-=sdt;
-    const d = p.x-e.x, ad=Math.abs(d);
-    e.face = sign(d)||-1;
-    if(e.tell>0){
-      e.tell-=sdt;
-      if(e.tell<=0){ e.atk=0.32; e.atkKind = e.nextAtk; AU.ghostCry(); }
-    } else if(e.atk>0){
-      e.atk-=sdt;
-      const hitW = e.atkKind==='lunge'? 44 : e.atkKind==='dive'? 40 : 34;
-      if(!e.hitDone && e.atk<0.22 && ad<hitW){
-        e.hitDone=1;
-        const low = e.atkKind==='lunge';
-        const guardOK = (K.block||K.down) && (!low || K.down);
-        hitPlayer(f, guardOK? gh.dmg*0.7 : gh.dmg);
-      }
-      if(e.atkKind==='dive'){ e.x += e.face*140*sdt; e.alt = lerp(e.alt, p.y-20, 1-Math.pow(0.02,sdt)); }
-      if(e.atkKind==='lunge') e.x += e.face*110*sdt;
-      if(e.atk<=0){ e.hitDone=0; e.rec=0.45; e.cd=rnd(0.7,1.5); }
-    } else if(e.rec>0){ e.rec-=sdt; }
-    else {
-      // approach
-      const want = gh.id==='krasue'? 70 : 34;
-      if(ad>want){ e.vx = e.face * (gh.id==='kongkoi'? 62 : gh.id==='krahang'&&e.fly? 78 : 48); }
-      else e.vx = -e.face*18;
-      e.x += e.vx*sdt;
-      if(gh.id==='kongkoi'){ e.hop = Math.abs(Math.sin(f.t*7))*7; }
-      if(e.fly){ e.alt = lerp(e.alt, p.y - (gh.id==='krasue'? 56+Math.sin(f.t*1.5)*16 : 46+Math.sin(f.t*2)*10), 1-Math.pow(0.06,sdt)); }
-      if(e.cd<=0 && ad<(e.fly?120:70)){
-        e.nextAtk = gh.id==='kongkoi'? 'lunge' : e.fly? 'dive' : gh.id==='phipop'? 'grab' : 'swing';
-        e.tell = 0.5; e.cd=99;
-      }
+  const k=A.k, easy = (A.mode==='cook'? (has('taste')?1.5:1) : (has('weave')?1.5:1));
+  A.stepT+=dt;
+  if(k.t==='timing'){
+    // a marker sweeps; land it in the green
+    A.m += A.dir*dt*(1.05 - A.hits*0.03);
+    if(A.m>1){ A.m=1; A.dir=-1; } if(A.m<0){ A.m=0; A.dir=1; }
+    if(press('act')||press('tap')){
+      const zone=0.13*easy, d=Math.abs(A.m-0.5);
+      if(d<zone*0.45){ A.hits++; A.stepScore+=1; AU.ranat(760+A.hits*70,0,0.05); pSpark(0,0,0); A.flash=0.25; A.perfect=1; }
+      else if(d<zone){ A.hits++; A.stepScore+=0.6; AU.ranat(600,0,0.04); A.flash=0.2; A.perfect=0; }
+      else { AU.whiff(); A.flash=0.3; A.perfect=-1; }
+      if(A.hits>=A.need) nextStep();
     }
   }
-  e.x=clamp(e.x, f.x0-20, f.x1+20);
-  if(!e.fly) e.y=f.gy;
-
-  // boss: shadow adds
-  if(gh.id==='taihong' && f.t>4 && Math.random()<sdt*0.35){
-    part({k:'poof',x:e.x+rnd(-30,30),y:f.gy-rnd(0,40),vx:rnd(-20,20),vy:rnd(-30,-5),life:1.2,c:'#3a2a5c'});
+  else if(k.t==='rhythm'){
+    // alternate left and right, in time with the beat
+    A.m += dt*1.5;
+    if(A.m>1){ A.m=0; A.beat=(A.beat||0)+1; AU.drum(0,0.03); }
+    const wantLeft = ((A.hits)%2)===0;
+    const hitL=press('left'), hitR=press('right');
+    if(hitL||hitR){
+      const right = wantLeft? hitL : hitR;
+      const good = Math.abs(A.m-0.5)<0.42*easy;
+      if(right && good){ A.hits++; A.stepScore+= (Math.abs(A.m-0.5)<0.2?1:0.6); AU.ranat(560+A.hits*40,0,0.045); A.flash=0.2; A.perfect=1; }
+      else { AU.whiff(); A.flash=0.3; A.perfect=-1; }
+      if(A.hits>=A.need) nextStep();
+    }
   }
-  if(Math.random()<sdt*4) pEmber(e.x+rnd(-8,8), (e.fly?e.alt:e.y-20)+rnd(-8,8));
-
-  // camera
-  const mid=(p.x+e.x)/2;
-  GS.camX = lerp(GS.camX, clamp(mid-W/2, 0, WORLD_W-W), 1-Math.pow(0.004,dt));
-  GS.camY = lerp(GS.camY, clamp(f.gy-H*0.66, -20, 40), 1-Math.pow(0.01,dt));
+  else if(k.t==='hold'){
+    // keep the needle inside the drifting band
+    A.band += A.bandV*dt;
+    if(A.band>0.8){ A.band=0.8; A.bandV=-Math.abs(A.bandV); }
+    if(A.band<0.2){ A.band=0.2; A.bandV=Math.abs(A.bandV); }
+    if(Math.random()<dt*0.7) A.bandV = rnd(-0.4,0.4);
+    const grip = K.act||K.light;
+    A.gauge += (grip? 0.62 : -0.52)*dt;
+    A.gauge = clamp(A.gauge,0,1);
+    const w=0.13*easy;
+    const inside = Math.abs(A.gauge-A.band)<w;
+    if(inside){ A.held+=dt; A.stepScore+=dt; if(Math.random()<dt*8) pEmber(0,0); }
+    if(A.held>=k.dur) nextStep();
+  }
+  else if(k.t==='place'){
+    // a cursor slides; drop each piece on its mark
+    A.cursor += A.cdir*dt*0.85;
+    if(A.cursor>1){ A.cursor=1; A.cdir=-1; } if(A.cursor<0){ A.cursor=0; A.cdir=1; }
+    const target = (A.placed+0.5)/A.need;
+    if(press('act')||press('tap')){
+      const d=Math.abs(A.cursor-target);
+      if(d<0.10*easy){ A.stepScore+=1; AU.ranat(700+A.placed*90,0,0.05); A.flash=0.22; A.perfect=1; }
+      else if(d<0.2*easy){ A.stepScore+=0.55; AU.ranat(560,0,0.04); A.flash=0.2; A.perfect=0; }
+      else { AU.whiff(); A.flash=0.3; A.perfect=-1; }
+      A.placed++;
+      if(A.placed>=A.need) nextStep();
+    }
+  }
   clearPress();
 }
-function doMetta(){
-  const f=FT, gh=f.gh;
-  f.phase='freed'; f.ptimer=0;
-  AU.metta(); GS.shake=2;
-  for(let i=0;i<26;i++) pOrb(f.e.x+rnd(-14,14), (f.e.fly?f.e.alt:f.e.y-24)+rnd(-14,14), i*0.05);
-  for(let i=0;i<30;i++) pSpark(f.e.x+rnd(-16,16), (f.e.fly?f.e.alt:f.e.y-24)+rnd(-20,10), 1, PAL.goldL);
-  gh.dead=true; gh.freed=true; GS.q.ghosts=(GS.q.ghosts||0)+1; recordGhost(gh,true);
-  say([{w:'',t:GHOST_LINES[gh.id].free},
-       {w:'You',t:'วี้ดดด… (you wish them a better road than yours)'}],
-    ()=>{ addMerit(gh.rew+8); toast('+'+(gh.rew+8)+' บุญ · '+gh.name+' released ✦','#ffe89a');
-      endFight(); });
+function nextStep(){
+  const A=ACT, k=A.k;
+  const maxS = k.t==='hold'? k.dur : A.need;
+  A.score += clamp(A.stepScore/maxS,0,1);
+  A.step++;
+  const r=actRecipe();
+  if(A.step>=r.steps.length){
+    A.quality = clamp(A.score/r.steps.length,0,1);
+    A.phase='done'; A.doneT=0;
+    const n = has('two')? 2 : 1;
+    A.out = r.out;
+    bagAdd(r.out, n, true);
+    const first = !GS.learned[A.ids[A.pick]];
+    GS.learned[A.ids[A.pick]] = Math.max(GS.learned[A.ids[A.pick]]||0, A.quality);
+    A.first = first;
+    if(first) addMerit(3);
+    AU.victory();
+    saveGame();
+  } else setupStep();
 }
-function doBanish(){
-  const f=FT, gh=f.gh;
-  f.phase='freed'; f.ptimer=0; AU.poof(); pPoof(f.e.x,f.e.y-24);
-  gh.dead=true; GS.q.ghosts=(GS.q.ghosts||0)+1; recordGhost(gh,false);
-  const line = has('metta') ? 'It scatters before you can reach it. Driven off, not freed — it will re-form somewhere, some night.'
-    : 'You drive it off with your size and your voice. It scatters into the dark, still hungry, still stuck. There is a skill for doing better than this: เมตตา.';
-  say([{w:'',t:line}], ()=>{ addMerit(gh.rew); toast('+'+gh.rew+' บุญ · '+gh.name+' driven off'); endFight(); });
+function finishActivity(){
+  const A=ACT; const r=A.book[A.ids[A.pick]];
+  ACT=null; GS.state='play';
+  const q=A.quality;
+  const word = q>0.85? 'อร่อยมาก · perfect' : q>0.55? 'อร่อย · good' : 'พอกินได้ · edible';
+  toast((A.first?'+3 บุญ · learned ':'made ')+r.th+' — '+word, q>0.85?PAL.goldL:PAL.gold);
+  if(A.first) khwanSay('You made something. Somebody is going to be very glad about that.');
 }
-function endFight(){
-  const gh=FT.gh;
-  P.hp=Math.max(24,FT.p.hp); P.x=gh.x - 90; P.y=groundY(P.x); P.vx=0; P.vy=0;
-  FT=null; GS.state='play'; saveGame();
+
+/* ============================================================
+   GATHERING & GIVING
+   ============================================================ */
+function gather(nd){
+  const n = bagAdd(nd.item, nd.n);
+  if(n<=0) return;
+  nd.ready=false; nd.t=rnd(26,46);
+  AU.ranat(680,0,0.05); pPop(nd.x, nd.y-14, ITEMS[nd.item].c);
+  for(let i=0;i<n;i++) part({k:'pop',x:nd.x,y:nd.y-16,vx:rnd(-24,24),vy:rnd(-50,-20),life:.7,c:ITEMS[nd.item].c});
+  toast('+'+n+' '+ITEMS[nd.item].th+' · '+ITEMS[nd.item].en, PAL.jadeL);
+  if(!GS.seen.firstPick){ GS.seen.firstPick=true;
+    khwanSay('Good. Things regrow here — take what you need and come back later.'); }
 }
-function loseFight(){
-  const gh=FT.gh;
-  FT=null; GS.state='play';
-  P.hp=P.maxhp*0.6; P.x=clamp(gh.x-200,20,WORLD_W-20); P.y=groundY(P.x); P.vx=0;
-  say([{w:'',t:'The night takes your legs out. You come to in the grass some way back, whole, and no poorer — a prete cannot die twice.'},
-       {w:'',t:'Rest. Gather more merit, spend it on skills, and come back taller.'}]);
-  saveGame();
+let GIVE=null;
+function openGive(target){
+  const list=Object.keys(GS.bag).filter(id=>ITEMS[id] && (ITEMS[id].k==='dish'||ITEMS[id].k==='craft') && GS.bag[id]>0);
+  if(!list.length){ khwanSay('Your basket has nothing made in it yet. Cook something, or weave something.'); return; }
+  GIVE={target, list, i:0};
+  GS.state='give'; AU.sel();
 }
-/* ---- fight rendering ---- */
-function drawFightWorld(g){
-  const f=FT, e=f.e, gh=f.gh;
-  // offering pots for the Krasue fight
-  for(const q of f.pots){
-    if(q.used) continue;
-    pEll(g,q.x,q.y-4,7,7,'#c9b89a'); pEll(g,q.x,q.y-8,6,3,'#efe4c8');
-    for(let i=0;i<4;i++) pEll(g,q.x-3+i*2,q.y-10,2,2,'#f4f0e0');
-    pR(g,q.x-1,q.y-14,2,4,'#8fbf6a');
-    const gl=g.createRadialGradient(q.x,q.y-8,1,q.x,q.y-8,18);
-    gl.addColorStop(0,'rgba(220,240,170,0.2)'); gl.addColorStop(1,'rgba(220,240,170,0)');
-    g.fillStyle=gl; g.fillRect(q.x-18,q.y-26,36,36);
+function stepGive(dt){
+  const G3=GIVE;
+  if(press('back')){ GS.state='play'; GIVE=null; clearPress(); return; }
+  if(press('left')||press('up')) { G3.i=(G3.i+G3.list.length-1)%G3.list.length; AU.blip(); }
+  if(press('right')||press('down')){ G3.i=(G3.i+1)%G3.list.length; AU.blip(); }
+  if(press('act')){
+    const id=G3.list[G3.i], t=G3.target;
+    bagTake(id,1);
+    GS.state='play'; GIVE=null;
+    doGive(t,id);
   }
-  // the enemy
-  const art=GHOST_ART[gh.id];
-  const ent={x:e.x, y:e.fly? e.alt+ (gh.id==='krasue'?0:22) : e.y, face:e.face, anim:e.anim,
-             hurtT:e.hurtT, attackT:e.atk, hop:e.hop, h:gh.id==='taihong'?52:44};
-  if(gh.id==='krasue') ent.y=e.alt;
-  g.save();
-  if(f.phase==='freed'||f.phase==='beaten'){ g.globalAlpha=Math.max(0,1-e.dead); }
-  if(e.tell>0 && Math.floor(f.t*20)%2===0){ g.globalAlpha=(g.globalAlpha||1)*0.85; }
-  art(g,ent);
-  if(e.tell>0){   // the telegraph — learn it and you never get hit
-    const ty = (e.fly? e.alt : e.y-46);
-    g.globalAlpha=0.8;
-    pR(g,e.x-9,ty-16,18,3,PAL.ember); pR(g,e.x-9,ty-16,18*(1-e.tell/0.5),3,'#fff0b0');
-    g.globalAlpha=1;
-    pTxt(g, e.nextAtk==='lunge'?'LOW':'HIGH', e.x, ty-19, e.nextAtk==='lunge'?'#ff9a6a':'#ffd257', 6,'center');
-  }
-  g.restore();
-  // your own shadow and body
-  pEll(g,P.x,P.y+1,9,2.6,'rgba(10,8,24,0.4)');
-  const flash = f.p.hurtT>0 && Math.floor(f.t*30)%2===0;
-  drawPrete(g,P,{dt:0.016, wind:GS.wind, angry:1, mouth: f.p.atk==='wail'?1:0,
-    armTarget: f.p.atk&&f.p.atk!=='wail'? {x:P.x+P.face*(f.p.atk==='heavy'?34:26), y:P.y-34+(f.p.atk==='heavy'?6:0)}:null,
-    alpha: flash?0.5:1, gold: GS.cos.halo?1:0});
-  if(f.hold==='garlic'){
-    const hx=P.x+P.face*16, hy=P.y-40;
-    pEll(g,hx,hy,4,4,'#efe4c8'); pR(g,hx-1,hy-5,2,3,'#8fbf6a');
-  }
+  clearPress();
 }
-function drawFightHUD(g){
-  const f=FT, gh=f.gh, e=f.e;
-  // player bar
-  const barW=170;
-  pR(g,10,9,barW+4,9,'rgba(10,8,24,0.8)');
-  pR(g,12,11,barW,5,'#3a1c20');
-  const ph=clamp(f.p.hp/f.p.max,0,1);
-  pR(g,12,11,barW*ph,5, ph>0.5?'#5ec46a': ph>0.22?'#e8b13c':'#d8453c');
-  pR(g,12,11,barW*ph,1,'rgba(255,255,255,0.35)');
-  pTxt(g,'เปรต · PRETE',12,26,'#cfc4ae',7);
-  // breath
-  pR(g,12,19,barW*0.6,3,'#22203a');
-  pR(g,12,19,barW*0.6*clamp(P.breath/100,0,1),3,'#6fb4e8');
-  // enemy bar
-  pR(g,W-barW-14,9,barW+4,9,'rgba(10,8,24,0.8)');
-  pR(g,W-barW-12,11,barW,5,'#3a1c20');
-  const eh=clamp(e.hp/e.max,0,1);
-  pR(g,W-12-barW*eh,11,barW*eh,5,'#c8434c');
-  pR(g,W-12-barW*eh,11,barW*eh,1,'rgba(255,255,255,0.3)');
-  pTxt(g,gh.name+' · '+gh.en, W-12, 26,'#e8b4a8',7,'right');
-  if(gh.id==='krahang'&&e.baskets>0) pTxt(g,'กระด้ง baskets '+e.baskets, W-12, 35,'#e0c184',6,'right');
-  // metta meter
-  pR(g,W/2-30,10,60,4,'rgba(10,8,24,0.8)');
-  pR(g,W/2-29,11,58*clamp(f.meter/100,0,1),2, f.meter>=100?PAL.goldL:PAL.gold);
-  pTxt(g,'เมตตา',W/2,22, f.meter>=100?PAL.goldL:'#8a8098',6,'center');
-  // combo
-  if(f.combo>1){ pTxt(g, f.combo+' HIT', W/2, 46, '#ffd257', 11,'center'); }
-  // weakness, if you have the eye for it
-  if(has('eye') && f.t<14 && f.phase==='fight'){
-    const s=GHOST_LINES[gh.id].weak;
-    pR(g,20,H-30,W-40,20,'rgba(10,8,24,0.72)');
-    pR(g,20,H-30,W-40,1,rgba(PAL.jadeL,0.5));
-    pTxt(g,'ตาใน · '+s, W/2, H-17, '#a8dcb8', 6,'center');
-  }
-  if(f.banner>0){
-    const a=clamp(f.banner/0.5,0,1);
-    g.globalAlpha=a;
-    pTxt(g,'ต่อสู้!', W/2, H/2-14, PAL.red, 26,'center');
-    pTxt(g,'FIGHT', W/2, H/2+6, '#fff0dc', 16,'center');
-    g.globalAlpha=1;
-  }
-  if(f.phase==='beaten'){
-    if(f.fin){
-      const s=f.fin.seq[f.fin.i];
-      pR(g,W/2-70,H*0.30-26,140,44,'rgba(12,8,26,0.85)');
-      pR(g,W/2-70,H*0.30-26,140,1,PAL.goldL);
-      pTxt(g,'เมตตา · METTA', W/2, H*0.30-12, PAL.goldL, 10,'center');
-      if(s){
-        const seq=f.fin.seq.map((q,i)=> i<f.fin.i? '·' : q[1]).join('  ');
-        pTxt(g,seq, W/2, H*0.30+4, '#fff0dc', 12,'center');
-        pTxt(g,'press '+s[1], W/2+66, H*0.30+4, PAL.goldL, 7,'left');
-      }
-      pTxt(g,'let it go instead of breaking it', W/2, H*0.30+15, '#8a8098', 6,'center');
-      pR(g,W/2-50,H*0.30+18,100,2,'#2a2440');
-      pR(g,W/2-50,H*0.30+18,100*(1-f.fin.t/3.2),2,PAL.gold);
-    } else if(!has('metta')){
-      pTxt(g,'defeated', W/2, H*0.30, '#cfc4ae', 12,'center');
-    }
-  }
-  if(f.phase==='lost'){
-    g.fillStyle='rgba(10,6,16,0.72)'; g.fillRect(0,0,W,H);
-    pTxt(g,'the night wins this one', W/2, H/2-8, '#cfc4ae', 12,'center');
-    if(f.ptimer>2.2){ g.globalAlpha=0.6+0.4*Math.sin(GS.t*5);
-      pTxt(g,'press E — a prete cannot die twice', W/2, H/2+12, PAL.gold, 8,'center'); g.globalAlpha=1; }
+function doGive(t,id){
+  const want = t.wants===id;
+  const isSpirit = !!t.art;
+  const name = isSpirit? t.name : t.name;
+  GS.q.gifts=(GS.q.gifts||0)+1;
+  pHeart(t.x, t.y-30); pSpark(t.x,t.y-26,10,PAL.goldL);
+  if(want){
+    const already = GS.friends[t.id];
+    GS.friends[t.id]=(GS.friends[t.id]||0)+1;
+    if(isSpirit) t.friend=true;
+    const merit = already? 4 : 8;
+    AU.metta();
+    const lines = isSpirit
+      ? [{w:name,t:t.thanks[0]},{w:name,t:t.thanks[1]}]
+      : [{w:name,t:'Oh — for me? ' + (id==='garland'?'It smells like the inside of a temple.': 'This is exactly what I wanted and I never said so out loud.')}];
+    if(!already && isSpirit && t.gift) lines.push({w:'',t:'They press something into your enormous hand: '+ITEMS[t.gift].th+'.'});
+    say(lines, ()=>{
+      addMerit(merit);
+      toast('+'+merit+' บุญ · '+name+' is glad', PAL.goldL);
+      if(!already && isSpirit && t.gift) bagAdd(t.gift,3,true);
+      if(!already && isSpirit) khwanSay('Look at that. A friend. That is worth more than the merit, whatever the ledger says.');
+      for(let i=0;i<6;i++) pOrb(t.x+rnd(-8,8), t.y-30+rnd(-6,6), i*0.15);
+      saveGame();
+    });
+  } else {
+    GS.friends[t.id]=(GS.friends[t.id]||0)+0;
+    addMerit(2);
+    AU.ding();
+    say([{w:name,t: isSpirit
+      ? 'Oh! That is very kind. I cannot really… but I will keep it. Thank you, honestly.'
+      : 'Ah, thank you! I will find someone to share it with.'}],
+      ()=>{ toast('+2 บุญ · kindly received'); saveGame(); });
   }
 }
 /* ============================================================
    TEXT
    ============================================================ */
-function fontFor(s,size,bold){
-  return (bold?'bold ':'')+size+'px '+(/[฀-๿]/.test(s)? FT_TH : FT_UI);
-}
+function fontFor(s,size,bold){ return (bold?'bold ':'')+size+'px '+(/[฀-๿]/.test(s)? FT_TH : FT_UI); }
 function pTxt(g,s,x,y,col,size=7,align='left',bold){
   g.font=fontFor(s,size,bold); g.textAlign=align; g.textBaseline='alphabetic';
   g.fillStyle='rgba(8,6,18,0.85)'; g.fillText(s,R(x)+1,R(y)+1);
@@ -2547,80 +2815,90 @@ function pTxt(g,s,x,y,col,size=7,align='left',bold){
 function wrap(g,s,maxW,size){
   g.font=fontFor(s,size);
   const words=s.split(' '), out=[]; let cur='';
-  for(const w2 of words){
-    const t=cur?cur+' '+w2:w2;
-    if(g.measureText(t).width>maxW && cur){ out.push(cur); cur=w2; } else cur=t;
-  }
+  for(const w2 of words){ const t=cur?cur+' '+w2:w2;
+    if(g.measureText(t).width>maxW && cur){ out.push(cur); cur=w2; } else cur=t; }
   if(cur) out.push(cur);
   return out;
 }
+/* a soft rounded panel — the whole UI is made of these */
+function panel(g,x,y,w,h,acc){
+  pR(g,x+1,y,w-2,h,'rgba(18,13,30,0.93)');
+  pR(g,x,y+1,w,h-2,'rgba(18,13,30,0.93)');
+  pR(g,x+2,y,w-4,1,acc||PAL.gold); pR(g,x+2,y+h-1,w-4,1,shade(acc||PAL.gold,-0.4));
+  pR(g,x,y+2,1,h-4,shade(acc||PAL.gold,-0.3)); pR(g,x+w-1,y+2,1,h-4,shade(acc||PAL.gold,-0.3));
+  pR(g,x+1,y+1,1,1,acc||PAL.gold); pR(g,x+w-2,y+1,1,1,acc||PAL.gold);
+}
 
 /* ============================================================
-   SKY & LIGHT
+   SKY
    ============================================================ */
-const STARS=[]; for(let i=0;i<150;i++) STARS.push([Math.random(),Math.random()*0.62,rnd(TAU),Math.random()]);
-const CLOUDS=[]; for(let i=0;i<9;i++) CLOUDS.push({x:Math.random()*1.4,y:rnd(0.06,0.42),w:rnd(50,130),h:rnd(6,16),sp:rnd(0.4,1.1),o:rnd(0.05,0.14)});
+const STARS=[]; for(let i=0;i<170;i++) STARS.push([Math.random(),Math.random()*0.66,rnd(TAU),Math.random()]);
+const CLOUDS=[]; for(let i=0;i<11;i++) CLOUDS.push({x:Math.random()*1.4,y:rnd(0.05,0.44),w:rnd(50,140),h:rnd(6,17),sp:rnd(0.4,1.1),o:rnd(0.05,0.15)});
 function drawSky(g){
   const d=GS.dawn;
-  const c0=mix(PAL.night0, '#2c1e46', d), c1=mix(PAL.night1,'#7a3f4e',d), c2=mix(PAL.night2,'#e0834e',d), c3=mix(PAL.night3,'#f0b070',d);
-  pVGrad(g,0,0,W,80,c0,c1,7);
-  pVGrad(g,0,80,W,70,c1,c2,7);
-  pVGrad(g,0,150,W,H-150,c2,c3,6);
-  // stars fade as the sky warms
+  const c0=mix('#0a0c24','#2e2050',d), c1=mix('#141a3e','#7e4258',d),
+        c2=mix('#222a58','#e08a52',d), c3=mix('#33406e','#f6c184',d);
+  pVGrad(g,0,0,W,76,c0,c1,8);
+  pVGrad(g,0,76,W,66,c1,c2,8);
+  pVGrad(g,0,142,W,H-142,c2,c3,7);
   const sa=1-d;
   for(const s of STARS){
     const tw=0.45+0.55*Math.sin(GS.t*1.4+s[2]);
     const x=(s[0]*W - GS.camX*0.03 + W*4)%W;
-    g.fillStyle=`rgba(255,246,224,${0.75*tw*sa*(0.4+s[3]*0.6)})`;
+    g.fillStyle=`rgba(255,246,224,${0.75*tw*sa*(0.35+s[3]*0.65)})`;
     g.fillRect(R(x),R(s[1]*H),1,1);
+    if(s[3]>0.93 && tw>0.8){ g.fillRect(R(x-1),R(s[1]*H),1,1); g.fillRect(R(x+1),R(s[1]*H),1,1); }
   }
-  // the moon
-  const mx=(W*0.74 - GS.camX*0.02), my=34;
-  const ma=1-d*0.55;
+  const mx=(W*0.76 - GS.camX*0.02), my=32, ma=1-d*0.5;
   g.globalAlpha=ma;
-  const gl=g.createRadialGradient(mx,my,14,mx,my,52);
-  gl.addColorStop(0,'rgba(246,240,220,0.3)'); gl.addColorStop(1,'rgba(246,240,220,0)');
-  g.fillStyle=gl; g.fillRect(mx-52,my-52,104,104);
-  pCirc(g,mx,my,15,mix(PAL.moon,'#ffd9a8',d));
-  pCirc(g,mx-5,my-4,4,PAL.moonD); pCirc(g,mx+6,my+5,3,PAL.moonD); pCirc(g,mx+3,my-7,2,PAL.moonD);
+  for(let i=3;i>0;i--){
+    const gl=g.createRadialGradient(mx,my,10,mx,my,20+i*18);
+    gl.addColorStop(0,`rgba(246,240,220,${0.08*i})`); gl.addColorStop(1,'rgba(246,240,220,0)');
+    g.fillStyle=gl; g.fillRect(mx-70,my-70,140,140);
+  }
+  pCirc(g,mx,my,16,mix(PAL.moon,'#ffd9a8',d));
+  pCirc(g,mx-5,my-5,4,PAL.moonD); pCirc(g,mx+6,my+5,3,PAL.moonD); pCirc(g,mx+3,my-8,2,PAL.moonD);
+  pCirc(g,mx-8,my+6,2,PAL.moonD);
   g.globalAlpha=1;
-  // clouds
   for(const c of CLOUDS){
     const x=((c.x*W*1.5 + GS.t*c.sp*3 - GS.camX*0.05)%(W*1.6))-W*0.3;
-    g.globalAlpha=c.o*(1+d);
-    pEll(g,x,c.y*H,c.w/2,c.h/2, mix('#3a4470','#ffb98a',d));
-    pEll(g,x+c.w*0.24,c.y*H-c.h*0.2,c.w/3,c.h/2.4, mix('#424c7c','#ffcda0',d));
+    g.globalAlpha=c.o*(1+d*1.2);
+    pEll(g,x,c.y*H,c.w/2,c.h/2, mix('#3f4a80','#ffb98a',d));
+    pEll(g,x+c.w*0.24,c.y*H-c.h*0.22,c.w/3,c.h/2.3, mix('#4a568e','#ffd0a4',d));
+    pEll(g,x-c.w*0.2,c.y*H+c.h*0.1,c.w/4,c.h/2.8, mix('#374172','#f0b088',d));
     g.globalAlpha=1;
   }
 }
+
+/* ============================================================
+   LIGHT
+   ============================================================ */
 const lightCv=mkCv(W,H), lightG=G2(lightCv);
 function drawLighting(g,cx,cy){
   const night=1-GS.dawn;
   lightG.globalCompositeOperation='source-over';
   lightG.clearRect(0,0,W,H);
-  lightG.fillStyle=`rgba(10,12,40,${0.10+0.52*night})`;
+  lightG.fillStyle=`rgba(12,14,44,${0.08+0.46*night})`;
   lightG.fillRect(0,0,W,H);
   lightG.globalCompositeOperation='destination-out';
   const punch=(x,y,r,a)=>{
     const sx=x-cx, sy=y-cy;
     if(sx<-r||sx>W+r||sy<-r||sy>H+r) return;
     const gr=lightG.createRadialGradient(sx,sy,1,sx,sy,r);
-    gr.addColorStop(0,`rgba(0,0,0,${a})`); gr.addColorStop(0.55,`rgba(0,0,0,${a*0.55})`); gr.addColorStop(1,'rgba(0,0,0,0)');
+    gr.addColorStop(0,`rgba(0,0,0,${a})`); gr.addColorStop(0.5,`rgba(0,0,0,${a*0.62})`); gr.addColorStop(1,'rgba(0,0,0,0)');
     lightG.fillStyle=gr; lightG.fillRect(sx-r,sy-r,r*2,r*2);
   };
-  for(const l of LIGHTS){
-    if(!l.on) continue;
-    const fl = l.flick? 1-Math.random()*l.flick : 1;
-    punch(l.x,l.y,l.r*fl,l.a);
-  }
+  for(const l of LIGHTS){ if(!l.on) continue;
+    const fl=l.flick?1-Math.random()*l.flick:1; punch(l.x,l.y,l.r*fl,l.a); }
   const broken=LIGHTS.find(l=>l.broken);
   if(broken && !broken.on && Math.random()<0.05) punch(broken.x,broken.y,26,0.35);
   punch(P.x,P.y-32, GS.cos.halo?46:34, 0.42);
+  punch(KHWAN.x,KHWAN.y,26,0.5);
   for(const p of PT) if(p.k==='orb'&&p.t>=0) punch(p.x,p.y,10,0.55);
-  if(FT){ punch(FT.e.x, FT.e.fly?FT.e.alt:FT.e.y-24, 40, 0.4); }
-  for(const gh of GHOSTS) if(!gh.dead) punch(gh.x, gh.y-24, 28, 0.3);
+  for(const s of SPIRITS) punch(s.x, s.y-24, s.id==='krasue'?34:26, 0.34);
   punch(TANI.x,TANI.y-18,34,0.4);
-  g.drawImage(lightCv,cx- cx,cy-cy);   // screen space
+  punch(KITCHEN_X-10, groundY(KITCHEN_X)-38, 40, 0.5);
+  g.drawImage(lightCv,0,0);
 }
 function drawGlows(g){
   g.globalCompositeOperation='lighter';
@@ -2629,25 +2907,58 @@ function drawGlows(g){
     if(!l.on) continue;
     if(l.x-GS.camX<-90||l.x-GS.camX>W+90) continue;
     const fl=l.flick?1-Math.random()*l.flick:1;
-    const gr=g.createRadialGradient(l.x,l.y,1,l.x,l.y,l.r*0.8*fl);
-    gr.addColorStop(0, rgba(l.c, 0.13*night+0.03)); gr.addColorStop(1, rgba(l.c,0));
+    const gr=g.createRadialGradient(l.x,l.y,1,l.x,l.y,l.r*0.85*fl);
+    gr.addColorStop(0, rgba(l.c, 0.15*night+0.03)); gr.addColorStop(0.6, rgba(l.c,0.05*night)); gr.addColorStop(1, rgba(l.c,0));
     g.fillStyle=gr; g.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);
   }
-  // fireflies
   for(const f of FIREFLIES){
     if(f.x-GS.camX<-20||f.x-GS.camX>W+20) continue;
     const bl=0.5+0.5*Math.sin(f.t*2.2);
     if(bl<0.3) continue;
-    g.fillStyle=`rgba(190,255,150,${0.6*bl*night})`; g.fillRect(R(f.x),R(f.y),1,1);
-    const gr=g.createRadialGradient(f.x,f.y,0,f.x,f.y,6);
-    gr.addColorStop(0,`rgba(150,255,120,${0.22*bl*night})`); gr.addColorStop(1,'rgba(150,255,120,0)');
-    g.fillStyle=gr; g.fillRect(f.x-6,f.y-6,12,12);
+    g.fillStyle=`rgba(190,255,150,${0.65*bl*night})`; g.fillRect(R(f.x),R(f.y),1,1);
+    const gr=g.createRadialGradient(f.x,f.y,0,f.x,f.y,7);
+    gr.addColorStop(0,`rgba(150,255,120,${0.24*bl*night})`); gr.addColorStop(1,'rgba(150,255,120,0)');
+    g.fillStyle=gr; g.fillRect(f.x-7,f.y-7,14,14);
   }
   g.globalCompositeOperation='source-over';
 }
 
+/* strings of lanterns over the village road */
+const LSTRING=[];
+for(let i=0;i<LAMP_XS.length-1;i++){
+  const a=LAMP_XS[i], b=LAMP_XS[i+1];
+  const n=Math.max(2,Math.round((b-a)/34));
+  for(let k=1;k<n;k++) LSTRING.push({a,b,t:k/n, c: ['#e8564a','#ffc44d','#5fbf7a','#5aa8e0','#e88fc0'][(i*3+k)%5]});
+}
+function drawLanternString(g){
+  g.strokeStyle='rgba(20,16,30,0.75)'; g.lineWidth=1;
+  for(let i=0;i<LAMP_XS.length-1;i++){
+    const a=LAMP_XS[i], b=LAMP_XS[i+1];
+    if(b-GS.camX<-40||a-GS.camX>W+40) continue;
+    const y0=groundY(a)-118, y1=groundY(b)-118;
+    g.beginPath(); g.moveTo(a+9,y0);
+    g.quadraticCurveTo((a+b)/2, (y0+y1)/2+16, b+9, y1);
+    g.stroke();
+  }
+  for(const L of LSTRING){
+    const x=lerp(L.a+9,L.b+9,L.t);
+    if(x-GS.camX<-16||x-GS.camX>W+16) continue;
+    const y0=groundY(L.a)-118, y1=groundY(L.b)-118;
+    const u=L.t, y=(1-u)*(1-u)*y0 + 2*(1-u)*u*((y0+y1)/2+16) + u*u*y1;
+    const sw=Math.sin(GS.t*1.1 + L.t*7)*1.4;
+    const c=L.c;
+    pR(g,x+sw,y,1,3,'#3a3630');
+    pEll(g,x+sw,y+7,4,5,c);
+    pEll(g,x+sw,y+6,2.4,3,shade(c,0.35));
+    pR(g,x+sw-2,y+3,5,1,shade(c,-0.35)); pR(g,x+sw-2,y+11,5,1,shade(c,-0.35));
+    const gr=g.createRadialGradient(x+sw,y+7,1,x+sw,y+7,14);
+    gr.addColorStop(0,rgba(c,0.18*(1-GS.dawn))); gr.addColorStop(1,rgba(c,0));
+    g.fillStyle=gr; g.fillRect(x+sw-14,y-7,28,28);
+  }
+}
+
 /* ============================================================
-   MAIN RENDER
+   RENDER
    ============================================================ */
 function render(){
   ctx.setTransform(SC,0,0,SC,0,0);
@@ -2655,9 +2966,9 @@ function render(){
   if(GS.state==='title'){ drawTitle(); return; }
   if(GS.state==='intro'){ drawIntro(); return; }
 
-  const sh = GS.shake>0? GS.shake : 0;
-  const ox = sh? rnd(-sh,sh):0, oy = sh? rnd(-sh,sh):0;
-  const cx = R(GS.camX+ox), cy = R(GS.camY+oy);
+  const sh=GS.shake>0?GS.shake:0;
+  const ox=sh?rnd(-sh,sh):0, oy=sh?rnd(-sh,sh):0;
+  const cx=R(GS.camX+ox), cy=R(GS.camY+oy);
 
   drawSky(ctx);
   ctx.drawImage(farCv, -R(cx*PX.far), R(-cy*0.1));
@@ -2666,110 +2977,204 @@ function render(){
 
   ctx.save(); ctx.translate(-cx,-cy);
   ctx.drawImage(playCv, cx, 0, W, H, cx, 0, W, H);
+  drawMist(ctx);
+  drawLanternString(ctx);
 
-  // ---- entities ----
-  if(GS.state==='fight'){ drawFightWorld(ctx); }
-  else {
-    // shrine offerings + the spirit who keeps the ledger
-    if(PHRA.shown) drawPhraPhum(ctx,PHRA.x,PHRA.y,PHRA.anim);
-    if(GS.q.garland){
-      const hx=SHRINE_X-16, hy=groundY(SHRINE_X)-86;
-      for(let i=0;i<7;i++) pEll(ctx,hx+Math.sin(i*0.9)*2, hy+4+i*2.2, 2,2, i%3===0?'#ffce54':'#f6f0dc');
-      pEll(ctx,hx,hy+20,2,3,PAL.jadeL);
-    }
-    if(offering){ pR(ctx,offering.x-4,offering.y-4,9,4,'#f5ead8'); pR(ctx,offering.x-3,offering.y-6,7,2,'#d8b04a'); }
-    for(const n of NPCS){
-      if(n.x-cx<-40||n.x-cx>W+40) continue;
-      drawVillager(ctx,n,{dt:1/60,wind:GS.wind});
-      if(n.mark) pTxt(ctx,n.mark.c,n.x,n.y-30-Math.sin(GS.t*5)*2,PAL.gold,7,'center');
-      if(n.bub) bubble(ctx,n.x,n.y-32,n.bub.txt);
-    }
-    if(CAT.state!=='tree'){ CAT.state2=CAT.walking?'walk':'sit'; drawCat(ctx,{x:CAT.x,y:CAT.y,face:CAT.face,anim:CAT.anim,phase:CAT.phase,state:CAT.state2}); }
-    else drawCat(ctx,{x:CAT.x,y:CAT.y,face:-1,anim:CAT.anim,state:'tree'});
-    drawTani(ctx,TANI,{wave:TANI.waveT>0});
-    for(const gh of GHOSTS){
-      if(gh.dead) continue;
-      if(gh.x-cx<-70||gh.x-cx>W+70) continue;
-      gh.anim+=1/60;
-      gh.face = P.x<gh.x?-1:1;
-      gh.hop = gh.id==='kongkoi'? Math.abs(Math.sin(gh.anim*3))*5 : 0;
-      const y = gh.id==='krasue'? gh.y-52+Math.sin(gh.anim*1.5)*6
-              : gh.id==='krahang'? gh.y-40+Math.sin(gh.anim*2)*5 : gh.y;
-      GHOST_ART[gh.id](ctx,{x:gh.x,y:y,face:gh.face,anim:gh.anim,hurtT:0,attackT:0,hop:gh.hop,h:gh.id==='taihong'?48:44});
-      if(gh.spooked>0){ gh.spooked-=1/60; pTxt(ctx,'!',gh.x,gh.y-56,PAL.ember,9,'center'); }
-    }
-    // you
-    pEll(ctx,P.x,P.y+1,9,2.6,'rgba(10,8,24,0.4)');
-    drawPrete(ctx,P,{dt:1/60, wind:GS.wind, mouth: P.state==='wail'?1:0,
-      armTarget: HT? {x:HT.hx,y:HT.hy} : null, gold: GS.cos.halo?1:0, rise:P.rise||0});
-    if(HT) drawTaskWorld(ctx);
+  // pond shimmer
+  for(let i=0;i<10;i++){
+    const x=POND_X-60+i*13+Math.sin(GS.t*0.8+i)*3, y=groundY(x)+5+Math.sin(GS.t*1.4+i*2)*1;
+    if(x-cx<-8||x-cx>W+8) continue;
+    pR(ctx,x,y,4,1,`rgba(190,225,255,${0.10+0.07*Math.sin(GS.t*2+i)})`);
   }
+
+  // gatherable plants
+  for(const nd of NODES){
+    if(nd.x-cx<-30||nd.x-cx>W+30) continue;
+    drawNode(ctx,nd);
+  }
+  // the offering, the shrine spirit
+  if(PHRA.shown) drawPhraPhum(ctx,PHRA.x,PHRA.y,PHRA.anim);
+  if(GS.q.garland){
+    const hx=SHRINE_X-16, hy=groundY(SHRINE_X)-86;
+    for(let i=0;i<7;i++) pEll(ctx,hx+Math.sin(i*0.9)*2, hy+4+i*2.2, 2,2, i%3===0?'#ffce54':'#f6f0dc');
+    pEll(ctx,hx,hy+20,2,3,PAL.jadeL);
+  }
+  if(GS.q.shrineBuilt){ const sx=SPIRIT_BY_ID.taihong.x-24;
+    ctx.drawImage(ART.roadShrine, R(sx-19), R(groundY(sx)-52)); }
+  if(offering){ pR(ctx,offering.x-4,offering.y-4,9,4,'#f5ead8'); pR(ctx,offering.x-3,offering.y-6,7,2,'#d8b04a'); }
+
+  for(const n of NPCS){
+    if(n.x-cx<-40||n.x-cx>W+40) continue;
+    drawVillager(ctx,n,{dt:1/60,wind:GS.wind});
+    if(n.mark) pTxt(ctx,n.mark.c,n.x,n.y-30-Math.sin(GS.t*5)*2,PAL.gold,7,'center');
+    if(n.bub) bubble(ctx,n.x,n.y-32,n.bub.txt);
+    wishBubble(ctx,n,n.y-34);
+  }
+  if(CAT.state!=='tree'){ drawCat(ctx,{x:CAT.x,y:CAT.y,face:CAT.face,anim:CAT.anim,phase:CAT.phase,state:CAT.walking?'walk':'sit'}); }
+  else drawCat(ctx,{x:CAT.x,y:CAT.y,face:-1,anim:CAT.anim,state:'tree'});
+  drawTani(ctx,TANI,{wave:TANI.waveT>0});
+
+  for(const s of SPIRITS){
+    if(s.x-cx<-70||s.x-cx>W+70) continue;
+    const y = s.id==='krasue'? s.y-52+Math.sin(s.anim*1.5)*6
+            : s.id==='krahang'? s.y-38+Math.sin(s.anim*2)*5 : s.y;
+    GHOST_ART[s.art](ctx,{x:s.x,y:y,face:s.face,anim:s.anim,hurtT:0,attackT:0,hop:s.hop,h:s.id==='taihong'?46:44,friendly:1});
+    if(s.wave>0) pTxt(ctx,'♪',s.x+10*s.face,y-30,PAL.goldL,8,'center');
+    if(s.friend) pTxt(ctx,'♥',s.x-11,y-32,'#ff8fae',7,'center');
+    if(s.bub) bubble(ctx,s.x,y-36,s.bub.txt);
+    wishBubble(ctx,s,y-38);
+  }
+
+  pEll(ctx,P.x,P.y+1,9,2.6,'rgba(10,8,24,0.4)');
+  drawPrete(ctx,P,{dt:1/60, wind:GS.wind, mouth:P.state==='wail'?1:0,
+    armTarget: HT? {x:HT.hx,y:HT.hy} : null, gold: GS.cos.halo?1:0, rise:P.rise||0});
+  if(HT) drawTaskWorld(ctx);
+  drawKhwan(ctx);
   drawParts(ctx);
   ctx.restore();
 
   drawLighting(ctx,cx,cy);
   ctx.save(); ctx.translate(-cx,-cy);
   drawGlows(ctx);
-  // foreground grass, close and dark
+  drawMotes(ctx);
   for(const f of FORE){
-    const fx = f.x - cx*1.32 + cx*0.32;
+    const fx=f.x - cx*1.32 + cx*0.32;
     if(fx-cx<-14||fx-cx>W+14) continue;
     const sw=Math.sin(GS.t*1.3+f.ph)*2.2;
     pTaper(ctx,fx,f.y+8,fx+sw,f.y+8-f.h,3,1,f.c);
   }
   ctx.restore();
 
-  // dawn wash
   if(GS.dawn>0){ ctx.fillStyle=`rgba(255,166,110,${0.13*GS.dawn})`; ctx.fillRect(0,0,W,H); }
-  // vignette
-  const vg=ctx.createRadialGradient(W/2,H/2,H*0.42,W/2,H/2,H*1.0);
-  vg.addColorStop(0,'rgba(8,6,20,0)'); vg.addColorStop(1,'rgba(8,6,20,0.42)');
+  const vg=ctx.createRadialGradient(W/2,H/2,H*0.44,W/2,H/2,H*1.0);
+  vg.addColorStop(0,'rgba(8,6,20,0)'); vg.addColorStop(1,'rgba(8,6,20,0.4)');
   ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
-  if(GS.state==='fight') drawFightHUD(ctx);
+  if(GS.state==='play') drawHUD();
   else if(GS.state==='task') drawTaskHUD(ctx);
-  else if(GS.state==='play') drawHUD();
   drawDialog(ctx);
-  if(GS.state==='tree') drawTree(ctx);
+  if(GS.state==='tree') drawLedger(ctx);
+  if(GS.state==='act')  drawAct(ctx);
+  if(GS.state==='give') drawGive(ctx);
   if(GS.state==='ceremony') drawCeremonyUI(ctx);
   if(GS.state==='end') drawEnd(ctx);
   if(TOUCH.on && uiShowsPads()) drawPads(ctx);
 }
+function uiShowsPads(){ return GS.state==='play'||GS.state==='task'; }
 function bubble(g,x,y,txt){
   g.font=fontFor(txt,6);
   const w2=g.measureText(txt).width+8;
-  pR(g,x-w2/2,y-9,w2,11,'rgba(16,12,34,0.85)');
+  pR(g,x-w2/2,y-9,w2,11,'rgba(16,12,34,0.88)');
   pR(g,x-w2/2,y-9,w2,1,rgba(PAL.gold,0.35));
+  pR(g,x-1,y+2,2,2,'rgba(16,12,34,0.88)');
   pTxt(g,txt,x,y-1,'#cfe8ff',6,'center');
 }
-function uiShowsPads(){ return GS.state==='play'||GS.state==='fight'||GS.state==='task'; }
+/* ตาใน — with Inner Eye you can see what people quietly want */
+function wishBubble(g,t,y){
+  if(!has('eye') || !t.wants) return;
+  if(GS.friends[t.id]) return;
+  const it=ITEMS[t.wants]; if(!it) return;
+  const bob=Math.sin(GS.t*2+t.x)*1.2, by=y-16+bob;
+  // a little thought-cloud, not a label
+  pEll(g,t.x,by+6,11,8,'rgba(20,16,40,0.82)');
+  pEll(g,t.x-6,by+4,5,4,'rgba(20,16,40,0.82)');
+  pEll(g,t.x+6,by+4,5,4,'rgba(20,16,40,0.82)');
+  pEll(g,t.x,by-1,7,5,'rgba(20,16,40,0.82)');
+  pEll(g,t.x-4,by+13,2.4,1.8,'rgba(20,16,40,0.7)');
+  pEll(g,t.x-6,by+17,1.4,1.2,'rgba(20,16,40,0.55)');
+  drawIcon(g,t.wants,t.x,by+5,0.72);
+}
+function drawNode(g,nd){
+  const x=nd.x, y=nd.y;
+  const sway=Math.sin(GS.t*1.1+x*0.05)*1.5;
+  if(!nd.ready){
+    for(let i=0;i<3;i++) pTaper(g,x-4+i*4,y,x-4+i*4+sway*0.4,y-6,3,1,'#3d5c44');
+    return;
+  }
+  const c=ITEMS[nd.item].c;
+  switch(nd.art){
+    case 'paddy': for(let i=0;i<5;i++){ const lx=x-8+i*4;
+        pTaper(g,lx,y,lx+sway,y-13,2.4,1,'#5f9a58'); pEll(g,lx+sway,y-14,2,2.6,c); } break;
+    case 'clay': pEll(g,x,y-2,10,5,'#7a5238'); pEll(g,x,y-4,8,4,'#9a6b4a'); pEll(g,x-3,y-5,3,2,'#b0805c'); break;
+    case 'chili': case 'lemongrass': case 'lime': {
+        const img=ART.garden[nd.art]; g.drawImage(img, R(x-img.width/2), R(y-img.height+2)); break; }
+    case 'flowers': for(let i=0;i<6;i++){ const lx=x-10+i*4, lh=8+((i*5)%7);
+        pTaper(g,lx,y,lx+sway*0.6,y-lh,2,1,'#3f7a52');
+        for(let k=0;k<4;k++){ const a=k/4*TAU; pEll(g,lx+sway*0.6+Math.cos(a)*2,y-lh+Math.sin(a)*2,1.6,1.6,c); }
+        pEll(g,lx+sway*0.6,y-lh,1.2,1.2,'#ffce54'); } break;
+    case 'banana': { const img=ART.banana[0];
+        g.drawImage(img, R(x-img.width*0.5), R(y-img.height*0.86), R(img.width*0.86), R(img.height*0.86));
+        for(let i=0;i<3;i++) pTaper(g,x+2,y-34-i*4,x+9,y-36-i*4,4,2,c); break; }
+    case 'leaf': for(let i=0;i<4;i++){ const lx=x-8+i*5;
+        pTaper(g,lx,y,lx,y-14,3,2,'#5f8a4a'); pEll(g,lx+sway*0.5,y-17,6,3.4,c); pR(g,lx-6,y-17,12,1,'#2e6b44'); } break;
+    case 'coconut': for(let i=0;i<3;i++) pEll(g,x-5+i*5,y-5+((i%2)*3),4,4,'#7d5a3c'); break;
+    default: pEll(g,x,y-7,9,7,'#3f7a52'); pEll(g,x-2,y-9,5,4,'#4f9e5c');
+      for(let i=0;i<3;i++) pEll(g,x-5+i*5,y-8-((i%2)*3),3,3,c);
+  }
+  // a small shine so you can tell it is pickable
+  const bl=0.5+0.5*Math.sin(GS.t*2.4+x);
+  pR(g,x+9,y-20-bl*2,1,1,rgba(PAL.goldL,0.5+0.5*bl));
+  pR(g,x-10,y-16-bl,1,1,rgba(PAL.goldL,0.3+0.3*bl));
+}
+/* the guide */
+function drawKhwan(g){
+  const k=KHWAN, x=k.x, y=k.y;
+  const gl=g.createRadialGradient(x,y,1,x,y,20);
+  gl.addColorStop(0,'rgba(150,220,255,0.26)'); gl.addColorStop(1,'rgba(150,220,255,0)');
+  g.fillStyle=gl; g.fillRect(x-20,y-20,40,40);
+  // trailing wisp
+  for(let i=0;i<5;i++){ g.globalAlpha=0.3-i*0.05;
+    pEll(g,x-Math.sin(k.anim*2+i*0.6)*2, y+5+i*2.4, 3.4-i*0.5, 2-i*0.25, '#8fd8f0'); }
+  g.globalAlpha=1;
+  oEll(g,x,y,6.4,6,'#dff4ff','#5a86a8');
+  pEll(g,x-2,y-2,2.6,2,'#ffffff');
+  // little topknot (จุก) — a child spirit
+  pTaper(g,x,y-6,x+Math.sin(k.anim*2)*1.5,y-11,3,1.4,'#3a3350');
+  pEll(g,x+Math.sin(k.anim*2)*1.5,y-11,2,2,'#3a3350');
+  const blink=k.blink<0;
+  if(blink){ pR(g,x-3,y,3,1,'#3a4c60'); pR(g,x+1,y,3,1,'#3a4c60'); }
+  else { pEll(g,x-2,y,1.5,1.8,'#2a3648'); pEll(g,x+2.4,y,1.5,1.8,'#2a3648');
+    pR(g,x-2.4,y-0.8,1,1,'#fff'); pR(g,x+2,y-0.8,1,1,'#fff'); }
+  pEll(g,x,y+3,1.6,1,'#e08a9a');
+  pEll(g,x-4.6,y+1.6,1.4,1,'#ffb0be'); pEll(g,x+4.6,y+1.6,1.4,1,'#ffb0be');
+  // tiny arms
+  pTaper(g,x-5,y+1,x-8+Math.sin(k.anim*3)*1.4,y+3,2,1,'#dff4ff');
+  pTaper(g,x+5,y+1,x+8-Math.sin(k.anim*3)*1.4,y+3,2,1,'#dff4ff');
+  if(k.bub && GS.state==='play'){
+    const lines=wrap(g,k.bub,150,6).slice(0,3);
+    const w2=Math.max(...lines.map(l=>{g.font=fontFor(l,6);return g.measureText(l).width}))+12;
+    const bh=lines.length*8+8;
+    const bx=x-w2/2, by=y-16-bh;
+    panel(g,bx,by,w2,bh,'#8fd8f0');
+    lines.forEach((l,i)=>pTxt(g,l,x,by+11+i*8,'#dff4ff',6,'center'));
+    pR(g,x-1,by+bh,3,3,'rgba(18,13,30,0.93)');
+  }
+}
 function drawPads(g){
   for(const t of TPADS){
-    const down = K[t.key];
-    g.globalAlpha = down? 0.5:0.26;
-    pCirc(g,t.x,t.y,t.r,'#1e1630');
-    g.globalAlpha = down? 0.9:0.5;
+    const down=K[t.key];
+    g.globalAlpha=down?0.5:0.24; pCirc(g,t.x,t.y,t.r,'#1e1630');
+    g.globalAlpha=down?0.9:0.5;
     for(let i=0;i<26;i++){ const a=i/26*TAU; pR(g,t.x+Math.cos(a)*t.r,t.y+Math.sin(a)*t.r,1,1,PAL.gold); }
     g.globalAlpha=1;
-    pTxt(g,t.lbl,t.x,t.y+3, down?'#fff0dc':rgba(PAL.gold,0.75), t.lbl.length>2?6:8,'center');
+    pTxt(g,t.lbl,t.x,t.y+3,down?'#fff0dc':rgba(PAL.gold,0.75),t.lbl.length>2?6:8,'center');
   }
 }
 
 /* ============================================================
-   TASK RENDER
+   HELPING TASK RENDER
    ============================================================ */
 function drawTaskWorld(g){
   const t=HT;
   if(t.kind==='lamp'){
-    for(const w2 of [t.a,t.b]){ pEll(g,w2.x,w2.y,2,2,'#c8c4b8'); }
+    for(const w2 of [t.a,t.b]) pEll(g,w2.x,w2.y,2,2,'#c8c4b8');
     if(t.grabbed){ pLimb(g,t.a.x,t.a.y,t.hx,t.hy,1.6,'#3a3a44'); pLimb(g,t.hx,t.hy,t.b.x,t.b.y,1,rgba('#ffd257',0.5)); }
-    for(let i=0;i<20;i++){ const a=i/20*TAU; pR(g,t.b.x+Math.cos(a)*13,t.b.y+Math.sin(a)*13,1,1, t.prog>0?PAL.gold:'#4a4458'); }
+    for(let i=0;i<20;i++){ const a=i/20*TAU; pR(g,t.b.x+Math.cos(a)*13,t.b.y+Math.sin(a)*13,1,1,t.prog>0?PAL.gold:'#4a4458'); }
   }
   if(t.kind==='cat'){
     const c=t.cat;
     drawCat(g,{x:c.x,y:c.y,face:-1,anim:GS.t,state:'tree'});
-    // her fear, drawn as it feels
-    if(c.fear>0.1){ for(let i=0;i<3;i++) pR(g,c.x-4+i*4,c.y-18-c.fear*4,1,3, rgba('#8fc4e8',c.fear)); }
+    if(c.fear>0.1) for(let i=0;i<3;i++) pR(g,c.x-4+i*4,c.y-18-c.fear*4,1,3,rgba('#8fc4e8',c.fear));
   }
   if(t.kind==='tree'){
     const gy=groundY(FALLEN_TREE_X);
@@ -2779,76 +3184,72 @@ function drawTaskWorld(g){
   }
   if(t.kind==='garland'){
     pR(g,t.hook.x-1,t.hook.y-3,2,4,'#c9992f');
-    for(let i=0;i<7;i++) pEll(g,t.hx+Math.sin(i*0.9)*2,t.hy+4+i*2.2,2,2, i%3===0?'#ffce54':'#f6f0dc');
-    for(let i=0;i<18;i++){ const a=i/18*TAU; pR(g,t.hook.x+Math.cos(a)*11,t.hook.y+Math.sin(a)*11,1,1, t.prog>0?PAL.gold:'#4a4458'); }
+    for(let i=0;i<7;i++) pEll(g,t.hx+Math.sin(i*0.9)*2,t.hy+4+i*2.2,2,2,i%3===0?'#ffce54':'#f6f0dc');
+    for(let i=0;i<18;i++){ const a=i/18*TAU; pR(g,t.hook.x+Math.cos(a)*11,t.hook.y+Math.sin(a)*11,1,1,t.prog>0?PAL.gold:'#4a4458'); }
   }
-  // the hand itself
-  const dirx = sign(t.vx)||1;
+  const dirx=sign(t.vx)||1;
   pEll(g,t.hx,t.hy,6,7,PAL.pale);
   pEll(g,t.hx+1.5*dirx,t.hy+1,4,5,PAL.paleD);
-  for(let i=0;i<4;i++){
-    const a=-0.6+i*0.4 + (t.grip?0.55:0);
-    pLimb(g,t.hx,t.hy,t.hx+Math.cos(a)*(t.grip?7:10.5),t.hy+Math.sin(a)*(t.grip?7:10.5),2, i%2?PAL.paleD:PAL.pale);
-  }
+  for(let i=0;i<4;i++){ const a=-0.6+i*0.4+(t.grip?0.55:0);
+    pLimb(g,t.hx,t.hy,t.hx+Math.cos(a)*(t.grip?7:10.5),t.hy+Math.sin(a)*(t.grip?7:10.5),2,i%2?PAL.paleD:PAL.pale); }
   pLimb(g,t.hx,t.hy+2,t.hx-dirx*7,t.hy+7,2.4,PAL.paleD);
-  // the arm reaching in, from a shoulder that is a long way off
   const sx0=P.x+P.face*6, sy0=P.y-52;
-  const mid={x:(sx0+t.hx)/2, y:Math.max(sy0,t.hy)+16};
-  let px0=sx0, py0=sy0;
+  const mid={x:(sx0+t.hx)/2,y:Math.max(sy0,t.hy)+16};
+  let px0=sx0,py0=sy0;
   for(let i=1;i<=10;i++){
-    const u=i/10, iu=1-u;
+    const u=i/10,iu=1-u;
     const qx=iu*iu*sx0+2*iu*u*mid.x+u*u*t.hx, qy=iu*iu*sy0+2*iu*u*mid.y+u*u*t.hy;
-    pTaper(g,px0,py0,qx,qy, lerp(5.5,3.6,u-0.1), lerp(5.5,3.6,u), u<0.5?PAL.paleD:PAL.pale);
+    pTaper(g,px0,py0,qx,qy,lerp(5.5,3.6,u-0.1),lerp(5.5,3.6,u),u<0.5?PAL.paleD:PAL.pale);
     px0=qx; py0=qy;
   }
 }
 function drawTaskHUD(g){
   const t=HT;
-  const NAMES={lamp:['เสาไฟฟ้า','splice the streetlight'],cat:['แมวติดต้นไม้','lift the cat down'],
-               tree:['ต้นไม้ล้ม','clear the fallen tree'],garland:['พวงมาลัย','hang the garland']};
-  const n=NAMES[t.kind];
+  const N={lamp:['เสาไฟฟ้า','splice the streetlight'],cat:['แมวติดต้นไม้','lift the cat down'],
+           tree:['ต้นไม้ล้ม','clear the fallen tree'],garland:['พวงมาลัย','hang the garland']}[t.kind];
   pR(g,0,0,W,22,'rgba(10,8,24,0.72)');
-  pTxt(g,n[0],10,15,PAL.gold,10);
-  pTxt(g,n[1],W-10,15,'#cfc4ae',7,'right');
-  // progress
+  pTxt(g,N[0],10,15,PAL.gold,10); pTxt(g,N[1],W-10,15,'#cfc4ae',7,'right');
   pR(g,W/2-60,H-24,120,7,'rgba(10,8,24,0.8)');
-  pR(g,W/2-59,H-23,118*clamp(t.prog,0,1),5, t.prog>0.9?PAL.goldL:PAL.gold);
-  const hint = t.kind==='lamp'? 'grip the live end (E), bring it to the socket, hold steady'
-    : t.kind==='cat'? 'move SLOWLY. she is not afraid of big — she is afraid of sudden.'
-    : t.kind==='tree'? 'hold E to lift · steer ◀ ▶ to keep it level'
-    : 'ease the loop onto the hook and hold still';
+  pR(g,W/2-59,H-23,118*clamp(t.prog,0,1),5,t.prog>0.9?PAL.goldL:PAL.gold);
+  const hint={lamp:'grip the live end (E), bring it to the socket, hold steady',
+    cat:'move SLOWLY. she is not afraid of big — she is afraid of sudden.',
+    tree:'hold E to lift · steer ◀ ▶ to keep it level',
+    garland:'ease the loop onto the hook and hold still'}[t.kind];
   pTxt(g,hint,W/2,H-28,'#cfc4ae',6,'center');
-  if(t.kind==='tree'){
-    pR(g,W/2-40,H-38,80,4,'rgba(10,8,24,0.8)');
-    pR(g,W/2-1+t.bal*38,H-39,3,6, Math.abs(t.bal)>0.7?PAL.ember:'#8fc4e8');
-  }
-  if(t.kind==='cat'){
-    pR(g,W/2-40,H-38,80,4,'rgba(10,8,24,0.8)');
-    pR(g,W/2-40,H-38,80*t.cat.fear,4, t.cat.fear>0.6?PAL.ember:'#8fc4e8');
-    pTxt(g,'ตกใจ · startled',W/2-44,H-34,'#8a8098',6,'right');
-  }
-  if(t.fail>0) pTxt(g, t.kind==='cat'?'gently!':'steady!', W/2, H/2, PAL.ember, 12,'center');
+  if(t.kind==='tree'){ pR(g,W/2-40,H-38,80,4,'rgba(10,8,24,0.8)');
+    pR(g,W/2-1+t.bal*38,H-39,3,6,Math.abs(t.bal)>0.7?PAL.ember:'#8fc4e8'); }
+  if(t.kind==='cat'){ pR(g,W/2-40,H-38,80,4,'rgba(10,8,24,0.8)');
+    pR(g,W/2-40,H-38,80*t.cat.fear,4,t.cat.fear>0.6?PAL.ember:'#8fc4e8');
+    pTxt(g,'ตกใจ · startled',W/2-44,H-34,'#8a8098',6,'right'); }
+  if(t.fail>0) pTxt(g,t.kind==='cat'?'gently!':'steady!',W/2,H/2,PAL.ember,12,'center');
   pTxt(g,'ESC — step back',10,H-8,'#6a6478',6);
 }
 
 /* ============================================================
-   PLAY HUD
+   HUD
    ============================================================ */
 function drawHUD(){
   const g=ctx;
-  // merit
   const bw=104;
-  pR(g,8,7,bw+50,20,'rgba(12,9,26,0.76)');
-  pR(g,8,7,bw+50,1,rgba(PAL.gold,0.3));
-  pTxt(g,'บุญ',12,20,PAL.goldL,11);
+  panel(g,6,5,bw+52,24,PAL.gold);
+  pTxt(g,'บุญ',11,21,PAL.goldL,11);
   pR(g,34,12,bw,6,'#241c3a');
   const pr=clamp(GS.merit/GOAL,0,1);
-  pR(g,34,12,bw*pr,6, meritFlash>0? '#fff0b0':PAL.gold);
+  pR(g,34,12,bw*pr,6,meritFlash>0?'#fff0b0':PAL.gold);
   pR(g,34,12,bw*pr,1,'rgba(255,255,255,0.4)');
   for(let i=1;i<4;i++) pR(g,34+bw*i/4,12,1,6,'rgba(0,0,0,0.35)');
   pTxt(g,GS.merit+'/'+GOAL,34+bw+4,18,'#efe6d8',7);
-  if(avail()>0) pTxt(g,'✦'+avail()+' to spend · TAB',34,25,PAL.jadeL,6);
-  // zone name, when you cross into one
+  if(avail()>0) pTxt(g,'✦'+avail()+' to spend · TAB',34,26,PAL.jadeL,6);
+  else pTxt(g,'TAB — ledger',34,26,'#7a7488',6);
+
+  // basket
+  const ids=Object.keys(GS.bag).filter(k=>GS.bag[k]>0).slice(0,8);
+  if(ids.length){
+    const bwid=ids.length*19+10;
+    panel(g,6,33,bwid,22,PAL.jadeL);
+    ids.forEach((id,i)=>{ drawIcon(g,id,17+i*19,44,0.62);
+      pTxt(g,''+GS.bag[id],23+i*19,52,'#efe6d8',6); });
+  }
   const z=zoneAt(P.x);
   if(GS._zone!==z.id){ GS._zone=z.id; GS.zoneName=3.2; GS._zoneZ=z; }
   if(GS.zoneName>0){
@@ -2859,95 +3260,249 @@ function drawHUD(){
     pTxt(g,GS._zoneZ.en,W-12,30,'#8a8098',6,'right');
     g.globalAlpha=1;
   }
-  // objective
-  let obj='';
-  if(!GS.q.metPhra) obj='the spirit house is east along the road · ศาลพระภูมิ';
-  else if(GS.q.done) obj='a soft morning — wander as long as you like';
-  else if(GS.ready) obj='return to the spirit house';
-  else if(GS.merit>=GOAL) obj='tell พระภูมิ — the ledger is full';
-  else obj=PROMPT? '' : 'earn merit บุญ · help the village · H for the ledger';
-  if(obj){ pTxt(g,obj,W/2,H-8,'rgba(207,196,174,0.7)',6,'center'); }
-  // toasts
   GS.toasts.forEach((t,i)=>{
     t.t+=1/60;
-    const a=t.t<0.2? t.t/0.2 : t.t>2.2? clamp((2.8-t.t)/0.6,0,1):1;
-    g.globalAlpha=a; pTxt(g,t.text,W/2,44+i*11-t.t*3,t.c,7,'center'); g.globalAlpha=1;
+    const a=t.t<0.2?t.t/0.2:t.t>2.2?clamp((2.8-t.t)/0.6,0,1):1;
+    g.globalAlpha=a; pTxt(g,t.text,W/2,66+i*11-t.t*3,t.c,7,'center'); g.globalAlpha=1;
   });
   GS.toasts=GS.toasts.filter(t=>t.t<2.8);
-  // interaction prompt
   if(PROMPT){
     const s=PROMPT.txt;
     g.font=fontFor(s,7);
-    const w2=g.measureText(s).width+10;
+    const w2=g.measureText(s).width+12;
     const x=PROMPT.x-GS.camX, y=PROMPT.y-GS.camY;
-    pR(g,x-w2/2,y-10,w2,12,'rgba(14,10,30,0.86)');
-    pR(g,x-w2/2,y-10,w2,1,rgba(PAL.gold,0.55));
-    pTxt(g,s,x,y-1,'#ffe9b3',7,'center');
+    panel(g,x-w2/2,y-11,w2,13,PAL.gold);
+    pTxt(g,s,x,y-2,'#ffe9b3',7,'center');
+    if(PROMPT.sub){ g.font=fontFor(PROMPT.sub,6);
+      const w3=g.measureText(PROMPT.sub).width+10;
+      panel(g,x-w3/2,y+3,w3,11,PAL.jadeL);
+      pTxt(g,PROMPT.sub,x,y+11,'#a8dcb8',6,'center'); }
   }
-  // health, only when it matters
-  if(P.hp<P.maxhp-1){
-    pR(g,8,31,64,5,'rgba(12,9,26,0.7)');
-    pR(g,9,32,62*clamp(P.hp/P.maxhp,0,1),3,'#5ec46a');
-  }
+  if(!PROMPT && !DLG) pTxt(g,'E interact · G give · C วี้ด · TAB ledger',W/2,H-8,'rgba(207,196,174,0.55)',6,'center');
 }
 function drawDialog(g){
   if(!DLG) return;
   const L=DLG.lines[DLG.i];
-  const bx=16,bw=W-32,bh=52,by=H-bh-10;
-  pR(g,bx,by,bw,bh,'rgba(20,13,26,0.94)');
-  pR(g,bx+1,by+1,bw-2,1,PAL.gold); pR(g,bx+1,by+bh-2,bw-2,1,PAL.goldD);
-  pR(g,bx+1,by+1,1,bh-2,PAL.goldD); pR(g,bx+bw-2,by+1,1,bh-2,PAL.goldD);
-  pR(g,bx+3,by+3,bw-6,1,rgba(PAL.gold,0.28));
-  let ty=by+14;
-  if(L.w){ pTxt(g,L.w,bx+9,ty, L.w==='You'?PAL.pale : L.w.indexOf('Tani')>=0?PAL.jadeL:PAL.goldL, 8); ty+=11; }
+  const bx=16,bw=W-32,bh=54,by=H-bh-10;
+  panel(g,bx,by,bw,bh,PAL.gold);
+  let ty=by+15;
+  if(L.w){ pTxt(g,L.w,bx+10,ty, L.w==='You'?PAL.pale : L.w.indexOf('Tani')>=0?PAL.jadeL:PAL.goldL, 8); ty+=11; }
   const shown=L.t.slice(0,DLG.ch|0);
-  for(const line of wrap(g,shown,bw-20,7).slice(0,3)){ pTxt(g,line,bx+9,ty,'#efe6d8',7); ty+=10; }
-  if((DLG.ch|0)>=L.t.length){ g.globalAlpha=0.5+0.5*Math.sin(GS.t*6); pTxt(g,'▾',bx+bw-12,by+bh-6,PAL.gold,8); g.globalAlpha=1; }
+  for(const line of wrap(g,shown,bw-22,7).slice(0,3)){ pTxt(g,line,bx+10,ty,'#efe6d8',7); ty+=10; }
+  if((DLG.ch|0)>=L.t.length){ g.globalAlpha=0.5+0.5*Math.sin(GS.t*6); pTxt(g,'▾',bx+bw-13,by+bh-7,PAL.gold,8); g.globalAlpha=1; }
 }
 
 /* ============================================================
-   SKILL TREE — กาย · วาจา · ใจ, the three doors of karma
+   COOKING / CRAFTING SCREEN
+   ============================================================ */
+function drawAct(g){
+  const A=ACT, cook=A.mode==='cook';
+  g.fillStyle='rgba(10,8,22,0.86)'; g.fillRect(0,0,W,H);
+  const acc = cook? '#e07a5f' : PAL.gold;
+  pTxt(g, cook?'ครัว':'งานฝีมือ', 16, 22, acc, 15);
+  pTxt(g, cook?'THE KITCHEN':'THE WORKBENCH', 16, 32, '#8a8098', 6);
+  pTxt(g,'ESC — step away', W-16, 22, '#6a6478', 6, 'right');
+
+  if(A.phase==='pick'){
+    const r=actRecipe();
+    // list
+    A.ids.forEach((id,i)=>{
+      const b=A.book[id], y=46+i*23, sel=i===A.pick, ok=canMake(b);
+      panel(g,16,y,176,20, sel?acc:'rgba(90,84,104,0.5)');
+      drawIcon(g,b.out,30,y+10,0.62);
+      pTxt(g,b.th,44,y+9, ok?'#efe6d8':'#6a6478',8);
+      pTxt(g,b.en,44,y+17, ok?'#a89ec0':'#5a5468',6);
+      if(GS.learned[id]!==undefined) pTxt(g,'✓',182,y+13,PAL.jadeL,7,'right');
+    });
+    // detail
+    panel(g,204,46,W-220,H-64,acc);
+    pTxt(g,r.th,216,66,acc,14);
+    pTxt(g,r.en,216,77,'#a89ec0',7);
+    let y=94;
+    pTxt(g,'ต้องใช้ · you need',216,y,'#8a8098',6); y+=12;
+    let x=218;
+    for(const k in r.need){
+      const have=GS.bag[k]||0, need=r.need[k];
+      drawIcon(g,k,x+7,y+4,0.62);
+      pTxt(g,have+'/'+need, x+2, y+16, have>=need?PAL.jadeL:'#c8888a',6);
+      pTxt(g,ITEMS[k].th, x-2, y+24, have>=need?'#a89ec0':'#6a6478',6);
+      x+=42;
+    }
+    y+=36;
+    pTxt(g,'ขั้นตอน · steps',216,y,'#8a8098',6); y+=11;
+    r.steps.forEach((s,i)=>{ const k=STEP_KIND[s];
+      pTxt(g,(i+1)+'. '+k.th+' — '+k.en, 220, y+i*10, '#cfc4ae',6); });
+    y+=r.steps.length*10+8;
+    for(const l of wrap(g,r.d,W-244,6).slice(0,3)){ pTxt(g,l,216,y,'#8a8098',6); y+=8; }
+    const ok=canMake(r);
+    g.globalAlpha=A.flash>0?0.4:1;
+    pTxt(g, ok?'E — make it':'you are missing something', W-32, H-26, ok?PAL.goldL:'#c8888a',8,'right');
+    g.globalAlpha=1;
+    pTxt(g,'▲ ▼ choose',216,H-26,'#6a6478',6);
+    return;
+  }
+  if(A.phase==='done'){
+    const r=actRecipe();
+    panel(g,W/2-90,H/2-52,180,104,PAL.goldL);
+    pTxt(g,'เสร็จแล้ว!',W/2,H/2-32,PAL.goldL,14,'center');
+    drawIcon(g,r.out,W/2,H/2-6,1.5);
+    pTxt(g,r.th,W/2,H/2+22,'#efe6d8',9,'center');
+    const q=A.quality;
+    const word=q>0.85?'อร่อยมาก · perfect':q>0.55?'อร่อย · good':'พอกินได้ · edible';
+    pTxt(g,word,W/2,H/2+33,q>0.85?PAL.goldL:'#a89ec0',7,'center');
+    if(has('two')) pTxt(g,'สองมือ — you made two',W/2,H/2+43,PAL.jadeL,6,'center');
+    g.globalAlpha=0.6+0.4*Math.sin(GS.t*5);
+    pTxt(g,'E',W/2,H/2+56,PAL.gold,8,'center'); g.globalAlpha=1;
+    return;
+  }
+
+  // ---- performing a step ----
+  const r=actRecipe(), k=A.k;
+  pTxt(g,r.th,W/2,52,'#efe6d8',12,'center');
+  pTxt(g,'ขั้นที่ '+(A.step+1)+'/'+r.steps.length+' · '+k.th+' — '+k.en, W/2, 65,'#a89ec0',7,'center');
+
+  // the workspace, drawn big
+  const cxp=W/2, cyp=132;
+  if(cook){
+    // stove + wok
+    pR(g,cxp-40,cyp+22,80,20,'#a8633a'); pR(g,cxp-40,cyp+22,80,3,'#c47c4c');
+    for(let i=0;i<5;i++){ const fh=8+Math.sin(GS.t*9+i)*4;
+      pTaper(g,cxp-22+i*11,cyp+30,cxp-22+i*11+Math.sin(GS.t*7+i)*3,cyp+30-fh,5,1, i%2?'#ff9a3c':'#ffd257'); }
+    pEll(g,cxp,cyp+18,44,13,'#3a3a42'); pEll(g,cxp,cyp+15,40,11,'#5a5a64'); pEll(g,cxp,cyp+13,34,8,'#2e2e36');
+    // contents
+    const rc=ITEMS[r.out].c;
+    pEll(g,cxp,cyp+13,26,6,rc);
+    for(let i=0;i<6;i++){ const a=GS.t*2+i; pEll(g,cxp+Math.cos(a)*16,cyp+12+Math.sin(a)*3,3,2,shade(rc,0.2)); }
+    if(Math.random()<0.4) pSmoke(cxp+rnd(-16,16), cyp+4);
+  } else {
+    // a mat with the parts laid out
+    pEll(g,cxp,cyp+26,58,12,'#8a6f52'); pEll(g,cxp,cyp+24,54,10,'#a3865f');
+    for(let i=0;i<6;i++) pR(g,cxp-48+i*17,cyp+16,14,14, i%2?'#c9a86a':'#b8985c');
+    drawIcon(g,r.out,cxp,cyp+6,1.4);
+  }
+  // giant hands doing the work
+  const hw = A.flash>0? 6 : 0;
+  const hx1=cxp-38, hx2=cxp+38, hy=cyp-16-hw;
+  for(const [hx,fl] of [[hx1,1],[hx2,-1]]){
+    pTaper(g,hx-fl*24,cyp-58,hx,hy,7,5,PAL.paleD);
+    oEll(g,hx,hy,7,8,PAL.pale,'#463d59');
+    for(let f2=0;f2<4;f2++){ const fa=Math.PI*0.5+(f2-1.5)*0.3;
+      pTaper(g,hx,hy,hx+Math.cos(fa)*11*fl,hy+Math.sin(fa)*11,3,2,PAL.pale); }
+  }
+
+  // ---- the meter for this step ----
+  const mx=W/2-90, my=H-52, mw=180;
+  if(k.t==='timing'){
+    panel(g,mx-6,my-8,mw+12,24,PAL.gold);
+    pR(g,mx,my,mw,8,'#241c3a');
+    const easy=(cook?(has('taste')?1.5:1):(has('weave')?1.5:1));
+    const zw=0.13*easy*mw;
+    pR(g,mx+mw*0.5-zw,my,zw*2,8,'rgba(90,200,120,0.32)');
+    pR(g,mx+mw*0.5-zw*0.45,my,zw*0.9,8,'rgba(160,255,180,0.5)');
+    pR(g,mx+mw*A.m-1,my-3,3,14, A.flash>0? (A.perfect>0?'#b6ffcf':A.perfect<0?'#ff8a8a':'#ffe89a') : '#fff0dc');
+    pTxt(g,'E  ·  '+A.hits+'/'+A.need, W/2, my+22,'#cfc4ae',7,'center');
+  } else if(k.t==='rhythm'){
+    panel(g,mx-6,my-8,mw+12,24,PAL.gold);
+    const wantLeft=(A.hits%2)===0;
+    pR(g,mx,my,mw,8,'#241c3a');
+    const pulse=1-Math.abs(A.m-0.5)*2;
+    pR(g,mx+mw*0.5-mw*0.24*pulse,my,mw*0.48*pulse,8,'rgba(90,200,120,0.3)');
+    pTxt(g, wantLeft?'◀':'▶', W/2, my+7, A.flash>0&&A.perfect<0?'#ff8a8a':'#fff0dc',12,'center');
+    pTxt(g, A.hits+'/'+A.need, W/2, my+22,'#cfc4ae',7,'center');
+    pTxt(g,'alternate ◀ ▶ on the beat',W/2,my+31,'#6a6478',6,'center');
+  } else if(k.t==='hold'){
+    panel(g,mx-6,my-14,mw+12,30,PAL.gold);
+    pR(g,mx,my-8,mw,16,'#241c3a');
+    const easy=(cook?(has('taste')?1.5:1):(has('weave')?1.5:1));
+    const bw2=0.13*easy*mw;
+    pR(g,mx+mw*A.band-bw2,my-8,bw2*2,16,'rgba(90,200,120,0.3)');
+    pR(g,mx+mw*A.gauge-1,my-11,3,22,'#fff0dc');
+    pR(g,mx,my+10,mw*clamp(A.held/k.dur,0,1),3,PAL.goldL);
+    pTxt(g,'hold E to raise it — keep it in the green',W/2,my+22,'#cfc4ae',6,'center');
+  } else if(k.t==='place'){
+    panel(g,mx-6,my-8,mw+12,24,PAL.gold);
+    pR(g,mx,my,mw,8,'#241c3a');
+    for(let i=0;i<A.need;i++){
+      const t=(i+0.5)/A.need;
+      pR(g,mx+mw*t-6,my,12,8, i<A.placed? 'rgba(90,200,120,0.45)':'rgba(255,220,140,0.18)');
+      if(i===A.placed) pR(g,mx+mw*t-1,my-3,3,14,'rgba(255,240,200,0.5)');
+    }
+    pR(g,mx+mw*A.cursor-1,my-3,3,14, A.flash>0? (A.perfect>0?'#b6ffcf':'#ff8a8a'):'#fff0dc');
+    pTxt(g,'E when you are over the mark  ·  '+A.placed+'/'+A.need,W/2,my+22,'#cfc4ae',7,'center');
+  }
+}
+
+/* ============================================================
+   GIVING
+   ============================================================ */
+function drawGive(g){
+  const G3=GIVE, t=G3.target;
+  g.fillStyle='rgba(10,8,22,0.78)'; g.fillRect(0,0,W,H);
+  const name=t.name||'friend';
+  pTxt(g,'ให้ '+name, W/2, 46, PAL.goldL, 14,'center');
+  pTxt(g,'what would you like to give?', W/2, 58, '#8a8098', 6,'center');
+  const n=G3.list.length, cw=54;
+  const x0=W/2-(n*cw)/2;
+  G3.list.forEach((id,i)=>{
+    const x=x0+i*cw+cw/2, sel=i===G3.i;
+    panel(g,x-24,86,48,58, sel?PAL.goldL:'rgba(90,84,104,0.5)');
+    drawIcon(g,id,x,110,1.15);
+    pTxt(g,ITEMS[id].th,x,132,sel?'#efe6d8':'#8a8098',6,'center');
+    pTxt(g,'×'+GS.bag[id],x,141,'#a89ec0',6,'center');
+  });
+  if(has('eye') && t.wants && !GS.friends[t.id]){
+    panel(g,W/2-90,158,180,22,PAL.jadeL);
+    pTxt(g,'ตาใน — they are hoping for '+ITEMS[t.wants].th, W/2, 172,'#a8dcb8',6,'center');
+  }
+  pTxt(g,'◀ ▶ choose · E give · ESC keep it', W/2, H-24,'#6a6478',6,'center');
+}
+
+/* ============================================================
+   THE LEDGER
    ============================================================ */
 const TREE={col:0,row:0,tab:0};
 function stepTree(dt){
-  const keys=Object.keys(SKILLS);
+  GS.seen.ledger=true;
   if(press('back')||press('tree')){ GS.state='play'; AU.sel(); clearPress(); return; }
+  if(press('heavy')||press('whistle')||press('give')){ TREE.tab=(TREE.tab+1)%3; TREE.row=0; AU.sel(); }
   if(TREE.tab===0){
+    const keys=Object.keys(SKILLS);
     if(press('left')){ TREE.col=(TREE.col+2)%3; AU.blip(); }
     if(press('right')){ TREE.col=(TREE.col+1)%3; AU.blip(); }
     const col=keys.filter(k=>SKILLS[k].br===TREE.col);
-    if(press('up')){ TREE.row=clamp(TREE.row-1,0,col.length-1); AU.blip(); }
+    if(press('up')) { TREE.row=clamp(TREE.row-1,0,col.length-1); AU.blip(); }
     if(press('down')){ TREE.row=clamp(TREE.row+1,0,col.length-1); AU.blip(); }
     TREE.row=clamp(TREE.row,0,col.length-1);
-    if(press('act')||press('light')){
+    if(press('act')){
       const id=col[TREE.row], s=SKILLS[id];
       if(GS.skills[id]) AU.blip();
-      else if(s.need && !GS.skills[s.need]) { toast('learn '+SKILLS[s.need].en+' first','#c8888a'); AU.blip(); }
-      else if(avail()<s.cost){ toast('not enough บุญ — you need '+(s.cost-avail())+' more','#c8888a'); AU.blip(); }
-      else { GS.skills[id]=1; GS.spent+=s.cost; AU.unlock(); toast('learned '+s.th+' · '+s.en, PAL.jadeL);
-        if(id==='metta'){ GS.seen.own_halo=true; toast('รัศมี unlocked — a light of your own', PAL.goldL); }
+      else if(s.need && !GS.skills[s.need]){ toast('learn '+SKILLS[s.need].en+' first','#c8888a'); AU.blip(); }
+      else if(avail()<s.cost){ toast('you need '+(s.cost-avail())+' more บุญ','#c8888a'); AU.blip(); }
+      else { GS.skills[id]=1; GS.spent+=s.cost; AU.unlock(); toast('learned '+s.th+' · '+s.en,PAL.jadeL);
+        if(id==='metta'){ GS.seen.own_halo=true; toast('รัศมี unlocked',PAL.goldL); }
         saveGame(); }
     }
-  } else {
+  } else if(TREE.tab===1){
     const ids=Object.keys(COSMETICS).filter(c=>!COSMETICS[c].locked || GS.seen['own_'+c]);
-    if(press('left')){ TREE.row=(TREE.row+ids.length-1)%ids.length; AU.blip(); }
+    if(press('left')) { TREE.row=(TREE.row+ids.length-1)%ids.length; AU.blip(); }
     if(press('right')){ TREE.row=(TREE.row+1)%ids.length; AU.blip(); }
-    if(press('up')||press('down')){ TREE.row=clamp(TREE.row+(K.up?-3:3),0,ids.length-1); AU.blip(); }
+    if(press('up')||press('down')){ TREE.row=clamp(TREE.row+(K.up?-4:4),0,ids.length-1); AU.blip(); }
     TREE.row=clamp(TREE.row,0,ids.length-1);
-    if(press('act')||press('light')){
-      const id=ids[TREE.row], c=COSMETICS[id];
-      const owned=GS.seen['own_'+id];
-      if(owned){ GS.cos[c.slot]= (c.slot==='skirt')? c.v : (GS.cos[c.slot]?0:c.v); AU.sel(); saveGame(); }
-      else if(avail()>=c.cost){ GS.spent+=c.cost; GS.seen['own_'+id]=true; GS.cos[c.slot]=c.v; AU.unlock(); toast('got '+c.th+' · '+c.en,PAL.jadeL); saveGame(); }
+    if(press('act')){
+      const id=ids[TREE.row], c=COSMETICS[id], owned=GS.seen['own_'+id]||c.cost===0;
+      if(owned){ GS.cos[c.slot]= c.slot==='skirt'? c.v : (GS.cos[c.slot]?0:c.v); AU.sel(); saveGame(); }
+      else if(avail()>=c.cost){ GS.spent+=c.cost; GS.seen['own_'+id]=true; GS.cos[c.slot]=c.v; AU.unlock(); toast('got '+c.th,PAL.jadeL); saveGame(); }
       else { toast('not enough บุญ','#c8888a'); AU.blip(); }
     }
+  } else {
+    const list=GIFTEES();
+    if(press('up')||press('left'))  { TREE.row=(TREE.row+list.length-1)%list.length; AU.blip(); }
+    if(press('down')||press('right')){ TREE.row=(TREE.row+1)%list.length; AU.blip(); }
   }
-  if(press('heavy')||press('whistle')){ TREE.tab=1-TREE.tab; TREE.row=0; AU.sel(); }
   clearPress();
 }
-function drawTree(g){
+function drawLedger(g){
   g.fillStyle='#09071a'; g.fillRect(0,0,W,H);
-  // a faint mandala behind it all
   for(let i=0;i<3;i++){ const r=54+i*26;
     g.strokeStyle=`rgba(242,193,78,${0.05-i*0.012})`; g.lineWidth=1;
     g.beginPath(); g.arc(W/2,H/2,r,0,TAU); g.stroke(); }
@@ -2955,15 +3510,14 @@ function drawTree(g){
   pTxt(g,'THE LEDGER',14,30,'#8a8098',7);
   pTxt(g,'✦ '+avail()+' บุญ to spend',W-14,20,PAL.gold,10,'right');
   pTxt(g,GS.merit+' earned · '+GS.spent+' spent',W-14,30,'#8a8098',6,'right');
-  // tabs
-  const tabs=['SKILLS · วิชา','LOOKS · เครื่องประดับ'];
+  const tabs=['วิชา SKILLS','เครื่องประดับ LOOKS','เพื่อน FRIENDS'];
   tabs.forEach((t,i)=>{
-    const x=14+i*118, on=TREE.tab===i;
-    pR(g,x,36,112,13, on?'rgba(242,193,78,0.14)':'rgba(255,255,255,0.04)');
-    if(on) pR(g,x,36,112,1,PAL.gold);
-    pTxt(g,t,x+56,45, on?PAL.goldL:'#7a7488',6,'center');
+    const x=14+i*112, on=TREE.tab===i;
+    pR(g,x,36,106,13,on?'rgba(242,193,78,0.16)':'rgba(255,255,255,0.04)');
+    if(on) pR(g,x,36,106,1,PAL.gold);
+    pTxt(g,t,x+53,45,on?PAL.goldL:'#7a7488',6,'center');
   });
-  pTxt(g,'B / วี้ด — switch',W-14,45,'#5a5468',6,'right');
+  pTxt(g,'G — switch tab',W-14,45,'#5a5468',6,'right');
 
   if(TREE.tab===0){
     const keys=Object.keys(SKILLS);
@@ -2971,64 +3525,77 @@ function drawTree(g){
     for(let b=0;b<3;b++){
       const col=keys.filter(k=>SKILLS[k].br===b);
       const cx=64+b*(W-128)/2;
-      pTxt(g,BRANCHES[b].th,cx,66,BRANCHES[b].c,12,'center');
-      pTxt(g,BRANCHES[b].en,cx,75,'#7a7488',6,'center');
+      pTxt(g,BRANCHES[b].th,cx,68,BRANCHES[b].c,12,'center');
+      pTxt(g,BRANCHES[b].en,cx,77,'#7a7488',6,'center');
       col.forEach((id,i)=>{
-        const s=SKILLS[id], y=92+i*26;
-        const owned=!!GS.skills[id];
-        const locked=s.need && !GS.skills[s.need];
-        const canBuy=!owned&&!locked&&avail()>=s.cost;
-        const sel=TREE.col===b&&TREE.row===i;
+        const s=SKILLS[id], y=94+i*27;
+        const owned=!!GS.skills[id], locked=s.need&&!GS.skills[s.need];
+        const canBuy=!owned&&!locked&&avail()>=s.cost, sel=TREE.col===b&&TREE.row===i;
         if(sel) selId=id;
-        if(i>0){ pR(g,cx,y-16,1,12, owned?BRANCHES[b].c:'#2e2a44'); }
-        // node
+        if(i>0) pR(g,cx,y-17,1,13, owned?BRANCHES[b].c:'#2e2a44');
         const r=8;
-        pCirc(g,cx,y,r+ (sel?2:0), sel? rgba(BRANCHES[b].c,0.35) : 'rgba(0,0,0,0)');
-        pCirc(g,cx,y,r, owned? BRANCHES[b].c : locked? '#221f34' : canBuy? '#3a3454':'#2a2640');
-        pCirc(g,cx,y,r-3, owned? shade(BRANCHES[b].c,0.3) : '#171430');
+        if(sel) pCirc(g,cx,y,r+2,rgba(BRANCHES[b].c,0.35));
+        pCirc(g,cx,y,r, owned?BRANCHES[b].c: locked?'#221f34': canBuy?'#3a3454':'#2a2640');
+        pCirc(g,cx,y,r-3, owned?shade(BRANCHES[b].c,0.3):'#171430');
         if(owned) pTxt(g,'✓',cx,y+3,'#0e0b1c',8,'center');
         else if(locked) pTxt(g,'·',cx,y+3,'#4a4458',8,'center');
-        else pTxt(g,''+s.cost,cx,y+3, canBuy?PAL.gold:'#5a5468',7,'center');
-        pTxt(g,s.th,cx,y+17, owned?'#efe6d8': locked?'#4a4458':'#a89ec0',7,'center');
+        else pTxt(g,''+s.cost,cx,y+3,canBuy?PAL.gold:'#5a5468',7,'center');
+        pTxt(g,s.th,cx,y+17,owned?'#efe6d8':locked?'#4a4458':'#a89ec0',7,'center');
       });
     }
-    // detail panel
     const s=SKILLS[selId];
     if(s){
-      pR(g,14,H-46,W-28,38,'rgba(20,16,38,0.9)');
-      pR(g,14,H-46,W-28,1,rgba(BRANCHES[s.br].c,0.5));
-      pTxt(g,s.th+' · '+s.en,20,H-33,BRANCHES[s.br].c,9);
+      panel(g,14,H-44,W-28,36,BRANCHES[s.br].c);
+      pTxt(g,s.th+' · '+s.en,20,H-31,BRANCHES[s.br].c,9);
       const owned=GS.skills[selId];
-      pTxt(g, owned?'learned':(s.need&&!GS.skills[s.need])?('needs '+SKILLS[s.need].en):(s.cost+' บุญ'),
-        W-20,H-33, owned?PAL.jadeL:'#cfc4ae',7,'right');
-      let y=H-22;
+      pTxt(g, owned?'learned':(s.need&&!GS.skills[s.need])?('needs '+SKILLS[s.need].en):(s.cost+' บุญ · press E'),
+        W-20,H-31,owned?PAL.jadeL:'#cfc4ae',7,'right');
+      let y=H-20;
       for(const l of wrap(g,s.d,W-44,6).slice(0,2)){ pTxt(g,l,20,y,'#a89ec0',6); y+=8; }
     }
-  } else {
-    const ids=Object.keys(COSMETICS).filter(c=>!COSMETICS[c].locked || GS.seen['own_'+c]);
+  } else if(TREE.tab===1){
+    const ids=Object.keys(COSMETICS).filter(c=>!COSMETICS[c].locked||GS.seen['own_'+c]);
     ids.forEach((id,i)=>{
-      const c=COSMETICS[id], x=22+(i%4)*112, y=70+Math.floor(i/4)*46;
-      const owned=GS.seen['own_'+id]||c.cost===0;
-      const worn = GS.cos[c.slot]===c.v;
-      const sel=TREE.row===i;
-      pR(g,x,y,100,38, sel?'rgba(242,193,78,0.14)':'rgba(255,255,255,0.04)');
-      if(sel) pR(g,x,y,100,1,PAL.gold);
-      if(worn) pR(g,x,y+37,100,1,PAL.jadeL);
-      // swatch
+      const c=COSMETICS[id], x=20+(i%4)*112, y=64+Math.floor(i/4)*44;
+      const owned=GS.seen['own_'+id]||c.cost===0, worn=GS.cos[c.slot]===c.v, sel=TREE.row===i;
+      pR(g,x,y,102,36,sel?'rgba(242,193,78,0.14)':'rgba(255,255,255,0.04)');
+      if(sel) pR(g,x,y,102,1,PAL.gold);
+      if(worn) pR(g,x,y+35,102,1,PAL.jadeL);
       if(c.slot==='skirt'){ const S2=SKIRTS[c.v];
-        pR(g,x+6,y+8,20,22,S2.base); pR(g,x+18,y+8,8,22,S2.dark);
-        for(let k=0;k<4;k++) pR(g,x+6,y+11+k*5,20,1,S2.mark);
-      } else { pCirc(g,x+16,y+19,10, owned?PAL.gold:'#2a2640'); pCirc(g,x+16,y+19,6,'#171430');
-        pTxt(g, c.slot==='halo'?'☀':c.slot==='garland'?'❁':c.slot==='beads'?'○':c.slot==='sash'?'/':'✦', x+16,y+23, owned?PAL.goldL:'#4a4458',9,'center'); }
-      pTxt(g,c.th,x+32,y+15, owned?'#efe6d8':'#7a7488',7);
-      pTxt(g,c.en,x+32,y+24,'#8a8098',6);
-      pTxt(g, owned? (worn?'worn':'wear') : (c.cost+' บุญ'), x+32,y+33, owned? (worn?PAL.jadeL:'#a89ec0') : PAL.gold,6);
+        pR(g,x+6,y+7,19,21,S2.base); pR(g,x+17,y+7,8,21,S2.dark);
+        for(let k=0;k<4;k++) pR(g,x+6,y+10+k*5,19,1,S2.mark);
+      } else { pCirc(g,x+16,y+18,10,owned?PAL.gold:'#2a2640'); pCirc(g,x+16,y+18,6,'#171430');
+        pTxt(g,c.slot==='halo'?'☀':c.slot==='garland'?'❁':c.slot==='beads'?'○':c.slot==='sash'?'/':'✦',x+16,y+22,owned?PAL.goldL:'#4a4458',9,'center'); }
+      pTxt(g,c.th,x+31,y+14,owned?'#efe6d8':'#7a7488',7);
+      pTxt(g,c.en,x+31,y+23,'#8a8098',6);
+      pTxt(g,owned?(worn?'worn':'wear'):(c.cost+' บุญ'),x+31,y+32,owned?(worn?PAL.jadeL:'#a89ec0'):PAL.gold,6);
     });
     const c=COSMETICS[ids[TREE.row]];
-    if(c){ pR(g,14,H-30,W-28,22,'rgba(20,16,38,0.9)'); pR(g,14,H-30,W-28,1,rgba(PAL.gold,0.4));
-      pTxt(g,c.d,W/2,H-16,'#a89ec0',6,'center'); }
+    if(c){ panel(g,14,H-28,W-28,20,PAL.gold); pTxt(g,c.d,W/2,H-15,'#a89ec0',6,'center'); }
+  } else {
+    const list=GIFTEES();
+    list.forEach((t,i)=>{
+      const x=16+(i%3)*152, y=62+Math.floor(i/3)*36;
+      const sel=TREE.row===i, made=GS.friends[t.id];
+      pR(g,x,y,146,32,sel?'rgba(242,193,78,0.13)':'rgba(255,255,255,0.035)');
+      if(sel) pR(g,x,y,146,1,PAL.gold);
+      pTxt(g,t.name,x+8,y+13, made?'#efe6d8':'#a89ec0',8);
+      const knows = has('eye')||made;
+      pTxt(g, made? '♥ friends' : knows? 'hoping for '+ITEMS[t.wants].th : 'wants something',
+        x+8,y+24, made?'#ff8fae':'#7a7488',6);
+      if(knows) drawIcon(g,t.wants,x+130,y+16,0.6);
+    });
+    const t=list[TREE.row];
+    if(t){ panel(g,14,H-42,W-28,34,PAL.jadeL);
+      const line = t.about || t.line || '';
+      let y=H-28;
+      for(const l of wrap(g,line,W-44,6).slice(0,2)){ pTxt(g,l,20,y,'#a89ec0',6); y+=8; }
+      if(t.wish && !GS.friends[t.id] && has('eye')) pTxt(g,'wish: '+t.wish, 20, H-12, '#a8dcb8',6);
+    }
+    // recipes learned
+    pTxt(g,'สูตรที่รู้ '+Object.keys(GS.learned).length+'/'+(Object.keys(RECIPES).length+Object.keys(CRAFTS).length)+' recipes',W-16,H-48,'#7a7488',6,'right');
   }
-  pTxt(g,'◀ ▶ ▲ ▼ move · E choose · TAB / ESC close',W/2,H-3,'#5a5468',6,'center');
+  pTxt(g,'◀ ▶ ▲ ▼ move · E choose · TAB close',W/2,H-3,'#5a5468',6,'center');
 }
 
 /* ============================================================
@@ -3039,20 +3606,26 @@ function near(x,d=34){ return Math.abs(P.x-x)<d; }
 function checkInteract(){
   PROMPT=null;
   if(DLG) return;
-  const set=(x,y,txt,fn)=>{ PROMPT={x,y,txt,fn}; };
-  // ghosts first — they are the loudest thing in any room
-  for(const gh of GHOSTS){
-    if(gh.dead) continue;
-    if(near(gh.x,46)){ set(gh.x, gh.y-62, 'E — face '+gh.name, ()=>startFight(gh)); }
+  const set=(x,y,txt,fn,sub)=>{ PROMPT={x,y,txt,fn,sub}; };
+  // friends first
+  for(const s of SPIRITS){
+    if(near(s.x,40)){
+      const y = s.id==='krasue'? s.y-76 : s.y-56;
+      set(s.x,y, s.met? 'E — talk to '+s.name : 'E — say hello', ()=>talkSpirit(s), 'G — give something');
+    }
   }
   if(!PROMPT && !GS.q.garland && GS.q.metPhra && near(SHRINE_X-16,30))
     set(SHRINE_X-16, groundY(SHRINE_X)-100,'E — hang the fallen garland', ()=>startTask('garland',SHRINE_X));
   if(!PROMPT && near(PHRA.x,40) && PHRA.shown) set(PHRA.x,PHRA.y-30,'E — speak to พระภูมิ', talkPhra);
   if(!PROMPT && near(PHRA.x,40) && !PHRA.shown) set(SHRINE_X,groundY(SHRINE_X)-96,'E — pay respects', talkPhra);
+  if(!PROMPT && near(KITCHEN_X,34)) set(KITCHEN_X, groundY(KITCHEN_X)-64,'E — cook something', ()=>startActivity('cook'));
+  if(!PROMPT && near(CRAFT_X,34))   set(CRAFT_X,   groundY(CRAFT_X)-52,'E — sit and make something', ()=>startActivity('craft'));
   if(!PROMPT && near(TANI.x,36)) set(TANI.x,TANI.y-40,'E — talk to Tani', talkTani);
-  if(!PROMPT && near(MONK.x,32)) set(MONK.x,MONK.y-30,'E — approach politely', talkMonk);
-  if(!PROMPT && near(UNCLE.x,30)) set(UNCLE.x,UNCLE.y-30,'E — talk', talkUncle);
-  if(!PROMPT && !GS.q.cat && near(MALI.x,30)) set(MALI.x,MALI.y-26,'E — talk to Mali', talkMali);
+  if(!PROMPT && near(MONK.x,30)) set(MONK.x,MONK.y-30,'E — approach politely', talkMonk, 'G — give something');
+  if(!PROMPT && near(UNCLE.x,28)) set(UNCLE.x,UNCLE.y-30,'E — talk', talkUncle, 'G — give something');
+  if(!PROMPT && near(MALI.x,26))  set(MALI.x,MALI.y-26,'E — talk to Mali', talkMali, 'G — give something');
+  for(const v of VILLAGERS) if(!PROMPT && near(v.x,26))
+    set(v.x,v.y-28,'E — talk to '+v.name, ()=>talkVillager(v), 'G — give something');
   if(!PROMPT && !GS.q.cat && GS.q.maliMet && near(TAMARIND_X+16,50))
     set(TAMARIND_X+16,groundY(TAMARIND_X)-118,'E — reach up for the cat', ()=>startTask('cat',TAMARIND_X));
   if(!PROMPT && GS.q.cat && CAT.state==='wander' && near(CAT.x,20)) set(CAT.x,CAT.y-20,'E — pet',()=>{
@@ -3069,28 +3642,67 @@ function checkInteract(){
     });
   if(!PROMPT && !GS.q.tree && near(FALLEN_TREE_X,54))
     set(FALLEN_TREE_X, groundY(FALLEN_TREE_X)-40,'E — lift the fallen tree', ()=>startTask('tree',FALLEN_TREE_X));
-  if(!PROMPT && near(SALA_X,40)) set(SALA_X, groundY(SALA_X)-108,'E — ring the bell', ()=>{
+  if(!PROMPT && near(SALA_X,32)) set(SALA_X, groundY(SALA_X)-108,'E — ring the bell', ()=>{
     AU.gong(131,0,0.1); pRing(SALA_X,groundY(SALA_X)-70,PAL.goldL,90);
     if(!GS.seen.bell){ GS.seen.bell=true; addMerit(4); toast('+4 บุญ · the bell carries a long way'); }
     else toast('the bell hums','#cfc4ae');
   });
+  // plants last, so people always win the prompt
+  if(!PROMPT) for(const nd of NODES){
+    if(nd.ready && near(nd.x,22)){ const it=ITEMS[nd.item];
+      set(nd.x, nd.y-30, 'E — pick '+it.th, ()=>gather(nd), it.en); break; }
+  }
   if(PROMPT && press('act')){ const f=PROMPT.fn; PROMPT=null; f(); }
+  // G gives to whoever is nearest
+  if(press('give')){
+    let best=null,bd=44;
+    for(const t of GIFTEES()){ const d=Math.abs(t.x-P.x); if(d<bd){ bd=d; best=t; } }
+    if(best) openGive(best);
+    else khwanSay('Stand next to somebody first. Handing things to nobody is how rumours start.');
+  }
 }
 /* ---------- conversations ---------- */
+function talkSpirit(s){
+  if(!s.met){
+    s.met=true; saveGame();
+    const lines=s.hi.map(t=>({w:s.name,t}));
+    lines.push({w:'',t:s.about});
+    lines.push({w:'ขวัญ',t:'They are not going to hurt you. Nobody here is. Ask what they need — press G to give them something once you have made it.'});
+    say(lines, ()=>{ addMerit(3); toast('+3 บุญ · a new neighbour'); });
+    return;
+  }
+  if(s.friend){ say([{w:s.name,t:pick(s.thanks)}]); return; }
+  say([{w:s.name,t:s.wish},
+       {w:s.name,t: has('eye')? 'You can see it, can\'t you. The thing I want. Everyone can see it if they look for a moment.'
+                              : 'I would not ask. But you did ask, so — that.'}]);
+}
+function talkVillager(v){
+  const made=GS.friends[v.id];
+  if(made){ say([{w:v.name,t:pick(['Come and sit, tall one. There is always room on the step.','Everyone stopped locking the gate at night, you know. Since you started walking about.'])}]); return; }
+  say([{w:v.name,t:v.line},
+       {w:v.name,t:'…What I would really like is '+ITEMS[v.wants].th+'. Not that I would ever ask.'}]);
+}
+function talkMali(){
+  if(!GS.q.cat){
+    say([{w:'Mali',t:'M-Meow-Meow climbed too high… nobody can reach her… even Papa\'s ladder is too short… *sniff*'},
+         {w:'You',t:'วี้ด. (You crack your knuckles. It sounds like bamboo in wind.)'},
+         {w:'Mali',t:'…are YOU going to try? You ARE very tall. Please be careful, giant ghost พี่!'}],
+      ()=>{ GS.q.maliMet=true; });
+  } else talkVillager(MALI);
+}
 function talkPhra(){
   if(!GS.q.metPhra){
     PHRA.shown=true;
     say([
       {w:'',t:'You bow at the little house on its single pillar — and something inside bows back.'},
-      {w:'พระภูมิ',t:'Ah. A prete. Tall one, you are standing in my land, on my road, in my village.'},
+      {w:'พระภูมิ',t:'Ah. A prete. Tall one, you are standing on my land, on my road, in my village.'},
       {w:'You',t:'วี้ดดด… วี้ด… (You try to apologise. It comes out as a long thin whistle.)'},
-      {w:'พระภูมิ',t:'I know. A mouth the size of a needle\'s eye. In your last life you took what was not offered — so the ledger tipped and here you are, nine feet of regret in a torn ผ้าถุง.'},
-      {w:'พระภูมิ',t:'I keep this village\'s ledger. Karma — กรรม — is only bookkeeping, and bookkeeping runs both ways. Merit — บุญ — is the other column.'},
+      {w:'พระภูมิ',t:'I know. A mouth the size of a needle\'s eye. In your last life you took what was not offered — so the ledger tipped, and here you are: nine feet of regret in a torn ผ้าถุง.'},
+      {w:'พระภูมิ',t:'I keep this village\'s ledger. กรรม — karma — is only bookkeeping, and bookkeeping runs both ways. บุญ — merit — is the other column.'},
       {w:'พระภูมิ',t:'One hundred and eight บุญ. As many as the beads on a mala. Earn that and I will open the road home myself.'},
-      {w:'พระภูมิ',t:'Earn it three ways. Stand near when people pray here and the merit dedicated to hungry souls will find you. Help this village with that ridiculous body. And face what the dark leaves lying about — there is a great deal of it lately.'},
-      {w:'พระภูมิ',t:'Merit also buys skill. Press TAB and spend it: กาย, วาจา, ใจ — body, speech, mind. Spend wisely; spent merit still counts as earned.'},
-      {w:'พระภูมิ',t:'Now go. And prete — the green one in the banana grove east of here has been waiting to meet you all night.'},
-    ], ()=>{ GS.q.metPhra=true; addMerit(3); GS.skills.wail=1; toast('+3 บุญ · learned วี้ดดด (press C)', PAL.jadeL); saveGame(); });
+      {w:'พระภูมิ',t:'Nobody here needs saving from anything, so put that idea down. What they need is a hand, a hot meal, and somebody to notice them. You are excellent at exactly one of those and can learn the rest.'},
+      {w:'พระภูมิ',t:'Pick things. Cook them. Weave them. Give them away. Press TAB and spend merit on skill — spent merit still counts as earned. Now go and be useful.'},
+    ], ()=>{ GS.q.metPhra=true; addMerit(3); toast('+3 บุญ'); saveGame(); });
   } else if(GS.merit>=GOAL && !GS.ready && !GS.q.done){
     say([{w:'พระภูมิ',t:'…One hundred and eight. Look at you. The ledger is level, tall one.'},
          {w:'พระภูมิ',t:'I have sent for the monk. Stand here at the shrine when you are ready, and we will pour the water.'}],
@@ -3099,13 +3711,13 @@ function talkPhra(){
     say([{w:'พระภูมิ',t:'Still here? Good. The morning suits you better than the night did.'}]);
   } else {
     const tips=[];
-    if(!GS.q.lamp) tips.push('The lamp on the dark stretch has been out for a month. Nobody owns a tall enough ladder. Somebody tall could reach it.');
-    if(!GS.q.tree) tips.push('A tree came down across the west road in the storm. The rice cart cannot get past it.');
-    if(!GS.q.cat) tips.push('That child has been crying under the tamarind for an hour. Something about a cat.');
+    if(!GS.q.lamp) tips.push('The lamp on the dark stretch has been out a month. Nobody owns a tall enough ladder.');
+    if(!GS.q.tree) tips.push('A tree came down across the west road. The rice cart cannot get past it.');
+    if(!GS.q.cat)  tips.push('That child has been crying under the tamarind for an hour. Something about a cat.');
     if(!GS.q.garland) tips.push('My garland fell. I would hang it myself, but I am eight inches tall and made of light.');
-    const alive=GHOSTS.filter(x=>!x.dead);
-    if(alive.length) tips.push('There are '+alive.length+' unquiet things still on my land tonight. The nearest is '+alive[0].name+'.');
-    tips.push('Merit dedicated to สัมภเวสี — wandering souls — means you, tall one. Be standing here when somebody prays.');
+    const un=SPIRITS.filter(s=>!s.friend);
+    if(un.length) tips.push('There are '+un.length+' lonely things on my land tonight. Not dangerous. Lonely. The nearest is '+un[0].name+'.');
+    tips.push('Merit dedicated to สัมภเวสี — wandering souls — means you. Be standing here when somebody prays.');
     say([{w:'พระภูมิ',t:pick(tips)},{w:'พระภูมิ',t:'You have '+GS.merit+' บุญ of the hundred and eight. Keep going.'}]);
   }
 }
@@ -3114,22 +3726,19 @@ function talkTani(){
   if(!GS.q.metTani){
     say([
       {w:'???',t:'Oh! OH. A new face — well, a new VERY tall face. Hello up there.'},
-      {w:'Tani',t:"I'm Tani. นางตานี. I live in these banana trees; everyone does, eventually. And you are a fresh prete, by the smell of regret."},
-      {w:'Tani',t:'Don\'t look like that. A prete is just a person with the arithmetic done badly. I have been in this grove for two hundred years and I have seen the sums come out right more than once.'},
-      {w:'Tani',t:'Here — ghost to ghost, five บุญ and some advice: karma is a ledger, not a cage. And you are not doing this alone.'},
-      {w:'Tani',t:'Also, practical: those things out there in the dark? Learn เมตตา before you meet the last one. You cannot punch a ตายโหง into peace. I have watched people try.'},
-    ], ()=>{ GS.q.metTani=true; addMerit(5); unlockCos('skirt_jade',true); toast('+5 บุญ · a gift, ghost to ghost'); });
+      {w:'Tani',t:"I'm Tani. นางตานี. I live in these banana trees; everyone does, eventually."},
+      {w:'Tani',t:'A prete is just a person with the arithmetic done badly. I have been in this grove two hundred years and I have seen the sums come out right more than once.'},
+      {w:'Tani',t:'Take my leaves whenever you like — the ones low down. They fold into กระทง beautifully.'},
+      {w:'Tani',t:'And go and meet the others out there. Kong Koi is a sweetheart, กระสือ is a terrible gossip, and poor ตายโหง has not been spoken to since the road was gravel.'},
+    ], ()=>{ GS.q.metTani=true; addMerit(5); bagAdd('leaf',3); unlockCos('skirt_jade',true); toast('+5 บุญ and three banana leaves'); });
   } else if(GS.merit>=GOAL && !GS.q.done){
     say([{w:'Tani',t:'You are glowing at the seams, tall one. Go on — พระภูมิ is waiting. It is time.'},
          {w:'Tani',t:'…I will miss you. Come haunt my grove some morning. The bananas are terrible; the company is excellent.'}]);
   } else {
     const t=[];
-    if(!has('metta')) t.push('Save for เมตตา, at the end of the ใจ branch. Trust me. Force will not finish the last one.');
-    if(!has('eye')) t.push('ตาใน — the inner eye — shows you what a thing fears. Very handy when the thing is on fire and screaming.');
-    if(!GHOSTS.find(x=>x.id==='krasue').dead) t.push('The Krasue in the old forest fears garlic and holy water. There are offering pots at the temple. Bring the fight to them.');
-    if(!GHOSTS.find(x=>x.id==='phipop').dead) t.push('The ปอบ in the village is wearing a neighbour. Do NOT hit it. Use your whistle — sound drives it out, fists just hurt the poor man inside.');
-    if(!GHOSTS.find(x=>x.id==='krahang').dead) t.push('กระหัง flies on rice baskets. Break the baskets and he is just a rude man standing in a paddy.');
-    t.push('Stand close when they pray at the shrine. Merit dedicated to any hungry soul nearby means you, tall one.');
+    if(!has('eye')) t.push('Buy ตาใน when you can afford it. Then you can see what a person is hoping for without them having to be brave enough to say it.');
+    for(const s of SPIRITS) if(!s.friend && s.met) t.push(s.name+' has been waiting for '+(has('eye')?ITEMS[s.wants].th:'something')+'. Go on.');
+    t.push('Cook at the stove by the noodle cart. Weave at the mat outside the stall. Both are easier than they look and better than they sound.');
     t.push('The fireflies like you. They think you are a very slow lamppost.');
     say([{w:'Tani',t:pick(t)}]);
   }
@@ -3142,22 +3751,18 @@ function talkMonk(){
          {w:'Luang Pi',t:'I pour this water for you — กรวดน้ำ. May the merit run where the thirst is greatest.'}],
       ()=>{ GS.q.monk=true; AU.pour();
         for(let i=0;i<20;i++) setTimeout(()=>part({k:'water',x:MONK.x+8,y:MONK.y-14,vx:rnd(-6,6),vy:30,life:0.7}), i*70);
-        addMerit(10); unlockCos('beads',true); toast('+10 บุญ · กรวดน้ำ — the water finds you'); });
-  } else {
-    say([{w:'Luang Pi',t: GS.q.ghosts>=3? 'The nights have been quieter. Your doing, I think. Do not let it make you proud; pride is heavier than hunger.'
-      : 'The water finds its way down. So will you.'}]);
-  }
+        addMerit(10); unlockCos('beads',true); toast('+10 บุญ · กรวดน้ำ'); });
+  } else talkVillager(MONK);
 }
 function talkUncle(){
-  say([{w:'Lung Somchai',t:'Strange wind tonight. Warm, though. Like something big and kind keeps walking past my cart.'},
-       {w:'Lung Somchai',t:'Grandmother always said: feed the spirits you cannot see. Extra bowl is on the end, friend. Mind the chili.'}],
-    ()=>{ if(!offering) offering={x:CART_X+40,y:groundY(CART_X+40),t:0}; });
-}
-function talkMali(){
-  say([{w:'Mali',t:'M-Meow-Meow climbed too high… nobody can reach her… even Papa\'s ladder is too short… *sniff*'},
-       {w:'You',t:'วี้ด. (You crack your knuckles. It sounds like bamboo in wind.)'},
-       {w:'Mali',t:'…are YOU going to try? You ARE very tall. Please be careful, giant ghost พี่!'}],
-    ()=>{ GS.q.maliMet=true; });
+  if(!GS.seen.uncle){
+    GS.seen.uncle=true;
+    say([{w:'Lung Somchai',t:'Strange wind tonight. Warm, though. Like something big and kind keeps walking past my cart.'},
+         {w:'Lung Somchai',t:'Grandmother always said: feed the spirits you cannot see. Extra bowl is on the end, friend. Mind the chili.'},
+         {w:'Lung Somchai',t:'Use my stove whenever you like. It is lit all night anyway and I am too old to be precious about it.'}],
+      ()=>{ if(!offering) offering={x:CART_X+40,y:groundY(CART_X+40),t:0};
+        khwanSay('That is his stove, just there. Stand at it and press E.'); });
+  } else talkVillager(UNCLE);
 }
 
 /* ============================================================
@@ -3167,18 +3772,22 @@ let CER=null;
 const CER_LINES=[
   {w:'Luang Pi',t:'Neighbours — tonight we pour water for a tall, quiet friend who has been minding this village.'},
   {w:'Mali',t:'The lamppost ghost!! I KNEW it!'},
-  {w:'พระภูมิ',t:'The ledger is read and it is level. One hundred and eight บุญ, earned on my land, in my village, by a prete who could have simply eaten.'},
+  {w:'พระภูมิ',t:'The ledger is read and it is level. One hundred and eight บุญ, earned on my land, by a prete who could simply have eaten.'},
   {w:'Luang Pi',t:'May this merit reach you. May hunger loosen its hands. May the road home be short, and lit the whole way.'},
   {w:'Tani',t:'See you around, tall one. …Somewhere better, I mean.'},
+  {w:'ขวัญ',t:'I was your ขวัญ. Everybody has one. I only had to shout a bit louder for you. Go on — I will find you again.'},
   {w:'Luang Pi',t:'ไปสู่สุคติเถิด — go gently. Go home.'},
 ];
 function startCeremony(){
   GS.state='ceremony';
-  CER={t:0,i:-1,lt:1.4,ch:0,rise:0,flash:0};
+  CER={t:0,i:-1,lt:1.3,ch:0,rise:0,flash:0};
   const spots=[-46,-30,26,44,60];
-  NPCS.forEach((n,i)=>{ n.x=SHRINE_X+(n.id==='monk'? -14 : spots[i%spots.length]); n.y=groundY(n.x);
-    n.state = n.id==='monk'? 'idle':'wai'; n.vx=0; n.face=n.x<SHRINE_X?1:-1; });
+  NPCS.forEach((n,i)=>{ n.x=SHRINE_X+(n.id==='monk'?-14:spots[i%spots.length]); n.y=groundY(n.x);
+    n.state=n.id==='monk'?'idle':'wai'; n.vx=0; n.face=n.x<SHRINE_X?1:-1; });
   TANI.x=SHRINE_X+72; TANI.y=groundY(TANI.x)-4; TANI.face=-1;
+  // every spirit you befriended comes to see you off
+  let sx=SHRINE_X-90;
+  for(const s of SPIRITS){ if(s.friend){ s.x=sx; s.y=groundY(sx); sx-=26; } }
   CAT.state='wander'; CAT.x=SHRINE_X+34; CAT.y=groundY(CAT.x); CAT.tx=CAT.x;
   PHRA.shown=true;
   P.x=SHRINE_X+8; P.y=groundY(P.x); P.vx=0; P.vy=0; P.face=-1;
@@ -3193,32 +3802,33 @@ function stepCeremony(dt){
     if(c.i<CER_LINES.length){
       c.lt=1.25+CER_LINES[c.i].t.length/42;
       if(c.i===3){ AU.pour(); for(let i=0;i<24;i++) setTimeout(()=>part({k:'water',x:MONK.x+8,y:MONK.y-14,vx:rnd(-6,6),vy:34,life:0.8}),i*70); }
-      if(c.i===5) AU.metta();
+      if(c.i===6) AU.metta();
     } else c.lt=999;
   }
   if(Math.random()<dt*9) pPetal(P.x,P.y-40);
   if(Math.random()<dt*6) pSpark(P.x+rnd(-10,10),P.y-rnd(10,50),1,PAL.goldL);
   for(const n of NPCS){ n.anim+=dt; n.y=groundY(n.x); }
+  for(const s of SPIRITS) s.anim+=dt;
   TANI.anim+=dt; PHRA.anim+=dt; CAT.anim+=dt;
-  stepPrete(P,dt);
+  stepPrete(P,dt); stepKhwan(dt);
   if(c.i>=CER_LINES.length){
     c.rise+=dt; P.rise=Math.min(60,c.rise*10);
     if(c.rise>6.5){ c.flash+=dt;
       if(c.flash>1.5){ GS.q.done=true; GS.cos.halo=1; GS.seen.own_halo=true; P.rise=0; GS.dawn=1; GS.state='end'; GS.t2=0; saveGame(); } }
   }
-  GS.camX=lerp(GS.camX, clamp(SHRINE_X-W/2+10,0,WORLD_W-W), 1-Math.pow(0.02,dt));
-  GS.camY=lerp(GS.camY, 6, 1-Math.pow(0.02,dt));
+  GS.camX=lerp(GS.camX,clamp(SHRINE_X-W/2+10,0,WORLD_W-W),1-Math.pow(0.02,dt));
+  GS.camY=lerp(GS.camY,6,1-Math.pow(0.02,dt));
   clearPress();
 }
 function drawCeremonyUI(g){
   const c=CER;
   if(c.i>=0&&c.i<CER_LINES.length){
     const L=CER_LINES[c.i];
-    const bx=16,bw=W-32,bh=44,by=H-bh-10;
-    pR(g,bx,by,bw,bh,'rgba(20,13,26,0.9)'); pR(g,bx+1,by+1,bw-2,1,PAL.gold);
-    pTxt(g,L.w,bx+9,by+14, L.w==='Tani'?PAL.jadeL:L.w==='Mali'?'#ffb0a0':PAL.goldL,8);
-    let ty=by+25;
-    for(const l of wrap(g,L.t.slice(0,c.ch|0),bw-20,7).slice(0,2)){ pTxt(g,l,bx+9,ty,'#efe6d8',7); ty+=10; }
+    const bx=16,bw=W-32,bh=46,by=H-bh-10;
+    panel(g,bx,by,bw,bh,PAL.gold);
+    pTxt(g,L.w,bx+10,by+15, L.w==='Tani'?PAL.jadeL:L.w==='Mali'?'#ffb0a0':L.w==='ขวัญ'?'#8fd8f0':PAL.goldL,8);
+    let ty=by+26;
+    for(const l of wrap(g,L.t.slice(0,c.ch|0),bw-22,7).slice(0,2)){ pTxt(g,l,bx+10,ty,'#efe6d8',7); ty+=10; }
   }
   if(c.rise>0){
     const a=clamp(c.rise/3,0,0.55);
@@ -3233,23 +3843,25 @@ function drawEnd(g){
   const a=clamp(GS.t2/1.4,0,1);
   g.fillStyle=`rgba(22,16,20,${0.9*a})`; g.fillRect(0,0,W,H);
   if(a<0.5) return;
-  pTxt(g,'PRETE NO MORE',W/2,44,PAL.gold,20,'center');
-  pTxt(g,'เปรตไม่เป็นเปรตอีกต่อไป',W/2,58,PAL.goldL,10,'center');
-  const lines=['The hungry ghost smiled — a smile the size of a needle\'s eye —','and it was enough.'];
-  lines.forEach((l,i)=>pTxt(g,l,W/2,78+i*11,'#efe6d8',7,'center'));
+  pTxt(g,'PRETE NO MORE',W/2,42,PAL.gold,20,'center');
+  pTxt(g,'เปรตไม่เป็นเปรตอีกต่อไป',W/2,56,PAL.goldL,10,'center');
+  ['The hungry ghost smiled — a smile the size of a needle\'s eye —','and it was enough.']
+    .forEach((l,i)=>pTxt(g,l,W/2,76+i*11,'#efe6d8',7,'center'));
+  const all=GIFTEES();
+  const friends=all.filter(t=> t.art? t.friend : !!GS.friends[t.id]).length;
   const st=[
-    'merit '+GS.merit+' บุญ · prayers received '+GS.q.prayers+' · spirits met '+(GS.q.ghosts||0)+'/5',
+    'merit '+GS.merit+' บุญ · prayers received '+GS.q.prayers+' · gifts given '+(GS.q.gifts||0),
+    'recipes learned '+Object.keys(GS.learned).length+'/'+(Object.keys(RECIPES).length+Object.keys(CRAFTS).length)+' · friends made '+friends+'/'+all.length,
     (GS.q.lamp?'streetlight fixed ✓':'streetlight, still dark')+' · '+(GS.q.cat?'Meow-Meow rescued ✓':'a cat, still up a tree'),
     (GS.q.tree?'road cleared ✓':'road, still blocked')+' · '+(GS.q.garland?'garland hung ✓':'garland, still fallen'),
-    GS.q.offerings+' bowls of noodles inhaled politely · '+GS.q.pets+' cat pets given',
   ];
-  st.forEach((l,i)=>pTxt(g,l,W/2,108+i*10,'#b0a494',6,'center'));
-  const freed=GHOSTS.filter(x=>x.freed).length;
-  pTxt(g, freed>=5? 'every unquiet thing on this land was released, not broken · เมตตา'
-      : freed>0? freed+' spirits released with เมตตา, the rest merely driven off'
-      : 'you drove them all off. none of them were freed.',
-    W/2,154, freed>=5?PAL.goldL:'#8a8098',6,'center');
-  pTxt(g,'ขอให้ไปสู่สุคติ — may you go to a good place',W/2,176,PAL.jadeL,8,'center');
+  st.forEach((l,i)=>pTxt(g,l,W/2,106+i*10,'#b0a494',6,'center'));
+  const sf=SPIRITS.filter(s=>s.friend).length;
+  pTxt(g, sf>=5? 'every lonely thing on this land got a friend and a hot meal'
+       : sf>0? sf+' of the five lonely spirits were fed and befriended'
+       : 'the spirits of this place are still waiting for somebody to sit with them',
+    W/2,152, sf>=5?PAL.goldL:'#8a8098',6,'center');
+  pTxt(g,'ขอให้ไปสู่สุคติ — may you go to a good place',W/2,174,PAL.jadeL,8,'center');
   g.globalAlpha=0.6+0.4*Math.sin(GS.t*4);
   pTxt(g,'E — stay for the morning   ·   R — begin again',W/2,H-22,PAL.gold,7,'center');
   g.globalAlpha=1;
@@ -3263,49 +3875,71 @@ function drawTitle(){
   const g=ctx;
   GS.dawn=0;
   drawSky(g);
-  // a grove in silhouette
   g.fillStyle='#0a0918';
   for(let i=0;i<8;i++){
     const x=(i*67+18), h2=44+((i*37)%40);
     pTaper(g,x,H,x+((i%3)-1)*6,H-70-h2,7,3,'#0a0918');
-    for(let k=0;k<6;k++){ const a=(k/6)*TAU+i;
+    for(let k=0;k<6;k++){ const a=(k/6)*TAU;
       pTaper(g,x,H-70-h2,x+Math.cos(a)*22,H-70-h2+Math.sin(a)*9+7,4,1,'#0a0918'); }
   }
   pR(g,0,H-46,W,46,'#0c0b1c');
   for(let x=0;x<W;x+=3) pR(g,x,H-46,2,1,'#141230');
-  // the prete, swaying under the moon
+  // a string of lanterns for the title, because it is that kind of game now
+  g.strokeStyle='rgba(20,16,30,0.8)'; g.lineWidth=1;
+  g.beginPath(); g.moveTo(-10,44); g.quadraticCurveTo(W/2,72,W+10,40); g.stroke();
+  for(let i=0;i<9;i++){
+    const u=(i+0.5)/9, x=lerp(-10,W+10,u);
+    const y=(1-u)*(1-u)*44+2*(1-u)*u*72+u*u*40;
+    const c=['#e8564a','#ffc44d','#5fbf7a','#5aa8e0','#e88fc0'][i%5];
+    const sw=Math.sin(GS.t*1.1+i)*1.5;
+    pR(g,x+sw,y,1,3,'#3a3630'); pEll(g,x+sw,y+7,4,5,c); pEll(g,x+sw,y+6,2.4,3,shade(c,0.35));
+    const gr=g.createRadialGradient(x+sw,y+7,1,x+sw,y+7,14);
+    gr.addColorStop(0,rgba(c,0.2)); gr.addColorStop(1,rgba(c,0));
+    g.fillStyle=gr; g.fillRect(x+sw-14,y-7,28,28);
+  }
   TP.anim+=1/60; TP.blink-=1/60; if(TP.blink<-0.12) TP.blink=rnd(2,6);
-  TP.x = W*0.30 + Math.sin(GS.t*0.6)*3;
-  drawPrete(g,TP,{dt:1/60,wind:Math.sin(GS.t*0.4)*0.25, cos:{skirt:'ash'}});
-  // fireflies
+  TP.x=W*0.30+Math.sin(GS.t*0.6)*3;
+  drawPrete(g,TP,{dt:1/60,wind:Math.sin(GS.t*0.4)*0.25,cos:{skirt:'ash'}});
+  // the guide hovers beside him on the title too
+  drawKhwan.call(null,g);
+  KHWAN.x=lerp(KHWAN.x, TP.x-26,0.04); KHWAN.y=lerp(KHWAN.y,168+Math.sin(GS.t*1.5)*3,0.04); KHWAN.anim+=1/60;
+  KHWAN.blink-=1/60; if(KHWAN.blink<-0.14) KHWAN.blink=rnd(2.5,6);
   for(let i=0;i<16;i++){
     const fx=W/2+Math.sin(GS.t*0.4+i*2.1)*150+Math.sin(GS.t*0.2+i)*40;
     const fy=110+Math.cos(GS.t*0.33+i*1.7)*44;
     const bl=0.5+0.5*Math.sin(GS.t*2+i*3);
     g.fillStyle=`rgba(190,255,150,${0.65*bl})`; g.fillRect(R(fx),R(fy),1,1);
   }
-  // title
   pTxt(g,'PRETE',W*0.62,72,PAL.gold,44,'center',true);
   pTxt(g,'SIMULATOR',W*0.62,96,'#ffe9b3',20,'center',true);
   pTxt(g,'เปรตซิมูเลเตอร์',W*0.62,116,PAL.goldL,13,'center');
-  pTxt(g,'a cozy Thai hungry-ghost tale',W*0.62,130,'#8a8098',7,'center');
+  pTxt(g,'a cozy Thai ghost-village life',W*0.62,130,'#8a8098',7,'center');
   const sv=loadSaveRaw();
   const hasSave=sv&&(sv.merit>0||(sv.q&&sv.q.metPhra));
   g.globalAlpha=0.6+0.4*Math.sin(GS.t*4);
-  pTxt(g, hasSave? (sv.q&&sv.q.done?'ENTER — a morning stroll':'ENTER — continue'):'PRESS ENTER', W*0.62,166,'#ffd98a',10,'center');
+  pTxt(g,hasSave?(sv.q&&sv.q.done?'ENTER — a morning stroll':'ENTER — continue'):'PRESS ENTER',W*0.62,166,'#ffd98a',10,'center');
   g.globalAlpha=1;
   if(hasSave) pTxt(g,'N — new night',W*0.62,180,'#7a7488',7,'center');
-  pTxt(g,'←→ walk · SPACE jump · E talk · Z light · X heavy · C วี้ด · SHIFT guard · TAB ledger · M sound',
-    W/2,H-10,'#5a5468',6,'center');
+  pTxt(g,'←→ walk · SPACE jump · E interact · G give · C วี้ด · TAB ledger · M sound',W/2,H-10,'#5a5468',6,'center');
 }
 const INTRO=[
   {t:"In your last life you took what wasn't yours, and drank what wasn't offered.",s:1},
   {t:'You laughed past the temple gate. The bell rang for you anyway.',s:2},
   {t:'Then one night the counting stopped. กรรม — karma — is patient, and karma is exact.',s:3},
-  {t:"You woke in the cremation ground, tall as the palms, hungry as a drought, with a mouth the size of a needle's eye.",s:4},
-  {t:'You are เปรต now. A hungry ghost. But a ledger has two columns — and the village is still awake.',s:4},
 ];
 let introI=0, introCh=0;
+/* the first thing that happens when you can move */
+const WAKE=[
+  {w:'???',t:'…oh. Oh! You are up. Good. Do not panic.'},
+  {w:'???',t:'First things first, because it is better to hear it standing up: you woke up in a graveyard.'},
+  {w:'You',t:'วี้ดดดด?! (It comes out as a thin whistle. Your mouth is the size of the eye of a needle.)'},
+  {w:'ขวัญ',t:'ป่าช้า. The cremation ground, west end of the village. That is where they put you. You have been under that soil for a while, and you came back up as a เปรต — a hungry ghost. Tall as the palms. Belly like a drum. Very impressive, honestly.'},
+  {w:'ขวัญ',t:'I am your ขวัญ. Your life-spirit. Everyone has one; most people never hear theirs. You are going to hear rather a lot of me.'},
+  {w:'You',t:'วี้ด… (You look down at yourself for a long moment.)'},
+  {w:'ขวัญ',t:'Yes. I know. But listen — nobody in this village is going to hurt you, and you are not going to hurt anybody either. That is not what this is.'},
+  {w:'ขวัญ',t:'The ledger tipped, that is all. So we tip it back: pick things, cook things, make things, and give them to people who need them. There is a whole village east of here and every single one of them wants something small.'},
+  {w:'ขวัญ',t:'Even the frightening ones. ESPECIALLY the frightening ones — they are the loneliest. Come on. Walk east. Hold ← and → .'},
+];
 function drawIntro(){
   const g=ctx;
   g.fillStyle='#0a0918'; g.fillRect(0,0,W,H);
@@ -3316,45 +3950,29 @@ function drawIntro(){
     pR(g,120,128,240,7,'#3a2c22'); pR(g,130,135,8,28,'#3a2c22'); pR(g,342,135,8,28,'#3a2c22');
     for(let i=0;i<3;i++){ pR(g,170+i*22,110,8,18,'#2a4a3a'); pR(g,172+i*22,104,4,7,'#1d3529'); }
     pR(g,268,112,20,16,'#8a6a2a'); pR(g,272,108,12,5,PAL.gold);
-    const v=makeVillager({x:228,y:128,skin:PAL.skin,shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
-    g.save(); g.scale(1.9,1.9); v.x=120; v.y=67; drawVillager(g,v,{}); g.restore();
+    const v=makeVillager({x:120,y:67,skin:PAL.skin,shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
+    g.save(); g.scale(1.9,1.9); drawVillager(g,v,{}); g.restore();
     const gl=g.createRadialGradient(240,120,4,240,120,110);
-    gl.addColorStop(0,'rgba(255,190,90,0.15)'); gl.addColorStop(1,'rgba(255,190,90,0)');
+    gl.addColorStop(0,'rgba(255,190,90,0.16)'); gl.addColorStop(1,'rgba(255,190,90,0)');
     g.fillStyle=gl; g.fillRect(80,40,320,140);
   } else if(p.s===2){
     drawSky(g);
     pR(g,0,164,W,60,'#0c0b1c');
-    const ch=artChedi(); g.globalAlpha=0.9; g.drawImage(ch,300,20,ch.width*0.9,ch.height*0.9); g.globalAlpha=1;
+    const ch=ART.chedi; g.globalAlpha=0.9; g.drawImage(ch,300,20,ch.width*0.9,ch.height*0.9); g.globalAlpha=1;
     pR(g,250,140,26,24,'#241c3a'); pR(g,258,134,10,7,'#8a6a2a');
-    const beg=makeVillager({x:296,y:164,skin:'#c69670',shirt:'#4a4452',shirtD:'#353043',legs:'#2c2836',hair:'short'});
-    drawVillager(g,beg,{wai:1});
-    const v=makeVillager({x:150,y:164,skin:PAL.skin,shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
-    v.vx=40; v.phase=GS.t*4; g.save(); g.scale(1.6,1.6); v.x=94; v.y=102; drawVillager(g,v,{}); g.restore();
-  } else if(p.s===3){
+    drawVillager(g,makeVillager({x:296,y:164,skin:'#c69670',shirt:'#4a4452',shirtD:'#353043',legs:'#2c2836',hair:'short'}),{wai:1});
+    const v=makeVillager({x:94,y:102,skin:PAL.skin,shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
+    v.vx=40; v.phase=GS.t*4;
+    g.save(); g.scale(1.6,1.6); drawVillager(g,v,{}); g.restore();
+  } else {
     const tip=Math.min(1,GS.t*0.35)*14;
     g.strokeStyle='#cfc4ae'; g.lineWidth=1;
     g.beginPath(); g.moveTo(240,70); g.lineTo(240,150); g.stroke();
     g.beginPath(); g.moveTo(180,86+tip); g.lineTo(300,86-tip); g.stroke();
     g.strokeRect(160,90+tip,40,14); g.strokeRect(280,80-tip,40,14);
-    pR(g,163,93+tip,34,10,'#241c3a');
-    pR(g,296,86-tip,6,4,PAL.gold);
+    pR(g,163,93+tip,34,10,'#241c3a'); pR(g,296,86-tip,6,4,PAL.gold);
     pR(g,222,150,36,5,'#cfc4ae');
     pTxt(g,'กรรม',240,186,'#8a8098',16,'center');
-  } else {
-    drawSky(g);
-    pR(g,0,178,W,50,'#0f1226');
-    for(let i=0;i<8;i++){ const x=i*66+14;
-      pTaper(g,x,182,x,140,6,3,'#0a0918');
-      for(let k=0;k<5;k++){ const a=(k/5)*TAU; pTaper(g,x,140,x+Math.cos(a)*17,140+Math.sin(a)*7+5,3,1,'#0a0918'); } }
-    for(let i=0;i<6;i++){ const x=40+i*74; pR(g,x,168,4,14,'#8d8f80'); pEll(g,x+2,168,3,3,'#a4a695'); }
-    TP.anim+=1/60; TP.x=W/2; TP.y=182;
-    g.save(); g.scale(1.5,1.5);
-    const sv={x:TP.x,y:TP.y}; TP.x=W/3; TP.y=120;
-    drawPrete(g,TP,{dt:1/60,wind:0.1,cos:{skirt:'ash'}});
-    TP.x=sv.x; TP.y=sv.y; g.restore();
-    if(introI===4){ const gl=g.createRadialGradient(W/2,120,6,W/2,120,90);
-      gl.addColorStop(0,'rgba(205,191,216,0.16)'); gl.addColorStop(1,'rgba(205,191,216,0)');
-      g.fillStyle=gl; g.fillRect(W/2-90,30,180,180); }
   }
   g.restore();
   pR(g,0,H-46,W,46,'rgba(10,8,20,0.88)'); pR(g,0,H-46,W,1,PAL.gold);
@@ -3374,6 +3992,7 @@ function update(dt){
   GS.wind = Math.sin(GS.t*0.31)*0.32 + Math.sin(GS.t*0.113)*0.18;
   GS.shake = Math.max(0, GS.shake - dt*16);
   if(meritFlash>0) meritFlash-=dt*2;
+  for(const m of MOTES) m.t+=dt*m.sp;
   for(const f of FIREFLIES){
     f.t+=dt*f.sp;
     f.x=f.hx+Math.sin(f.t*0.85)*16+Math.sin(f.t*0.37)*9;
@@ -3384,7 +4003,7 @@ function update(dt){
   switch(GS.state){
     case 'title':
       TP.anim+=dt;
-      if(press('act')||press('light')||press('tap')){
+      if(press('act')||press('tap')){
         const sv=loadSaveRaw();
         if(sv&&(sv.merit>0||(sv.q&&sv.q.metPhra))) continueGame(sv); else newGame();
         AU.ding();
@@ -3393,19 +4012,23 @@ function update(dt){
       break;
     case 'intro':
       introCh+=dt*44;
-      if(press('act')||press('light')||press('tap')){
+      if(press('act')||press('tap')){
         AU.blip();
         const cap=INTRO[introI].t;
         if(introCh<cap.length) introCh=cap.length;
         else { introI++; introCh=0;
-          if(introI>=INTRO.length){ GS.state='play'; GS.camX=clamp(P.x-W/2,0,WORLD_W-W);
-            setTimeout(()=>toast('east along the road · ศาลพระภูมิ','#9ee8b0'),700); } }
+          if(introI>=INTRO.length){
+            GS.state='play'; GS.camX=clamp(P.x-W/2,0,WORLD_W-W);
+            KHWAN.x=P.x+26; KHWAN.y=P.y-46;
+            say(WAKE, ()=>{ khwanSay('That way. East. I will be right here.',6); });
+          } }
       }
       break;
     case 'play':{
       stepDlg(dt);
       stepPlayer(dt);
       stepNpcs(dt);
+      stepKhwan(dt);
       if(!DLG){
         checkInteract();
         if(press('tree')||press('help')){ GS.state='tree'; TREE.tab=0; AU.sel(); }
@@ -3418,13 +4041,14 @@ function update(dt){
       GS.camY = lerp(GS.camY, ty, 1-Math.pow(0.004,dt));
       break; }
     case 'task':     PROMPT=null; stepTask(dt); break;
-    case 'fight':    PROMPT=null; stepFight(dt); break;
+    case 'act':      PROMPT=null; stepKhwan(dt); stepAct(dt); break;
+    case 'give':     PROMPT=null; stepGive(dt); break;
     case 'tree':     PROMPT=null; stepTree(dt); break;
     case 'ceremony': stepCeremony(dt); break;
     case 'end':
       GS.t2=(GS.t2||0)+dt;
       if(GS.t2>1.4){
-        if(press('act')||press('light')||press('tap')){
+        if(press('act')||press('tap')){
           GS.state='play';
           for(const n of NPCS){ n.state='idle'; n.t=rnd(1,4); }
           toast('a soft morning ☀ wander as long as you like','#ffd98a');
@@ -3438,19 +4062,44 @@ function update(dt){
 }
 
 /* ============================================================
+   SAVE SHAPE
+   ============================================================ */
+function saveGame(){
+  try{
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      v:2, merit:GS.merit, spent:GS.spent, mute:AU.muted,
+      skills:GS.skills, cos:GS.cos, q:GS.q, seen:GS.seen,
+      bag:GS.bag, friends:GS.friends, learned:GS.learned, tut:GS.tut,
+      met: SPIRITS.filter(s=>s.met).map(s=>s.id),
+      pals: SPIRITS.filter(s=>s.friend).map(s=>s.id),
+      x: (typeof P!=='undefined'&&P)?P.x:300,
+    }));
+  }catch(e){}
+}
+
+/* ============================================================
    NEW / CONTINUE
    ============================================================ */
 function resetWorld(){
-  for(const gh of GHOSTS){ gh.dead=false; gh.freed=false; }
+  for(const s of SPIRITS){ s.met=false; s.friend=false; }
   const bl=LIGHTS.find(l=>l.broken); if(bl) bl.on=false;
   CAT.state='tree'; CAT.x=TAMARIND_X+16; CAT.y=groundY(TAMARIND_X)-104;
-  PHRA.shown=false; offering=null; DLG=null; FT=null; HT=null;
+  PHRA.shown=false; offering=null; DLG=null; ACT=null; GIVE=null; HT=null;
   PT.length=0; GS.toasts.length=0;
+  for(const nd of NODES){ nd.ready=true; nd.t=0; }
+  for(const l of LIGHTS) if(l.id==='kitchen') l.on=true;
+  seedAtmosphere();
+}
+function seedAtmosphere(){
+  // moths around the lamps, petals under the blossom trees
+  for(const l of LIGHTS){ if(l.c===PAL.lamp && Math.random()<0.6) for(let i=0;i<2;i++) pMoth(l.x+rnd(-8,8), l.y+rnd(-6,6)); }
 }
 function newGame(){
   GS.merit=0; GS.spent=0; GS.skills={}; GS.cos={skirt:'ash'};
-  GS.q={prayers:0,offerings:0,pets:0,ghosts:0}; GS.seen={}; GS.dawn=0; GS.ready=false;
-  P.x=300; P.y=groundY(300); P.vx=0; P.vy=0; P.hp=P.maxhp; P.breath=100; P.rise=0;
+  GS.q={prayers:0,offerings:0,pets:0,gifts:0}; GS.seen={}; GS.bag={}; GS.friends={};
+  GS.learned={}; GS.tut=0; GS.dawn=0; GS.ready=false;
+  P.x=300; P.y=groundY(300); P.vx=0; P.vy=0; P.rise=0;
+  KHWAN.x=300; KHWAN.y=groundY(300)-50;
   resetWorld();
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
   introI=0; introCh=0; GS.state='intro'; GS.t=0;
@@ -3459,18 +4108,19 @@ function newGame(){
 function continueGame(sv){
   GS.merit=sv.merit|0; GS.spent=sv.spent|0;
   GS.skills=sv.skills||{}; GS.cos=Object.assign({skirt:'ash'},sv.cos||{});
-  GS.q=Object.assign({prayers:0,offerings:0,pets:0,ghosts:0},sv.q||{});
-  GS.seen=sv.seen||{};
+  GS.q=Object.assign({prayers:0,offerings:0,pets:0,gifts:0},sv.q||{});
+  GS.seen=sv.seen||{}; GS.bag=sv.bag||{}; GS.friends=sv.friends||{};
+  GS.learned=sv.learned||{}; GS.tut=sv.tut||0;
   resetWorld();
+  if(sv.met)  for(const id of sv.met){ const s=SPIRIT_BY_ID[id]; if(s) s.met=true; }
+  if(sv.pals) for(const id of sv.pals){ const s=SPIRIT_BY_ID[id]; if(s){ s.friend=true; s.met=true; } }
   if(GS.q.lamp){ const bl=LIGHTS.find(l=>l.broken); if(bl) bl.on=true; }
   if(GS.q.cat){ CAT.state='wander'; CAT.x=TAMARIND_X+40; CAT.y=groundY(CAT.x); }
   if(GS.q.metPhra) PHRA.shown=true;
-  if(GS.q.ghostsList) for(const id of GS.q.ghostsList){ const g=GHOSTS.find(x=>x.id===id); if(g) g.dead=true; }
-  if(GS.q.freedList)  for(const id of GS.q.freedList){ const g=GHOSTS.find(x=>x.id===id); if(g) g.freed=true; }
   if(GS.q.done){ GS.dawn=1; GS.cos.halo=1; }
   if(GS.merit>=GOAL && GS.q.metPhra && !GS.q.done) GS.ready=true;
-  P.x=clamp(sv.x||300,20,WORLD_W-20); P.y=groundY(P.x); P.vx=0; P.vy=0;
-  P.hp=P.maxhp; P.breath=100; P.rise=0;
+  P.x=clamp(sv.x||300,20,WORLD_W-20); P.y=groundY(P.x); P.vx=0; P.vy=0; P.rise=0;
+  KHWAN.x=P.x+26; KHWAN.y=P.y-46;
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
   GS.state='play';
 }
@@ -3499,7 +4149,7 @@ function frame(now){
   if(!WORLD_READY){
     GS.t+=Math.min(0.1,dt);
     drawLoading();
-    requestAnimationFrame(()=>{ buildStep(); requestAnimationFrame(frame); });
+    requestAnimationFrame(()=>{ if(buildStep()) seedAtmosphere(); requestAnimationFrame(frame); });
     return;
   }
   dt=Math.min(0.1,dt);
@@ -3507,7 +4157,6 @@ function frame(now){
   _acc+=dt;
   let n=0;
   while(_acc>=STEP && n<4){ update(STEP); _acc-=STEP; n++; }
-  if(n===0 && _acc>0){ /* wait for the next whole step */ }
   render();
   requestAnimationFrame(frame);
 }
