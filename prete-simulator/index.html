@@ -102,7 +102,7 @@ const KEYMAP = {
   ' ':'jump', z:'light', j:'light', x:'heavy', k:'heavy',
   c:'whistle', l:'whistle', shift:'block',
   e:'act', enter:'act', tab:'tree', t:'tree',
-  h:'help', m:'mute', escape:'back', r:'restart', n:'newgame', g:'give', f:'give',
+  h:'help', m:'mute', escape:'back', r:'restart', n:'newgame', g:'give', f:'give', q:'map',
 };
 function keyDown(k){ if(!K[k]) PRESS[k]=true; K[k]=true; }
 function keyUp(k){ K[k]=false; }
@@ -132,6 +132,7 @@ function tLayout(){
   TPADS.push({id:'give',  x:W-m-bs*0.55,   y:H-m-bs*0.5, r:bs*0.62, key:'give',  lbl:'♥'});
   TPADS.push({id:'whistle',x:m+bs*1.2,     y:H-m-bs*1.85,r:bs*0.58, key:'whistle',lbl:'วี้ด'});
   TPADS.push({id:'tree',  x:W-m-bs*3.0,    y:H-m-bs*1.0, r:bs*0.52, key:'tree',  lbl:'☰'});
+  TPADS.push({id:'map',   x:m+bs*2.4,      y:H-m-bs*1.85,r:bs*0.52, key:'map',   lbl:'⌖'});
 }
 tLayout();
 function cvPos(ev){
@@ -923,6 +924,379 @@ function artRoadShrine(){
   return c;
 }
 /* ============================================================
+   CLOUD UI — every panel in this game is a small cloud
+   ============================================================ */
+const CL = {
+  top:'#fbf7ec', body:'#efe6d4', mid:'#e0d4bc', under:'#c9bb9e', rim:'#fffdf6',
+  edge:'#a89a80', ink:'#3b3128', ink2:'#7a6a55', ink3:'#a2907a',
+  gold:'#c9992f', goldL:'#f2c14e',
+};
+function mixSafe(a,b,t){ try{ return mix(a,b,t); }catch(e){ return a; } }
+const _puffCache=new Map();
+/* lobes around a flat core — few and chunky, so it reads as cloud not scallop */
+function puffs(w,h,seed){
+  const key=w+'x'+h+'|'+seed;
+  let p=_puffCache.get(key);
+  if(p) return p;
+  const r=mulberry((seed||1)*7919+w*13+h*7);
+  const base=clamp(h*0.62,6,15);
+  const step=base*1.75;
+  const top=[], bot=[], side=[];
+  // rounded ends
+  const er=clamp(h*0.52,5,13);
+  side.push({y:h*0.5, r:er, dx:er*0.42});
+  const n=Math.max(1,Math.round(w/step));
+  for(let i=0;i<=n;i++){
+    const t=i/n, rr=base*(0.72+r()*0.5);
+    top.push({x:t*w, r:rr, dy:-rr*0.42});
+  }
+  const m=Math.max(1,Math.round(w/(step*1.25)));
+  for(let i=0;i<=m;i++){
+    const t=i/m, rr=base*(0.5+r()*0.34);
+    bot.push({x:(1-t)*w, r:rr, dy:rr*0.34});
+  }
+  p={top,bot,side,base}; _puffCache.set(key,p); return p;
+}
+function cloudDraw(g,x,y,w,h,o={}){
+  const P2=puffs(w,h,o.seed||((w*31+h*17)|0));
+  const body=o.body||CL.body, top=o.top||CL.top, under=o.under||CL.under, edge=o.edge||CL.edge;
+  const drop=o.drop===undefined?2:o.drop;
+  const flat=!!o.flat;
+  const lobes=(col,pad)=>{
+    if(!flat) for(const q of P2.bot) pEll(g,x+q.x,y+h+q.dy,q.r+pad,q.r*0.82+pad,col);
+    if(!flat) for(const q of P2.side){ pEll(g,x-q.dx,y+q.y,q.r+pad,q.r+pad,col); pEll(g,x+w+q.dx,y+q.y,q.r+pad,q.r+pad,col); }
+    pR(g,x-1-pad,y-pad,w+2+pad*2,h+pad*2,col);
+    for(const q of P2.top) pEll(g,x+q.x,y+q.dy,q.r+pad,q.r+pad,col);
+  };
+  if(drop){ g.save(); g.globalAlpha=(g.globalAlpha||1)*0.3; g.translate(0,drop+1); lobes('#0a0816',1); g.restore(); }
+  lobes(edge,1);
+  // fill, light on top and heavier underneath
+  if(!flat) for(const q of P2.bot) pEll(g,x+q.x,y+h+q.dy,q.r,q.r*0.82,under);
+  if(!flat) for(const q of P2.side){ pEll(g,x-q.dx,y+q.y,q.r,q.r,body); pEll(g,x+w+q.dx,y+q.y,q.r,q.r,body); }
+  pR(g,x-1,y,w+2,h,body);
+  pR(g,x-1,y+h*0.66,w+2,h*0.34,mixSafe(body,under,0.55));
+  for(const q of P2.top) pEll(g,x+q.x,y+q.dy,q.r,q.r,top);
+  pR(g,x-1,y,w+2,Math.max(3,h*0.4),top);
+  for(const q of P2.top) pEll(g,x+q.x-q.r*0.32,y+q.dy-q.r*0.36,q.r*0.46,q.r*0.3,o.rim||CL.rim);
+  if(o.acc) pR(g,x+6,y+h-1,w-12,1,o.acc);
+}
+/* a free-floating cartoon cloud, for skies */
+function puffCloudDraw(g,cx,cy,w,h,seed,o={}){
+  const r=mulberry((seed||3)*104729);
+  const top=o.top||CL.top, body=o.body||CL.body, under=o.under||CL.under, edge=o.edge||CL.edge;
+  const n=4+((r()*3)|0);
+  const blobs=[];
+  for(let i=0;i<n;i++){
+    const t=n===1?0.5:i/(n-1);
+    const rr=(h*0.5)*(0.62+Math.sin(t*Math.PI)*0.72);
+    blobs.push({x:cx-w/2+t*w, y:cy-rr*0.34+ (r()-0.5)*h*0.22, r:rr});
+  }
+  const flat={x:cx,y:cy+h*0.16,w:w*0.92,h:h*0.42};
+  const pass=(col,pad)=>{
+    pR(g,flat.x-flat.w/2-pad,flat.y-flat.h/2-pad,flat.w+pad*2,flat.h+pad*2,col);
+    for(const b of blobs) pEll(g,b.x,b.y,b.r+pad,b.r*0.92+pad,col);
+  };
+  pass(edge,1);
+  pass(under,0);
+  for(const b of blobs) pEll(g,b.x,b.y-b.r*0.12,b.r*0.92,b.r*0.8,body);
+  for(const b of blobs) pEll(g,b.x-b.r*0.16,b.y-b.r*0.34,b.r*0.66,b.r*0.5,top);
+  for(const b of blobs) pEll(g,b.x-b.r*0.3,b.y-b.r*0.5,b.r*0.34,b.r*0.22,o.rim||CL.rim);
+}
+/* clouds are expensive to scanline, so each distinct one is drawn once and reused */
+const CPAD=24, _cloudSprite=new Map();
+function cloudKey(w,h,o,extra){
+  return (w|0)+'|'+(h|0)+'|'+(o.seed||0)+'|'+(o.top||'')+(o.body||'')+(o.under||'')+(o.edge||'')+(o.rim||'')+(o.acc||'')+'|'+(o.drop===undefined?2:o.drop)+'|'+(o.flat?'F':'')+extra;
+}
+function sprite(key, w, h, paint){
+  let c=_cloudSprite.get(key);
+  if(!c){
+    if(_cloudSprite.size>240) _cloudSprite.clear();
+    c=mkCv(w+CPAD*2, h+CPAD*2);
+    paint(G2(c));
+    _cloudSprite.set(key,c);
+  }
+  return c;
+}
+function cloud(g,x,y,w,h,o={}){
+  if(w<=0||h<=0) return;
+  const c=sprite(cloudKey(w,h,o,'p'), w, h, gg2=>cloudDraw(gg2,CPAD,CPAD,w,h,o));
+  g.drawImage(c, R(x)-CPAD, R(y)-CPAD);
+}
+function puffCloud(g,cx,cy,w,h,seed,o={}){
+  if(w<=0||h<=0) return;
+  const c=sprite(cloudKey(w,h,Object.assign({seed},o),'f'), w, h,
+    gg2=>puffCloudDraw(gg2, CPAD+w/2, CPAD+h/2, w, h, seed, o));
+  g.drawImage(c, R(cx-w/2)-CPAD, R(cy-h/2)-CPAD);
+}
+
+/* cached radial glows — a gradient per lamp per frame was the whole budget */
+const _glowSpr=new Map();
+function glowSprite(col,r){
+  const key=col+'|'+(r|0);
+  let c=_glowSpr.get(key);
+  if(!c){
+    if(_glowSpr.size>120) _glowSpr.clear();
+    const d=Math.max(2,(r|0)*2);
+    c=mkCv(d,d);
+    const g2=c.getContext('2d');
+    const gr=g2.createRadialGradient(r,r,0,r,r,r);
+    gr.addColorStop(0,rgba(col,1)); gr.addColorStop(0.45,rgba(col,0.42)); gr.addColorStop(1,rgba(col,0));
+    g2.fillStyle=gr; g2.fillRect(0,0,d,d);
+    _glowSpr.set(key,c);
+  }
+  return c;
+}
+function drawGlow(g,x,y,r,col,alpha){
+  if(alpha<=0.003||r<1) return;
+  const s=glowSprite(col,r);
+  const a=g.globalAlpha;
+  g.globalAlpha=a*clamp(alpha,0,1);
+  g.drawImage(s, R(x-r), R(y-r));
+  g.globalAlpha=a;
+}
+
+/* a small cloud tag for prompts */
+function cloudTag(g,cx,cy,w,h,o={}){ cloud(g,cx-w/2,cy-h/2,w,h,o); }
+/* speech cloud with a tail of little puffs */
+function cloudBubble(g,cx,byTop,w,h,tailX,tailY,o={}){
+  cloud(g,cx-w/2,byTop,w,h,o);
+  const n=3;
+  for(let i=0;i<n;i++){
+    const t=(i+1)/(n+0.6);
+    const px2=lerp(cx,tailX,t), py=lerp(byTop+h,tailY,t), r=3.4-i*0.9;
+    pEll(g,px2,py,r+1,r+1,o.edge||CL.edge);
+    pEll(g,px2,py,r,r,o.body||CL.body);
+    pEll(g,px2-r*0.3,py-r*0.3,r*0.5,r*0.4,o.top||CL.top);
+  }
+}
+
+/* ============================================================
+   เทวดา — the three who bless you
+   ============================================================ */
+function drawDeva(g,kind,x,y,t,o={}){
+  const S=o.s||1.75;
+  g.save(); g.translate(R(x),R(y)); g.scale(S,S); g.translate(-R(x),-R(y));
+  const bob=Math.sin(t*1.1)*3;
+  const yy=y+bob;
+  const GOLD='#f2d075', GOLDD='#c9992f', GOLDL='#fff0b8';
+  const SKIN = kind==='thorani'? '#f0d9a8' : kind==='witsanu'? '#8fc9a0' : '#a8d4b8';
+  const SKD  = kind==='thorani'? '#d4b87e' : kind==='witsanu'? '#68a67c' : '#7fb094';
+  const CLOTH= kind==='thorani'? '#c85a7a' : kind==='witsanu'? '#3f7ab8' : '#c0392f';
+  const CLD  = shade(CLOTH,-0.28);
+
+  // รัศมี — the aureole
+  for(let i=0;i<3;i++){
+    const rr=30+i*10+Math.sin(t*1.4+i)*1.5;
+    const gr=g.createRadialGradient(x,yy-16,rr*0.4,x,yy-16,rr);
+    gr.addColorStop(0,`rgba(255,232,160,${0.14-i*0.035})`); gr.addColorStop(1,'rgba(255,232,160,0)');
+    g.fillStyle=gr; g.fillRect(x-rr,yy-16-rr,rr*2,rr*2);
+  }
+  for(let i=0;i<28;i++){
+    const a=i/28*TAU + t*0.16;
+    const rr=26+Math.sin(t*3+i)*2;
+    pR(g,x+Math.cos(a)*rr, yy-16+Math.sin(a)*rr*0.92, 1,1, i%2?GOLDL:GOLD);
+  }
+  // lotus seat
+  for(let i=0;i<7;i++){
+    const a=Math.PI+ (i/6)*Math.PI;
+    pEll(g,x+Math.cos(a)*11, yy+15+Math.sin(a)*3, 4,3, i%2?'#f0a8c0':'#e08aa8');
+  }
+  pEll(g,x,yy+14,12,4,'#f6c0d4'); pEll(g,x,yy+13,9,3,'#fbd8e4');
+
+  // โจงกระเบน — a wrapped skirt, pleated
+  for(let i=0;i<=12;i++){
+    const t2=i/12, ww=lerp(9,16,Math.pow(t2,0.8));
+    pR(g,x-ww/2,yy+2+i,ww,1, t2>0.82? CLD : CLOTH);
+    pR(g,x+ww/2-3,yy+2+i,3,1, CLD);
+  }
+  pEll(g,x,yy+14,8,2.4,CLD); pEll(g,x,yy+13,7,1.6,CLOTH);
+  for(let i=0;i<4;i++){ const ww=lerp(9,16,0.5);
+    pR(g,x-ww/2+2+i*3,yy+5,1,8, shade(CLOTH,-0.18)); }
+  pR(g,x-5,yy+1,10,3,GOLD); pR(g,x-5,yy+1,10,1,GOLDL);
+  pEll(g,x,yy+2,3,1.4,GOLDL);
+  // torso
+  oEll(g,x,yy-3,7.5,8,SKIN,SKD);
+  pEll(g,x+3,yy-2,3.4,5.4,SKD);
+  pEll(g,x-2.4,yy-6,2.4,1.6,shade(SKIN,0.2));
+  // สังวาล — chest chains
+  pTaper(g,x-6,yy-8,x+5,yy+3,3,2,GOLD);
+  pTaper(g,x+6,yy-8,x-5,yy+3,3,2,GOLDD);
+  pEll(g,x,yy-2,2.4,2.4,GOLDL);
+  // shoulder pieces
+  pTri(g,x-9,yy-13,x-12,yy-4,x-5,yy-6,GOLD);
+  pTri(g,x+9,yy-13,x+12,yy-4,x+5,yy-6,GOLD);
+  pR(g,x-11,yy-9,5,2,GOLDL); pR(g,x+6,yy-9,5,2,GOLDL);
+
+  // arms + attribute
+  if(kind==='thorani'){
+    // wringing the long hair — water pours from it
+    // the hair comes off the right of her head, gathered in both hands
+    for(let i=0;i<16;i++){
+      const tt=i/15;
+      const hx=lerp(x+5,x+16,tt)+Math.sin(t*1.6+tt*4)*1.2;
+      const hyy=lerp(yy-21,yy-9,tt);
+      pEll(g,hx,hyy,3.2-tt*0.9,2.6-tt*0.7,'#1a1424');
+      if(i%3===0) pEll(g,hx-0.8,hyy-0.8,1.2,0.9,'#332a48');
+    }
+    pTaper(g,x+6,yy-8,x+13,yy-19,3.4,2.6,SKIN);   // upper hand, gripping
+    pEll(g,x+14,yy-20,2.6,2.4,SKIN);
+    pTaper(g,x-6,yy-7,x+11,yy-11,3.4,2.6,SKD);    // lower hand, twisting
+    pEll(g,x+12,yy-11,2.4,2.2,SKD);
+    // and the water comes out of it
+    for(let i=0;i<10;i++){
+      const tt=((i/10)+ (t*0.5))%1;
+      pR(g,x+15+Math.sin(t*4+i)*1.6, yy-7+tt*26, 1, 3, `rgba(180,225,255,${0.9-tt*0.6})`);
+      if(i%2===0) pR(g,x+17+Math.sin(t*3+i)*1.6, yy-5+tt*24, 1,2,'rgba(225,246,255,0.75)');
+    }
+    pEll(g,x+16,yy+16,8,2.4,'rgba(150,205,240,0.45)');
+    pEll(g,x+16,yy+15,5,1.6,'rgba(210,240,255,0.5)');
+  } else if(kind==='witsanu'){
+    // the plumb line and the mallet of the divine craftsman
+    pTaper(g,x-6,yy-7,x-14,yy-14,3.4,2.6,SKIN);
+    pR(g,x-15,yy-15,2,14,'#6b5a3c');
+    pTri(g,x-14,yy-1,x-16,yy+4,x-12,yy+4,GOLDD);
+    pTaper(g,x+6,yy-7,x+14,yy-13,3.4,2.6,SKD);
+    pR(g,x+13,yy-20,2,9,'#7d5a3c'); pR(g,x+10,yy-24,9,5,'#8a8f9e'); pR(g,x+10,yy-24,9,2,'#b4b8c6');
+  } else {
+    // Indra, palms together — a wai returned
+    pTaper(g,x-6,yy-7,x-3,yy-14,3.4,2.6,SKIN);
+    pTaper(g,x+6,yy-7,x+3,yy-14,3.4,2.6,SKD);
+    pEll(g,x,yy-17,3.4,5,SKIN); pEll(g,x+1.4,yy-17,1.8,4.4,SKD);
+    for(let i=0;i<3;i++) pR(g,x-2+i*2,yy-21,1,3,SKIN);
+    pEll(g,x,yy-13,4.4,2,GOLD);
+  }
+  // head — a little larger than life, like everybody else here
+  const hy=yy-18;
+  oEll(g,x,hy,7,7.4,SKIN,SKD);
+  pEll(g,x+3,hy+0.6,3.6,5.2,SKD);
+  pEll(g,x,hy+0.5,7.6,7.2,'#241c33');            // hair behind the head
+  pEll(g,x,hy,7,7.4,SKIN);                        // face back on top of it
+  pEll(g,x+3,hy+0.6,3.6,5.2,SKD);
+  pEll(g,x,hy-5.2,6,2.2,'#1a1424');               // a thin fringe, well above the eyes
+  pEll(g,x-2,hy-5.6,2.4,1.2,'#3a2f4e');
+  pEll(g,x-1.6,hy-0.4,1.5,1.7,'#2a2138'); pEll(g,x+2,hy-0.4,1.4,1.6,'#2a2138');
+  pR(g,x-2,hy-1.2,1,1,'#fff'); pR(g,x+1.6,hy-1.2,1,1,'#fff');
+  pR(g,x-3,hy-2.6,3,1,SKD); pR(g,x+1,hy-2.6,3,1,SKD);
+  pEll(g,x+0.4,hy+3,2,1,'#b4566a');
+  pEll(g,x-4,hy+1.4,1.4,1,'#e8a0ae'); pEll(g,x+4.4,hy+1.4,1.4,1,'#e8a0ae');
+  // ชฎา — the crown, kept in proportion
+  pR(g,x-7,hy-6,14,3,GOLD); pR(g,x-7,hy-6,14,1,GOLDL);
+  for(let i=0;i<3;i++){ const t2=i/2, cw=lerp(10,4,t2);
+    pR(g,x-cw/2,hy-9-i*2.4,cw,2.6, i%2?GOLD:GOLDD); }
+  pTaper(g,x,hy-15,x,hy-19,2.4,1,GOLDL);
+  pEll(g,x,hy-16,1.6,2,GOLDL);
+  pTaper(g,x-6.5,hy-7,x-9.5,hy-12,2.6,1,GOLD);
+  pTaper(g,x+6.5,hy-7,x+9.5,hy-12,2.6,1,GOLD);
+  // earrings
+  pEll(g,x-6,hy+1,1.6,2.4,GOLD); pEll(g,x+6,hy+1,1.6,2.4,GOLDD);
+  g.restore();
+}
+const DEVAS = {
+  0:{k:'thorani', th:'พระแม่ธรณี', en:'Mae Thorani, the Earth',
+     line:'The earth carried you when nobody else would. Stand on it properly.',
+     bless:'Your body remembers it was made of this ground.'},
+  1:{k:'witsanu', th:'พระวิษณุกรรม', en:'Phra Witsanukam, the Divine Craftsman',
+     line:'Every honest thing that was ever built, I watched somebody learn to build badly first.',
+     bless:'Your hands are steadier than they were a moment ago.'},
+  2:{k:'indra',   th:'พระอินทร์', en:'Phra In, King of the Devas',
+     line:'You were counted a hungry ghost. I have been watching the other column.',
+     bless:'Something in you loosens its grip.'},
+};
+
+/* ============================================================
+   FOOD, PLATED PROPERLY
+   ============================================================ */
+function drawPlate(g,id,x,y,s=1){
+  const S2=v=>v*s;
+  // banana leaf, then the dish on top of it
+  pEll(g,x,y+S2(12),S2(46),S2(13),'rgba(10,8,22,0.3)');
+  pEll(g,x,y+S2(10),S2(44),S2(12),'#2e6b44');
+  pEll(g,x,y+S2(9),S2(41),S2(11),'#3f8f5f');
+  pEll(g,x-S2(6),y+S2(6),S2(20),S2(5),'#4f9e5c');
+  for(let i=-3;i<=3;i++) pTaper(g,x,y+S2(9),x+S2(i*13),y+S2(9)+S2(Math.abs(i)*1.2),S2(1.4),S2(1),'#2e6b44');
+  switch(id){
+    case 'somtam':
+      pEll(g,x,y+S2(4),S2(30),S2(10),'#e8dfc8'); pEll(g,x,y+S2(2),S2(28),S2(9),'#f6f0dc');
+      pEll(g,x,y,S2(24),S2(8),'#cbdc52'); pEll(g,x-S2(4),y-S2(2),S2(13),S2(4),'#dcea78');
+      for(let i=0;i<14;i++){ const a=i/14*TAU;
+        pR(g,x+Math.cos(a)*S2(14),y+Math.sin(a)*S2(4),S2(2),S2(5),i%3?'#8fbf4a':'#a8d45c'); }
+      for(let i=0;i<4;i++) pTaper(g,x-S2(12)+S2(i*8),y-S2(4),x-S2(8)+S2(i*8),y+S2(3),S2(3),S2(1),'#d8483a');
+      for(let i=0;i<7;i++) pEll(g,x-S2(14)+S2(i*4.6),y-S2(5),S2(1.6),S2(1.6),'#f0a860');
+      pEll(g,x+S2(15),y-S2(6),S2(5),S2(5),'#7fb83c'); pEll(g,x+S2(14),y-S2(7),S2(2),S2(2),'#a8d860');
+      break;
+    case 'stickyMango':
+      pEll(g,x-S2(11),y+S2(3),S2(13),S2(8),'#f6f0dc'); pEll(g,x-S2(11),y+S2(1),S2(12),S2(7),'#fffaf0');
+      for(let i=0;i<16;i++) pR(g,x-S2(20)+S2((i%6)*3),y-S2(2)+S2(((i/6)|0)*3),S2(2),S2(2),'#f2ecd8');
+      for(let i=0;i<4;i++){ pEll(g,x+S2(10),y-S2(4)+S2(i*4),S2(11),S2(3),'#e8a13c');
+        pEll(g,x+S2(9),y-S2(5)+S2(i*4),S2(9),S2(2),'#f0c860'); }
+      pR(g,x-S2(14),y-S2(8),S2(9),S2(2),'#fffaf0');
+      for(let i=0;i<9;i++) pR(g,x-S2(16)+S2(i*4),y-S2(11),S2(1),S2(1),'#e8dfc8');
+      break;
+    case 'tomyum':
+      pEll(g,x,y+S2(4),S2(28),S2(11),'#c9c4b8'); pEll(g,x,y+S2(2),S2(26),S2(10),'#eae6da');
+      pEll(g,x,y,S2(22),S2(8),'#e0603c'); pEll(g,x-S2(4),y-S2(2),S2(12),S2(4),'#f07a52');
+      for(let i=0;i<5;i++) pEll(g,x-S2(12)+S2(i*6),y-S2(1),S2(4),S2(2.4),'#f6f0dc');
+      for(let i=0;i<3;i++) pTaper(g,x-S2(10)+S2(i*10),y-S2(4),x-S2(4)+S2(i*10),y+S2(2),S2(3),S2(1),'#c8342a');
+      for(let i=0;i<4;i++) pTaper(g,x-S2(14)+S2(i*9),y+S2(2),x-S2(9)+S2(i*9),y-S2(6),S2(2),S2(1),'#9fc46a');
+      for(let i=0;i<5;i++) pEll(g,x-S2(9)+S2(i*4.6),y-S2(5),S2(1.4),S2(1.4),'#4f9e5c');
+      for(let i=0;i<3;i++) pEll(g,x-S2(8)+S2(i*8),y-S2(12)-S2(i%2*3),S2(3),S2(2),'rgba(240,240,235,0.45)');
+      break;
+    case 'friedBanana':
+      for(let i=0;i<7;i++){ const a=i/7*TAU;
+        pEll(g,x+Math.cos(a)*S2(13),y+Math.sin(a)*S2(4),S2(6),S2(4.6),i%2?'#d89a48':'#e8b45c');
+        pEll(g,x+Math.cos(a)*S2(13),y+Math.sin(a)*S2(4)-S2(1),S2(4),S2(2.6),'#f0c878'); }
+      pEll(g,x,y,S2(7),S2(5),'#c98a3c');
+      for(let i=0;i<10;i++) pR(g,x-S2(16)+S2(i*3.4),y-S2(8),S2(1),S2(1),'#f6e2a0');
+      pEll(g,x+S2(16),y-S2(6),S2(4),S2(4),'#4f9e5c');
+      break;
+    case 'khanomkrok':
+      for(let i=0;i<6;i++){ const cx2=x-S2(15)+S2((i%3)*15), cy2=y-S2(2)+S2(((i/3)|0)*9);
+        pEll(g,cx2,cy2,S2(7),S2(6),'#e0cfa8'); pEll(g,cx2,cy2-S2(1),S2(6),S2(5),'#f2e2c0');
+        pEll(g,cx2,cy2-S2(2),S2(4),S2(3),'#fff6e0');
+        pR(g,cx2-S2(1),cy2-S2(3),S2(2),S2(2),i%2?'#4f9e5c':'#e8a13c'); }
+      break;
+    default: drawIcon(g,id,x,y,s*2);
+  }
+  // steam
+  for(let i=0;i<3;i++){
+    const t2=(GS.t*0.7+i*0.4)%1;
+    g.globalAlpha=0.34*(1-t2);
+    pEll(g,x-S2(8)+S2(i*8)+Math.sin(GS.t*2+i)*S2(2), y-S2(12)-t2*S2(16), S2(3.4),S2(2.4),'#ffffff');
+    g.globalAlpha=1;
+  }
+}
+/* crafts, displayed like they are for sale */
+function drawCraftShow(g,id,x,y,s=1){
+  const S2=v=>v*s;
+  pEll(g,x,y+S2(14),S2(38),S2(10),'rgba(10,8,22,0.28)');
+  pEll(g,x,y+S2(12),S2(36),S2(9),'#8a6f52'); pEll(g,x,y+S2(10),S2(34),S2(8),'#a3865f');
+  for(let i=0;i<8;i++) pR(g,x-S2(30)+S2(i*8),y+S2(7),S2(6),S2(4),i%2?'#c9a86a':'#b8985c');
+  drawIcon(g,id,x,y-S2(6),s*2.6);
+  for(let i=0;i<5;i++){
+    const a=GS.t*1.2+i*1.3;
+    pR(g,x+Math.cos(a)*S2(24), y-S2(6)+Math.sin(a*1.3)*S2(12), 1,1, i%2?PAL.goldL:'#fff6e0');
+  }
+}
+
+/* ============================================================
+   SIGNPOSTS — so a crossroad reads as a crossroad
+   ============================================================ */
+function artSign(labels){
+  const c=mkCv(64,74), g=G2(c);
+  pR(g,29,10,6,64,'#7d5a3c'); pR(g,33,10,2,64,'#5f4029');
+  pEll(g,32,73,9,3,'#4a3728');
+  labels.forEach((L,i)=>{
+    const y=12+i*15, dir=L.d, w=40;
+    const x0 = dir>0? 30 : 34-w;
+    pR(g,x0,y,w,12,'#b8935c'); pR(g,x0,y,w,2,'#d3b478'); pR(g,x0,y+10,w,2,'#8a6a3c');
+    pTri(g, dir>0? x0+w+7:x0-7, y+6, dir>0?x0+w:x0, y, dir>0?x0+w:x0, y+12, '#b8935c');
+    pR(g,dir>0?x0+w-1:x0,y,1,12,'#8a6a3c');
+    for(let k=0;k<4;k++) pR(g,x0+5+k*8, y+4, 5,1,'#5f4a2c');
+    pR(g,x0+5,y+7,w-14,1,'#5f4a2c');
+  });
+  return c;
+}
+/* ============================================================
    THE WORLD — one long road through a village at 2am
    ============================================================ */
 const WORLD_W = 5600;
@@ -966,6 +1340,14 @@ const TANI_X = 3340, SALA_X = 4080, CHEDI_X = 4330;
 const FALLEN_TREE_X = 1268, POND_X = 1120;
 const HOUSE_XS = [1560,1790,2160,2350,2720,2960];
 
+/* crossroads: a post with two boards, so you always know which way is which */
+const SIGNS = [
+  {x:742,  l:'ทุ่งนา · the rice fields',    r:'ป่าช้า · the graveyard'},
+  {x:1462, l:'หมู่บ้าน · the village',      r:'ทุ่งนา · the rice fields'},
+  {x:3040, l:'ดงกล้วย · the banana grove',  r:'ศาลพระภูมิ · the spirit house'},
+  {x:3820, l:'วัด · the temple',            r:'ดงกล้วย · the banana grove'},
+  {x:4620, l:'ป่าลึก · the old forest',     r:'วัด · the temple'},
+];
 const LIGHTS = [];   // {x,y,r,c,a,flick,on}
 function addLight(x,y,r,c,a,o={}){ const l={x,y,r,c,a,on:true,flick:o.flick||0,id:o.id}; LIGHTS.push(l); return l; }
 
@@ -985,6 +1367,7 @@ function artPool(){
   ART.lamp   = artLamp(false); ART.lampBroken = artLamp(true);
   ART.kitchen= artKitchen(); ART.rack = artRack(); ART.roadShrine = artRoadShrine();
   ART.stall  = [0,1,2].map(artStall);
+  ART.sign   = artSign([{d:-1},{d:1}]);
   ART.blossom= [[7,'#e88fb0'],[19,'#f0a860'],[31,'#d8a0e0'],[43,'#f0c0c8']].map(a=>artBlossom(a[0],a[1]));
   ART.garden = {chili:artGarden('chili'), lemongrass:artGarden('lemongrass'), lime:artGarden('lime')};
 }
@@ -1256,6 +1639,8 @@ function paintPlay(){
   stamp(ART.stall[2], 1760, groundY(1760)+2, 1);
   addLight(1760, groundY(1760)-46, 42, PAL.lamp, 0.5);
   for(const x of [1680, 2260, 2860]) stamp(ART.rack, x, groundY(x)+2, 1);
+  // signposts where one place becomes another
+  for(const s of SIGNS) stamp(ART.sign, s.x, groundY(s.x)+2, 1);
   // offering tables through the village
   for(const x of [1666,2380,2960,4180]) stamp(ART.offer, x, groundY(x)+2, 1);
   // --- old forest: bamboo, dark giants ---
@@ -1316,9 +1701,7 @@ function drawMotes(g){
     if(bl<0.2) continue;
     g.fillStyle=rgba(m.c,0.5*bl*(1-GS.dawn));
     g.fillRect(R(m.x),R(m.y),1,1);
-    const gr=g.createRadialGradient(m.x,m.y,0,m.x,m.y,5);
-    gr.addColorStop(0,rgba(m.c,0.18*bl*(1-GS.dawn))); gr.addColorStop(1,rgba(m.c,0));
-    g.fillStyle=gr; g.fillRect(m.x-5,m.y-5,10,10);
+    drawGlow(g,m.x,m.y,5,m.c,0.18*bl*(1-GS.dawn));
   }
   g.globalCompositeOperation='source-over';
 }
@@ -1644,7 +2027,9 @@ function drawVillager(g, v, o={}){
   // legs
   for(let i=0;i<2;i++){
     const ph=v.phase+i*Math.PI, c=Math.cos(ph), s=Math.sin(ph);
-    const fx=v.x+c*stride*face, fy=v.y+(s>0?-Math.sin(ph)*lift:0);
+    // same rule as the prete: the planted foot slides back while cos falls, so
+    // the lift belongs on the rising half or the villagers moonwalk too
+    const fx=v.x+c*stride*face, fy=v.y+(s<0? -Math.abs(s)*lift : 0);
     const knee=ik2(hipX+(i?1:-1),hipY,fx,fy-1,TH,SN,face>0?1:-1);
     const col=i===0? (v.skirt? shade(v.legs||'#3a3a44',-0.25):shade(v.legs||'#3a3a44',-0.2)) : (v.legs||'#3a3a44');
     if(!v.skirt){ pLimb(g,hipX+(i?1:-1),hipY,knee.x,knee.y,3,col); pLimb(g,knee.x,knee.y,fx,fy-1,2.5,col); }
@@ -1664,7 +2049,7 @@ function drawVillager(g, v, o={}){
     let hx2,hy2;
     if(wai){ hx2=hipX+1.5*face; hy2=chestY-4; }
     else if(v.carry && !back){ hx2=hipX+5*face; hy2=chestY+3; }
-    else { const ph=v.phase+(back?0:Math.PI); hx2=hipX+Math.cos(ph)*stride*0.7*face; hy2=chestY+9; }
+    else { const ph=v.phase+(back?Math.PI:0); hx2=hipX+Math.cos(ph)*stride*0.7*face; hy2=chestY+9; }
     const el=ik2(hipX+(back?-3:3)*face,chestY+1,hx2,hy2,5,5,back?(face>0?-1:1):(face>0?1:-1));
     pLimb(g,hipX+(back?-3:3)*face,chestY+1,el.x,el.y,2.6,back?shD:sh);
     pLimb(g,el.x,el.y,hx2,hy2,2.4,back?skD:sk);
@@ -1722,15 +2107,11 @@ function drawTani(g,t,o={}){
   pR(g,x+1.4*face,hy-1,1,1,'#2a2238'); pR(g,x-1.6*face,hy-1,1,1,'#2a2238');
   pR(g,x,hy+2,2,1,'#c04a55');
   // her green glow
-  const gl=g.createRadialGradient(x,y-16,2,x,y-16,26);
-  gl.addColorStop(0,'rgba(110,230,150,0.16)'); gl.addColorStop(1,'rgba(110,230,150,0)');
-  g.fillStyle=gl; g.fillRect(x-26,y-42,52,52);
+  drawGlow(g,x,y-16,26,'#6ee696',0.16);
 }
 function drawPhraPhum(g,x,y,anim){
   const bob=Math.sin(anim*1.6)*1.6, yy=y+bob;
-  const gl=g.createRadialGradient(x,yy-8,1,x,yy-8,22);
-  gl.addColorStop(0,'rgba(255,210,110,0.22)'); gl.addColorStop(1,'rgba(255,210,110,0)');
-  g.fillStyle=gl; g.fillRect(x-22,yy-30,44,44);
+  drawGlow(g,x,yy-8,22,'#ffd26e',0.22);
   // a small, regal, deeply patient spirit
   pTaper(g,x,yy-2,x,yy-14,8,7,PAL.gold);
   pR(g,x-4,yy-14,8,3,PAL.goldD);
@@ -1858,9 +2239,7 @@ function drawKrasue(g,e){
   // ผีกระสือ — a floating head, her insides still attached, glowing
   const x=e.x,y=e.y,t=e.anim,f=e.face;
   const glow=0.6+0.4*Math.sin(t*3);
-  const gl=g.createRadialGradient(x,y,2,x,y,34);
-  gl.addColorStop(0,`rgba(255,110,50,${0.3*glow})`); gl.addColorStop(1,'rgba(255,110,50,0)');
-  g.fillStyle=gl; g.fillRect(x-34,y-34,68,68);
+  drawGlow(g,x,y,34,'#ff6e32',0.3*glow);
   // the entrails: heart, lungs, stomach, and a long trailing gut
   for(let i=0;i<16;i++){
     const tt=i/16, sw=Math.sin(t*3-tt*4)*7*tt;
@@ -1890,9 +2269,7 @@ function drawTaiHong(g,e){
   // ผีตายโหง — one who died badly, and stayed
   const x=e.x,y=e.y,t=e.anim,f=e.face;
   const H2=e.h||44;
-  const gl=g.createRadialGradient(x,y-H2*0.5,4,x,y-H2*0.5,44);
-  gl.addColorStop(0,'rgba(90,30,140,0.3)'); gl.addColorStop(1,'rgba(90,30,140,0)');
-  g.fillStyle=gl; g.fillRect(x-44,y-H2-30,88,H2+60);
+  drawGlow(g,x,y-H2*0.5,44,'#5a1e8c',0.3);
   // a body made of hanging rags and dark
   for(let i=0;i<11;i++){
     const tt=i/10, w2=lerp(15,6,tt), sw=Math.sin(t*1.6+tt*5)*4*tt;
@@ -2907,18 +3284,14 @@ function drawGlows(g){
     if(!l.on) continue;
     if(l.x-GS.camX<-90||l.x-GS.camX>W+90) continue;
     const fl=l.flick?1-Math.random()*l.flick:1;
-    const gr=g.createRadialGradient(l.x,l.y,1,l.x,l.y,l.r*0.85*fl);
-    gr.addColorStop(0, rgba(l.c, 0.15*night+0.03)); gr.addColorStop(0.6, rgba(l.c,0.05*night)); gr.addColorStop(1, rgba(l.c,0));
-    g.fillStyle=gr; g.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);
+    drawGlow(g,l.x,l.y,l.r*0.85*fl,l.c,0.15*night+0.03);
   }
   for(const f of FIREFLIES){
     if(f.x-GS.camX<-20||f.x-GS.camX>W+20) continue;
     const bl=0.5+0.5*Math.sin(f.t*2.2);
     if(bl<0.3) continue;
     g.fillStyle=`rgba(190,255,150,${0.65*bl*night})`; g.fillRect(R(f.x),R(f.y),1,1);
-    const gr=g.createRadialGradient(f.x,f.y,0,f.x,f.y,7);
-    gr.addColorStop(0,`rgba(150,255,120,${0.24*bl*night})`); gr.addColorStop(1,'rgba(150,255,120,0)');
-    g.fillStyle=gr; g.fillRect(f.x-7,f.y-7,14,14);
+    drawGlow(g,f.x,f.y,7,'#96ff78',0.24*bl*night);
   }
   g.globalCompositeOperation='source-over';
 }
@@ -2951,9 +3324,7 @@ function drawLanternString(g){
     pEll(g,x+sw,y+7,4,5,c);
     pEll(g,x+sw,y+6,2.4,3,shade(c,0.35));
     pR(g,x+sw-2,y+3,5,1,shade(c,-0.35)); pR(g,x+sw-2,y+11,5,1,shade(c,-0.35));
-    const gr=g.createRadialGradient(x+sw,y+7,1,x+sw,y+7,14);
-    gr.addColorStop(0,rgba(c,0.18*(1-GS.dawn))); gr.addColorStop(1,rgba(c,0));
-    g.fillStyle=gr; g.fillRect(x+sw-14,y-7,28,28);
+    drawGlow(g,x+sw,y+7,14,c,0.18*(1-GS.dawn));
   }
 }
 
@@ -2965,6 +3336,7 @@ function render(){
   ctx.imageSmoothingEnabled=false;
   if(GS.state==='title'){ drawTitle(); return; }
   if(GS.state==='intro'){ drawIntro(); return; }
+  if(GS.state==='ascend'){ drawAscend(ctx); return; }
 
   const sh=GS.shake>0?GS.shake:0;
   const ox=sh?rnd(-sh,sh):0, oy=sh?rnd(-sh,sh):0;
@@ -2987,6 +3359,7 @@ function render(){
     pR(ctx,x,y,4,1,`rgba(190,225,255,${0.10+0.07*Math.sin(GS.t*2+i)})`);
   }
 
+  drawSigns(ctx);
   // gatherable plants
   for(const nd of NODES){
     if(nd.x-cx<-30||nd.x-cx>W+30) continue;
@@ -3050,7 +3423,7 @@ function render(){
   vg.addColorStop(0,'rgba(8,6,20,0)'); vg.addColorStop(1,'rgba(8,6,20,0.4)');
   ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
-  if(GS.state==='play') drawHUD();
+  if(GS.state==='play'){ drawKhwanBubble(ctx); drawHUD(); }
   else if(GS.state==='task') drawTaskHUD(ctx);
   drawDialog(ctx);
   if(GS.state==='tree') drawLedger(ctx);
@@ -3922,13 +4295,368 @@ function drawTitle(){
   if(hasSave) pTxt(g,'N — new night',W*0.62,180,'#7a7488',7,'center');
   pTxt(g,'←→ walk · SPACE jump · E interact · G give · C วี้ด · TAB ledger · M sound',W/2,H-10,'#5a5468',6,'center');
 }
+/* ============================================================
+   THE INTRO — three things you did, played rather than watched.
+   Each beat hands you a verb: take, drink, and finally try to
+   cheat the scale. You cannot cheat the scale.
+   ============================================================ */
 const INTRO=[
-  {t:"In your last life you took what wasn't yours, and drank what wasn't offered.",s:1},
-  {t:'You laughed past the temple gate. The bell rang for you anyway.',s:2},
-  {t:'Then one night the counting stopped. กรรม — karma — is patient, and karma is exact.',s:3},
+  { id:'take',  hint:'◀ ▶  creep quietly      E  take it',
+    t:"In your last life you took what wasn't yours." },
+  { id:'drink', hint:'E  drink      and again      and again',
+    t:"And you drank what wasn't offered. You laughed past the temple gate — the bell rang for you anyway." },
+  { id:'scale', hint:'◀ ▶  hammer — try to level it',
+    t:'Then one night the counting stopped. กรรม — karma — is patient, and karma is exact.' },
 ];
-let introI=0, introCh=0;
-/* the first thing that happens when you can move */
+let introI=0, introCh=0, IN=null;
+const SHELF_X=252;
+function introScene(i){
+  const S={ t:0, flash:0, shake:0, done:false, px:[], puffs:[] };
+  if(i===0) Object.assign(S,{ mx:92, face:1, walk:0, noise:0, stir:0, took:0, reach:false });
+  if(i===1) Object.assign(S,{ sips:0, tilt:0, bottle:1, bell:0, past:0 });
+  if(i===2) Object.assign(S,{ tug:0, tries:0, last:0, slam:0, soil:0, shut:0 });
+  return S;
+}
+function introSpark(S,x,y,n,col,sp=1){
+  for(let i=0;i<n;i++) S.px.push({x,y,vx:rnd(-40,40)*sp,vy:rnd(-70,-10)*sp,g:150,l:rnd(0.35,1.1),c:col,r:rnd(0.7,1.6)});
+}
+function finishIntro(){
+  IN=null; introI=0; introCh=0; clearPress();
+  GS.state='play'; GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
+  KHWAN.x=P.x+26; KHWAN.y=P.y-46;
+  say(WAKE, ()=>{ khwanSay('That way. East. I will be right here.',6); });
+}
+function stepIntro(dt){
+  if(!IN) IN=introScene(introI);
+  const S=IN, sc=INTRO[introI];
+  S.t+=dt;
+  S.flash=Math.max(0,S.flash-dt*2.6); S.shake=Math.max(0,S.shake-dt*5.5);
+  for(let i=S.px.length-1;i>=0;i--){ const q=S.px[i];
+    q.x+=q.vx*dt; q.y+=q.vy*dt; q.vy+=q.g*dt; q.l-=dt; if(q.l<=0) S.px.splice(i,1); }
+  for(let i=S.puffs.length-1;i>=0;i--){ const q=S.puffs[i];
+    q.y-=q.sp*dt; q.l-=dt; if(q.l<=0) S.puffs.splice(i,1); }
+  if(press('back')){ AU.sel(); finishIntro(); return; }
+
+  if(!S.done){
+    if(sc.id==='take'){
+      /* creeping: moving makes noise, standing still lets it settle */
+      const dir=(K.right?1:0)-(K.left?1:0);
+      if(dir){ S.mx=clamp(S.mx+dir*56*dt,58,SHELF_X-19); S.face=dir;
+        S.walk+=dt*5.0; S.noise=Math.min(1.35,S.noise+dt*0.44);
+        if(Math.sin(S.walk*2)>0.94) AU.step();
+      } else S.noise=Math.max(0,S.noise-dt*0.4);
+      if(S.noise>=1 && S.stir<=0){ S.stir=2.2; S.shake=0.5; AU.tick(); }
+      if(S.stir>0) S.stir-=dt;
+      S.reach = S.mx>SHELF_X-30;
+      if(S.reach && (press('act')||press('tap'))){
+        S.took=0.001; S.flash=1; S.shake=1; AU.ding(); AU.spark();
+        introSpark(S,SHELF_X,100,22,CL.goldL);
+        S.done=true;
+      }
+    } else if(sc.id==='drink'){
+      if(press('act')||press('tap')){
+        S.sips++; S.bottle=Math.max(0,1-S.sips/4); S.tilt+=0.028; S.shake=0.35;
+        AU.pour(); AU.blip();
+        S.puffs.push({x:200+rnd(-12,12),y:126,sp:16,l:1.7,s:['ฮ่า','ฮ่าๆ','ฮะๆ'][S.sips%3]});
+        if(S.sips>=4){ S.done=true; AU.gong(); }
+      }
+    } else {
+      /* the scale: alternate ◀ ▶ and it lifts a little, then sags right back */
+      const l=press('left'), r=press('right');
+      if(l||r){ const side=l?-1:1;
+        if(side!==S.last){ S.tries++; S.tug=Math.min(1,S.tug+0.17); S.last=side; AU.tick(); }
+        else S.tug=Math.min(1,S.tug+0.05);
+        S.shake=Math.max(S.shake,0.22);
+      }
+      S.tug=Math.max(0,S.tug-dt*0.62);   // it always sags back. that is the point.
+      if(S.t>3.2 && (S.tries>=12 || S.t>8.5)){
+        S.done=true; S.slam=0.001; S.shake=1; AU.gong(); AU.drum();
+        introSpark(S,240,150,26,'#8a7a5a',1.5);
+      }
+    }
+    return;
+  }
+
+  /* the beat after the verb — the scene plays itself out, then the line types */
+  if(sc.id==='take') S.took=Math.min(1,S.took+dt*1.5);
+  if(sc.id==='drink'){ S.past=Math.min(1,S.past+dt*0.34); S.tilt=lerp(S.tilt,0.052,dt*2);
+    if(S.past>0.34 && S.bell<0.01){ S.bell=0.001; AU.gong(); }
+    if(S.bell>0) S.bell=Math.min(1,S.bell+dt*0.7); }
+  if(sc.id==='scale'){ S.slam=Math.min(1,S.slam+dt*2.2);
+    if(S.slam>0.5){ S.soil=Math.min(1,S.soil+dt*0.42);
+      if(Math.random()<dt*26) S.px.push({x:rnd(120,360),y:-4,vx:rnd(-6,6),vy:rnd(24,60),g:40,l:rnd(1.4,2.6),c:'#3a2c22',r:rnd(0.8,1.8)}); }
+    if(S.soil>0.7) S.shut=Math.min(1,S.shut+dt*0.5); }
+
+  introCh+=dt*46;
+  const ready = sc.id==='scale' ? S.shut>0.55 : S.t>0.6;
+  if(ready && (press('act')||press('tap'))){
+    AU.blip();
+    if(introCh<sc.t.length){ introCh=sc.t.length; return; }
+    introI++; introCh=0; IN=null;
+    if(introI>=INTRO.length) finishIntro();
+  }
+}
+
+/* ---------- the scenes, drawn ---------- */
+/* a key prompt on its own little cloud */
+function introKey(g,cx,cy,label){
+  const w=Math.max(15,label.length*6+11), h=11;
+  pR(g,cx-w/2-1,cy-h/2,w+2,h,CL.edge);
+  pR(g,cx-w/2,cy-h/2-1,w,h+2,CL.edge);
+  pR(g,cx-w/2,cy-h/2,w,h,CL.body);
+  pR(g,cx-w/2,cy-h/2,w,4,CL.top); pR(g,cx-w/2+1,cy-h/2+1,w-2,1,CL.rim);
+  pR(g,cx-w/2,cy+h/2-2,w,2,CL.mid);
+  pTxt(g,label,cx,cy+3,CL.ink,7,'center');
+}
+function introRoom(g,S){
+  const FL=182;                                   // the floorboards start here
+  pR(g,0,0,W,H,'#100c1a');
+  pVGrad(g,0,0,W,FL,'#1d1628','#262032',6);
+  for(let x=6;x<W;x+=27){ pR(g,x,0,1,FL,'#171122'); pR(g,x+1,0,1,FL,'#221a2e'); }
+  pR(g,0,FL,W,H-FL,'#2a1f18');
+  for(let y=FL+4;y<H;y+=8) pR(g,0,y,W,1,'#231a14');
+  pR(g,0,FL-3,W,3,'#3a2c22'); pR(g,0,FL,W,1,'#4a3628');
+  /* the window, and the moon shaft that lights the whole crime */
+  oRect(g,70,22,60,48,'#0d0b18','#3a2c22');
+  pR(g,74,26,52,18,'#38466e'); pR(g,74,48,52,18,'#2e3a5e');
+  pR(g,99,24,2,44,'#4a3628'); pR(g,72,45,56,2,'#4a3628');
+  pR(g,66,68,68,3,'#4a3628');
+  pEll(g,116,33,4,4,'#e8eaff'); drawGlow(g,116,33,16,'#cfe0ff',0.22);
+  g.save(); g.globalAlpha=0.09; g.fillStyle='#cfe0ff';
+  g.beginPath(); g.moveTo(74,70); g.lineTo(126,70); g.lineTo(206,FL+2); g.lineTo(112,FL+2); g.closePath(); g.fill();
+  g.restore();
+  /* the sleeper: a mat, a pillow, somebody's whole trusting night */
+  const br=Math.sin(S.t*1.45)*0.8, stir=S.stir>0? Math.sin(S.t*13)*1.7:0;
+  pR(g,20,FL-7,86,7,'#8a7250'); pR(g,20,FL-7,86,1,'#a89068'); pR(g,20,FL-1,86,1,'#6a583c');
+  pEll(g,42,FL-11,12,5,'#e8e0d0');                             // หมอน — the pillow
+  pEll(g,70+stir,FL-13+br,25,11,'#6a4a52');                    // blanket, and a body under it
+  pEll(g,70+stir,FL-16+br,22,8,'#7e5a62');
+  pEll(g,56+stir,FL-19+br,10,6,'#8a666e');                     // a shoulder
+  pEll(g,84+stir,FL-16+br,11,6,'#7e5a62');                     // a hip
+  pR(g,50+stir,FL-11+br,42,1,'#54383e');
+  pEll(g,45+stir,FL-16+br,6,6,PAL.skin);                       // head, on the pillow
+  pEll(g,43+stir,FL-18.4+br,5.8,3.6,'#241c18');
+  pR(g,48+stir,FL-16+br,1,1,'#2c2020'); pR(g,49+stir,FL-14+br,2,1,'#b06a62');
+  g.save(); g.globalAlpha=0.11; g.fillStyle='#e8e4f2';          // มุ้ง — the net
+  g.beginPath(); g.moveTo(60,100); g.lineTo(12,FL-1); g.lineTo(116,FL-1); g.closePath(); g.fill();
+  g.restore();
+  g.globalAlpha=0.22; pTaper(g,60,100,12,FL-1,1,1,'#cfc8e0'); pTaper(g,60,100,116,FL-1,1,1,'#cfc8e0');
+  g.globalAlpha=1;
+  pTaper(g,60,100,60,93,3,2,'#3a2c22');
+  if(S.stir>0){ cloudBubble(g,162,94,50,17,64,FL-24,{seed:12});
+    pTxt(g,'…mmh?',162,106,CL.ink,7,'center'); }
+  /* the household things you are creeping past */
+  pEll(g,150,FL-2,10,4,'#3a2c22'); pEll(g,150,FL-13,10,11,'#5f4a3a');   // โอ่ง — the water jar
+  pEll(g,150,FL-22,7,4,'#4a3628'); pEll(g,150,FL-23,5,2.4,'#38466e');
+  pR(g,146,FL-16,9,2,'#6a5442');
+  pR(g,196,FL-4,7,3,'#4a3628'); pR(g,206,FL-4,7,3,'#4a3628');           // sandals by the door
+  pTaper(g,318,FL-2,326,FL-40,3,3,'#6a5442');                           // ไม้กวาด, leaning
+  for(let i=0;i<7;i++) pTaper(g,326,FL-40,322+i*1.6,FL-52,1.6,1,'#a89068');
+  /* the shelf: a bowl of offerings, and the coin sitting on top of them */
+  const SY=110;
+  pR(g,SHELF_X-24,SY,52,4,'#4a3628'); pR(g,SHELF_X-24,SY,52,1,'#63472f');
+  pR(g,SHELF_X-20,SY+4,4,FL-SY-4,'#3a2c22'); pR(g,SHELF_X+18,SY+4,4,FL-SY-4,'#3a2c22');
+  pR(g,SHELF_X-19,SY+4,1,FL-SY-4,'#523c2c'); pR(g,SHELF_X+19,SY+4,1,FL-SY-4,'#523c2c');
+  pR(g,SHELF_X-24,SY+38,52,3,'#4a3628'); pR(g,SHELF_X-24,SY+38,52,1,'#5c4230');
+  pEll(g,SHELF_X-9,SY+35,6,3,'#8a7250'); pR(g,SHELF_X+4,SY+31,9,7,'#5f4a3a');
+  pEll(g,SHELF_X,SY-4,13,5,'#c9992f'); pEll(g,SHELF_X,SY-5.5,11,3.6,'#f2c14e');
+  pEll(g,SHELF_X-6,SY-8,3,2.4,'#e8b8d0'); pEll(g,SHELF_X+5,SY-8,3,2.4,'#efe6d8');
+  if(S.took<0.02){
+    const gl=0.5+0.5*Math.sin(S.t*3);
+    drawGlow(g,SHELF_X,SY-14,18,CL.goldL,0.20+gl*0.22);
+    pEll(g,SHELF_X,SY-14-gl,4,4,'#f2c14e'); pEll(g,SHELF_X,SY-15-gl,2.6,2.4,'#fff0b8');
+  }
+  /* you, alive, in the last night of your last life */
+  const v=makeVillager({x:S.mx/1.8,y:(FL+2)/1.8,skin:PAL.skin,shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
+  v.face=S.face; v.phase=S.walk; v.vx=(K.left||K.right)?30*S.face:0; v.carry=0;
+  g.save(); g.scale(1.8,1.8); drawVillager(g,v,{}); g.restore();
+  if(S.took>0.05){
+    const k=Math.min(1,S.took*1.5);
+    const tx=lerp(SHELF_X,S.mx+8*S.face,k), ty=lerp(SY-14,FL-34,k);
+    drawGlow(g,tx,ty,11,CL.goldL,0.45*(1-k*0.4)); pEll(g,tx,ty,3.4,3.4,'#f2c14e');
+    pEll(g,tx-0.6,ty-0.8,1.8,1.4,'#fff0b8');
+  }
+  /* we are watching this from the doorway, which is why the frame is so dark */
+  pR(g,0,H-40,W,40,'#0a0812'); pR(g,0,H-41,W,1,'#241a12'); pR(g,0,H-40,W,1,'#150f0c');
+  pR(g,0,0,12,H,'#0a0812'); pR(g,12,0,1,H,'#150f0c');
+  pR(g,W-12,0,12,H,'#0a0812'); pR(g,W-13,0,1,H,'#150f0c');
+  /* how much noise you are making */
+  const nx=W-114;
+  cloud(g,nx,24,96,18,{seed:31});
+  pTxt(g,'เสียง',nx+8,38,CL.ink2,7);
+  pR(g,nx+42,30,46,5,CL.under);
+  const n=clamp(S.noise,0,1);
+  pR(g,nx+42,30,R(46*n),5, n>0.8? '#c9542f' : n>0.5? '#c9992f' : '#5f8a52');
+  pR(g,nx+42,30,46,1,mixSafe(CL.under,'#000',0.2));
+
+  if(S.reach && !S.done){ const b=0.5+0.5*Math.sin(S.t*6);
+    g.globalAlpha=0.72+b*0.28; introKey(g,SHELF_X,SY-26,'E'); g.globalAlpha=1; }
+}
+function introGate(g,S){
+  g.save();
+  g.translate(W/2,H/2); g.rotate(S.tilt*(1+Math.sin(S.t*0.8)*0.12)); g.translate(-W/2,-H/2);
+  pVGrad(g,-60,-60,W+120,H+120,'#0d1030','#232a52',7);
+  /* stars, smeared sideways by exactly as much as you have drunk */
+  const sm=S.tilt*170;
+  for(let i=0;i<80;i++){ const st=STARS[i], x=st[0]*W, y=st[1]*H*0.72;
+    g.globalAlpha=0.22+0.5*st[3];
+    pR(g,x,y,1+sm*st[3],1,'#dfe6ff'); }
+  g.globalAlpha=1;
+  drawGlow(g,96,34,32,'#e8eaff',0.20); pEll(g,96,34,8,8,'#f4f2ff'); pEll(g,94,32,5,5,'#fffdf6');
+  const FL=196, GX=300;
+  /* the chedi, behind everything, minding its own business */
+  const ch=ART.chedi; g.globalAlpha=0.5; g.drawImage(ch,378,FL-38-ch.height*0.62,ch.width*0.62,ch.height*0.62); g.globalAlpha=1;
+  /* the temple wall, with the gate you did not bow at set into it */
+  for(const [wx,ww] of [[-40,GX-38+40],[GX+38,W+40-(GX+38)]]){
+    pR(g,wx,FL-44,ww,44,'#241c30'); pR(g,wx,FL-46,ww,2,'#3a3048');
+    pR(g,wx,FL-40,ww,1,'#2e2440');
+    for(let x=wx+7;x<wx+ww-2;x+=14) pR(g,x,FL-38,1,38,'#1e1728');
+  }
+  /* the road out front */
+  pR(g,-40,FL,W+80,H-FL+40,'#1a1526'); pR(g,-40,FL-1,W+80,2,'#2a2138');
+  for(let i=0;i<46;i++) pR(g,(i*79)%(W+40)-20,FL+3+((i*29)%30),2+((i*7)%4),1,'#221b2e');
+  for(let i=0;i<14;i++){ const x=(i*71)%(W+40)-20;
+    pTaper(g,x,FL+2,x+((i%3)-1)*2,FL-5,1.4,1,'#2e3a2e'); }
+  /* the gate itself */
+  pR(g,GX-38,FL-72,7,72,'#5a3a22'); pR(g,GX-37,FL-72,2,72,'#7a5230');
+  pR(g,GX+31,FL-72,7,72,'#5a3a22'); pR(g,GX+32,FL-72,2,72,'#7a5230');
+  pR(g,GX-44,FL-76,88,5,'#8a2f28'); pR(g,GX-44,FL-76,88,2,'#a8443a');
+  for(let i=0;i<3;i++){
+    const w2=76-i*20, y2=FL-84-i*9;
+    pR(g,GX-w2/2,y2,w2,6,'#8a2f28'); pR(g,GX-w2/2,y2,w2,2,'#a8443a');
+    pR(g,GX-w2/2-3,y2+5,w2+6,2,'#c9992f');
+  }
+  pTri(g,GX,FL-116,GX-9,FL-104,GX+9,FL-104,'#8a2f28');
+  for(const sx of [-1,1]){                                     // ช่อฟ้า, the sky-hooks
+    pTaper(g,GX+sx*38,FL-84,GX+sx*47,FL-98,3,2,'#c9992f');
+    pEll(g,GX+sx*47,FL-99,2.2,2.6,'#f2c14e');
+  }
+  pR(g,GX-3,FL-122,6,7,'#c9992f'); pEll(g,GX,FL-124,2.6,3,'#f2c14e');
+  /* the bell, under the lintel */
+  const bx=GX, sw=Math.sin(S.t*4.2)*S.bell*7;
+  pR(g,bx-1,FL-71,2,9,'#3a2c22');
+  pEll(g,bx+sw,FL-56,7,8,'#c9992f'); pEll(g,bx+sw,FL-58,5.4,5.6,'#f2c14e');
+  pEll(g,bx+sw,FL-49,7,2.2,'#8a6a2a');
+  if(S.bell>0.02){
+    for(let i=1;i<=3;i++){ g.globalAlpha=Math.max(0,0.34-i*0.09)*(1-S.bell*0.5);
+      oEll(g,bx,FL-54,10+i*10+S.bell*18,9+i*9+S.bell*15,'rgba(0,0,0,0)','#f2c14e'); }
+    g.globalAlpha=1;
+    drawGlow(g,bx,FL-54,26+S.bell*10,'#f2c14e',0.14*(1-S.bell*0.6));
+  }
+  /* the monk at the gate, waiing at nobody in particular */
+  const mk=makeVillager({x:(GX+58)/1.55,y:FL/1.55,skin:'#c69670',shirt:'#e8923f',shirtD:'#b56a28',legs:'#e8923f',hair:'bald',monk:1});
+  mk.face=-1; g.save(); g.scale(1.55,1.55); drawVillager(g,mk,{wai:1}); g.restore();
+  /* the sala step you are sitting on */
+  pR(g,120,FL-9,92,9,'#4a3628'); pR(g,120,FL-9,92,2,'#63472f');
+  pR(g,126,FL-16,80,7,'#5a4230'); pR(g,126,FL-16,80,2,'#7a5a40');
+  /* you, with a bottle you did not pay for */
+  const px2=lerp(166,272,S.past);
+  const v=makeVillager({x:px2/1.8,y:(FL-14+S.past*14)/1.8,skin:PAL.skin,shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
+  v.face=1; v.vx=S.past>0.02?32:0; v.phase=S.t*5.4;
+  g.save(); g.scale(1.8,1.8); drawVillager(g,v,{}); g.restore();
+  if(S.past<0.06){
+    const tipx=px2+13, tipy=FL-52-S.sips*1.2;
+    pR(g,tipx-3,tipy,7,16,'#5f7a52');
+    pR(g,tipx-3,tipy+16-R(14*S.bottle),7,R(14*S.bottle),'#e8f0e0');
+    pR(g,tipx-1.5,tipy-5,4,5,'#5f7a52'); pR(g,tipx-2,tipy-6,5,2,'#c9992f');
+    pR(g,tipx-3,tipy+4,7,4,'#cfc4ae');
+  }
+  for(const q of S.puffs){ g.globalAlpha=clamp(q.l,0,1)*0.9;
+    pTxt(g,q.s,q.x,q.y,'#efe6d8',10,'center'); }
+  g.globalAlpha=1;
+  if(!S.done){
+    const b=0.5+0.5*Math.sin(S.t*6);
+    g.globalAlpha=0.72+b*0.28; introKey(g,px2+2,FL-72,'E'); g.globalAlpha=1;
+    for(let i=0;i<4;i++){ const on=i<S.sips;
+      if(on) drawGlow(g,32+i*14,H-25,8,'#c9542f',0.28);
+      pEll(g,32+i*14,H-25,2.8,2.8,on?'#c9542f':'#2e2a3c'); }
+  }
+  g.restore();
+}
+function introScale(g,S){
+  pR(g,0,0,W,H,'#0a0812');
+  pVGrad(g,0,0,W,H,'#120e20','#07060e',7);
+  for(let i=0;i<40;i++){ const st=STARS[i+90]; g.globalAlpha=0.12+0.25*st[3];
+    pR(g,st[0]*W,st[1]*H,1,1,'#cfc4ae'); }
+  g.globalAlpha=1;
+  const PX=240, PY=88, BY=178;
+  /* the beam: your tugging lifts it, and it always comes back down */
+  const rest=0.62, ang=(rest-S.tug*0.5)*(1-S.slam)+S.slam*0.86;
+  const L=104, dx=Math.cos(ang*0.42)*L, dy=Math.sin(ang*0.42)*L;
+  pR(g,PX-2,PY,4,BY-PY,'#6a5a3a'); pR(g,PX-1,PY,1,BY-PY,'#8a7a52');   // the post
+  pEll(g,PX,BY,28,7,'#584a30'); pEll(g,PX,BY-2,25,6,'#8a7a52');       // and its plinth
+  pEll(g,PX,BY-4,18,4,'#c9b98a'); pR(g,PX-9,BY-10,18,7,'#6a5a3a'); pR(g,PX-9,BY-10,18,1,'#8a7a52');
+  drawGlow(g,PX,BY-6,48,'#c9b98a',0.07);
+  pTri(g,PX,PY-8,PX-9,PY+2,PX+9,PY+2,'#8a7a52');
+  const ax=PX-dx, ay=PY-dy, bx2=PX+dx, by2=PY+dy;
+  pLimb(g,ax,ay,bx2,by2,2.4,'#8a7a52'); pLimb(g,ax,ay,bx2,by2,1,'#c9b98a');
+  for(const [hx,hy,heavy] of [[ax,ay,0],[bx2,by2,1]]){
+    pR(g,hx,hy,1,20,'#6a5a3a');
+    pEll(g,hx,hy+21,17,4,'#8a7a52'); pEll(g,hx,hy+20,15,3,'#c9b98a');
+    if(heavy){   // everything you took, piled up
+      pEll(g,hx-1,hy+15,7,3.4,'#8a6a2a');
+      pEll(g,hx-5,hy+13,4,3.4,'#f2c14e'); pEll(g,hx+3,hy+13,3.4,3,'#c9992f');
+      pR(g,hx+7,hy+9,5,9,'#5f7a52'); pR(g,hx+8,hy+6,3,3,'#5f7a52');
+      drawGlow(g,hx,hy+14,22,'#c9542f',0.16+S.tug*0.1);
+    } else {     // and on the other side: one flower, from your mother, probably
+      pEll(g,hx,hy+15,2.6,2.6,'#e8b8d0'); pEll(g,hx-2,hy+16,2,2,'#f2cede');
+      pR(g,hx-0.5,hy+17,1,4,'#5f8a52');
+      drawGlow(g,hx,hy+15,14,'#e8d8f2',0.14);
+    }
+  }
+  g.globalAlpha=0.3; pR(g,PX-L-26,PY,2*(L+26),1,'#4a4458'); g.globalAlpha=1;
+  pTxt(g,'กรรม',PX,PY-26,mixSafe('#6a6480','#f2c14e',S.tug),13,'center');
+  if(!S.done){
+    const b=0.5+0.5*Math.sin(S.t*7);
+    cloud(g,PX-84,H-56,168,24,{seed:9});
+    pTxt(g,'◀   ▶',PX,H-40,mixSafe(CL.ink2,CL.ink,b),11,'center');
+    pR(g,PX-56,H-34,112,4,mixSafe(CL.under,'#3a2c22',0.5));
+    pR(g,PX-56,H-34,R(112*S.tug),4,'#c9992f'); pR(g,PX-56,H-34,R(112*S.tug),1,'#f2c14e');
+  }
+  /* the soil, and your eyes closing on it */
+  if(S.soil>0.01){
+    g.globalAlpha=Math.min(1,S.soil*1.1); pR(g,0,H-R(H*S.soil),W,R(H*S.soil)+1,'#241a12');
+    for(let i=0;i<26;i++) pR(g,(i*61)%W,H-H*S.soil+((i*37)%22),2+((i*11)%4),1,'#3a2c22');
+    g.globalAlpha=1;
+  }
+  if(S.shut>0.01){   // the lids come down
+    const k=S.shut*0.56;
+    pR(g,0,0,W,R(H*k),'#050409'); pR(g,0,H-R(H*k),W,R(H*k)+1,'#050409');
+  }
+}
+function drawIntro(){
+  const g=ctx; const S=IN||introScene(introI), sc=INTRO[introI];
+  g.save();
+  if(S.shake>0.01) g.translate(R(rnd(-2,2)*S.shake),R(rnd(-2,2)*S.shake));
+  if(sc.id==='take') introRoom(g,S);
+  else if(sc.id==='drink') introGate(g,S);
+  else introScale(g,S);
+  for(const q of S.px){ g.globalAlpha=clamp(q.l,0,1);
+    pEll(g,q.x,q.y,q.r||1.2,q.r||1.2,q.c); }
+  g.globalAlpha=1;
+  g.restore();
+  if(S.flash>0.01){ g.globalAlpha=S.flash*0.5; pR(g,0,0,W,H,'#fff6de'); g.globalAlpha=1; }
+  /* the caption rides in on a bank of cloud, like everything else here */
+  if(S.done){
+    const lines=wrap(g,sc.t.slice(0,introCh|0),W-84,8).slice(0,3);
+    const bh=14+lines.length*12;
+    cloud(g,-20,H-bh,W+40,bh+12,{seed:5,flat:1});
+    let ty=H-bh+11;
+    for(const l of lines){ pTxt(g,l,W/2,ty,CL.ink,8,'center'); ty+=12; }
+    if((introCh|0)>=sc.t.length){ g.globalAlpha=0.55+0.45*Math.sin(GS.t*5);
+      pTxt(g,'E ▾',W-14,H-8,CL.ink3,7,'right'); g.globalAlpha=1; }
+  } else {
+    g.globalAlpha=0.8; pTxt(g,sc.hint,W/2,H-9,'#8a8098',7,'center'); g.globalAlpha=1;
+  }
+  for(let i=0;i<INTRO.length;i++){
+    const on=i<=introI;
+    pEll(g,W/2-9+i*9,10,on?2.4:1.6,on?2.4:1.6,on?'#f2c14e':'#4a4458');
+  }
+  pTxt(g,'ESC skip',12,H-9,'#4a4458',6);
+}
+
+
+
 const WAKE=[
   {w:'???',t:'…oh. Oh! You are up. Good. Do not panic.'},
   {w:'???',t:'First things first, because it is better to hear it standing up: you woke up in a graveyard.'},
@@ -3940,48 +4668,834 @@ const WAKE=[
   {w:'ขวัญ',t:'The ledger tipped, that is all. So we tip it back: pick things, cook things, make things, and give them to people who need them. There is a whole village east of here and every single one of them wants something small.'},
   {w:'ขวัญ',t:'Even the frightening ones. ESPECIALLY the frightening ones — they are the loneliest. Come on. Walk east. Hold ← and → .'},
 ];
-function drawIntro(){
-  const g=ctx;
-  g.fillStyle='#0a0918'; g.fillRect(0,0,W,H);
-  const p=INTRO[introI];
-  g.save(); g.translate(0,-8);
-  if(p.s===1){
-    pR(g,80,54,320,110,'#161226'); pR(g,80,54,320,4,'#0e0b1c');
-    pR(g,120,128,240,7,'#3a2c22'); pR(g,130,135,8,28,'#3a2c22'); pR(g,342,135,8,28,'#3a2c22');
-    for(let i=0;i<3;i++){ pR(g,170+i*22,110,8,18,'#2a4a3a'); pR(g,172+i*22,104,4,7,'#1d3529'); }
-    pR(g,268,112,20,16,'#8a6a2a'); pR(g,272,108,12,5,PAL.gold);
-    const v=makeVillager({x:120,y:67,skin:PAL.skin,shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
-    g.save(); g.scale(1.9,1.9); drawVillager(g,v,{}); g.restore();
-    const gl=g.createRadialGradient(240,120,4,240,120,110);
-    gl.addColorStop(0,'rgba(255,190,90,0.16)'); gl.addColorStop(1,'rgba(255,190,90,0)');
-    g.fillStyle=gl; g.fillRect(80,40,320,140);
-  } else if(p.s===2){
-    drawSky(g);
-    pR(g,0,164,W,60,'#0c0b1c');
-    const ch=ART.chedi; g.globalAlpha=0.9; g.drawImage(ch,300,20,ch.width*0.9,ch.height*0.9); g.globalAlpha=1;
-    pR(g,250,140,26,24,'#241c3a'); pR(g,258,134,10,7,'#8a6a2a');
-    drawVillager(g,makeVillager({x:296,y:164,skin:'#c69670',shirt:'#4a4452',shirtD:'#353043',legs:'#2c2836',hair:'short'}),{wai:1});
-    const v=makeVillager({x:94,y:102,skin:PAL.skin,shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
-    v.vx=40; v.phase=GS.t*4;
-    g.save(); g.scale(1.6,1.6); drawVillager(g,v,{}); g.restore();
+/* ============================================================
+   PORTRAITS — pre-rendered once, so dialogue has a face
+   ============================================================ */
+const PORTRAIT_CACHE = {};
+function buildPortrait(key){
+  const S2=48, c=mkCv(S2,S2), g=G2(c);
+  const half=S2/2;
+  // sky behind the face
+  pVGrad(g,0,0,S2,S2,'#2a2350','#4a3f6e',5);
+  for(let i=0;i<20;i++) pR(g,(i*13)%S2,(i*7)%S2,1,1,'rgba(255,246,224,0.35)');
+  g.save();
+  const place=(fn,scale,hx,hy)=>{ g.translate(half,half+4); g.scale(scale,scale); g.translate(-hx,-hy); fn(); };
+  if(key==='you'||key==='prete'){
+    const q=makePrete(); q.x=0; q.y=0; q.face=1; q.blink=3;
+    for(let k=0;k<30;k++){ stepPrete(q,1/60); stepCloth(q.cloth,0,-34,11,1/60,0,0); }
+    place(()=>drawPrete(g,q,{dt:1/60,cos:GS.cos||{skirt:'ash'}}), 2.5, 0, -65);
+  } else if(key==='khwan'){
+    place(()=>drawKhwan(g,{x:0,y:0,anim:1.2,blink:3,bub:null}), 3.2, 0, -1);
+  } else if(key==='phra'){
+    place(()=>drawPhraPhum(g,0,0,1.2), 2.1, 0, -19);
+  } else if(key==='tani'){
+    place(()=>drawTani(g,{x:0,y:0,face:1,anim:1.1},{}), 2.4, 0, -27);
+  } else if(SPIRIT_BY_ID[key]){
+    const s=SPIRIT_BY_ID[key];
+    const hy = key==='krasue'? 0 : key==='taihong'? -50 : key==='krahang'? -26 : -33;
+    place(()=>GHOST_ART[s.art](g,{x:0,y:0,face:1,anim:1.3,hurtT:0,attackT:0,hop:0,h:46,friendly:1}), 2.4, 0, hy);
   } else {
-    const tip=Math.min(1,GS.t*0.35)*14;
-    g.strokeStyle='#cfc4ae'; g.lineWidth=1;
-    g.beginPath(); g.moveTo(240,70); g.lineTo(240,150); g.stroke();
-    g.beginPath(); g.moveTo(180,86+tip); g.lineTo(300,86-tip); g.stroke();
-    g.strokeRect(160,90+tip,40,14); g.strokeRect(280,80-tip,40,14);
-    pR(g,163,93+tip,34,10,'#241c3a'); pR(g,296,86-tip,6,4,PAL.gold);
-    pR(g,222,150,36,5,'#cfc4ae');
-    pTxt(g,'กรรม',240,186,'#8a8098',16,'center');
+    const n=NPCS.find(v=>v.id===key);
+    if(n){ const m=makeVillager(Object.assign({},n,{x:0,y:0,vx:0,phase:0,face:1,cloth:makeCloth(4,9)}));
+      for(let k=0;k<16;k++) stepCloth(m.cloth,0,-10,9,1/60,0,0);
+      place(()=>drawVillager(g,m,{}), 3.4, 0, -20); }
   }
   g.restore();
-  pR(g,0,H-46,W,46,'rgba(10,8,20,0.88)'); pR(g,0,H-46,W,1,PAL.gold);
-  let ty=H-31;
-  for(const l of wrap(g,p.t.slice(0,introCh|0),W-48,7).slice(0,3)){ pTxt(g,l,24,ty,'#efe6d8',7); ty+=11; }
-  g.globalAlpha=0.5+0.5*Math.sin(GS.t*5);
-  pTxt(g,(introI+1)+'/'+INTRO.length+' ▾',W-24,H-6,'#7a7488',6,'right');
+  // circular mask + rim
+  const g2=G2(mkCv(S2,S2));
+  const out=mkCv(S2,S2), og=G2(out);
+  og.save(); og.beginPath(); og.arc(half,half,half-2,0,TAU); og.clip(); og.drawImage(c,0,0); og.restore();
+  for(let i=0;i<64;i++){ const a=i/64*TAU;
+    pR(og,half+Math.cos(a)*(half-2),half+Math.sin(a)*(half-2),2,2,CL.edge);
+    pR(og,half+Math.cos(a)*(half-3),half+Math.sin(a)*(half-3),1,1,CL.rim); }
+  return out;
+}
+function portrait(key){
+  if(!PORTRAIT_CACHE[key]){ try{ PORTRAIT_CACHE[key]=buildPortrait(key); }catch(e){ PORTRAIT_CACHE[key]=mkCv(48,48); } }
+  return PORTRAIT_CACHE[key];
+}
+const SPEAKER_KEY = {
+  'You':'you', 'ขวัญ':'khwan', '???':'khwan', 'พระภูมิ':'phra', 'Tani':'tani',
+  'Luang Pi':'monk', 'Mali':'mali', 'Lung Somchai':'uncle', 'Yai Pen':'yai',
+  "P'Nok":'nok', 'Loong Dam':'dam',
+  'น้องกองกอย':'kongkoi', 'พี่กระหัง':'krahang', 'ปอบปอ':'phipop',
+  'พี่กระสือ':'krasue', 'ลุงตายโหง':'taihong',
+};
+function speakerKey(w){
+  if(!w) return null;
+  if(SPEAKER_KEY[w]) return SPEAKER_KEY[w];
+  for(const k in SPEAKER_KEY) if(w.indexOf(k)===0) return SPEAKER_KEY[k];
+  return null;
+}
+
+/* ============================================================
+   สวรรค์ — the ascension. Buy a skill, meet a god.
+   ============================================================ */
+let ASC=null;
+const ASC_CLOUDS=[];
+for(let i=0;i<20;i++) ASC_CLOUDS.push({x:Math.random(),y:Math.random(),w:rnd(46,120),h:rnd(20,42),sp:rnd(0.5,1.6),o:rnd(0.35,0.85)});
+function startAscend(skillId){
+  const s=SKILLS[skillId];
+  ASC={ id:skillId, s, dev:DEVAS[s.br], phase:'lift', t:0, rise:0, drift:0,
+        ch:0, fill:0, flash:0, beam:0, done:false, sparks:[] };
+  GS.state='ascend';
+  AU.gong(98,0,0.09); AU.metta();
+}
+function stepAscend(dt){
+  const A=ASC; A.t+=dt;
+  const hold = K.act || K.light || (TOUCH.on && TOUCH.pts.size>0);
+  if(A.flash>0) A.flash-=dt;
+  switch(A.phase){
+    case 'lift':
+      A.rise += (hold? 1.9 : 1)*dt;
+      if(Math.random()<dt*22) A.sparks.push({x:rnd(-30,30),y:rnd(0,40),v:rnd(30,90),t:0});
+      if(A.rise>1.7){ A.phase='climb'; A.t=0; AU.ranat(880,0,0.05); }
+      break;
+    case 'climb':{
+      let dx=0; if(K.left)dx-=1; if(K.right)dx+=1;
+      if(TOUCH.on&&TOUCH.aim.active) dx=clamp((TOUCH.aim.x-W/2)/60,-1,1);
+      A.drift=clamp(A.drift+dx*dt*40,-52,52);
+      A.speed = hold? 2.1 : 1.25;
+      for(const c of ASC_CLOUDS){ c.y += c.sp*A.speed*dt*0.5; if(c.y>1.2){ c.y=-0.25; c.x=Math.random(); } }
+      if(Math.random()<dt*30) A.sparks.push({x:rnd(-70,70),y:rnd(-10,H),v:rnd(60,150),t:0});
+      if(A.t>3.4){ A.phase='arrive'; A.t=0; A.flash=0.7; AU.bigDing(); }
+      break; }
+    case 'arrive':
+      if(A.t>1.5){ A.phase='speak'; A.t=0; A.ch=0; AU.ranat(1046,0,0.05); }
+      break;
+    case 'speak':
+      A.ch+=dt*46;
+      if((press('act')||press('tap'))){
+        if(A.ch < A.dev.line.length) A.ch=A.dev.line.length;
+        else { A.phase='bless'; A.t=0; AU.chant(); }
+      }
+      break;
+    case 'bless':
+      if(hold){ A.fill+=dt*0.75; A.beam=Math.min(1,A.beam+dt*3);
+        if(Math.random()<dt*40) A.sparks.push({x:rnd(-14,14),y:rnd(-40,10),v:-rnd(40,110),t:0}); }
+      else { A.fill=Math.max(0,A.fill-dt*0.35); A.beam=Math.max(0,A.beam-dt*2); }
+      if(A.fill>=1 && !A.done){
+        A.done=true; A.phase='granted'; A.t=0; A.flash=1;
+        GS.skills[A.id]=1; GS.spent+=A.s.cost;
+        AU.metta(); AU.bigDing();
+        toast('learned '+A.s.th+' · '+A.s.en, PAL.jadeL);
+        if(A.id==='metta'){ GS.seen.own_halo=true; toast('รัศมี unlocked',PAL.goldL); }
+        GS.seen['blessed'+A.s.br]=true;
+        saveGame();
+      }
+      break;
+    case 'granted':
+      if(A.t>2.2 && (press('act')||press('tap'))){ A.phase='descend'; A.t=0; }
+      break;
+    case 'descend':
+      for(const c of ASC_CLOUDS){ c.y -= 2.4*dt; if(c.y<-0.25) c.y=1.2; }
+      if(A.t>1.6){ ASC=null; GS.state='tree'; return; }
+      break;
+  }
+  for(let i=A.sparks.length-1;i>=0;i--){ const s=A.sparks[i]; s.t+=dt; s.y-=s.v*dt;
+    if(s.t>2.2||s.y<-40) A.sparks.splice(i,1); }
+  clearPress();
+}
+function drawAscend(g){
+  const A=ASC, ph=A.phase;
+  const up = ph==='lift'? clamp(A.rise/1.7,0,1) : 1;
+  // sky: night at the bottom, heaven at the top
+  const t2 = ph==='lift'? up*0.5 : ph==='descend'? 1-clamp(A.t/1.6,0,1) : 1;
+  pVGrad(g,0,0,W,H*0.5, mix('#141a3e','#ffeec0',t2), mix('#222a58','#ffd58a',t2), 8);
+  pVGrad(g,0,H*0.5,W,H*0.5, mix('#222a58','#ffc978',t2), mix('#33406e','#f2a45c',t2), 7);
+  // sun-glow above
+  const gr=g.createRadialGradient(W/2,-30,10,W/2,-30,180);
+  gr.addColorStop(0,`rgba(255,246,210,${0.5*t2})`); gr.addColorStop(1,'rgba(255,246,210,0)');
+  g.fillStyle=gr; g.fillRect(0,0,W,H);
+  // god-rays
+  g.save(); g.globalCompositeOperation='lighter';
+  for(let i=0;i<9;i++){
+    const a=-Math.PI/2 + (i-4)*0.17 + Math.sin(GS.t*0.3+i)*0.02;
+    g.globalAlpha=0.05*t2;
+    pTri(g, W/2, -20, W/2+Math.cos(a)*400-26, -20+Math.sin(a)*400, W/2+Math.cos(a)*400+26, -20+Math.sin(a)*400, '#fff2c0');
+  }
+  g.restore(); g.globalAlpha=1;
+  // streaming clouds
+  for(const c of ASC_CLOUDS){
+    const cx=c.x*W - A.drift*0.5, cy=c.y*H;
+    g.globalAlpha=c.o*0.8*t2;
+    puffCloud(g,cx,cy,c.w,c.h,(c.w*7+c.h*3)|0,
+      {top:'#fffdf4',body:'#f4ecdc',under:'#dccfb6',edge:'#c9bda2'});
+    g.globalAlpha=1;
+  }
+  // the terrace you arrive at
+  if(ph!=='lift'){
+    const arr = ph==='climb'? 0 : ph==='arrive'? clamp(A.t/1.2,0,1) : ph==='descend'? 1-clamp(A.t/1,0,1) : 1;
+    if(arr>0){
+      g.globalAlpha=arr;
+      // a golden vimana terrace
+      const ty=H*0.80;
+      // a bank of cloud the terrace rests on
+      for(let i=0;i<5;i++) puffCloud(g,W/2-110+i*55,ty+16,86,30,7+i,
+        {top:'#fffdf4',body:'#f2e8d2',under:'#d8c9a8',edge:'#bcae90'});
+      pR(g,W/2-126,ty,252,7,'#e8d3a0'); pR(g,W/2-126,ty,252,2,'#fff2cc');
+      pR(g,W/2-126,ty+6,252,3,'#c2a266');
+      // a rail of small gold chedis behind
+      for(let i=0;i<7;i++){ const x=W/2-96+i*32;
+        pEll(g,x,ty-2,9,4,'#e8d3a0');
+        for(let k=0;k<6;k++){ const rr=lerp(6.5,1.6,k/5); pR(g,x-rr,ty-6-k*4,rr*2,4,k%2?'#f2c14e':'#c9992f'); }
+        pTaper(g,x,ty-30,x,ty-37,2.4,1,'#ffe89a'); pEll(g,x,ty-31,1.6,2,'#fff2cc'); }
+      pR(g,W/2-126,ty-3,252,2,'#c9992f'); pR(g,W/2-126,ty-5,252,1,'#ffe89a');
+      g.globalAlpha=1;
+    }
+  }
+  // the god
+  if(ph==='arrive'||ph==='speak'||ph==='bless'||ph==='granted'){
+    const dy = ph==='arrive'? lerp(-80,0,clamp(A.t/1.2,0,1)) : 0;
+    drawDeva(g,A.dev.k, W/2, H*0.43+dy, GS.t);
+  }
+  // you, rising
+  {
+    const stand=H*0.80;
+    const py = ph==='lift'? lerp(H+50, stand, up)
+             : ph==='descend'? lerp(stand, H+60, clamp(A.t/1.6,0,1)) : stand;
+    const q=P;
+    const sv={x:q.x,y:q.y,vx:q.vx,face:q.face,state:q.state};
+    q.x=W/2+A.drift; q.y=py; q.vx=0; q.face=1; q.state='idle';
+    stepPrete(q,1/60);
+    const glow=g.createRadialGradient(q.x,py-36,4,q.x,py-36,48);
+    glow.addColorStop(0,'rgba(255,240,190,0.3)'); glow.addColorStop(1,'rgba(255,240,190,0)');
+    g.fillStyle=glow; g.fillRect(q.x-44,py-78,88,88);
+    drawPrete(g,q,{dt:1/60,wind:0.1,gold:A.done?1:0,
+      armTarget: (ph==='bless'&&A.beam>0.2)? {x:q.x,y:py-70} : null});
+    q.x=sv.x; q.y=sv.y; q.vx=sv.vx; q.face=sv.face; q.state=sv.state;
+    // the beam of blessing
+    if(A.beam>0){
+      g.globalCompositeOperation='lighter';
+      const bw=6+A.beam*16;
+      const bg=g.createLinearGradient(0,H*0.42,0,py-20);
+      bg.addColorStop(0,`rgba(255,246,200,${0.55*A.beam})`); bg.addColorStop(1,`rgba(255,220,140,${0.15*A.beam})`);
+      g.fillStyle=bg; g.fillRect(W/2+A.drift-bw/2, H*0.42, bw, py-20-H*0.42);
+      g.globalCompositeOperation='source-over';
+    }
+  }
+  // rising sparks
+  g.globalCompositeOperation='lighter';
+  for(const s of A.sparks){
+    const a=clamp(1-s.t/2.2,0,1);
+    g.fillStyle=`rgba(255,240,190,${a})`;
+    g.fillRect(R(W/2+s.x-A.drift*0.3), R(s.y), 1, R(1+s.v*0.02));
+  }
+  g.globalCompositeOperation='source-over';
+  if(A.flash>0){ g.fillStyle=`rgba(255,250,232,${clamp(A.flash,0,1)*0.9})`; g.fillRect(0,0,W,H); }
+
+  /* ---- the words ---- */
+  if(ph==='lift'){
+    cloudTag(g,W/2,34,190,22,{seed:3});
+    pTxt(g,'ขึ้นสวรรค์ · ASCENDING',W/2,38,CL.ink,10,'center');
+    g.globalAlpha=0.55+0.45*Math.sin(GS.t*6);
+    pTxt(g,'hold E to rise faster',W/2,H-22,'#fff6dc',8,'center'); g.globalAlpha=1;
+  }
+  if(ph==='climb'){
+    g.globalAlpha=0.5+0.5*Math.sin(GS.t*4);
+    pTxt(g,'◀ ▶ drift · hold E to climb',W/2,H-22,'#fff6dc',8,'center'); g.globalAlpha=1;
+  }
+  if(ph==='arrive'&&A.t>0.7){ devaPlate(g,A.dev); }
+  if(ph==='speak'){
+    devaPlate(g,A.dev);
+    const bw=W-90, bx=45, bh=42, by=H-bh-14;
+    cloud(g,bx,by,bw,bh,{seed:23});
+    let ty=by+16;
+    for(const l of wrap(g,A.dev.line.slice(0,A.ch|0),bw-24,7).slice(0,3)){ pTxt(g,l,bx+12,ty,CL.ink,7); ty+=10; }
+    if((A.ch|0)>=A.dev.line.length){ g.globalAlpha=0.5+0.5*Math.sin(GS.t*6);
+      pTxt(g,'▾',bx+bw-14,by+bh-8,CL.gold,8); g.globalAlpha=1; }
+  }
+  if(ph==='bless'){
+    cloudTag(g,W/2,H*0.13,210,26,{seed:31});
+    pTxt(g,'รับพร · RECEIVE THE BLESSING',W/2,H*0.13+3,CL.ink,8,'center');
+    const bw=150, bx=W/2-bw/2, by=H-40;
+    cloud(g,bx-8,by-10,bw+16,26,{seed:41});
+    pR(g,bx,by,bw,7,'#cbbfa6');
+    pR(g,bx,by,bw*clamp(A.fill,0,1),7, A.fill>0.85?'#ffe89a':PAL.gold);
+    pR(g,bx,by,bw*clamp(A.fill,0,1),1,'#fffdf6');
+    g.globalAlpha=0.6+0.4*Math.sin(GS.t*7);
+    pTxt(g,'hold E',W/2,by+5,CL.ink,7,'center'); g.globalAlpha=1;
+    pTxt(g,'wai and hold still',W/2,by+20,CL.ink2,6,'center');
+  }
+  if(ph==='granted'){
+    const w2=250, h2=76, x=W/2-w2/2, y=H*0.56;
+    cloud(g,x,y,w2,h2,{seed:53});
+    pTxt(g,'ได้รับพร',W/2,y+18,CL.gold,13,'center');
+    pTxt(g,A.dev.bless,W/2,y+31,CL.ink,7,'center');
+    pTxt(g,A.s.th+' · '+A.s.en,W/2,y+48,CL.ink,9,'center');
+    pTxt(g,'+'+A.s.cost+' บุญ spent — still counted as earned',W/2,y+60,CL.ink3,6,'center');
+    if(A.t>2.2){ g.globalAlpha=0.6+0.4*Math.sin(GS.t*5);
+      pTxt(g,'E — go back down',W/2,y+h2+16,'#fff6dc',7,'center'); g.globalAlpha=1; }
+  }
+}
+
+function devaPlate(g,d){
+  g.font=fontFor(d.th,12); const w1=g.measureText(d.th).width;
+  g.font=fontFor(d.en,6);  const w2=g.measureText(d.en).width;
+  const w=Math.max(w1,w2)+34;
+  cloud(g,W/2-w/2,10,w,24,{seed:11});
+  pTxt(g,d.th,W/2,22,CL.ink,12,'center');
+  pTxt(g,d.en,W/2,31,CL.ink2,6,'center');
+}
+
+/* ============================================================
+   THE MAP — a cloud-and-ink map of the one long road
+   ============================================================ */
+const MAP_PINS = [
+  {x:()=>560,        th:'เจดีย์',   en:'ruined chedi',  ic:'chedi'},
+  {x:()=>POND_X,     th:'บ่อดิน',       en:'clay pond',     ic:'water'},
+  {x:()=>FALLEN_TREE_X, th:'ไม้ล้ม', en:'fallen tree',   ic:'log', done:()=>GS.q.tree},
+  {x:()=>LAMP_XS[BROKEN_LAMP], th:'เสาไฟ', en:'dark lamp', ic:'lamp', done:()=>GS.q.lamp},
+  {x:()=>CRAFT_X,    th:'ที่สาน',    en:'workbench',     ic:'craft'},
+  {x:()=>SHRINE_X,   th:'ศาลพระภูมิ',   en:'spirit house',  ic:'shrine'},
+  {x:()=>TAMARIND_X, th:'ต้นมะขาม',  en:'tamarind + cat', ic:'cat', done:()=>GS.q.cat},
+  {x:()=>KITCHEN_X,  th:'ครัว',         en:'the kitchen',   ic:'wok'},
+  {x:()=>TANI_X,     th:'นางตานี',      en:'Nang Tani',     ic:'tani'},
+  {x:()=>SALA_X,     th:'วัด',          en:'the temple',    ic:'bell'},
+];
+function drawMap(g,x0,y0,w,h){
+  cloud(g,x0,y0,w,h,{seed:97,top:'#fdf6e2',body:'#f1e5c8',under:'#d9c9a2',edge:'#b09a72'});
+  const rx=x0+16, rw=w-32, ry=y0+h*0.56;
+  pTxt(g,'แผนที่หมู่บ้าน',x0+14,y0+16,CL.ink,11);
+  pTxt(g,'THE ONE LONG ROAD · west to east',x0+120,y0+15,CL.ink3,6);
+  // zone bands, named along the top
+  ZONES.forEach((z,i)=>{
+    const a=rx+rw*(z.a/WORLD_W), b=rx+rw*(z.b/WORLD_W);
+    pR(g,a,y0+24,Math.max(1,b-a-1),9, i%2?'rgba(90,130,90,0.18)':'rgba(140,115,70,0.18)');
+    pTxt(g,z.name,(a+b)/2,y0+31,CL.ink2,6,'center');
+    pR(g,a,y0+24,1,ry-y0-24,'rgba(150,130,95,0.45)');
+  });
+  // the road itself
+  pR(g,rx,ry-2,rw,5,'#c2a97e'); pR(g,rx,ry-2,rw,1,'#dcc79a');
+  for(let i=0;i<rw;i+=7) pR(g,rx+i,ry+1,4,1,'#a88b5e');
+  // pins on three tiers above, so labels never collide
+  MAP_PINS.forEach((p,i)=>{
+    const px2=rx+rw*(p.x()/WORLD_W);
+    const tier=i%3;
+    const py=ry-16-tier*13;
+    pR(g,px2,py+5,1,ry-py-4,'rgba(140,120,85,0.7)');
+    const done=p.done&&p.done();
+    pEll(g,px2,py,4.4,4.4, done?'#8fbf6a':'#f2c14e');
+    pEll(g,px2,py,3.2,3.2, done?'#d4f0b4':'#fff0b8');
+    if(done) pTxt(g,'✓',px2,py+2,'#2e5a1e',6,'center');
+    else pR(g,px2-1,py-1,2,2,'#8a6a1e');
+    pTxt(g,p.th,px2,py-6,CL.ink,6,'center');
+  });
+  // the people, on a row of their own
+  const fy=ry+16;
+  pTxt(g,'เพื่อน',rx-2,fy+3,CL.ink3,6,'right');
+  for(const s of SPIRITS){
+    const px2=rx+rw*(s.x/WORLD_W);
+    pR(g,px2,ry+3,1,fy-ry-6,'rgba(140,120,85,0.5)');
+    pEll(g,px2,fy,4.2,4.2, s.friend?'#e8829e':'#b8aec8');
+    pTxt(g, s.friend?'♥':'?', px2, fy+2, s.friend?'#6e2038':'#4a4458',6,'center');
+    pTxt(g, s.name, px2, fy+13, s.friend?'#8a3a54':CL.ink3, 6,'center');
+  }
+  // you are here
+  const yx=rx+rw*(P.x/WORLD_W);
+  const bob=Math.sin(GS.t*3)*1.5;
+  pR(g,yx,ry-3,1,10,'#8f2a20');
+  pTaper(g,yx,ry+7+bob,yx,ry-1+bob,5,2,'#c0392f');
+  pEll(g,yx,ry-2+bob,3.6,3.6,'#e05a48'); pEll(g,yx-1,ry-3+bob,1.4,1.4,'#ffb0a0');
+  pTxt(g,'คุณอยู่นี่',yx,ry+16+bob,'#8f2a20',6,'center');
+  pTxt(g,'♥ friends · ? still waiting',x0+14,y0+h-10,CL.ink3,6);
+  let obj = !GS.q.metPhra? 'go east to the spirit house'
+    : GS.q.done? 'wander as long as you like'
+    : GS.ready? 'return to the spirit house'
+    : GS.merit>=GOAL? 'tell พระภูมิ — the ledger is full'
+    : SPIRITS.some(s=>!s.friend)? 'somebody out there is still waiting'
+    : 'keep making things and giving them away';
+  pTxt(g,'→ '+obj,x0+w-12,y0+h-10,CL.ink2,6,'right');
+}
+
+/* ============================================================
+   SIGNPOSTS, drawn live so the lettering is real
+   ============================================================ */
+function drawSigns(g){
+  for(const s of SIGNS){
+    if(s.x-GS.camX<-90||s.x-GS.camX>W+90) continue;
+    const gy=groundY(s.x), top=gy-70;
+    // left board
+    g.font=fontFor(s.l,6);
+    const wl=g.measureText(s.l).width+16;
+    pR(g,s.x-4-wl,top,wl,13,'#b8935c'); pR(g,s.x-4-wl,top,wl,2,'#d3b478'); pR(g,s.x-4-wl,top+11,wl,2,'#8a6a3c');
+    pTri(g,s.x-4-wl-7,top+6,s.x-4-wl,top,s.x-4-wl,top+13,'#b8935c');
+    pTxt(g,s.l,s.x-10-wl+8,top+9,'#3f2f1c',6);
+    // right board
+    g.font=fontFor(s.r,6);
+    const wr=g.measureText(s.r).width+16;
+    pR(g,s.x+4,top+16,wr,13,'#a3835a'); pR(g,s.x+4,top+16,wr,2,'#c4a46e'); pR(g,s.x+4,top+27,wr,2,'#7a5c34');
+    pTri(g,s.x+4+wr+7,top+22,s.x+4+wr,top+16,s.x+4+wr,top+29,'#a3835a');
+    pTxt(g,s.r,s.x+12,top+25,'#3f2f1c',6);
+    // a small lantern hanging off the post
+    pR(g,s.x-1,top+30,3,gy-top-30,'#7d5a3c');
+    pEll(g,s.x+1,top+40,4,5,'#ffc44d'); pEll(g,s.x+1,top+39,2.4,3,'#ffe0a0');
+  }
+}
+/* ============================================================
+   CLOUD UI — these definitions replace the flat panels above
+   ============================================================ */
+function panel(g,x,y,w,h,acc){ cloud(g,x,y,w,h,{seed:((x*13+y*7+w*3+h)|0), acc}); }
+function inkPanel(g,x,y,w,h,acc){   // a night cloud, for text that stays light
+  cloud(g,x,y,w,h,{seed:((x*7+y*11+w)|0), top:'#2a2440', body:'#1e1a33', under:'#151226', edge:'#4a4266', rim:'#3a3454', acc});
+}
+function bubble(g,x,y,txt){
+  g.font=fontFor(txt,6);
+  const w2=g.measureText(txt).width+14;
+  cloudBubble(g,x,y-14,w2,13,x-2,y+2,{seed:(w2*3)|0});
+  pTxt(g,txt,x,y-5,CL.ink,6,'center');
+}
+function wishBubble(g,t,y){
+  if(!has('eye') || !t.wants) return;
+  if(GS.friends[t.id]) return;
+  const it=ITEMS[t.wants]; if(!it) return;
+  const bob=Math.sin(GS.t*2+t.x)*1.2, by=y-22+bob;
+  cloudBubble(g,t.x,by,26,20,t.x-3,by+27,{seed:9});
+  drawIcon(g,t.wants,t.x,by+10,0.72);
+}
+function drawKhwan(g,ent){
+  const k=ent||KHWAN, x=k.x, y=k.y;
+  drawGlow(g,x,y,20,'#96dcff',0.26);
+  for(let i=0;i<5;i++){ g.globalAlpha=0.3-i*0.05;
+    pEll(g,x-Math.sin(k.anim*2+i*0.6)*2, y+5+i*2.4, 3.4-i*0.5, 2-i*0.25, '#8fd8f0'); }
   g.globalAlpha=1;
-  pTxt(g,'E / ENTER',12,H-6,'#5a5468',6);
+  oEll(g,x,y,6.4,6,'#dff4ff','#5a86a8');
+  pEll(g,x-2,y-2,2.6,2,'#ffffff');
+  pTaper(g,x,y-6,x+Math.sin(k.anim*2)*1.5,y-11,3,1.4,'#3a3350');
+  pEll(g,x+Math.sin(k.anim*2)*1.5,y-11,2,2,'#3a3350');
+  const blink=k.blink<0;
+  if(blink){ pR(g,x-3,y,3,1,'#3a4c60'); pR(g,x+1,y,3,1,'#3a4c60'); }
+  else { pEll(g,x-2,y,1.5,1.8,'#2a3648'); pEll(g,x+2.4,y,1.5,1.8,'#2a3648');
+    pR(g,x-2.4,y-0.8,1,1,'#fff'); pR(g,x+2,y-0.8,1,1,'#fff'); }
+  pEll(g,x,y+3,1.6,1,'#e08a9a');
+  pEll(g,x-4.6,y+1.6,1.4,1,'#ffb0be'); pEll(g,x+4.6,y+1.6,1.4,1,'#ffb0be');
+  pTaper(g,x-5,y+1,x-8+Math.sin(k.anim*3)*1.4,y+3,2,1,'#dff4ff');
+  pTaper(g,x+5,y+1,x+8-Math.sin(k.anim*3)*1.4,y+3,2,1,'#dff4ff');
+}
+function drawKhwanBubble(g){
+  const k=KHWAN;
+  // one voice at a time: the guide waits her turn while somebody else is talking
+  if(!k.bub || GS.state!=='play' || DLG) return;
+  const x=k.x-GS.camX, y=k.y-GS.camY;
+  const lines=wrap(g,k.bub,150,6).slice(0,3);
+  const w2=Math.max(...lines.map(l=>{g.font=fontFor(l,6);return g.measureText(l).width}))+18;
+  const bh=lines.length*8+12;
+  const bx=clamp(x-w2/2, 6, W-w2-6);
+  const by=clamp(y-22-bh, 60, H-bh-70);
+  cloudBubble(g,bx+w2/2,by,w2,bh,x-4,y-9,{seed:5});
+  lines.forEach((l,i)=>pTxt(g,l,bx+w2/2,by+13+i*8,CL.ink,6,'center'));
+}
+
+/* ---------------- HUD ---------------- */
+function drawHUD(){
+  const g=ctx;
+  const bw=104;
+  cloud(g,8,7,bw+58,22,{seed:1});
+  pTxt(g,'บุญ',13,23,'#8f6a1e',11);
+  pR(g,36,13,bw,6,'#cbbfa6');
+  const pr=clamp(GS.merit/GOAL,0,1);
+  pR(g,36,13,bw*pr,6,meritFlash>0?'#fff0b0':PAL.gold);
+  pR(g,36,13,bw*pr,1,'#fffdf6');
+  for(let i=1;i<4;i++) pR(g,36+bw*i/4,13,1,6,'rgba(120,100,70,0.4)');
+  pTxt(g,GS.merit+'/'+GOAL,36+bw+4,19,CL.ink,7);
+  pTxt(g, avail()>0? '✦'+avail()+' to spend · TAB' : 'TAB — ledger & map', 36,27, avail()>0?'#5a7a3c':CL.ink3,6);
+
+  const ids=Object.keys(GS.bag).filter(k=>GS.bag[k]>0).slice(0,8);
+  if(ids.length){
+    const bwid=ids.length*19+12;
+    cloud(g,8,34,bwid,21,{seed:2});
+    ids.forEach((id,i)=>{ drawIcon(g,id,20+i*19,45,0.62);
+      pTxt(g,''+GS.bag[id],26+i*19,53,CL.ink,6); });
+  }
+  const z=zoneAt(P.x);
+  if(GS._zone!==z.id){ GS._zone=z.id; GS.zoneName=3.2; GS._zoneZ=z; }
+  if(GS.zoneName>0){
+    GS.zoneName-=1/60;
+    const a=clamp(GS.zoneName,0,1)*clamp((3.2-GS.zoneName)*3,0,1);
+    g.globalAlpha=a;
+    cloud(g,W-150,8,138,26,{seed:4});
+    pTxt(g,GS._zoneZ.name,W-20,22,CL.ink,13,'right');
+    pTxt(g,GS._zoneZ.en,W-20,31,CL.ink3,6,'right');
+    g.globalAlpha=1;
+  }
+  GS.toasts.forEach((t,i)=>{
+    t.t+=1/60;
+    const a=t.t<0.2?t.t/0.2:t.t>2.2?clamp((2.8-t.t)/0.6,0,1):1;
+    g.globalAlpha=a;
+    g.font=fontFor(t.text,7);
+    const tw=g.measureText(t.text).width+20;
+    cloud(g,W/2-tw/2,80+i*17-t.t*3,tw,14,{seed:(i*7+3)});
+    pTxt(g,t.text,W/2,90+i*17-t.t*3,CL.ink,7,'center');
+    g.globalAlpha=1;
+  });
+  GS.toasts=GS.toasts.filter(t=>t.t<2.8);
+  if(PROMPT){
+    const s=PROMPT.txt;
+    g.font=fontFor(s,7);
+    const w2=g.measureText(s).width+22;
+    const x=PROMPT.x-GS.camX, y=PROMPT.y-GS.camY;
+    cloud(g,x-w2/2,y-13,w2,14,{seed:6});
+    pTxt(g,s,x,y-3,CL.ink,7,'center');
+    if(PROMPT.sub){ g.font=fontFor(PROMPT.sub,6);
+      const w3=g.measureText(PROMPT.sub).width+18;
+      cloud(g,x-w3/2,y+6,w3,12,{seed:8,top:'#eef7e6',body:'#dcecd0',under:'#c2d6b4',edge:'#96ab88'});
+      pTxt(g,PROMPT.sub,x,y+14,'#3a4a30',6,'center'); }
+  }
+  if(!PROMPT && !DLG){
+    g.globalAlpha=0.8;
+    pTxt(g,'E interact · G give · C วี้ด · TAB ledger & map',W/2,H-8,'#e8e0d0',6,'center');
+    g.globalAlpha=1;
+  }
+}
+/* ---------------- dialogue, with a face ---------------- */
+function drawDialog(g){
+  if(!DLG) return;
+  const L=DLG.lines[DLG.i];
+  const key=speakerKey(L.w);
+  const bh=58, by=H-bh-10, bx=key?70:20, bw=W-bx-20;
+  cloud(g,bx,by,bw,bh,{seed:77});
+  if(key){
+    const pr=portrait(key);
+    const px2=bx-56, py=by+bh/2-24;
+    cloud(g,px2-4,py-4,56,56,{seed:79,top:'#fff8e8',body:'#f2e8d2',under:'#d8c9a8',edge:'#b09a72'});
+    g.drawImage(pr, R(px2), R(py));
+    // a soft bob so the speaker feels alive
+    const bob=Math.sin(GS.t*3)*0.6;
+    g.globalAlpha=0.18; g.drawImage(pr, R(px2), R(py+bob-1)); g.globalAlpha=1;
+  }
+  let ty=by+16;
+  if(L.w){ pTxt(g,L.w,bx+12,ty, '#8f4a2a', 8); ty+=11; }
+  const shown=L.t.slice(0,DLG.ch|0);
+  for(const line of wrap(g,shown,bw-26,7).slice(0,3)){ pTxt(g,line,bx+12,ty,CL.ink,7); ty+=10; }
+  if((DLG.ch|0)>=L.t.length){ g.globalAlpha=0.5+0.5*Math.sin(GS.t*6); pTxt(g,'▾',bx+bw-14,by+bh-8,CL.gold,8); g.globalAlpha=1; }
+}
+function drawTaskHUD(g){
+  const t=HT;
+  const N={lamp:['เสาไฟฟ้า','splice the streetlight'],cat:['แมวติดต้นไม้','lift the cat down'],
+           tree:['ต้นไม้ล้ม','clear the fallen tree'],garland:['พวงมาลัย','hang the garland']}[t.kind];
+  cloud(g,10,6,W-20,20,{seed:12});
+  pTxt(g,N[0],20,21,CL.ink,10); pTxt(g,N[1],W-20,21,CL.ink2,7,'right');
+  const bw=150, bx=W/2-bw/2;
+  cloud(g,bx-8,H-30,bw+16,20,{seed:14});
+  pR(g,bx,H-24,bw,7,'#cbbfa6');
+  pR(g,bx,H-24,bw*clamp(t.prog,0,1),7,t.prog>0.9?'#ffe89a':PAL.gold);
+  const hint={lamp:'grip the live end (E), bring it to the socket, hold steady',
+    cat:'move SLOWLY. she is not afraid of big — she is afraid of sudden.',
+    tree:'hold E to lift · steer ◀ ▶ to keep it level',
+    garland:'ease the loop onto the hook and hold still'}[t.kind];
+  pTxt(g,hint,W/2,H-34,'#e8e0d0',6,'center');
+  if(t.kind==='tree'){ pR(g,W/2-40,H-44,80,4,'rgba(10,8,24,0.7)');
+    pR(g,W/2-1+t.bal*38,H-45,3,6,Math.abs(t.bal)>0.7?PAL.ember:'#8fc4e8'); }
+  if(t.kind==='cat'){ pR(g,W/2-40,H-44,80,4,'rgba(10,8,24,0.7)');
+    pR(g,W/2-40,H-44,80*t.cat.fear,4,t.cat.fear>0.6?PAL.ember:'#8fc4e8');
+    pTxt(g,'ตกใจ',W/2-44,H-40,'#e8e0d0',6,'right'); }
+  if(t.fail>0){ const s=t.kind==='cat'?'gently!':'steady!';
+    g.font=fontFor(s,12); const w2=g.measureText(s).width+22;
+    cloud(g,W/2-w2/2,H/2-10,w2,20,{seed:16});
+    pTxt(g,s,W/2,H/2+4,'#a8392c',12,'center'); }
+  pTxt(g,'ESC — step back',14,H-8,'#cfc4ae',6);
+}
+
+/* ---------------- kitchen & workbench ---------------- */
+function drawAct(g){
+  const A=ACT, cook=A.mode==='cook';
+  g.fillStyle='rgba(14,11,26,0.82)'; g.fillRect(0,0,W,H);
+  cloud(g,10,6,W-20,26,{seed:21});
+  pTxt(g, cook?'ครัว':'งานฝีมือ', 20, 24, cook?'#a8492c':'#8f6a1e', 15);
+  pTxt(g, cook?'THE KITCHEN':'THE WORKBENCH', 108, 23, CL.ink3, 6);
+  pTxt(g,'ESC — step away', W-20, 23, CL.ink3, 6, 'right');
+
+  if(A.phase==='pick'){
+    const r=actRecipe();
+    A.ids.forEach((id,i)=>{
+      const b=A.book[id], y=40+i*23, sel=i===A.pick, ok=canMake(b);
+      if(sel) cloud(g,14,y,180,20,{seed:30+i,top:'#fff8e0',body:'#f4e8c4',under:'#dcc890',edge:'#b09a62'});
+      else cloud(g,16,y+1,176,18,{seed:30+i,drop:1,top:'#e8e0cc',body:'#d8cdb4',under:'#bfb195',edge:'#9c8f76'});
+      drawIcon(g,b.out,30,y+10,0.6);
+      pTxt(g,b.th,46,y+9, ok?CL.ink:CL.ink3,8);
+      pTxt(g,b.en,46,y+17, ok?CL.ink2:CL.ink3,6);
+      if(GS.learned[id]!==undefined) pTxt(g,'✓',184,y+13,'#4a7a2c',7,'right');
+    });
+    cloud(g,204,40,W-218,H-56,{seed:44});
+    // the dish itself, plated, as the centrepiece of the page
+    if(cook) drawPlate(g,r.out,204+(W-218)/2,84,0.86);
+    else drawCraftShow(g,r.out,204+(W-218)/2,86,0.8);
+    pTxt(g,r.th,204+(W-218)/2,116,CL.ink,13,'center');
+    pTxt(g,r.en,204+(W-218)/2,126,CL.ink2,7,'center');
+    let y=142, x=216;
+    pTxt(g,'ต้องใช้ · you need',216,y,CL.ink3,6); y+=6;
+    for(const k in r.need){
+      const have=GS.bag[k]||0, need=r.need[k];
+      cloud(g,x,y,34,30,{seed:(k.length*9+x)|0,drop:1});
+      drawIcon(g,k,x+17,y+12,0.6);
+      pTxt(g,have+'/'+need,x+17,y+26, have>=need?'#3f6a2c':'#a8392c',6,'center');
+      x+=40;
+    }
+    y+=40;
+    r.steps.forEach((s,i)=>{ const k=STEP_KIND[s];
+      pTxt(g,(i+1)+'. '+k.th+' — '+k.en, 218, y+i*9, CL.ink2,6); });
+    y+=r.steps.length*9+6;
+    for(const l of wrap(g,r.d,W-244,6).slice(0,2)){ pTxt(g,l,216,y,CL.ink3,6); y+=8; }
+    const ok=canMake(r);
+    g.globalAlpha=A.flash>0?0.4:1;
+    pTxt(g, ok?'E — make it':'you are missing something', W-30, H-22, ok?'#8f6a1e':'#a8392c',8,'right');
+    g.globalAlpha=1;
+    pTxt(g,'▲ ▼ choose',216,H-22,CL.ink3,6);
+    return;
+  }
+  if(A.phase==='done'){
+    const r=actRecipe();
+    const w2=230,h2=132, x=W/2-w2/2, y=H/2-h2/2-4;
+    cloud(g,x,y,w2,h2,{seed:55,top:'#fffaea',body:'#f6ecd4',under:'#dfceA8'.replace('A','a'),edge:'#b8a276'});
+    pTxt(g,'เสร็จแล้ว!',W/2,y+20,'#8f6a1e',14,'center');
+    if(A.mode==='cook') drawPlate(g,r.out,W/2,y+62,1.05);
+    else drawCraftShow(g,r.out,W/2,y+64,1);
+    pTxt(g,r.th,W/2,y+96,CL.ink,10,'center');
+    const q=A.quality;
+    const word=q>0.85?'อร่อยมาก · perfect':q>0.55?'อร่อย · good':'พอกินได้ · edible';
+    pTxt(g,word,W/2,y+108,q>0.85?'#8f6a1e':CL.ink2,7,'center');
+    if(has('two')) pTxt(g,'สองมือ — you made two',W/2,y+118,'#4a7a2c',6,'center');
+    g.globalAlpha=0.6+0.4*Math.sin(GS.t*5);
+    pTxt(g,'E',W/2,y+h2+14,'#fff6dc',8,'center'); g.globalAlpha=1;
+    // a shower of little sparkles over the finished thing
+    for(let i=0;i<9;i++){ const a=GS.t*1.6+i*0.7;
+      pR(g,W/2+Math.cos(a)*(40+i*3), y+58+Math.sin(a*1.4)*22, 1,1, i%2?PAL.goldL:'#fff6e0'); }
+    return;
+  }
+
+  const r=actRecipe(), k=A.k;
+  cloud(g,W/2-116,38,232,28,{seed:61});
+  pTxt(g,r.th,W/2,54,CL.ink,12,'center');
+  pTxt(g,'ขั้นที่ '+(A.step+1)+'/'+r.steps.length+' · '+k.th+' — '+k.en, W/2, 63,CL.ink2,6,'center');
+
+  const cxp=W/2, cyp=132;
+  if(cook){
+    pR(g,cxp-40,cyp+22,80,20,'#a8633a'); pR(g,cxp-40,cyp+22,80,3,'#c47c4c');
+    for(let i=0;i<5;i++){ const fh=8+Math.sin(GS.t*9+i)*4;
+      pTaper(g,cxp-22+i*11,cyp+30,cxp-22+i*11+Math.sin(GS.t*7+i)*3,cyp+30-fh,5,1, i%2?'#ff9a3c':'#ffd257'); }
+    pEll(g,cxp,cyp+18,44,13,'#3a3a42'); pEll(g,cxp,cyp+15,40,11,'#5a5a64'); pEll(g,cxp,cyp+13,34,8,'#2e2e36');
+    const rc=ITEMS[r.out].c;
+    pEll(g,cxp,cyp+13,26,6,rc);
+    for(let i=0;i<6;i++){ const a=GS.t*2+i; pEll(g,cxp+Math.cos(a)*16,cyp+12+Math.sin(a)*3,3,2,shade(rc,0.2)); }
+    if(Math.random()<0.4) pSmoke(cxp+rnd(-16,16), cyp+4);
+  } else {
+    pEll(g,cxp,cyp+26,58,12,'#8a6f52'); pEll(g,cxp,cyp+24,54,10,'#a3865f');
+    for(let i=0;i<6;i++) pR(g,cxp-48+i*17,cyp+16,14,14, i%2?'#c9a86a':'#b8985c');
+    drawIcon(g,r.out,cxp,cyp+6,1.4);
+  }
+  const hw = A.flash>0? 6 : 0;
+  const hx1=cxp-38, hx2=cxp+38, hy=cyp-16-hw;
+  for(const [hx,fl] of [[hx1,1],[hx2,-1]]){
+    pTaper(g,hx-fl*24,cyp-58,hx,hy,7,5,PAL.paleD);
+    oEll(g,hx,hy,7,8,PAL.pale,'#463d59');
+    for(let f2=0;f2<4;f2++){ const fa=Math.PI*0.5+(f2-1.5)*0.3;
+      pTaper(g,hx,hy,hx+Math.cos(fa)*11*fl,hy+Math.sin(fa)*11,3,2,PAL.pale); }
+  }
+
+  const mx=W/2-90, my=H-52, mw=180;
+  const easy=(cook?(has('taste')?1.5:1):(has('weave')?1.5:1));
+  if(k.t==='timing'){
+    cloud(g,mx-10,my-12,mw+20,32,{seed:71});
+    pR(g,mx,my,mw,8,'#cbbfa6');
+    const zw=0.13*easy*mw;
+    pR(g,mx+mw*0.5-zw,my,zw*2,8,'rgba(90,180,110,0.45)');
+    pR(g,mx+mw*0.5-zw*0.45,my,zw*0.9,8,'rgba(140,235,160,0.7)');
+    pR(g,mx+mw*A.m-1,my-3,3,14, A.flash>0? (A.perfect>0?'#2f8f4c':A.perfect<0?'#a8392c':'#8f6a1e') : '#3b3128');
+    pTxt(g,'E  ·  '+A.hits+'/'+A.need, W/2, my+18,CL.ink,7,'center');
+  } else if(k.t==='rhythm'){
+    cloud(g,mx-10,my-12,mw+20,40,{seed:72});
+    const wantLeft=(A.hits%2)===0;
+    pR(g,mx,my,mw,8,'#cbbfa6');
+    const pulse=1-Math.abs(A.m-0.5)*2;
+    pR(g,mx+mw*0.5-mw*0.24*pulse,my,mw*0.48*pulse,8,'rgba(90,180,110,0.45)');
+    pTxt(g, wantLeft?'◀':'▶', W/2, my+7, A.flash>0&&A.perfect<0?'#a8392c':CL.ink,12,'center');
+    pTxt(g, A.hits+'/'+A.need, W/2, my+18,CL.ink,7,'center');
+    pTxt(g,'alternate ◀ ▶ on the beat',W/2,my+27,CL.ink3,6,'center');
+  } else if(k.t==='hold'){
+    cloud(g,mx-10,my-20,mw+20,44,{seed:73});
+    pR(g,mx,my-8,mw,16,'#cbbfa6');
+    const bw2=0.13*easy*mw;
+    pR(g,mx+mw*A.band-bw2,my-8,bw2*2,16,'rgba(90,180,110,0.45)');
+    pR(g,mx+mw*A.gauge-1,my-11,3,22,'#3b3128');
+    pR(g,mx,my+10,mw*clamp(A.held/k.dur,0,1),3,'#8f6a1e');
+    pTxt(g,'hold E — keep it in the green',W/2,my+20,CL.ink,6,'center');
+  } else if(k.t==='place'){
+    cloud(g,mx-10,my-12,mw+20,32,{seed:74});
+    pR(g,mx,my,mw,8,'#cbbfa6');
+    for(let i=0;i<A.need;i++){
+      const t=(i+0.5)/A.need;
+      pR(g,mx+mw*t-6,my,12,8, i<A.placed? 'rgba(90,180,110,0.55)':'rgba(180,150,90,0.3)');
+      if(i===A.placed) pR(g,mx+mw*t-1,my-3,3,14,'rgba(90,70,40,0.5)');
+    }
+    pR(g,mx+mw*A.cursor-1,my-3,3,14, A.flash>0? (A.perfect>0?'#2f8f4c':'#a8392c'):'#3b3128');
+    pTxt(g,'E on the mark  ·  '+A.placed+'/'+A.need,W/2,my+18,CL.ink,7,'center');
+  }
+}
+/* ---------------- giving ---------------- */
+function drawGive(g){
+  const G3=GIVE, t=G3.target;
+  g.fillStyle='rgba(14,11,26,0.74)'; g.fillRect(0,0,W,H);
+  const key=speakerKey(t.name)|| (t.art? t.id : t.id);
+  cloud(g,W/2-120,22,240,30,{seed:81});
+  pTxt(g,'ให้ '+t.name, W/2, 40, CL.ink, 13,'center');
+  try{ const pr=portrait(key); g.drawImage(pr, R(W/2-140), R(20), 44,44); }catch(e){}
+  const n=G3.list.length, cw=54;
+  const x0=W/2-(n*cw)/2;
+  G3.list.forEach((id,i)=>{
+    const x=x0+i*cw+cw/2, sel=i===G3.i;
+    if(sel) cloud(g,x-25,80,50,62,{seed:90+i,top:'#fff8e0',body:'#f4e8c4',under:'#dcc890',edge:'#b09a62'});
+    else cloud(g,x-23,82,46,58,{seed:90+i,drop:1,top:'#e8e0cc',body:'#d8cdb4',under:'#bfb195',edge:'#9c8f76'});
+    drawIcon(g,id,x,106,1.1);
+    pTxt(g,ITEMS[id].th,x,128,sel?CL.ink:CL.ink2,6,'center');
+    pTxt(g,'×'+GS.bag[id],x,137,CL.ink3,6,'center');
+  });
+  if(has('eye') && t.wants && !GS.friends[t.id]){
+    cloud(g,W/2-100,154,200,22,{seed:99,top:'#eef7e6',body:'#dcecd0',under:'#c2d6b4',edge:'#96ab88'});
+    pTxt(g,'ตาใน — hoping for '+ITEMS[t.wants].th, W/2, 169,'#3a4a30',6,'center');
+    drawIcon(g,t.wants,W/2+86,165,0.5);
+  }
+  pTxt(g,'◀ ▶ choose · E give · ESC keep it', W/2, H-22,'#e8e0d0',6,'center');
+}
+/* ---------------- the ledger ---------------- */
+function stepTree(dt){
+  GS.seen.ledger=true;
+  if(press('back')||press('tree')){ GS.state='play'; AU.sel(); clearPress(); return; }
+  if(press('heavy')||press('whistle')||press('give')){ TREE.tab=(TREE.tab+1)%4; TREE.row=0; AU.sel(); }
+  if(TREE.tab===0){
+    const keys=Object.keys(SKILLS);
+    if(press('left')){ TREE.col=(TREE.col+2)%3; AU.blip(); }
+    if(press('right')){ TREE.col=(TREE.col+1)%3; AU.blip(); }
+    const col=keys.filter(k=>SKILLS[k].br===TREE.col);
+    if(press('up')) { TREE.row=clamp(TREE.row-1,0,col.length-1); AU.blip(); }
+    if(press('down')){ TREE.row=clamp(TREE.row+1,0,col.length-1); AU.blip(); }
+    TREE.row=clamp(TREE.row,0,col.length-1);
+    if(press('act')){
+      const id=col[TREE.row], s=SKILLS[id];
+      if(GS.skills[id]) AU.blip();
+      else if(s.need && !GS.skills[s.need]){ toast('learn '+SKILLS[s.need].en+' first','#a8392c'); AU.blip(); }
+      else if(avail()<s.cost){ toast('you need '+(s.cost-avail())+' more บุญ','#a8392c'); AU.blip(); }
+      else { startAscend(id); clearPress(); return; }   // up you go
+    }
+  } else if(TREE.tab===1){
+    const ids=Object.keys(COSMETICS).filter(c=>!COSMETICS[c].locked || GS.seen['own_'+c]);
+    if(press('left')) { TREE.row=(TREE.row+ids.length-1)%ids.length; AU.blip(); }
+    if(press('right')){ TREE.row=(TREE.row+1)%ids.length; AU.blip(); }
+    if(press('up')||press('down')){ TREE.row=clamp(TREE.row+(K.up?-4:4),0,ids.length-1); AU.blip(); }
+    TREE.row=clamp(TREE.row,0,ids.length-1);
+    if(press('act')){
+      const id=ids[TREE.row], c=COSMETICS[id], owned=GS.seen['own_'+id]||c.cost===0;
+      if(owned){ GS.cos[c.slot]= c.slot==='skirt'? c.v : (GS.cos[c.slot]?0:c.v); AU.sel(); saveGame(); }
+      else if(avail()>=c.cost){ GS.spent+=c.cost; GS.seen['own_'+id]=true; GS.cos[c.slot]=c.v; AU.unlock(); toast('got '+c.th,PAL.jadeL); saveGame(); }
+      else { toast('not enough บุญ','#a8392c'); AU.blip(); }
+    }
+  } else if(TREE.tab===2){
+    const list=GIFTEES();
+    if(press('up')||press('left'))  { TREE.row=(TREE.row+list.length-1)%list.length; AU.blip(); }
+    if(press('down')||press('right')){ TREE.row=(TREE.row+1)%list.length; AU.blip(); }
+  }
+  clearPress();
+}
+function drawLedger(g){
+  // a sky of clouds behind the page
+  pVGrad(g,0,0,W,H,'#1a2148','#2c3560',7);
+  for(let i=0;i<14;i++){
+    const cx=((i*97 + GS.t*4)%(W+160))-80, cy=18+((i*53)%(H-40));
+    g.globalAlpha=0.14;
+    puffCloud(g,cx,cy,46+((i*7)%54),20+((i*5)%16),i*3);
+    g.globalAlpha=1;
+  }
+  cloud(g,8,6,W-16,28,{seed:101});
+  pTxt(g,'บัญชีกรรม',16,26,'#8f6a1e',14);
+  pTxt(g,'THE LEDGER',108,25,CL.ink3,7);
+  pTxt(g,'✦ '+avail()+' บุญ',W-16,20,'#8f6a1e',10,'right');
+  pTxt(g,GS.merit+' earned · '+GS.spent+' spent',W-16,29,CL.ink3,6,'right');
+  const tabs=['วิชา SKILLS','ของสวย LOOKS','เพื่อน FRIENDS','แผนที่ MAP'];
+  tabs.forEach((t,i)=>{
+    const x=10+i*118, on=TREE.tab===i;
+    if(on) cloud(g,x,38,112,15,{seed:110+i,top:'#fff8e0',body:'#f4e8c4',under:'#dcc890',edge:'#b09a62'});
+    else cloud(g,x+2,40,108,12,{seed:110+i,drop:1,top:'#dcd4c0',body:'#c9c0aa',under:'#b0a690',edge:'#8f8874'});
+    pTxt(g,t,x+56,49,on?CL.ink:CL.ink2,6,'center');
+  });
+  pTxt(g,'G — next tab',W-14,49,'#cfc4ae',6,'right');
+
+  if(TREE.tab===0){
+    const keys=Object.keys(SKILLS);
+    let selId=null;
+    for(let b=0;b<3;b++){
+      const col=keys.filter(k=>SKILLS[k].br===b);
+      const cx=64+b*(W-128)/2;
+      cloud(g,cx-52,58,104,20,{seed:120+b,drop:1});
+      pTxt(g,BRANCHES[b].th,cx-14,73,BRANCHES[b].c,12,'center');
+      pTxt(g,BRANCHES[b].en,cx+26,72,CL.ink3,6,'center');
+      col.forEach((id,i)=>{
+        const s=SKILLS[id], y=100+i*26;
+        const owned=!!GS.skills[id], locked=s.need&&!GS.skills[s.need];
+        const canBuy=!owned&&!locked&&avail()>=s.cost, sel=TREE.col===b&&TREE.row===i;
+        if(sel) selId=id;
+        if(i>0) pR(g,cx,y-16,1,12, owned?BRANCHES[b].c:'rgba(255,255,255,0.18)');
+        const r=8;
+        if(sel){ for(let k2=0;k2<20;k2++){ const a=k2/20*TAU+GS.t*0.6;
+          pR(g,cx+Math.cos(a)*(r+4),y+Math.sin(a)*(r+4),1,1,rgba(BRANCHES[b].c,0.8)); } }
+        pCirc(g,cx,y,r, owned?BRANCHES[b].c: locked?'#3a3550': canBuy?'#f2e8c8':'#5a5468');
+        pCirc(g,cx,y,r-3, owned?shade(BRANCHES[b].c,0.35):locked?'#2a2640':'#fffdf2');
+        if(owned) pTxt(g,'✓',cx,y+3,'#26221c',8,'center');
+        else if(locked) pTxt(g,'·',cx,y+3,'#6a6478',8,'center');
+        else pTxt(g,''+s.cost,cx,y+3,canBuy?'#8f6a1e':'#3b3128',7,'center');
+        pTxt(g,s.th,cx,y+17,owned?'#fff6dc':locked?'#6a6478':'#e8e0d0',7,'center');
+      });
+    }
+    const s=SKILLS[selId];
+    if(s){
+      cloud(g,12,H-46,W-24,38,{seed:130});
+      pTxt(g,s.th+' · '+s.en,22,H-31,BRANCHES[s.br].c,9);
+      const owned=GS.skills[selId];
+      pTxt(g, owned?'learned':(s.need&&!GS.skills[s.need])?('needs '+SKILLS[s.need].en):(s.cost+' บุญ · E to ascend'),
+        W-22,H-31,owned?'#4a7a2c':'#8f6a1e',7,'right');
+      let y=H-19;
+      for(const l of wrap(g,s.d,W-46,6).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,6); y+=8; }
+    }
+  } else if(TREE.tab===1){
+    const ids=Object.keys(COSMETICS).filter(c=>!COSMETICS[c].locked||GS.seen['own_'+c]);
+    ids.forEach((id,i)=>{
+      const c=COSMETICS[id], x=18+(i%4)*114, y=62+Math.floor(i/4)*44;
+      const owned=GS.seen['own_'+id]||c.cost===0, worn=GS.cos[c.slot]===c.v, sel=TREE.row===i;
+      if(sel) cloud(g,x,y,104,38,{seed:140+i,top:'#fff8e0',body:'#f4e8c4',under:'#dcc890',edge:'#b09a62'});
+      else cloud(g,x+2,y+2,100,34,{seed:140+i,drop:1,top:'#e4dcc8',body:'#d2c9b2',under:'#b8ae98',edge:'#978f7c'});
+      if(c.slot==='skirt'){ const S2=SKIRTS[c.v];
+        pR(g,x+8,y+8,19,21,S2.base); pR(g,x+19,y+8,8,21,S2.dark);
+        for(let k=0;k<4;k++) pR(g,x+8,y+11+k*5,19,1,S2.mark);
+      } else { pCirc(g,x+18,y+19,10,owned?PAL.gold:'#a89e8c'); pCirc(g,x+18,y+19,6,'#fffdf2');
+        pTxt(g,c.slot==='halo'?'☀':c.slot==='garland'?'❁':c.slot==='beads'?'○':c.slot==='sash'?'/':'✦',x+18,y+23,owned?'#8f6a1e':'#6a6478',9,'center'); }
+      pTxt(g,c.th,x+33,y+15,owned?CL.ink:CL.ink3,7);
+      pTxt(g,c.en,x+33,y+24,CL.ink2,6);
+      pTxt(g,owned?(worn?'worn ♥':'wear'):(c.cost+' บุญ'),x+33,y+33,owned?(worn?'#3f6a2c':CL.ink2):'#8f6a1e',6);
+    });
+    const c=COSMETICS[ids[TREE.row]];
+    if(c){ cloud(g,12,H-30,W-24,22,{seed:150}); pTxt(g,c.d,W/2,H-15,CL.ink2,6,'center'); }
+  } else if(TREE.tab===2){
+    const list=GIFTEES();
+    list.forEach((t,i)=>{
+      const x=14+(i%3)*154, y=60+Math.floor(i/3)*36;
+      const sel=TREE.row===i, made=GS.friends[t.id];
+      if(sel) cloud(g,x,y,148,32,{seed:160+i,top:'#fff8e0',body:'#f4e8c4',under:'#dcc890',edge:'#b09a62'});
+      else cloud(g,x+2,y+2,144,28,{seed:160+i,drop:1,top:'#e4dcc8',body:'#d2c9b2',under:'#b8ae98',edge:'#978f7c'});
+      pTxt(g,t.name,x+10,y+14, CL.ink,8);
+      const knows=has('eye')||made;
+      pTxt(g, made? '♥ friends' : knows? 'hoping for '+ITEMS[t.wants].th : 'wants something',
+        x+10,y+24, made?'#a8395c':CL.ink2,6);
+      if(knows) drawIcon(g,t.wants,x+132,y+16,0.58);
+    });
+    const t=list[TREE.row];
+    if(t){ cloud(g,12,H-44,W-24,36,{seed:170});
+      let y=H-29;
+      for(const l of wrap(g,t.about||t.line||'',W-46,6).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,6); y+=8; }
+      if(t.wish && !GS.friends[t.id] && has('eye')) pTxt(g,'wish: '+t.wish, 22, H-11, '#3a4a30',6);
+      pTxt(g,'สูตร '+Object.keys(GS.learned).length+'/'+(Object.keys(RECIPES).length+Object.keys(CRAFTS).length),W-22,H-11,CL.ink3,6,'right');
+    }
+  } else {
+    drawMap(g,12,62,W-24,H-76);
+  }
+  pTxt(g,'◀ ▶ ▲ ▼ move · E choose · TAB close',W/2,H-3,'#cfc4ae',6,'center');
 }
 /* ============================================================
    UPDATE
@@ -4010,20 +5524,7 @@ function update(dt){
       }
       if(press('newgame')){ clearSave(); newGame(); AU.ding(); }
       break;
-    case 'intro':
-      introCh+=dt*44;
-      if(press('act')||press('tap')){
-        AU.blip();
-        const cap=INTRO[introI].t;
-        if(introCh<cap.length) introCh=cap.length;
-        else { introI++; introCh=0;
-          if(introI>=INTRO.length){
-            GS.state='play'; GS.camX=clamp(P.x-W/2,0,WORLD_W-W);
-            KHWAN.x=P.x+26; KHWAN.y=P.y-46;
-            say(WAKE, ()=>{ khwanSay('That way. East. I will be right here.',6); });
-          } }
-      }
-      break;
+    case 'intro':  stepIntro(dt); break;
     case 'play':{
       stepDlg(dt);
       stepPlayer(dt);
@@ -4032,6 +5533,7 @@ function update(dt){
       if(!DLG){
         checkInteract();
         if(press('tree')||press('help')){ GS.state='tree'; TREE.tab=0; AU.sel(); }
+        if(press('map')){ GS.state='tree'; TREE.tab=3; AU.sel(); }
       }
       if(GS.ready && !GS.q.done && Math.abs(P.x-SHRINE_X)<44 && !DLG){ PROMPT=null; startCeremony(); }
       const gy=groundY(P.x);
@@ -4044,6 +5546,7 @@ function update(dt){
     case 'act':      PROMPT=null; stepKhwan(dt); stepAct(dt); break;
     case 'give':     PROMPT=null; stepGive(dt); break;
     case 'tree':     PROMPT=null; stepTree(dt); break;
+    case 'ascend':   PROMPT=null; stepAscend(dt); break;
     case 'ceremony': stepCeremony(dt); break;
     case 'end':
       GS.t2=(GS.t2||0)+dt;
@@ -4102,7 +5605,7 @@ function newGame(){
   KHWAN.x=300; KHWAN.y=groundY(300)-50;
   resetWorld();
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
-  introI=0; introCh=0; GS.state='intro'; GS.t=0;
+  introI=0; introCh=0; IN=null; GS.state='intro'; GS.t=0;
   saveGame();
 }
 function continueGame(sv){

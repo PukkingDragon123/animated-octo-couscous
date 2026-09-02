@@ -14,7 +14,7 @@ anything you cook. You're going to cook a great deal anyway.
 to lose. There is a village, some plants, a stove, a loom, and eleven people —
 five of them dead — who each quietly want one small thing.
 
-![the village road at night](screenshots/village-night.png)
+![the title screen](screenshots/title.png)
 
 **Playtime:** ~45 minutes · plays on desktop and phone · sound on if you can
 
@@ -32,11 +32,36 @@ no dependencies. Boots in about a quarter of a second.
 | E | talk · pick · cook · help · confirm |
 | G | give something you made |
 | C | วี้ดดด — the prete's whistle, which is just a hello |
-| Tab | the Ledger — skills, looks, and your friends |
-| M | mute · Esc | back |
+| Q | the map of the whole road |
+| Tab | the Ledger — skills, looks, friends, map |
+| M | mute · Esc | back · skip |
 
 On a phone the on-screen pads appear automatically. Turn it sideways.
 Progress saves in the browser.
+
+## The opening is played, not watched
+
+Three things you did in your last life, and you do each one yourself. Nobody
+narrates at you until after you've done it.
+
+**Creep across a dark room and take the coin.** ◀ ▶ moves you; moving makes
+noise, standing still lets it settle, and if the meter fills the woman asleep
+under the mosquito net rolls over and mumbles. Then **E** — and the offering
+bowl is one coin lighter.
+
+**Drink it dry.** Four presses of **E**. Each one tips the bottle, tips the
+whole frame a little further, and smears the stars sideways. Then you laugh
+past the temple gate where a monk is waiing at nobody, and the bell rings for
+you anyway.
+
+**Try to cheat the scale.** Everything you took is piled on one brass pan; on
+the other there is one flower. Hammer **◀ ▶** and the beam does lift — and
+then it sags right back, every time, because that is the entire point. When
+you give up it slams, and the soil starts to fall, and your eyes close on it.
+
+| | | |
+|---|---|---|
+| ![the taking](screenshots/intro-the-taking.png) | ![the drinking](screenshots/intro-the-drinking.png) | ![the scale](screenshots/intro-the-scale.png) |
 
 ## You wake up in a graveyard
 
@@ -54,6 +79,15 @@ here is going to hurt you.
 
 ![the graveyard you woke in](screenshots/the-graveyard.png)
 
+## The whole interface is made of clouds
+
+Every panel, bubble, tag and menu is a drawn cumulus with scalloped lobes, a
+lit top band and a soft shadow — no rectangles anywhere. Speakers get a round
+hand-drawn **portrait** on its own little cloud beside the dialogue, and only
+one voice talks at a time.
+
+![talking to Kong Koi](screenshots/making-friends.png)
+
 ## What you actually do
 
 **Pick things.** Rice and coriander in the paddies, chillies and lemongrass in the
@@ -64,15 +98,21 @@ grove, bamboo in the old forest, river clay by the pond. Everything regrows.
 old to be precious about it. Five real dishes — ส้มตำ, ข้าวเหนียวมะม่วง, ต้มยำ,
 กล้วยทอด, ขนมครก — each cooked through two hands-on steps: pound in the mortar on
 the beat, keep the steam in the green band, flip when it's golden, plate it nicely.
-Cook it well and it comes out อร่อยมาก.
 
-| | |
-|---|---|
-| ![the kitchen](screenshots/the-kitchen.png) | ![pounding som tam](screenshots/cooking.png) |
+**And then it is plated properly.** Nothing you make is an inventory icon. Each
+dish is served the way it would actually arrive: som tam heaped on a banana leaf
+with a lime wedge and dried shrimp, sticky rice moulded beside sliced mango and
+drizzled with coconut cream, tom yum steaming in its bowl with lemongrass laid
+across the rim. Cook it well and it comes out อร่อยมาก.
+
+| | | |
+|---|---|---|
+| ![the kitchen](screenshots/the-kitchen.png) | ![pounding som tam](screenshots/cooking.png) | ![plated](screenshots/plated.png) |
 
 **Make things.** A mat outside the stall, and five things to weave: a jasmine
 **พวงมาลัย**, a folded banana-leaf **กระทง**, a winnowing **กระด้ง**, a paper
-**โคมไฟ**, and a small roadside **ศาลเพียงตา**.
+**โคมไฟ**, and a small roadside **ศาลเพียงตา** — each one shown finished and
+turned in the light before it goes in your basket.
 
 **Help.** Four jobs nobody else can reach, each a hands-on minigame where you steer
 your enormous hand directly: splice the dead **เสาไฟฟ้า** while the current kicks,
@@ -80,7 +120,65 @@ lift a fallen tree off the road and keep it level, hang Phra Phum's fallen garla
 and lift Meow-Meow down from the tamarind — slowly, because she isn't afraid of
 big, she's afraid of *sudden*.
 
+| | |
+|---|---|
+| ![the workbench](screenshots/the-workbench.png) | ![the village road at night](screenshots/village-night.png) |
+
 **Give it away.** That's the whole game, really.
+
+![handing something over](screenshots/giving.png)
+
+## Ascend, and be blessed
+
+Merit (**บุญ**) is both your progress bar and your currency, and spending it
+never costs you progress. But you don't just *click* a skill.
+
+Choose one and the world drops away: the sky goes to dawn, god-rays open, and
+you rise through streaming clouds — **hold E** to climb, **◀ ▶** to drift.
+At the top there is a terrace of cloud with a gold chedi rail, and a **deva**
+waiting on it, one of three depending on which branch you're climbing:
+
+| | The god who meets you | What they grant |
+|---|---|---|
+| **กาย** body | **พระแม่ธรณี** Phra Mae Thorani, the earth goddess wringing her hair | strength, stride, a lighter body |
+| **ฝีมือ** hands | **พระวิษณุกรรม** Phra Witsanukam, patron of every craftsman | steady hands, deft weaving, a divine tongue |
+| **ใจ** heart | **พระอินทร์** Phra In, Indra of the thirty-three | an inner eye, a cool heart, loving-kindness |
+
+They say something to you, and then you **hold E** to receive it — a beam
+comes down, the gauge fills with gold, and the skill is *given* rather than
+bought. Then you descend, and the ledger is waiting where you left it.
+
+| | | |
+|---|---|---|
+| ![ascending](screenshots/ascending.png) | ![the deva](screenshots/the-deva.png) | ![the blessing](screenshots/the-blessing.png) |
+
+## The Ledger and the map
+
+Four tabs on a drifting cloud sky: **skills**, **looks**, **friends**, and the
+whole 5,600-pixel road drawn as a **map** — seven named zones along the top,
+every stove, shrine, workbench, pond and grove pinned on three tiers so nothing
+collides, your five ghost friends on their own row, a marker reading **คุณอยู่นี่**
+where you're standing, and one line at the bottom telling you what to do next.
+Press **Q** anywhere to open it.
+
+The skill tree runs down three columns — **กาย** (body), **ฝีมือ** (hands),
+**ใจ** (heart):
+
+| กาย · BODY | ฝีมือ · HANDS | ใจ · HEART |
+|---|---|---|
+| ก้าวยักษ์ Giant Stride | มือนิ่ง Steady Hands | แม่เหล็กบุญ Merit Magnet |
+| แขนใบลาน Palm-Leaf Reach | ลิ้นเทวดา Divine Tongue | ตาใน Inner Eye |
+| หาบหาม Carrying Pole | สานเก่ง Deft Weaving | ใจเย็น Cool Heart |
+| กายเบา Light Body | สองมือ Two Hands | เมตตา Loving-Kindness |
+
+**ตาใน** — the Inner Eye — is the one to save for: it shows a little thought-cloud
+over everybody's head with the thing they're quietly hoping for, so you never have
+to guess. There's also a wardrobe of five hand-woven **ผ้าถุง**, a garland, a สไบ
+sash, 108 prayer beads and gold leaf — all simulated cloth, not swapped sprites.
+
+| | | |
+|---|---|---|
+| ![the skill tree](screenshots/the-ledger.png) | ![the map](screenshots/the-map.png) | ![the friends journal](screenshots/friends-journal.png) |
 
 ## Everybody is friendly, including the frightening ones
 
@@ -98,29 +196,16 @@ neighbour with a small problem:
 Plus five villagers, a monk who isn't supposed to want anything and would still
 like a krathong, and a cat.
 
-![saying hello to Kong Koi](screenshots/making-friends.png)
+## The crossroads
 
-## The Ledger
-
-Merit (**บุญ**) is both your progress bar and your currency, and spending it never
-costs you progress. The skill tree runs down three columns — **กาย** (body),
-**ฝีมือ** (hands), **ใจ** (heart):
-
-| กาย · BODY | ฝีมือ · HANDS | ใจ · HEART |
-|---|---|---|
-| ก้าวยักษ์ Giant Stride | มือนิ่ง Steady Hands | แม่เหล็กบุญ Merit Magnet |
-| แขนใบลาน Palm-Leaf Reach | ลิ้นเทวดา Divine Tongue | ตาใน Inner Eye |
-| หาบหาม Carrying Pole | สานเก่ง Deft Weaving | ใจเย็น Cool Heart |
-| กายเบา Light Body | สองมือ Two Hands | เมตตา Loving-Kindness |
-
-**ตาใน** — the Inner Eye — is the one to save for: it shows a little thought-cloud
-over everybody's head with the thing they're quietly hoping for, so you never have
-to guess. There's also a wardrobe of five hand-woven **ผ้าถุง**, a garland, a สไบ
-sash, 108 prayer beads and gold leaf — all simulated cloth, not swapped sprites.
+Five hand-painted **signposts** stand where the road forks, each with real Thai
+boards pointing both ways — ป่าช้า back west, หมู่บ้าน and ตลาด ahead, วัด and
+สวนกล้วย onward — with a lantern hanging off the post and a lamp pooling light
+on the dirt. You should never have to guess which way the village is.
 
 | | |
 |---|---|
-| ![the skill tree](screenshots/the-ledger.png) | ![the friends journal](screenshots/friends-journal.png) |
+| ![the crossroads](screenshots/crossroads.png) | ![the temple](screenshots/the-temple.png) |
 
 Fill 108 บุญ — as many as the beads on a prayer mala — and the village throws you a
 water-pouring ceremony at dawn. Everyone you befriended comes to see you off.
@@ -138,6 +223,9 @@ water-pouring ceremony at dawn. Everyone you befriended comes to see you off.
 - **Phra Phum Chao Thi**, the spirit-house guardian, is depicted as a regal gold
   figure holding **a sword in one hand and a money bag in the other** — look inside
   the shrine. He keeps the village ledger, and yours.
+- **Phra Mae Thorani** is shown wringing water from her hair; **Phra Witsanukam**
+  is the patron the craft guilds still garland once a year; **Phra In** is Indra,
+  who in the Thai telling comes down himself when somebody's merit is worth the trip.
 - **Nang Tani (นางตานี)** genuinely lives in wild banana groves and is genuinely
   benevolent. **ขวัญ** is the Thai life-spirit; "ขวัญหาย" is what you say when
   somebody has had a fright.
@@ -148,16 +236,16 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 [Preta: Hungry Ghost Spirits in Thailand](https://mysakonnakhon.com/preta-hungry-ghost-spirits-in-thailand/) ·
 [Krahang](https://en.wikipedia.org/wiki/Krahang) ·
 [Kong Koi](https://en.wikipedia.org/wiki/Kong_koi) ·
+[Phra Mae Thorani](https://en.wikipedia.org/wiki/Phra_Mae_Thorani) ·
+[Vishvakarman](https://en.wikipedia.org/wiki/Vishvakarma) ·
 [A Guide to Thai Spirit Houses](https://www.thethailandlife.com/thai-spirit-houses)
 
-| | |
-|---|---|
-| ![the banana grove](screenshots/banana-grove.png) | ![the temple](screenshots/the-temple.png) |
+![the banana grove](screenshots/banana-grove.png)
 
 ## What's inside
 
-One HTML file, ~200 KB, 480×270 canvas integer-scaled with `image-rendering:
-pixelated`. Boots in ~280ms and holds 60 fps.
+One HTML file, ~276 KB, 480×270 canvas integer-scaled with `image-rendering:
+pixelated`. Boots in ~270ms and holds 60 fps.
 
 - **Nobody is a sprite sheet.** Every character is a procedural puppet posed fresh
   each frame — two-bone IK limbs, a walk cycle driven by *distance travelled* so
@@ -166,6 +254,10 @@ pixelated`. Boots in ~280ms and holds 60 fps.
 - **A 5,600-pixel road** through seven named zones over six parallax layers,
   pre-rendered once into cached canvases and built across frames behind a loading
   screen.
+- **Every cloud is drawn, then cached.** Panels, bubbles, keycaps and sky clouds
+  are scanline-filled once into offscreen canvases and reused; so are the radial
+  glows on every lantern, lamp, firefly and floating head. That's what keeps a
+  UI made entirely of soft shapes at 60 fps.
 - **Atmosphere:** strings of coloured lanterns swaying over the road, blossom trees,
   night-market stalls, drifting mist that pools in the graveyard and the paddies,
   candles on the graves, spirit-motes, fireflies, moths around the lamps, and a
