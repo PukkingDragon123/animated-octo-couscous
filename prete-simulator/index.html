@@ -4,10 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Prete Simulator</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" media="print" onload="this.media='all'"
-      href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap">
 <style>
   html,body{margin:0;padding:0;height:100%;background:#080a1e;overflow:hidden;
     -webkit-tap-highlight-color:transparent;touch-action:none;overscroll-behavior:none;}
@@ -49,8 +45,6 @@ function mulberry(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul
 function mkCv(w,h){ const c=document.createElement('canvas'); c.width=Math.max(1,w|0); c.height=Math.max(1,h|0); return c; }
 function G2(c){ const g=c.getContext('2d'); g.imageSmoothingEnabled=false; return g; }
 
-const FT_UI  = "'Silkscreen','Courier New',monospace";
-const FT_BODY= "'Courier New','Noto Sans Thai',monospace";
 
 /* ---------- palette: a Thai village at 2am ---------- */
 const PAL = {
@@ -805,6 +799,100 @@ function artOffering(){ const c=mkCv(30,22),g=G2(c);
   pR(g,17,7,5,7,'#e03a3a'); pR(g,18,5,1,3,'#f5ead8');
   for(let i=0;i<3;i++){ pR(g,25,7+i,1,7,'#b8a894'); pR(g,25,6+i,1,1,PAL.ember); }
   return c; }
+/* ============================================================
+   PIXEL TYPE — two hand-drawn bitmap fonts, so every letter
+   lands on whole pixels instead of being a hinted webfont.
+   F5 is 5x7 for everything; F3 is 3x5 for the small print.
+   ============================================================ */
+const F5W=5, F5H=7, F3W=3, F3H=5;
+const F5={'A':[[14,17,17,31,17,17,17],0],'B':[[30,17,17,30,17,17,30],0],'C':[[14,17,16,16,16,17,14],0],'D':[[30,17,17,17,17,17,30],0],'E':[[31,16,16,30,16,16,31],0],'F':[[31,16,16,30,16,16,16],0],'G':[[14,17,16,23,17,17,14],0],'H':[[17,17,17,31,17,17,17],0],'I':[[14,4,4,4,4,4,14],0],'J':[[7,2,2,2,2,18,12],0],'K':[[17,18,20,24,20,18,17],0],'L':[[16,16,16,16,16,16,31],0],'M':[[17,27,21,21,17,17,17],0],'N':[[17,25,21,21,19,17,17],0],'O':[[14,17,17,17,17,17,14],0],'P':[[30,17,17,30,16,16,16],0],'Q':[[14,17,17,17,21,18,13],0],'R':[[30,17,17,30,20,18,17],0],'S':[[15,16,16,14,1,1,30],0],'T':[[31,4,4,4,4,4,4],0],'U':[[17,17,17,17,17,17,14],0],'V':[[17,17,17,17,17,10,4],0],'W':[[17,17,17,21,21,21,10],0],'X':[[17,17,10,4,10,17,17],0],'Y':[[17,17,10,4,4,4,4],0],'Z':[[31,1,2,4,8,16,31],0],'a':[[0,0,14,1,15,17,15],0],'b':[[16,16,30,17,17,17,30],0],'c':[[0,0,14,16,16,16,14],0],'d':[[1,1,15,17,17,17,15],0],'e':[[0,0,14,17,31,16,14],0],'f':[[6,8,8,30,8,8,8],0],'g':[[15,17,17,15,1,17,14],1],'h':[[16,16,30,17,17,17,17],0],'i':[[4,0,12,4,4,4,14],0],'j':[[2,0,6,2,2,18,12],1],'k':[[16,16,18,20,24,20,18],0],'l':[[12,4,4,4,4,4,14],0],'m':[[0,0,26,21,21,21,21],0],'n':[[0,0,30,17,17,17,17],0],'o':[[0,0,14,17,17,17,14],0],'p':[[30,17,17,30,16,16,16],1],'q':[[15,17,17,15,1,1,1],1],'r':[[0,0,22,24,16,16,16],0],'s':[[0,0,15,16,14,1,30],0],'t':[[8,8,30,8,8,9,6],0],'u':[[0,0,17,17,17,19,13],0],'v':[[0,0,17,17,17,10,4],0],'w':[[0,0,17,21,21,21,10],0],'x':[[0,0,17,10,4,10,17],0],'y':[[17,17,17,15,1,17,14],1],'z':[[0,0,31,2,4,8,31],0],'0':[[14,17,19,21,25,17,14],0],'1':[[4,12,4,4,4,4,14],0],'2':[[14,17,1,2,4,8,31],0],'3':[[30,1,1,14,1,1,30],0],'4':[[2,6,10,18,31,2,2],0],'5':[[31,16,30,1,1,17,14],0],'6':[[6,8,16,30,17,17,14],0],'7':[[31,1,2,4,4,8,8],0],'8':[[14,17,17,14,17,17,14],0],'9':[[14,17,17,15,1,2,12],0],' ':[[0,0,0,0,0,0,0],0],'.':[[0,0,0,0,0,12,12],0],',':[[0,0,0,0,12,12,8],0],'\'':[[8,8,0,0,0,0,0],0],'"':[[10,10,0,0,0,0,0],0],'!':[[4,4,4,4,4,0,4],0],'?':[[14,17,1,6,4,0,4],0],':':[[0,12,12,0,12,12,0],0],';':[[0,12,12,0,12,12,8],0],'-':[[0,0,0,31,0,0,0],0],'+':[[0,4,4,31,4,4,0],0],'/':[[1,1,2,4,8,16,16],0],'(':[[2,4,8,8,8,4,2],0],')':[[8,4,2,2,2,4,8],0],'%':[[25,26,4,8,19,5,9],0],'*':[[0,21,14,31,14,21,0],0],'=':[[0,0,31,0,31,0,0],0],'#':[[10,31,10,10,31,10,0],0],'&':[[12,18,20,8,21,18,13],0],'—':[[0,0,0,31,0,0,0],0],'·':[[0,0,0,4,0,0,0],0],'…':[[0,0,0,0,0,21,0],0]};
+const F3={'A':[[2,5,7,5,5],0],'B':[[6,5,6,5,6],0],'C':[[3,4,4,4,3],0],'D':[[6,5,5,5,6],0],'E':[[7,4,6,4,7],0],'F':[[7,4,6,4,4],0],'G':[[3,4,5,5,3],0],'H':[[5,5,7,5,5],0],'I':[[7,2,2,2,7],0],'J':[[1,1,1,5,2],0],'K':[[5,5,6,5,5],0],'L':[[4,4,4,4,7],0],'M':[[5,7,7,5,5],0],'N':[[5,7,7,7,5],0],'O':[[2,5,5,5,2],0],'P':[[6,5,6,4,4],0],'Q':[[2,5,5,6,3],0],'R':[[6,5,6,5,5],0],'S':[[3,4,2,1,6],0],'T':[[7,2,2,2,2],0],'U':[[5,5,5,5,3],0],'V':[[5,5,5,5,2],0],'W':[[5,5,7,7,5],0],'X':[[5,5,2,5,5],0],'Y':[[5,5,2,2,2],0],'Z':[[7,1,2,4,7],0],'a':[[2,5,7,5,5],0],'b':[[6,5,6,5,6],0],'c':[[3,4,4,4,3],0],'d':[[6,5,5,5,6],0],'e':[[7,4,6,4,7],0],'f':[[7,4,6,4,4],0],'g':[[3,4,5,5,3],0],'h':[[5,5,7,5,5],0],'i':[[7,2,2,2,7],0],'j':[[1,1,1,5,2],0],'k':[[5,5,6,5,5],0],'l':[[4,4,4,4,7],0],'m':[[5,7,7,5,5],0],'n':[[5,7,7,7,5],0],'o':[[2,5,5,5,2],0],'p':[[6,5,6,4,4],0],'q':[[2,5,5,6,3],0],'r':[[6,5,6,5,5],0],'s':[[3,4,2,1,6],0],'t':[[7,2,2,2,2],0],'u':[[5,5,5,5,3],0],'v':[[5,5,5,5,2],0],'w':[[5,5,7,7,5],0],'x':[[5,5,2,5,5],0],'y':[[5,5,2,2,2],0],'z':[[7,1,2,4,7],0],'0':[[2,5,5,5,2],0],'1':[[2,6,2,2,7],0],'2':[[6,1,2,4,7],0],'3':[[6,1,2,1,6],0],'4':[[5,5,7,1,1],0],'5':[[7,4,6,1,6],0],'6':[[3,4,6,5,2],0],'7':[[7,1,2,2,2],0],'8':[[2,5,2,5,2],0],'9':[[2,5,3,1,6],0],' ':[[0,0,0,0,0],0],'.':[[0,0,0,0,2],0],',':[[0,0,0,2,4],0],'\'':[[2,2,0,0,0],0],'!':[[2,2,2,0,2],0],'?':[[6,1,2,0,2],0],':':[[0,2,0,2,0],0],'-':[[0,0,7,0,0],0],'/':[[1,1,2,4,4],0],'(':[[1,2,2,2,1],0],')':[[4,2,2,2,4],0],'+':[[0,2,7,2,0],0],'=':[[0,7,0,7,0],0],'—':[[0,0,7,0,0],0],'·':[[0,0,2,0,0],0],'…':[[0,0,0,0,5],0]};
+/* pick the font and the whole-number scale for a requested size */
+function fontPick(size){
+  if(size<=6)  return {f:F3, w:F3W, h:F3H, s:1, gap:1};
+  if(size<=12) return {f:F5, w:F5W, h:F5H, s:1, gap:1};
+  const s=Math.max(2,Math.round(size/7));
+  return {f:F5, w:F5W, h:F5H, s, gap:s};
+}
+function glyph(F,ch){
+  const gl=F[ch];
+  if(gl) return gl;
+  if(F===F3){ const u=F3[ch.toUpperCase()]; if(u) return u; }
+  return F['?']||F[' '];
+}
+/* width in pixels of a string at a given size */
+function txtW(s,size=7){
+  const P=fontPick(size);
+  s=String(s);
+  if(!s.length) return 0;
+  return s.length*(P.w*P.s+P.gap)-P.gap;
+}
+function txtH(size=7){ const P=fontPick(size); return P.h*P.s; }
+
+/* strings are drawn once into a canvas and reused — a line of text is
+   otherwise a few hundred fillRects every frame */
+const _txt=new Map();
+function txtSprite(s,size,col,shadow){
+  const key=s+'|'+size+'|'+col+'|'+(shadow||'');
+  let c=_txt.get(key);
+  if(c) return c;
+  if(_txt.size>420) _txt.clear();
+  const P=fontPick(size);
+  const w=txtW(s,size), h=P.h*P.s + (shadow?1:0) + P.s*2;   // room for descenders
+  c=mkCv(Math.max(1,w+(shadow?1:0)), Math.max(1,h));
+  const g=G2(c);
+  const paint=(col2,ox,oy)=>{
+    g.fillStyle=col2;
+    let x=ox;
+    for(const ch of s){
+      const gl=glyph(P.f,ch), rows=gl[0], dy=gl[1]? P.s*2 : 0;
+      for(let r=0;r<rows.length;r++){
+        const bits=rows[r];
+        if(!bits) continue;
+        for(let i=0;i<P.w;i++){
+          if(bits & (1<<(P.w-1-i))) g.fillRect(x+i*P.s, oy+r*P.s+dy, P.s, P.s);
+        }
+      }
+      x += P.w*P.s + P.gap;
+    }
+  };
+  if(shadow) paint(shadow,1,1);
+  paint(col,0,0);
+  _txt.set(key,c);
+  return c;
+}
+/* light type on the dark world wants a shadow; dark ink on a pale cloud does not */
+const _lum=new Map();
+function isLight(col){
+  let v=_lum.get(col);
+  if(v!==undefined) return v;
+  let r=200,g2=200,b=200;
+  try{
+    if(col[0]==='#'){ const c2=hx(col); r=c2[0]; g2=c2[1]; b=c2[2]; }
+    else { const m=col.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/); if(m){ r=+m[1]; g2=+m[2]; b=+m[3]; } }
+  }catch(e){}
+  v=(r*0.299+g2*0.587+b*0.114)>128;
+  _lum.set(col,v); return v;
+}
+/* x,y is the LEFT BASELINE, as it always was */
+function pTxt(g,s,x,y,col,size=7,align='left',bold){
+  s=String(s);
+  if(!s.length) return;
+  const P=fontPick(size);
+  const w=txtW(s,size);
+  let dx = align==='center'? -w/2 : align==='right'? -w : 0;
+  const c=txtSprite(s,size,col, isLight(col)?'rgba(8,6,18,0.8)':null);
+  // baseline sits one pixel-row above the bottom of the cell
+  g.drawImage(c, R(x+dx), R(y-P.h*P.s));
+}
+function wrap(g,s,maxW,size){
+  const words=String(s).split(' '), out=[]; let cur='';
+  for(const w2 of words){ const t=cur?cur+' '+w2:w2;
+    if(txtW(t,size)>maxW && cur){ out.push(cur); cur=w2; } else cur=t; }
+  if(cur) out.push(cur);
+  return out;
+}
+function fontFor(){ return '7px monospace'; }   // nothing measures with canvas text now
 /* ============================================================
    MORE OF THE VILLAGE — the cozy half
    ============================================================ */
@@ -2076,33 +2164,60 @@ function drawPrete(g, p, o={}){
   const handF = drawArm(false);
   o.hands=[handB,handF];
 
-  /* ---- neck & head ---- */
-  const headY = chestY - 13.5 + Math.sin(p.anim*1.6)*0.4;
+  /* ---- neck & head: a big head, a mop of hair, and shades ---- */
+  const headY = chestY - 17 + Math.sin(p.anim*1.6)*0.4;
   const headX = chestX + p.lean*2 + (o.headX||0);
-  oTaper(g, chestX, chestY-4, headX, headY+4.5, 3.4, 3, SHD, OC);
-  const HRX=5, HRY=5.8;
+  oTaper(g, chestX, chestY-4, headX, headY+6, 3.6, 3.2, SHD, OC);
+  const HRX=7.4, HRY=8;
   oEll(g, headX, headY, HRX, HRY, BODY, OC);
-  pEll(g, headX+2.4*face, headY+0.8, HRX*0.6, HRY*0.72, SHD);   // shaded side
-  pEll(g, headX-2*face, headY-3, 2, 1.6, HI);                   // skull highlight
-  pEll(g, headX+0.6*face, headY+4, 3, 2.2, BODY);               // jaw
-  pR(g, headX-4.8*face, headY+0.5, 1.6, 2.4, SHD);              // ear
-  // sunken sockets, then the small lights inside them
-  const e1 = headX + 2.1*face, e2 = headX - 2.1*face;
-  pEll(g, e1, headY-0.4, 1.9, 2.1, '#2a2138');
-  pEll(g, e2, headY-0.4, 1.7, 1.9, '#2a2138');
-  const blink = p.blink < 0;
-  if(!blink){
-    pR(g, e1-(face>0?0.4:1), headY-1.2, 1.2, 1.4, o.angry?PAL.ember:'#fff7ea');
-    pR(g, e2-(face>0?0.4:1), headY-1.2, 1.1, 1.3, o.angry?PAL.ember:'#fff7ea');
-  } else { pR(g,e1-1.4,headY-0.4,3,1,SHD); pR(g,e2-1.4,headY-0.4,2.8,1,SHD); }
-  // brow ridge — sorry, or furious
-  pR(g, e1-2, headY-3.4+(o.angry?1.4:0), 3.8, 1.2, SHD);
-  pR(g, e2-1.8, headY-3.6+(o.angry?1.4:0), 3.2, 1.2, SHD);
+  pEll(g, headX+3.4*face, headY+1, HRX*0.6, HRY*0.72, SHD);     // shaded side
+  pEll(g, headX-2.8*face, headY-4, 2.6, 2, HI);                 // skull highlight
+  pEll(g, headX+0.8*face, headY+5.6, 4, 3, BODY);               // jaw
+  pR(g, headX-7*face, headY+1, 2, 3.2, SHD);                    // ear
+  pEll(g, headX-7.2*face, headY+1.4, 1.2, 1.6, OC);
+
+  /* the hair: long, black, and never once combed */
+  const HAIR='#1c1730', HAIR2='#2e2748', HAIRL='#463a68';
+  const sway=Math.sin(p.anim*1.1)*0.9 + p.lean*1.2;
+  pEll(g, headX-0.6*face, headY-5.4, HRX*0.98, HRY*0.56, HAIR);   // the crown
+  pEll(g, headX-2.4*face, headY-6.2, HRX*0.5, HRY*0.3, HAIR2);
+  pEll(g, headX-3.6*face, headY-6.6, 2, 1, HAIRL);
+  // a fringe, hanging over the brow on the near side
+  for(let i2=0;i2<5;i2++){
+    const fx=headX+(i2-2.2)*2.4*face;
+    pTaper(g, fx, headY-6, fx-1.2*face, headY-1.6+((i2%2)?1.6:0), 2.6, 1.6, i2%2?HAIR:HAIR2);
+  }
+  // and a long tail of it down the back, drifting
+  for(let i2=0;i2<7;i2++){
+    const t2=i2/6;
+    const hx2=headX-(6.4+t2*3.2)*face + sway*t2*2.6;
+    const hy2=headY-3 + t2*15;
+    pEll(g, hx2, hy2, 3.2-t2*1.4, 3-t2*1.1, i2%2?HAIR:HAIR2);
+  }
+  pEll(g, headX-6.6*face, headY-3.4, 2.2, 1.2, HAIRL);
+
+  /* the shades. a hungry ghost is still allowed to look good. */
+  const gy2 = headY-0.6;
+  const nearX = headX+3.1*face, farX = headX-2.9*face;
+  // temple arm back to the ear
+  pTaper(g, farX-2.4*face, gy2-0.6, headX-7*face, headY+0.6, 1.6, 1.4, '#241c18');
+  // the two lenses, the near one larger
+  oEll(g, farX, gy2, 2.5, 2.5, '#14101e', '#0b0812');
+  oEll(g, nearX, gy2, 3.1, 2.9, '#14101e', '#0b0812');
+  pR(g, headX-0.4*face, gy2-1.2, 3.2*face, 1.4, '#241c18');       // bridge
+  // a gold rim along the top, and the light catching the near lens
+  pR(g, nearX-3, gy2-2.8, 6.4, 1.2, PAL.goldD);
+  pR(g, farX-2.4, gy2-2.6, 5, 1, shade(PAL.goldD,-0.2));
+  pTaper(g, nearX-1.6, gy2+1.4, nearX+0.6, gy2-1.6, 1.6, 1.2, 'rgba(255,255,255,0.55)');
+  pR(g, nearX+1.2, gy2-0.6, 1, 1, 'rgba(255,255,255,0.75)');
+  if(o.angry){ pR(g, nearX-3, gy2-3.4, 6.4, 1.4, PAL.ember); }
+  // a blink still shows: the lenses flash when the lights behind them go out
+  if(p.blink < 0){ pR(g, nearX-2.2, gy2, 4.4, 1, '#2a2138'); }
+
   // a mouth the size of the eye of a needle. it never opens wider.
   const mo=clamp(o.mouth||0,0,1)*0.35;
-  pEll(g, headX+0.7*face, headY+4, 0.9+mo*2, 0.9+mo*2, '#b4515e');
-  pR(g, headX+0.7*face, headY+4, 1, 1, '#5e1f2a');
-
+  pEll(g, headX+0.8*face, headY+5.6, 0.9+mo*2, 0.9+mo*2, '#b4515e');
+  pR(g, headX+0.8*face, headY+5.6, 1, 1, '#5e1f2a');
   /* ---- what you chose to wear ---- */
   if(cos.garland){
     for(let i=0;i<10;i++){ const a=Math.PI*(i/9);
@@ -3309,21 +3424,6 @@ function doGive(t,id){
 /* ============================================================
    TEXT
    ============================================================ */
-function fontFor(s,size,bold){ return (bold?'bold ':'')+size+'px '+FT_UI; }
-function pTxt(g,s,x,y,col,size=7,align='left',bold){
-  g.font=fontFor(s,size,bold); g.textAlign=align; g.textBaseline='alphabetic';
-  g.fillStyle='rgba(8,6,18,0.85)'; g.fillText(s,R(x)+1,R(y)+1);
-  g.fillStyle=col; g.fillText(s,R(x),R(y));
-  g.textAlign='left';
-}
-function wrap(g,s,maxW,size){
-  g.font=fontFor(s,size);
-  const words=s.split(' '), out=[]; let cur='';
-  for(const w2 of words){ const t=cur?cur+' '+w2:w2;
-    if(g.measureText(t).width>maxW && cur){ out.push(cur); cur=w2; } else cur=t; }
-  if(cur) out.push(cur);
-  return out;
-}
 /* a soft rounded panel — the whole UI is made of these */
 function panel(g,x,y,w,h,acc){
   pR(g,x+1,y,w-2,h,'rgba(18,13,30,0.93)');
@@ -3564,8 +3664,7 @@ function render(){
 }
 function uiShowsPads(){ return GS.state==='play'||GS.state==='task'; }
 function bubble(g,x,y,txt){
-  g.font=fontFor(txt,6);
-  const w2=g.measureText(txt).width+8;
+  const w2=txtW(txt,6)+8;
   pR(g,x-w2/2,y-9,w2,11,'rgba(16,12,34,0.88)');
   pR(g,x-w2/2,y-9,w2,1,rgba(PAL.gold,0.35));
   pR(g,x-1,y+2,2,2,'rgba(16,12,34,0.88)');
@@ -3644,7 +3743,7 @@ function drawKhwan(g){
   pTaper(g,x+5,y+1,x+8-Math.sin(k.anim*3)*1.4,y+3,2,1,'#dff4ff');
   if(k.bub && GS.state==='play'){
     const lines=wrap(g,k.bub,150,6).slice(0,3);
-    const w2=Math.max(...lines.map(l=>{g.font=fontFor(l,6);return g.measureText(l).width}))+12;
+    const w2=Math.max(...lines.map(l=>txtW(l,6)))+12;
     const bh=lines.length*8+8;
     const bx=x-w2/2, by=y-16-bh;
     panel(g,bx,by,w2,bh,'#8fd8f0');
@@ -3790,13 +3889,12 @@ function drawHUD(){
   GS.toasts=GS.toasts.filter(t=>t.t<2.8);
   if(PROMPT){
     const s=PROMPT.txt;
-    g.font=fontFor(s,7);
-    const w2=g.measureText(s).width+12;
+    const w2=txtW(s,7)+12;
     const x=PROMPT.x-GS.camX, y=PROMPT.y-GS.camY;
     panel(g,x-w2/2,y-11,w2,13,PAL.gold);
     pTxt(g,s,x,y-2,'#ffe9b3',7,'center');
-    if(PROMPT.sub){ g.font=fontFor(PROMPT.sub,6);
-      const w3=g.measureText(PROMPT.sub).width+10;
+    if(PROMPT.sub){
+      const w3=txtW(PROMPT.sub,6)+10;
       panel(g,x-w3/2,y+3,w3,11,PAL.jadeL);
       pTxt(g,PROMPT.sub,x,y+11,'#a8dcb8',6,'center'); }
   }
@@ -4433,8 +4531,7 @@ function drawTitle(){
   }
   pTxt(g,'PRETE',W*0.62,72,PAL.gold,44,'center',true);
   pTxt(g,'SIMULATOR',W*0.62,96,'#ffe9b3',20,'center',true);
-  pTxt(g,'PRETE SIMULATOR',W*0.62,116,PAL.goldL,13,'center');
-  pTxt(g,'a cozy Thai ghost-village life',W*0.62,130,'#8a8098',7,'center');
+  pTxt(g,'a cozy Thai ghost-village life',W*0.62,118,'#8a8098',7,'center');
   const sv=loadSaveRaw();
   const hasSave=sv&&(sv.merit>0||(sv.q&&sv.q.metPhra));
   g.globalAlpha=0.6+0.4*Math.sin(GS.t*4);
@@ -4449,18 +4546,18 @@ function drawTitle(){
    cheat the scale. You cannot cheat the scale.
    ============================================================ */
 const INTRO=[
-  { id:'take',  hint:'tap to creep  ·  tap the coin to take it',
+  { id:'take',  hint:'TAP THE FLOOR TO CREEP   ·   TAP THE COIN',
     t:"In your last life you took what wasn't yours." },
-  { id:'drink', hint:'tap to drink  ·  and again  ·  and again',
+  { id:'drink', hint:'TAP TO DRINK   ·   AND AGAIN',
     t:"And you drank what wasn't offered. You laughed past the temple gate — the bell rang for you anyway." },
-  { id:'scale', hint:'tap left and right — try to level it',
+  { id:'scale', hint:'TAP LEFT AND RIGHT   ·   LEVEL THE SCALE',
     t:'Then one night the counting stopped. Karma is patient, and exact.' },
 ];
 let introI=0, introCh=0, IN=null;
 const SHELF_X=252;
 function introScene(i){
   const S={ t:0, flash:0, shake:0, done:false, px:[], puffs:[] };
-  if(i===0) Object.assign(S,{ mx:92, face:1, walk:0, noise:0, stir:0, took:0, reach:false, navx:null });
+  if(i===0) Object.assign(S,{ mx:132, face:1, walk:0, noise:0, stir:0, took:0, reach:false, navx:null });
   if(i===1) Object.assign(S,{ sips:0, tilt:0, bottle:1, bell:0, past:0 });
   if(i===2) Object.assign(S,{ tug:0, tries:0, last:0, slam:0, soil:0, shut:0 });
   return S;
@@ -4498,13 +4595,13 @@ function stepIntro(dt){
       if(dir) S.navx=null;
       else if(S.navx!=null){ const d=S.navx-S.mx;
         if(Math.abs(d)<3) S.navx=null; else dir=d>0?1:-1; }
-      if(dir){ S.mx=clamp(S.mx+dir*56*dt,58,SHELF_X-19); S.face=dir;
-        S.walk+=dt*5.0; S.noise=Math.min(1.35,S.noise+dt*0.44);
+      if(dir){ S.mx=clamp(S.mx+dir*74*dt,52,SHELF_X-22); S.face=dir;
+        S.walk+=dt*7.0; S.noise=Math.min(1.35,S.noise+dt*0.52);
         if(Math.sin(S.walk*2)>0.94) AU.step();
       } else S.noise=Math.max(0,S.noise-dt*0.4);
       if(S.noise>=1 && S.stir<=0){ S.stir=2.2; S.shake=0.5; AU.tick(); }
       if(S.stir>0) S.stir-=dt;
-      S.reach = S.mx>SHELF_X-30;
+      S.reach = S.mx>SHELF_X-40;
       if(grab || (S.reach && press('act'))){
         S.took=0.001; S.flash=1; S.shake=1; AU.ding(); AU.spark();
         introSpark(S,SHELF_X,100,22,CL.goldL);
@@ -4512,21 +4609,21 @@ function stepIntro(dt){
       }
     } else if(sc.id==='drink'){
       if(press('act')||press('tap')){
-        S.sips++; S.bottle=Math.max(0,1-S.sips/4); S.tilt+=0.028; S.shake=0.35;
+        S.sips++; S.bottle=Math.max(0,1-S.sips/3); S.tilt+=0.038; S.shake=0.35;
         AU.pour(); AU.blip();
-        S.puffs.push({x:200+rnd(-12,12),y:126,sp:16,l:1.7,s:['ha','ha ha','heh'][S.sips%3]});
-        if(S.sips>=4){ S.done=true; AU.gong(); }
+        S.puffs.push({x:196+rnd(-14,14),y:120,sp:20,l:1.3,s:['ha','ha ha','heh'][S.sips%3]});
+        if(S.sips>=3){ S.done=true; AU.gong(); }
       }
     } else {
       /* the scale: alternate the two sides and it lifts a little, then sags right back */
       const l=press('left'), r=press('right');
       if(l||r){ const side=l?-1:1;
-        if(side!==S.last){ S.tries++; S.tug=Math.min(1,S.tug+0.17); S.last=side; AU.tick(); }
+        if(side!==S.last){ S.tries++; S.tug=Math.min(1,S.tug+0.24); S.last=side; AU.tick(); }
         else S.tug=Math.min(1,S.tug+0.05);
         S.shake=Math.max(S.shake,0.22);
       }
       S.tug=Math.max(0,S.tug-dt*0.62);   // it always sags back. that is the point.
-      if(S.t>3.2 && (S.tries>=12 || S.t>8.5)){
+      if(S.t>1.8 && (S.tries>=8 || S.t>5.5)){
         S.done=true; S.slam=0.001; S.shake=1; AU.gong(); AU.drum();
         introSpark(S,240,150,26,'#8a7a5a',1.5);
       }
@@ -4535,17 +4632,17 @@ function stepIntro(dt){
   }
 
   /* the beat after the verb — the scene plays itself out, then the line types */
-  if(sc.id==='take') S.took=Math.min(1,S.took+dt*1.5);
-  if(sc.id==='drink'){ S.past=Math.min(1,S.past+dt*0.34); S.tilt=lerp(S.tilt,0.052,dt*2);
-    if(S.past>0.34 && S.bell<0.01){ S.bell=0.001; AU.gong(); }
-    if(S.bell>0) S.bell=Math.min(1,S.bell+dt*0.7); }
-  if(sc.id==='scale'){ S.slam=Math.min(1,S.slam+dt*2.2);
-    if(S.slam>0.5){ S.soil=Math.min(1,S.soil+dt*0.42);
+  if(sc.id==='take') S.took=Math.min(1,S.took+dt*2.6);
+  if(sc.id==='drink'){ S.past=Math.min(1,S.past+dt*0.62); S.tilt=lerp(S.tilt,0.06,dt*2);
+    if(S.past>0.3 && S.bell<0.01){ S.bell=0.001; AU.gong(); }
+    if(S.bell>0) S.bell=Math.min(1,S.bell+dt*1.1); }
+  if(sc.id==='scale'){ S.slam=Math.min(1,S.slam+dt*3.4);
+    if(S.slam>0.5){ S.soil=Math.min(1,S.soil+dt*0.85);
       if(Math.random()<dt*26) S.px.push({x:rnd(120,360),y:-4,vx:rnd(-6,6),vy:rnd(24,60),g:40,l:rnd(1.4,2.6),c:'#3a2c22',r:rnd(0.8,1.8)}); }
-    if(S.soil>0.7) S.shut=Math.min(1,S.shut+dt*0.5); }
+    if(S.soil>0.7) S.shut=Math.min(1,S.shut+dt*1.1); }
 
-  introCh+=dt*46;
-  const ready = sc.id==='scale' ? S.shut>0.55 : S.t>0.6;
+  introCh+=dt*82;
+  const ready = sc.id==='scale' ? S.shut>0.4 : S.t>0.35;
   if(ready && (press('act')||press('tap'))){
     AU.blip();
     if(introCh<sc.t.length){ introCh=sc.t.length; return; }
@@ -4565,221 +4662,184 @@ function introKey(g,cx,cy,label){
   pR(g,cx-w/2,cy+h/2-2,w,2,CL.mid);
   pTxt(g,label,cx,cy+3,CL.ink,7,'center');
 }
+/* ---------- the scenes: flat, bold, and over quickly ---------- */
+/* one silhouette figure, drawn the same way in all three beats */
+function introGuy(g,x,y,face,walk,o={}){
+  const S='#0d0a16', S2='#1b1526', SK='#2a2138';
+  const sw=Math.sin(walk)*4, sw2=Math.sin(walk+Math.PI)*4;
+  const lean=o.lean||0;
+  const hipY=y-32, chestY=hipY-20, headY=chestY-16;
+  const RIM=o.rim||'rgba(255,216,140,0.22)';
+  // legs
+  pTaper(g,x-1.5,hipY,x-1.5+sw,y,5.5,4,S2);
+  pTaper(g,x+1.5,hipY,x+1.5+sw2,y,5.5,4,S);
+  pR(g,R(x-1.5+sw)-4,y-3,9,4,S); pR(g,R(x+1.5+sw2)-4,y-3,9,4,S2);
+  // body
+  pTaper(g,x+lean*0.4,hipY+2,x+lean,chestY,11,12,S);
+  pTaper(g,x+lean*0.4-4.5,hipY,x+lean-5,chestY+1,1.6,1.6,RIM);
+  // arms
+  // a reach goes to a named point, so the beat reads at a glance
+  const ax=o.armTo? o.armTo.x : x-sw*0.5;
+  const ay=o.armTo? o.armTo.y : chestY+16;
+  pTaper(g,x+lean,chestY+3,ax,ay,4.4,3.6,S2);
+  if(o.hold) pTaper(g,x+lean,chestY+3,x+10*face,chestY-12,4.4,3.6,S2);
+  // head, big, with the hair
+  pEll(g,x+lean+face*0.5,headY,9,9.6,S);
+  pTaper(g,x+lean-8,headY-4,x+lean-6.5,headY+4,1.6,1.6,RIM);
+  pEll(g,x+lean-face*0.6,headY-6.4,9,5.6,'#0a0812');
+  for(let i=0;i<5;i++) pTaper(g,x+lean+(i-2.2)*3*face,headY-7,x+lean+(i-2.4)*3*face,headY-1.6,3,2,'#0a0812');
+  for(let i=0;i<6;i++) pEll(g,x+lean-(7.6+i*1.6)*face,headY-2+i*3.4,3.4-i*0.42,3.2-i*0.38,i%2?'#0a0812':'#161022');
+  // the shades: the one thing that catches the light
+  const gy=headY-0.6;
+  pR(g,x+lean-6.4,gy-3.4,13,1.6,'#c9992f');
+  pEll(g,x+lean+3.8*face,gy,3.8,3.4,'#05040a'); pEll(g,x+lean-3.4*face,gy,3,3,'#05040a');
+  pTaper(g,x+lean+2.4*face,gy+1.8,x+lean+5*face,gy-2,2,1.4,'rgba(255,244,210,0.85)');
+}
 function introRoom(g,S){
-  const FL=182;                                   // the floorboards start here
-  pR(g,0,0,W,H,'#100c1a');
-  pVGrad(g,0,0,W,FL,'#1d1628','#262032',6);
-  for(let x=6;x<W;x+=27){ pR(g,x,0,1,FL,'#171122'); pR(g,x+1,0,1,FL,'#221a2e'); }
-  pR(g,0,FL,W,H-FL,'#2a1f18');
-  for(let y=FL+4;y<H;y+=8) pR(g,0,y,W,1,'#231a14');
-  pR(g,0,FL-3,W,3,'#3a2c22'); pR(g,0,FL,W,1,'#4a3628');
-  /* the window, and the moon shaft that lights the whole crime */
-  oRect(g,70,22,60,48,'#0d0b18','#3a2c22');
-  pR(g,74,26,52,18,'#38466e'); pR(g,74,48,52,18,'#2e3a5e');
-  pR(g,99,24,2,44,'#4a3628'); pR(g,72,45,56,2,'#4a3628');
-  pR(g,66,68,68,3,'#4a3628');
-  pEll(g,116,33,4,4,'#e8eaff'); drawGlow(g,116,33,16,'#cfe0ff',0.22);
-  g.save(); g.globalAlpha=0.09; g.fillStyle='#cfe0ff';
-  g.beginPath(); g.moveTo(74,70); g.lineTo(126,70); g.lineTo(206,FL+2); g.lineTo(112,FL+2); g.closePath(); g.fill();
-  g.restore();
-  /* the sleeper: a mat, a pillow, somebody's whole trusting night */
-  const br=Math.sin(S.t*1.45)*0.8, stir=S.stir>0? Math.sin(S.t*13)*1.7:0;
-  pR(g,20,FL-7,86,7,'#8a7250'); pR(g,20,FL-7,86,1,'#a89068'); pR(g,20,FL-1,86,1,'#6a583c');
-  pEll(g,42,FL-11,12,5,'#e8e0d0');                             // the pillow
-  pEll(g,70+stir,FL-13+br,25,11,'#6a4a52');                    // blanket, and a body under it
-  pEll(g,70+stir,FL-16+br,22,8,'#7e5a62');
-  pEll(g,56+stir,FL-19+br,10,6,'#8a666e');                     // a shoulder
-  pEll(g,84+stir,FL-16+br,11,6,'#7e5a62');                     // a hip
-  pR(g,50+stir,FL-11+br,42,1,'#54383e');
-  pEll(g,45+stir,FL-16+br,6,6,PAL.skin);                       // head, on the pillow
-  pEll(g,43+stir,FL-18.4+br,5.8,3.6,'#241c18');
-  pR(g,48+stir,FL-16+br,1,1,'#2c2020'); pR(g,49+stir,FL-14+br,2,1,'#b06a62');
-  g.save(); g.globalAlpha=0.11; g.fillStyle='#e8e4f2';          // the mosquito net
-  g.beginPath(); g.moveTo(60,100); g.lineTo(12,FL-1); g.lineTo(116,FL-1); g.closePath(); g.fill();
-  g.restore();
-  g.globalAlpha=0.22; pTaper(g,60,100,12,FL-1,1,1,'#cfc8e0'); pTaper(g,60,100,116,FL-1,1,1,'#cfc8e0');
+  /* a dark room, one warm window, one coin. nothing else. */
+  const FL=210;
+  pVGrad(g,0,0,W,FL,'#241d33','#151022',5);
+  pR(g,0,FL,W,H-FL,'#0e0a16');
+  pR(g,0,FL-2,W,2,'#2a2138');
+  // the window, and the light it throws on the floor
+  pR(g,60,34,72,54,'#f0c060'); pR(g,60,34,72,10,'#ffe8a8');
+  pR(g,94,34,4,54,'#241d33'); pR(g,60,58,72,4,'#241d33');
+  pR(g,54,28,84,6,'#0a0812'); pR(g,54,88,84,6,'#0a0812');
+  g.globalAlpha=0.10; g.fillStyle='#ffd88a';
+  g.beginPath(); g.moveTo(60,88); g.lineTo(132,88); g.lineTo(196,FL); g.lineTo(96,FL); g.closePath(); g.fill();
   g.globalAlpha=1;
-  pTaper(g,60,100,60,93,3,2,'#3a2c22');
-  if(S.stir>0){ cloudBubble(g,162,94,50,17,64,FL-24,{seed:12});
-    pTxt(g,'…mmh?',162,106,CL.ink,7,'center'); }
-  /* the household things you are creeping past */
-  pEll(g,150,FL-2,10,4,'#3a2c22'); pEll(g,150,FL-13,10,11,'#5f4a3a');   // the water jar
-  pEll(g,150,FL-22,7,4,'#4a3628'); pEll(g,150,FL-23,5,2.4,'#38466e');
-  pR(g,146,FL-16,9,2,'#6a5442');
-  pR(g,196,FL-4,7,3,'#4a3628'); pR(g,206,FL-4,7,3,'#4a3628');           // sandals by the door
-  pTaper(g,318,FL-2,326,FL-40,3,3,'#6a5442');                           // the broom, leaning
-  for(let i=0;i<7;i++) pTaper(g,326,FL-40,322+i*1.6,FL-52,1.6,1,'#a89068');
-  /* the shelf: a bowl of offerings, and the coin sitting on top of them */
-  const SY=110;
-  pR(g,SHELF_X-24,SY,52,4,'#4a3628'); pR(g,SHELF_X-24,SY,52,1,'#63472f');
-  pR(g,SHELF_X-20,SY+4,4,FL-SY-4,'#3a2c22'); pR(g,SHELF_X+18,SY+4,4,FL-SY-4,'#3a2c22');
-  pR(g,SHELF_X-19,SY+4,1,FL-SY-4,'#523c2c'); pR(g,SHELF_X+19,SY+4,1,FL-SY-4,'#523c2c');
-  pR(g,SHELF_X-24,SY+38,52,3,'#4a3628'); pR(g,SHELF_X-24,SY+38,52,1,'#5c4230');
-  pEll(g,SHELF_X-9,SY+35,6,3,'#8a7250'); pR(g,SHELF_X+4,SY+31,9,7,'#5f4a3a');
-  pEll(g,SHELF_X,SY-4,13,5,'#c9992f'); pEll(g,SHELF_X,SY-5.5,11,3.6,'#f2c14e');
-  pEll(g,SHELF_X-6,SY-8,3,2.4,'#e8b8d0'); pEll(g,SHELF_X+5,SY-8,3,2.4,'#efe6d8');
+  // somebody asleep: one lump, one mat
+  const br=Math.sin(S.t*1.4)*0.8, stir=S.stir>0? Math.sin(S.t*15)*2:0;
+  pR(g,22,FL-6,84,6,'#241d33'); pR(g,22,FL-6,84,1,'#3a2f4e');
+  pEll(g,64+stir,FL-15+br,31,11,'#0d0a16');
+  pEll(g,64+stir,FL-21+br,26,4,'rgba(255,216,140,0.16)');
+  pEll(g,38+stir,FL-16+br,7.5,7.5,'#0d0a16');
+  pEll(g,36+stir,FL-19+br,4,2.4,'rgba(255,216,140,0.14)');
+  if(S.stir>0){ cloudBubble(g,150,96,44,16,86,FL-26,{seed:12});
+    pTxt(g,'…mmh?',150,107,CL.ink,7,'center'); }
+  // the shelf and the coin
+  const SY=124;
+  pR(g,SHELF_X-28,SY,58,5,'#241d33'); pR(g,SHELF_X-28,SY,58,1,'#453862');
+  pR(g,SHELF_X-22,SY+5,5,FL-SY-5,'#181223'); pR(g,SHELF_X+18,SY+5,5,FL-SY-5,'#181223');
+  pR(g,SHELF_X-22,SY+5,1,FL-SY-5,'#3a2f4e'); pR(g,SHELF_X+18,SY+5,1,FL-SY-5,'#3a2f4e');
+  pEll(g,SHELF_X,SY-3,13,4.5,'#2e2542'); pEll(g,SHELF_X,SY-4,10,3,'#3f3358');
   if(S.took<0.02){
-    const gl=0.5+0.5*Math.sin(S.t*3);
-    drawGlow(g,SHELF_X,SY-14,18,CL.goldL,0.20+gl*0.22);
-    pEll(g,SHELF_X,SY-14-gl,4,4,'#f2c14e'); pEll(g,SHELF_X,SY-15-gl,2.6,2.4,'#fff0b8');
+    const gl=0.5+0.5*Math.sin(S.t*4);
+    drawGlow(g,SHELF_X,SY-12,22+gl*4,'#ffd257',0.42+gl*0.2);
+    pEll(g,SHELF_X,SY-12-gl,4.4,4.4,'#ffe89a'); pEll(g,SHELF_X,SY-13-gl,2.4,2,'#fffdf0');
   }
-  /* you, alive, in the last night of your last life */
-  const v=makeVillager({x:S.mx/1.8,y:(FL+2)/1.8,skin:PAL.skin,shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
-  v.face=S.face; v.phase=S.walk; v.vx=(K.left||K.right)?30*S.face:0; v.carry=0;
-  g.save(); g.scale(1.8,1.8); drawVillager(g,v,{}); g.restore();
+  introGuy(g,S.mx,FL,S.face,S.walk,{armTo:(S.reach&&!S.done)?{x:SHELF_X-4,y:SY-10}:null});
+  pR(g,0,FL,W,1,'#2a2138');
   if(S.took>0.05){
-    const k=Math.min(1,S.took*1.5);
-    const tx=lerp(SHELF_X,S.mx+8*S.face,k), ty=lerp(SY-14,FL-34,k);
-    drawGlow(g,tx,ty,11,CL.goldL,0.45*(1-k*0.4)); pEll(g,tx,ty,3.4,3.4,'#f2c14e');
-    pEll(g,tx-0.6,ty-0.8,1.8,1.4,'#fff0b8');
+    const k=Math.min(1,S.took*1.6);
+    const tx=lerp(SHELF_X,S.mx+9*S.face,k), ty=lerp(SY-12,FL-42,k);
+    drawGlow(g,tx,ty,14,'#ffd257',0.5); pEll(g,tx,ty,3.6,3.6,'#ffe89a');
   }
-  /* we are watching this from the doorway, which is why the frame is so dark */
-  pR(g,0,H-40,W,40,'#0a0812'); pR(g,0,H-41,W,1,'#241a12'); pR(g,0,H-40,W,1,'#150f0c');
-  pR(g,0,0,12,H,'#0a0812'); pR(g,12,0,1,H,'#150f0c');
-  pR(g,W-12,0,12,H,'#0a0812'); pR(g,W-13,0,1,H,'#150f0c');
-  /* how much noise you are making */
-  const nx=W-114;
-  cloud(g,nx,24,96,18,{seed:31});
-  pTxt(g,'NOISE',nx+8,38,CL.ink2,7);
-  pR(g,nx+42,30,46,5,CL.under);
-  const n=clamp(S.noise,0,1);
-  pR(g,nx+42,30,R(46*n),5, n>0.8? '#c9542f' : n>0.5? '#c9992f' : '#5f8a52');
-  pR(g,nx+42,30,46,1,mixSafe(CL.under,'#000',0.2));
-
-  if(S.reach && !S.done){ const b=0.5+0.5*Math.sin(S.t*6);
-    g.globalAlpha=0.72+b*0.28; introKey(g,SHELF_X,SY-26,'E'); g.globalAlpha=1; }
+  // how quiet you are being
+  const nx=W-104, n=clamp(S.noise,0,1);
+  pR(g,nx,18,88,7,'rgba(10,8,18,0.65)');
+  pR(g,nx+1,19,86*n,5, n>0.8?'#e0603c': n>0.5?'#e8b13c':'#5f9a52');
+  pTxt(g,'NOISE',nx,15,'#8a8098',6);
+  if(S.reach && !S.done){ const b=0.5+0.5*Math.sin(S.t*7);
+    g.globalAlpha=0.7+b*0.3; introKey(g,SHELF_X,SY-34,'TAP'); g.globalAlpha=1; }
 }
 function introGate(g,S){
+  /* a moon, a gate, a bottle. the horizon tips as it empties. */
   g.save();
-  g.translate(W/2,H/2); g.rotate(S.tilt*(1+Math.sin(S.t*0.8)*0.12)); g.translate(-W/2,-H/2);
-  pVGrad(g,-60,-60,W+120,H+120,'#0d1030','#232a52',7);
-  /* stars, smeared sideways by exactly as much as you have drunk */
-  const sm=S.tilt*170;
-  for(let i=0;i<80;i++){ const st=STARS[i], x=st[0]*W, y=st[1]*H*0.72;
-    g.globalAlpha=0.22+0.5*st[3];
-    pR(g,x,y,1+sm*st[3],1,'#dfe6ff'); }
+  g.translate(W/2,H/2); g.rotate(S.tilt); g.translate(-W/2,-H/2);
+  pVGrad(g,-60,-60,W+120,H+120,'#141a3e','#3a2f52',6);
+  const FL=214;
+  drawGlow(g,110,56,54,'#fff2c8',0.30);
+  pEll(g,110,56,22,22,'#fdf6dc'); pEll(g,104,50,5,5,'#e8dcbc'); pEll(g,116,62,4,4,'#e8dcbc');
+  for(let i=0;i<50;i++){ const st=STARS[i];
+    g.globalAlpha=0.3+0.5*st[3];
+    pR(g,st[0]*W,st[1]*H*0.6,1+S.tilt*90*st[3],1,'#e8ecff'); }
   g.globalAlpha=1;
-  drawGlow(g,96,34,32,'#e8eaff',0.20); pEll(g,96,34,8,8,'#f4f2ff'); pEll(g,94,32,5,5,'#fffdf6');
-  const FL=196, GX=300;
-  /* the chedi, behind everything, minding its own business */
-  const ch=ART.chedi; g.globalAlpha=0.5; g.drawImage(ch,378,FL-38-ch.height*0.62,ch.width*0.62,ch.height*0.62); g.globalAlpha=1;
-  /* the temple wall, with the gate you did not bow at set into it */
-  for(const [wx,ww] of [[-40,GX-38+40],[GX+38,W+40-(GX+38)]]){
-    pR(g,wx,FL-44,ww,44,'#241c30'); pR(g,wx,FL-46,ww,2,'#3a3048');
-    pR(g,wx,FL-40,ww,1,'#2e2440');
-    for(let x=wx+7;x<wx+ww-2;x+=14) pR(g,x,FL-38,1,38,'#1e1728');
-  }
-  /* the road out front */
-  pR(g,-40,FL,W+80,H-FL+40,'#1a1526'); pR(g,-40,FL-1,W+80,2,'#2a2138');
-  for(let i=0;i<46;i++) pR(g,(i*79)%(W+40)-20,FL+3+((i*29)%30),2+((i*7)%4),1,'#221b2e');
-  for(let i=0;i<14;i++){ const x=(i*71)%(W+40)-20;
-    pTaper(g,x,FL+2,x+((i%3)-1)*2,FL-5,1.4,1,'#2e3a2e'); }
-  /* the gate itself */
-  pR(g,GX-38,FL-72,7,72,'#5a3a22'); pR(g,GX-37,FL-72,2,72,'#7a5230');
-  pR(g,GX+31,FL-72,7,72,'#5a3a22'); pR(g,GX+32,FL-72,2,72,'#7a5230');
-  pR(g,GX-44,FL-76,88,5,'#8a2f28'); pR(g,GX-44,FL-76,88,2,'#a8443a');
-  for(let i=0;i<3;i++){
-    const w2=76-i*20, y2=FL-84-i*9;
-    pR(g,GX-w2/2,y2,w2,6,'#8a2f28'); pR(g,GX-w2/2,y2,w2,2,'#a8443a');
-    pR(g,GX-w2/2-3,y2+5,w2+6,2,'#c9992f');
-  }
-  pTri(g,GX,FL-116,GX-9,FL-104,GX+9,FL-104,'#8a2f28');
-  for(const sx of [-1,1]){                                     // the sky-hooks
-    pTaper(g,GX+sx*38,FL-84,GX+sx*47,FL-98,3,2,'#c9992f');
-    pEll(g,GX+sx*47,FL-99,2.2,2.6,'#f2c14e');
-  }
-  pR(g,GX-3,FL-122,6,7,'#c9992f'); pEll(g,GX,FL-124,2.6,3,'#f2c14e');
-  /* the bell, under the lintel */
-  const bx=GX, sw=Math.sin(S.t*4.2)*S.bell*7;
-  pR(g,bx-1,FL-71,2,9,'#3a2c22');
-  pEll(g,bx+sw,FL-56,7,8,'#c9992f'); pEll(g,bx+sw,FL-58,5.4,5.6,'#f2c14e');
-  pEll(g,bx+sw,FL-49,7,2.2,'#8a6a2a');
-  if(S.bell>0.02){
-    for(let i=1;i<=3;i++){ g.globalAlpha=Math.max(0,0.34-i*0.09)*(1-S.bell*0.5);
-      oEll(g,bx,FL-54,10+i*10+S.bell*18,9+i*9+S.bell*15,'rgba(0,0,0,0)','#f2c14e'); }
-    g.globalAlpha=1;
-    drawGlow(g,bx,FL-54,26+S.bell*10,'#f2c14e',0.14*(1-S.bell*0.6));
-  }
-  /* the monk at the gate, waiing at nobody in particular */
-  const mk=makeVillager({x:(GX+58)/1.55,y:FL/1.55,skin:'#c69670',shirt:'#e8923f',shirtD:'#b56a28',legs:'#e8923f',hair:'bald',monk:1});
-  mk.face=-1; g.save(); g.scale(1.55,1.55); drawVillager(g,mk,{wai:1}); g.restore();
-  /* the sala step you are sitting on */
-  pR(g,120,FL-9,92,9,'#4a3628'); pR(g,120,FL-9,92,2,'#63472f');
-  pR(g,126,FL-16,80,7,'#5a4230'); pR(g,126,FL-16,80,2,'#7a5a40');
-  /* you, with a bottle you did not pay for */
-  const px2=lerp(166,272,S.past);
-  const v=makeVillager({x:px2/1.8,y:(FL-14+S.past*14)/1.8,skin:PAL.skin,shirt:'#a83f33',shirtD:'#7e2f26',legs:'#3a3a44',hair:'short'});
-  v.face=1; v.vx=S.past>0.02?32:0; v.phase=S.t*5.4;
-  g.save(); g.scale(1.8,1.8); drawVillager(g,v,{}); g.restore();
+  // the temple, one bold silhouette
+  const GX=336;
+  pR(g,-40,FL,W+80,H-FL+60,'#0b0814');
+  pR(g,-40,FL-1,W+80,2,'#1b1526');
+  // two posts, a lintel, three flat roof tiers: a gate, not a cone
+  const GS='#0d0a16', GR='rgba(255,232,180,0.18)';
+  pR(g,GX-44,FL-72,11,72,GS); pR(g,GX+33,FL-72,11,72,GS);
+  pR(g,GX-44,FL-72,2,72,GR);  pR(g,GX+33,FL-72,2,72,GR);
+  pR(g,GX-52,FL-80,104,9,GS); pR(g,GX-52,FL-80,104,2,GR);
+  for(let i=0;i<3;i++){ const w2=94-i*22, y2=FL-92-i*10;
+    pR(g,GX-w2/2,y2,w2,9,GS); pR(g,GX-w2/2,y2,w2,2,GR); }
+  pTri(g,GX,FL-132,GX-13,FL-118,GX+13,FL-118,GS);
+  pR(g,GX-2,FL-140,5,10,GS);
+  // the sky-hooks, angled off the lowest tier
+  pTaper(g,GX-47,FL-92,GX-58,FL-108,4,2,GS);
+  pTaper(g,GX+47,FL-92,GX+58,FL-108,4,2,GS);
+  // the bell, and the ring
+  const sw=Math.sin(S.t*5)*S.bell*6;
+  pR(g,GX-1,FL-71,2,10,GS);
+  pEll(g,GX+sw,FL-54,7,8,'#e8b13c'); pEll(g,GX+sw,FL-56,4.6,5,'#ffd257');
+  drawGlow(g,GX+sw,FL-54,20,'#ffd257',0.18+S.bell*0.2);
+  if(S.bell>0.02){ for(let i=1;i<=3;i++){ g.globalAlpha=Math.max(0,0.4-i*0.11)*(1-S.bell*0.5);
+      oEll(g,GX,FL-54,12+i*12+S.bell*20,11+i*11+S.bell*16,'rgba(0,0,0,0)','#ffd257'); }
+    g.globalAlpha=1; }
+  // you, and the bottle
+  const px2=lerp(120,GX-4,S.past);
+  introGuy(g,px2,FL,1,S.past>0.02? S.t*7:0,{hold:S.past<0.05, lean:S.tilt*30});
   if(S.past<0.06){
-    const tipx=px2+13, tipy=FL-52-S.sips*1.2;
-    pR(g,tipx-3,tipy,7,16,'#5f7a52');
-    pR(g,tipx-3,tipy+16-R(14*S.bottle),7,R(14*S.bottle),'#e8f0e0');
-    pR(g,tipx-1.5,tipy-5,4,5,'#5f7a52'); pR(g,tipx-2,tipy-6,5,2,'#c9992f');
-    pR(g,tipx-3,tipy+4,7,4,'#cfc4ae');
+    const bx=px2+9, by=FL-58;
+    pR(g,bx-4,by,9,20,'#3f6a48');
+    pR(g,bx-4,by+20-R(18*S.bottle),9,R(18*S.bottle),'#cfe8c0');
+    pR(g,bx-2,by-6,5,6,'#3f6a48'); pR(g,bx-3,by-8,7,3,'#e8b13c');
   }
-  for(const q of S.puffs){ g.globalAlpha=clamp(q.l,0,1)*0.9;
-    pTxt(g,q.s,q.x,q.y,'#efe6d8',10,'center'); }
+  for(const q of S.puffs){ g.globalAlpha=clamp(q.l,0,1);
+    pTxt(g,q.s,q.x,q.y,'#fff2c8',11,'center'); }
   g.globalAlpha=1;
   if(!S.done){
-    const b=0.5+0.5*Math.sin(S.t*6);
-    g.globalAlpha=0.72+b*0.28; introKey(g,px2+2,FL-72,'E'); g.globalAlpha=1;
-    for(let i=0;i<4;i++){ const on=i<S.sips;
-      if(on) drawGlow(g,32+i*14,H-25,8,'#c9542f',0.28);
-      pEll(g,32+i*14,H-25,2.8,2.8,on?'#c9542f':'#2e2a3c'); }
+    const b=0.5+0.5*Math.sin(S.t*7);
+    g.globalAlpha=0.7+b*0.3; introKey(g,px2,FL-84,'TAP'); g.globalAlpha=1;
+    for(let i=0;i<3;i++) pEll(g,26+i*13,H-22,3.4,3.4, i<S.sips?'#e0603c':'#2e2a3c');
   }
   g.restore();
 }
 function introScale(g,S){
-  pR(g,0,0,W,H,'#0a0812');
-  pVGrad(g,0,0,W,H,'#120e20','#07060e',7);
-  for(let i=0;i<40;i++){ const st=STARS[i+90]; g.globalAlpha=0.12+0.25*st[3];
-    pR(g,st[0]*W,st[1]*H,1,1,'#cfc4ae'); }
+  /* black, and one gold scale that will not be argued with */
+  pVGrad(g,0,0,W,H,'#12101e','#050409',6);
+  for(let i=0;i<30;i++){ const st=STARS[i+90];
+    g.globalAlpha=0.14+0.22*st[3]; pR(g,st[0]*W,st[1]*H,1,1,'#cfc4ae'); }
   g.globalAlpha=1;
-  const PX=240, PY=88, BY=178;
-  /* the beam: your tugging lifts it, and it always comes back down */
-  const rest=0.62, ang=(rest-S.tug*0.5)*(1-S.slam)+S.slam*0.86;
-  const L=104, dx=Math.cos(ang*0.42)*L, dy=Math.sin(ang*0.42)*L;
-  pR(g,PX-2,PY,4,BY-PY,'#6a5a3a'); pR(g,PX-1,PY,1,BY-PY,'#8a7a52');   // the post
-  pEll(g,PX,BY,28,7,'#584a30'); pEll(g,PX,BY-2,25,6,'#8a7a52');       // and its plinth
-  pEll(g,PX,BY-4,18,4,'#c9b98a'); pR(g,PX-9,BY-10,18,7,'#6a5a3a'); pR(g,PX-9,BY-10,18,1,'#8a7a52');
-  drawGlow(g,PX,BY-6,48,'#c9b98a',0.07);
-  pTri(g,PX,PY-8,PX-9,PY+2,PX+9,PY+2,'#8a7a52');
+  const PX=240, PY=96, BY=176;
+  const rest=0.62, ang=(rest-S.tug*0.55)*(1-S.slam)+S.slam*0.9;
+  const L=100, dx=Math.cos(ang*0.42)*L, dy=Math.sin(ang*0.42)*L;
+  drawGlow(g,PX,PY+20,110,'#c9992f',0.10);
+  pR(g,PX-3,PY,6,BY-PY,'#8a7a52'); pR(g,PX-1,PY,2,BY-PY,'#c9b98a');
+  pEll(g,PX,BY,30,8,'#6a5a3a'); pEll(g,PX,BY-3,26,6,'#8a7a52'); pEll(g,PX,BY-5,17,4,'#c9b98a');
+  pTri(g,PX,PY-10,PX-10,PY+2,PX+10,PY+2,'#c9b98a');
   const ax=PX-dx, ay=PY-dy, bx2=PX+dx, by2=PY+dy;
-  pLimb(g,ax,ay,bx2,by2,2.4,'#8a7a52'); pLimb(g,ax,ay,bx2,by2,1,'#c9b98a');
+  pLimb(g,ax,ay,bx2,by2,3,'#8a7a52'); pLimb(g,ax,ay,bx2,by2,1.4,'#e8d8a8');
   for(const [hx,hy,heavy] of [[ax,ay,0],[bx2,by2,1]]){
-    pR(g,hx,hy,1,20,'#6a5a3a');
-    pEll(g,hx,hy+21,17,4,'#8a7a52'); pEll(g,hx,hy+20,15,3,'#c9b98a');
-    if(heavy){   // everything you took, piled up
-      pEll(g,hx-1,hy+15,7,3.4,'#8a6a2a');
-      pEll(g,hx-5,hy+13,4,3.4,'#f2c14e'); pEll(g,hx+3,hy+13,3.4,3,'#c9992f');
-      pR(g,hx+7,hy+9,5,9,'#5f7a52'); pR(g,hx+8,hy+6,3,3,'#5f7a52');
-      drawGlow(g,hx,hy+14,22,'#c9542f',0.16+S.tug*0.1);
-    } else {     // and on the other side: one flower, from your mother, probably
-      pEll(g,hx,hy+15,2.6,2.6,'#e8b8d0'); pEll(g,hx-2,hy+16,2,2,'#f2cede');
-      pR(g,hx-0.5,hy+17,1,4,'#5f8a52');
-      drawGlow(g,hx,hy+15,14,'#e8d8f2',0.14);
+    pR(g,hx,hy,1,22,'#6a5a3a');
+    pEll(g,hx,hy+23,18,4.5,'#8a7a52'); pEll(g,hx,hy+22,16,3.4,'#e8d8a8');
+    if(heavy){
+      pEll(g,hx,hy+17,9,4,'#c9992f'); pEll(g,hx-4,hy+14,4.4,3.6,'#ffd257');
+      pR(g,hx+6,hy+9,6,10,'#3f6a48');
+      drawGlow(g,hx,hy+15,26,'#e0603c',0.20+S.tug*0.14);
+    } else {
+      pEll(g,hx,hy+16,3,3,'#f2cede'); pR(g,hx-0.5,hy+18,1,5,'#5f8a52');
+      drawGlow(g,hx,hy+16,16,'#f2cede',0.16);
     }
   }
-  g.globalAlpha=0.3; pR(g,PX-L-26,PY,2*(L+26),1,'#4a4458'); g.globalAlpha=1;
-  pTxt(g,'KARMA',PX,PY-26,mixSafe('#6a6480','#f2c14e',S.tug),13,'center');
+  g.globalAlpha=0.28; pR(g,PX-L-28,PY,2*(L+28),1,'#8a8098'); g.globalAlpha=1;
+  pTxt(g,'KARMA',PX,PY-24,mixSafe('#6a6480','#ffd257',S.tug),13,'center');
   if(!S.done){
-    const b=0.5+0.5*Math.sin(S.t*7);
-    cloud(g,PX-84,H-56,168,24,{seed:9});
-    icoArrow(g,PX-16,H-44,2,mixSafe(CL.ink2,CL.ink,b),-1); icoArrow(g,PX+16,H-44,2,mixSafe(CL.ink2,CL.ink,b),1);
-    pR(g,PX-56,H-34,112,4,mixSafe(CL.under,'#3a2c22',0.5));
-    pR(g,PX-56,H-34,R(112*S.tug),4,'#c9992f'); pR(g,PX-56,H-34,R(112*S.tug),1,'#f2c14e');
+    const b=0.5+0.5*Math.sin(S.t*8);
+    pR(g,PX-62,H-40,124,7,'rgba(10,8,18,0.6)');
+    pR(g,PX-61,H-39,R(122*S.tug),5,'#c9992f');
+    icoArrow(g,PX-26,H-58,2.2,mixSafe('#6a6480','#ffe89a',b),-1);
+    icoArrow(g,PX+26,H-58,2.2,mixSafe('#6a6480','#ffe89a',b),1);
   }
-  /* the soil, and your eyes closing on it */
   if(S.soil>0.01){
-    g.globalAlpha=Math.min(1,S.soil*1.1); pR(g,0,H-R(H*S.soil),W,R(H*S.soil)+1,'#241a12');
-    for(let i=0;i<26;i++) pR(g,(i*61)%W,H-H*S.soil+((i*37)%22),2+((i*11)%4),1,'#3a2c22');
-    g.globalAlpha=1;
+    pR(g,0,H-R(H*S.soil),W,R(H*S.soil)+1,'#1a1209');
+    for(let i=0;i<20;i++) pR(g,(i*79)%W,H-H*S.soil+((i*31)%16),3+((i*7)%5),1,'#2e2114');
   }
-  if(S.shut>0.01){   // the lids come down
-    const k=S.shut*0.56;
-    pR(g,0,0,W,R(H*k),'#050409'); pR(g,0,H-R(H*k),W,R(H*k)+1,'#050409');
-  }
+  if(S.shut>0.01){ const k=S.shut*0.55;
+    pR(g,0,0,W,R(H*k),'#050409'); pR(g,0,H-R(H*k),W,R(H*k)+1,'#050409'); }
 }
 function drawIntro(){
   const g=ctx; const S=IN||introScene(introI), sc=INTRO[introI];
@@ -5085,8 +5145,7 @@ function drawAscend(g){
 }
 
 function devaPlate(g,d){
-  g.font=fontFor(d.n,12); const w1=g.measureText(d.n).width;
-  g.font=fontFor(d.r,6);  const w2=g.measureText(d.r).width;
+  const w1=txtW(d.n,12), w2=txtW(d.r,6);
   const w=Math.max(w1,w2)+34;
   cloud(g,W/2-w/2,10,w,24,{seed:11});
   pTxt(g,d.n,W/2,22,CL.ink,12,'center');
@@ -5171,14 +5230,12 @@ function drawSigns(g){
     if(s.x-GS.camX<-90||s.x-GS.camX>W+90) continue;
     const gy=groundY(s.x), top=gy-70;
     // left board
-    g.font=fontFor(s.l,6);
-    const wl=g.measureText(s.l).width+16;
+    const wl=txtW(s.l,6)+16;
     pR(g,s.x-4-wl,top,wl,13,'#b8935c'); pR(g,s.x-4-wl,top,wl,2,'#d3b478'); pR(g,s.x-4-wl,top+11,wl,2,'#8a6a3c');
     pTri(g,s.x-4-wl-7,top+6,s.x-4-wl,top,s.x-4-wl,top+13,'#b8935c');
     pTxt(g,s.l,s.x-10-wl+8,top+9,'#3f2f1c',6);
     // right board
-    g.font=fontFor(s.r,6);
-    const wr=g.measureText(s.r).width+16;
+    const wr=txtW(s.r,6)+16;
     pR(g,s.x+4,top+16,wr,13,'#a3835a'); pR(g,s.x+4,top+16,wr,2,'#c4a46e'); pR(g,s.x+4,top+27,wr,2,'#7a5c34');
     pTri(g,s.x+4+wr+7,top+22,s.x+4+wr,top+16,s.x+4+wr,top+29,'#a3835a');
     pTxt(g,s.r,s.x+12,top+25,'#3f2f1c',6);
@@ -5195,8 +5252,7 @@ function inkPanel(g,x,y,w,h,acc){   // a night cloud, for text that stays light
   cloud(g,x,y,w,h,{seed:((x*7+y*11+w)|0), top:'#2a2440', body:'#1e1a33', under:'#151226', edge:'#4a4266', rim:'#3a3454', acc});
 }
 function bubble(g,x,y,txt){
-  g.font=fontFor(txt,6);
-  const w2=g.measureText(txt).width+14;
+  const w2=txtW(txt,6)+14;
   cloudBubble(g,x,y-14,w2,13,x-2,y+2,{seed:(w2*3)|0});
   pTxt(g,txt,x,y-5,CL.ink,6,'center');
 }
@@ -5230,16 +5286,16 @@ function drawKhwan(g,ent){
 function drawKhwanBubble(g){
   const k=KHWAN;
   // one voice at a time: the guide waits her turn while somebody else is talking
-  if(!k.bub || GS.state!=='play' || DLG) return;
+  if(!k.bub || GS.state!=='play' || DLG || PROMPT) return;
   const x=k.x-GS.camX, y=k.y-GS.camY;
-  const lines=wrap(g,k.bub,138,6).slice(0,3);
-  const w2=Math.max(...lines.map(l=>{g.font=fontFor(l,6);return g.measureText(l).width}))+18;
-  const bh=lines.length*8+12;
+  const lines=wrap(g,k.bub,190,7).slice(0,3);
+  const w2=Math.max(...lines.map(l=>txtW(l,7)))+18;
+  const bh=lines.length*10+12;
   const bx=clamp(x-w2/2, 6, W-w2-6);
   // she keeps to the upper band, clear of the HUD above and the action below
   const by=clamp(y-26-bh, 66, 116);
   cloudBubble(g,bx+w2/2,by,w2,bh,x-4,y-9,{seed:5});
-  lines.forEach((l,i)=>pTxt(g,l,bx+w2/2,by+13+i*8,CL.ink,6,'center'));
+  lines.forEach((l,i)=>pTxt(g,l,bx+w2/2,by+14+i*10,CL.ink,7,'center'));
 }
 
 /* ---------------- HUD ---------------- */
@@ -5261,8 +5317,6 @@ function drawHUD(){
     ids.forEach((id,i)=>{ drawIcon(g,id,22+i*19,45,0.62);
       pTxt(g,''+GS.bag[id],28+i*19,52,CL.ink,6); });
   }
-  if(avail()>0){ icoStar(g,15,16+ph+5,0.9,'#5a7a3c');
-    pTxt(g,avail()+' to spend',23,16+ph+7,'#5a7a3c',6); }
 
   const z=zoneAt(P.x);
   if(GS._zone!==z.id){ GS._zone=z.id; GS.zoneName=3.2; GS._zoneZ=z; }
@@ -5270,16 +5324,16 @@ function drawHUD(){
     GS.zoneName-=1/60;
     const a=clamp(GS.zoneName,0,1)*clamp((3.2-GS.zoneName)*3,0,1);
     g.globalAlpha=a;
-    cloud(g,W-150,16,138,24,{seed:4});
-    pTxt(g,GS._zoneZ.name,W-20,31,CL.ink,13,'right');
+    const zw=txtW(GS._zoneZ.name,12)+24;
+    cloud(g,W-12-zw,16,zw,20,{seed:4});
+    pTxt(g,GS._zoneZ.name,W-24,30,CL.ink,12,'right');
     g.globalAlpha=1;
   }
   GS.toasts.forEach((t,i)=>{
     t.t+=1/60;
     const a=t.t<0.2?t.t/0.2:t.t>2.2?clamp((2.8-t.t)/0.6,0,1):1;
     g.globalAlpha=a;
-    g.font=fontFor(t.text,7);
-    const tw=g.measureText(t.text).width+20;
+    const tw=txtW(t.text,7)+20;
     cloud(g,W/2-tw/2,80+i*17-t.t*3,tw,14,{seed:(i*7+3)});
     pTxt(g,t.text,W/2,90+i*17-t.t*3,CL.ink,7,'center');
     g.globalAlpha=1;
@@ -5287,13 +5341,12 @@ function drawHUD(){
   GS.toasts=GS.toasts.filter(t=>t.t<2.8);
   if(PROMPT){
     const s=PROMPT.txt;
-    g.font=fontFor(s,7);
-    const w2=g.measureText(s).width+22;
+    const w2=txtW(s,7)+22;
     const x=PROMPT.x-GS.camX, y=PROMPT.y-GS.camY;
     cloud(g,x-w2/2,y-13,w2,14,{seed:6});
     pTxt(g,s,x,y-3,CL.ink,7,'center');
-    if(PROMPT.sub){ g.font=fontFor(PROMPT.sub,6);
-      const w3=g.measureText(PROMPT.sub).width+18;
+    if(PROMPT.sub){
+      const w3=txtW(PROMPT.sub,6)+18;
       cloud(g,x-w3/2,y+6,w3,12,{seed:8,top:'#eef7e6',body:'#dcecd0',under:'#c2d6b4',edge:'#96ab88'});
       pTxt(g,PROMPT.sub,x,y+14,'#3a4a30',6,'center'); }
   }
@@ -5346,7 +5399,7 @@ function drawTaskHUD(g){
     pR(g,W/2-40,H-44,80*t.cat.fear,4,t.cat.fear>0.6?PAL.ember:'#8fc4e8');
     pTxt(g,'startled',W/2-44,H-40,'#e8e0d0',6,'right'); }
   if(t.fail>0){ const s=t.kind==='cat'?'gently!':'steady!';
-    g.font=fontFor(s,12); const w2=g.measureText(s).width+22;
+    const w2=txtW(s,12)+22;
     cloud(g,W/2-w2/2,H/2-10,w2,20,{seed:16});
     pTxt(g,s,W/2,H/2+4,'#a8392c',12,'center'); }
   pTxt(g,'back',14,H-8,'#cfc4ae',6);
@@ -5613,7 +5666,7 @@ function drawLedger(g){
       pTxt(g, owned?'learned':(s.need&&!GS.skills[s.need])?('needs '+SKILLS[s.need].n):(s.cost+' merit · E to ascend'),
         W-22,H-31,owned?'#4a7a2c':'#8f6a1e',7,'right');
       let y=H-19;
-      for(const l of wrap(g,s.d,W-46,6).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,6); y+=8; }
+      for(const l of wrap(g,s.d,W-46,7).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,7); y+=10; }
     }
   } else if(TREE.tab===1){
     const ids=Object.keys(COSMETICS).filter(c=>!COSMETICS[c].locked||GS.seen['own_'+c]);
@@ -5633,7 +5686,7 @@ function drawLedger(g){
         TREE.row=i; if(same) PRESS.act=true; else AU.blip(); });
     });
     const c=COSMETICS[ids[TREE.row]];
-    if(c){ cloud(g,12,H-30,W-24,22,{seed:150}); pTxt(g,c.d,W/2,H-15,CL.ink2,6,'center'); }
+    if(c){ cloud(g,12,H-30,W-24,22,{seed:150}); pTxt(g,c.d,W/2,H-15,CL.ink2,7,'center'); }
   } else if(TREE.tab===2){
     const list=GIFTEES();
     list.forEach((t,i)=>{
@@ -5651,7 +5704,7 @@ function drawLedger(g){
     const t=list[TREE.row];
     if(t){ cloud(g,12,H-44,W-24,36,{seed:170});
       let y=H-29;
-      for(const l of wrap(g,t.about||t.line||'',W-46,6).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,6); y+=8; }
+      for(const l of wrap(g,t.about||t.line||'',W-46,7).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,7); y+=10; }
       if(t.wish && !GS.friends[t.id] && has('eye')) pTxt(g,'wish: '+t.wish, 22, H-11, '#3a4a30',6);
       pTxt(g,'recipe '+Object.keys(GS.learned).length+'/'+(Object.keys(RECIPES).length+Object.keys(CRAFTS).length),W-22,H-11,CL.ink3,6,'right');
     }

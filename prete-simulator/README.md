@@ -7,8 +7,9 @@ becoming everybody's favourite neighbour.
 
 You took what wasn't yours and drank what wasn't offered, so the ledger tipped.
 Now you're a **prete** — a hungry ghost, tall as the palm trees, with hands like
-palm leaves and a mouth the size of a needle's eye. You cannot eat anything you
-cook. You're going to cook a great deal anyway.
+palm leaves, a mouth the size of a needle's eye, a mop of black hair and a pair
+of sunglasses he has decided to keep wearing. You cannot eat anything you cook.
+You're going to cook a great deal anyway.
 
 **Nothing in this game fights.** There are no enemies, no health bar and no way
 to lose. There is a village, some plants, a stove, a weaving mat, and eleven
@@ -21,7 +22,8 @@ people — five of them dead — who each quietly want one small thing.
 ## Play
 
 Open `index.html` in any browser. One self-contained file — no build, no assets,
-no dependencies. Boots in about a quarter of a second.
+no dependencies, and **not a single network request**: the art, the sound and the
+lettering are all generated in the page. Boots in about a quarter of a second.
 
 ## Controls
 
@@ -52,22 +54,22 @@ A keyboard still works if you have one: arrows walk, **E** confirms, **G** gives
 
 ## The opening is played, not watched
 
-Three things you did in your last life, and you do each one yourself. Nobody
-narrates at you until after you've done it.
+Three things you did in your last life, and you do each one yourself. Each beat
+is one verb and a few seconds — flat silhouettes, one warm light, one accent
+colour, and nobody narrating at you until after you've done it.
 
 **Creep across a dark room and take the coin.** Tap along the floor to creep;
 moving makes noise, standing still lets it settle, and if the meter fills the
-woman asleep under the mosquito net rolls over and mumbles. Tap the coin, and
-the offering bowl is one coin lighter.
+shape asleep on the mat rolls over and mumbles. Tap the coin.
 
-**Drink it dry.** Four taps. Each one tips the bottle, tips the whole frame a
-little further, and smears the stars sideways. Then you laugh past the temple
-gate where a monk is bowing to nobody, and the bell rings for you anyway.
+**Drink it dry.** Three taps. Each one empties the bottle and tips the whole
+horizon a little further. Then you laugh past the temple gate, and the bell
+rings for you anyway.
 
 **Try to cheat the scale.** Everything you took is piled on one brass pan; on
 the other there is one flower. Tap the two sides and the beam does lift — and
 then it sags right back, every time, because that is the entire point. When you
-give up it slams, and the soil starts to fall, and your eyes close on it.
+give up it slams, and the soil falls, and your eyes close on it.
 
 | | | |
 |---|---|---|
@@ -97,7 +99,10 @@ own little cloud beside the dialogue, and only one voice talks at a time.
 
 Nothing in the interface is a font character standing in for a picture — the
 ticks, hearts, stars, arrows, flowers, prayer beads and the book on the menu
-button are all drawn from pixels, like everything else in the game.
+button are all drawn from pixels. **So are the letters.** The game carries two
+hand-drawn bitmap faces — a 5x7 for everything and a 3x5 for the small print —
+and every glyph lands on whole pixels at whole-number scales, which is why the
+text is sharp instead of smeared.
 
 ![talking to Kong Koi](screenshots/making-friends.png)
 
@@ -260,7 +265,7 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~278 KB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~281 KB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Boots in ~270ms and holds 60 fps.
 
 - **Nothing is a sprite sheet, and nothing is a font glyph.** Every character is a
@@ -268,6 +273,10 @@ pixelated`. Boots in ~270ms and holds 60 fps.
   driven by *distance travelled* so feet never slide, velocity lean, landing
   squash, a pot belly on its own spring, and a verlet-simulated sarong. Every
   interface picture is drawn from pixel primitives too.
+- **The type is part of the art.** Two bitmap fonts defined as row bitmasks and
+  rasterised in the page; each drawn string is cached to its own small canvas, so
+  a line of text costs one blit rather than a few hundred rectangles. There is no
+  webfont, so nothing loads late and nothing reflows.
 - **A 5,600-pixel road** through seven named zones over six parallax layers,
   pre-rendered once into cached canvases and built across frames behind a loading
   screen.
