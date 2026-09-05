@@ -1,15 +1,21 @@
 # Prete Simulator
 
-A cozy side-scrolling game about waking up dead in a Thai graveyard and slowly
-becoming everybody's favourite neighbour.
+A quiet side-scrolling game about coming up out of a Thai graveyard with no
+memory at all, and having to earn the story of your own life back.
 
-> karma is a ledger, not a cage.
+> karma is a ledger, and you are not allowed to read your own.
 
-You took what wasn't yours and drank what wasn't offered, so the ledger tipped.
-Now you're a **prete** — a hungry ghost, tall as the palm trees, with hands like
-palm leaves, a mouth the size of a needle's eye, a mop of black hair and a pair
-of sunglasses he has decided to keep wearing. You cannot eat anything you cook.
-You're going to cook a great deal anyway.
+You wake under the soil and push your way out of it. You do not know your name.
+You do not know what you did. You are a **prete** — a hungry ghost, tall as the
+palm trees, thin as a pole, with hands like palm leaves, a mouth the size of a
+needle's eye, a head too big for any of it, a mop of black hair and a pair of
+sunglasses. You cannot eat anything you cook. You're going to cook a great deal
+anyway.
+
+Nobody will tell you what you did. Not Khwan, who was there for all of it. Not
+Phra Phum, who keeps the ledger in his hands. **It comes back on its own, one
+page at a time, as you earn the right to it** — and by the last page you will
+wish it hadn't.
 
 **Nothing in this game fights.** There are no enemies, no health bar and no way
 to lose. There is a village, some plants, a stove, a weaving mat, and eleven
@@ -52,28 +58,42 @@ A keyboard still works if you have one: arrows walk, **E** confirms, **G** gives
 
 ![tap to walk, three buttons](screenshots/on-a-phone.png)
 
-## The opening is played, not watched
+## The past comes back in pieces, and you play every one
 
-Three things you did in your last life, and you do each one yourself. Each beat
-is one verb and a few seconds — flat silhouettes, one warm light, one accent
-colour, and nobody narrating at you until after you've done it.
+There is no prologue explaining who you were. There are **five memories**, and
+you have to earn four of them. They arrive without asking — you'll be walking
+down the road and the world will white out — and each one is a short scene you
+play rather than watch: letterboxed, a title in the corner, dust in the light,
+and nobody narrating at you until after you've done the thing.
 
-**Creep across a dark room and take the coin.** Tap along the floor to creep;
-moving makes noise, standing still lets it settle, and if the meter fills the
-shape asleep on the mat rolls over and mumbles. Tap the coin.
+**The ground.** *(the one you get for free)* Three taps to push your own arm up
+through the soil. Above the line: a row of chedis and a moon. Below it: roots, a
+broken pot, one gold coin nobody came back for, and you, face up, waiting.
 
-**Drink it dry.** Three taps. Each one empties the bottle and tips the whole
-horizon a little further. Then you laugh past the temple gate, and the bell
-rings for you anyway.
+**The shelf.** Tap along the floor of a room you half know. Moving makes noise
+and standing still lets it settle; fill the meter and the shape asleep on the mat
+rolls over and mumbles. There is a bowl on the shelf with a coin in it. Take it.
 
-**Try to cheat the scale.** Everything you took is piled on one brass pan; on
-the other there is one flower. Tap the two sides and the beam does lift — and
-then it sags right back, every time, because that is the entire point. When you
-give up it slams, and the soil falls, and your eyes close on it.
+**The gate.** Three taps. Each one empties the bottle and tips the whole horizon
+further. Then you laugh past the temple gate, and the bell rings for you anyway.
+
+**The scale.** Everything you took on one brass pan; one flower on the other. Tap
+the two sides and the beam does lift — and then it sags right back, every time,
+because that is the entire point. When you give up it slams, and the soil falls.
+
+**Four bowls.** The last page, and the only one you can't do anything about. The
+same room, years later, by daylight. A photograph on the altar of a young man in
+sunglasses. An old woman kneeling, bowing, setting out rice. Reach for the bowl —
+your hand goes straight through, three times, and she never looks up. Then she
+sets out a fourth.
+
+Everything you recover is filed in the **PAST** tab of your ledger, one line per
+page, and until the last one turns the ending will not start.
 
 | | | |
 |---|---|---|
-| ![the taking](screenshots/intro-the-taking.png) | ![the drinking](screenshots/intro-the-drinking.png) | ![the scale](screenshots/intro-the-scale.png) |
+| ![the ground](screenshots/memory-the-ground.png) | ![the shelf](screenshots/memory-the-shelf.png) | ![the gate](screenshots/memory-the-gate.png) |
+| ![the scale](screenshots/memory-the-scale.png) | ![four bowls](screenshots/memory-four-bowls.png) | ![the ledger's past tab](screenshots/the-past.png) |
 
 ## You wake up in a graveyard
 
@@ -81,13 +101,14 @@ The game opens in the cremation ground at the west end of the village, which is
 where they buried you. A small round glowing thing is waiting to explain this,
 gently:
 
-> **Khwan:** *Better you hear this standing: you woke up in a graveyard.*
+> **Khwan:** *And no — do not ask me. A ledger is read by whoever wrote it.*
 
 That's **Khwan** — the life-spirit Thai belief says everybody carries and almost
-nobody hears. She follows you the whole game, floats at your shoulder, and
-teaches you one nudge at a time: how to walk, how to pick things, how to cook,
-how to give something away. She is also the one who tells you that nobody here
-is going to hurt you.
+nobody hears. She was with you for every bit of the life you can't remember, and
+she will not tell you a word of it. What she will do is follow you, float at your
+shoulder, and teach you one nudge at a time: how to walk, how to pick things, how
+to cook, how to give something away. After each page comes back she says one
+short thing and then leaves you alone with it.
 
 ![the graveyard you woke in](screenshots/the-graveyard.png)
 
@@ -173,8 +194,10 @@ descend, and the ledger is waiting where you left it.
 
 ## The Ledger and the map
 
-Four tabs on a drifting cloud sky: **skills**, **looks**, **friends**, and the
-whole 5,600-pixel road drawn as a **map** — seven named zones along the top, every
+Five tabs on a drifting cloud sky: **skills**, **looks**, **friends**, the
+**past** — your recovered memories, one flat page each, blank and question-marked
+until they come back, with a red dot on the tab when there's one you haven't read
+— and the whole 5,600-pixel road drawn as a **map**: seven named zones along the top, every
 stove, shrine, workbench, pond and grove pinned on four tiers so nothing collides,
 your five ghost friends on their own row, a marker where you're standing, and one
 line at the bottom telling you what to do next.
@@ -223,12 +246,13 @@ the temple and the banana grove onward — with a lantern hanging off the post a
 a lamp pooling light on the dirt. You should never have to guess which way the
 village is.
 
-| | |
-|---|---|
-| ![the crossroads](screenshots/crossroads.png) | ![the temple](screenshots/the-temple.png) |
+| | | |
+|---|---|---|
+| ![the crossroads](screenshots/crossroads.png) | ![the temple](screenshots/the-temple.png) | ![talking it over](screenshots/dialogue.png) |
 
-Fill 108 merit — as many as the beads on a prayer mala — and the village throws
-you a water-pouring ceremony at dawn. Everyone you befriended comes to see you off.
+Fill 108 merit — as many as the beads on a prayer mala — and the last page turns.
+Then the village throws you a water-pouring ceremony at dawn, and everyone you
+befriended comes to see you off.
 
 ![the ceremony](screenshots/ceremony.png)
 
@@ -265,14 +289,20 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~281 KB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~296 KB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Boots in ~270ms and holds 60 fps.
 
 - **Nothing is a sprite sheet, and nothing is a font glyph.** Every character is a
   procedural puppet posed fresh each frame — two-bone IK limbs, a walk cycle
   driven by *distance travelled* so feet never slide, velocity lean, landing
-  squash, a pot belly on its own spring, and a verlet-simulated sarong. Every
-  interface picture is drawn from pixel primitives too.
+  squash, a pot belly on its own spring, and a verlet-simulated sarong. The prete
+  is drawn cartoon-first: one hard ink line all the way round, flat colour inside
+  it, forty pixels of leg, a waist you could close one hand around and a head far
+  too big for either. Every interface picture is drawn from pixel primitives too.
+- **The cutscenes use the same rig ideas at a different scale.** The man you used
+  to be is the same silhouette in colour — shirt, jeans, the same shades — and the
+  prete himself walks out of his own grave in the first scene, drawn by the same
+  function that draws him in the village.
 - **The type is part of the art.** Two bitmap fonts defined as row bitmasks and
   rasterised in the page; each drawn string is cached to its own small canvas, so
   a line of text costs one blit rather than a few hundred rectangles. There is no

@@ -147,7 +147,7 @@ function tapSides(){
     case 'act':    return !!ACT && ACT.phase==='do' && (ACT.k.t==='rhythm' || ACT.k.t==='place');
     case 'give':   return true;
     case 'ascend': return !!ASC && ASC.phase==='climb';
-    case 'intro':  return INTRO[introI].id==='scale';
+    case 'memory': return MEMS[memI].id==='scale';
     default:       return false;
   }
 }
@@ -2029,7 +2029,7 @@ function makePrete(){
     x:0, y:0, vx:0, vy:0, face:1, onGround:true,
     phase:0, bob:0, squash:0, lean:0, blink:rnd(2,6),
     bellyX:0, bellyY:0, bellyVX:0, bellyVY:0,
-    cloth: makeCloth(6, 18),
+    cloth: makeCloth(6, 24),
     state:'idle', anim:0, reachT:null, alpha:1,
   };
 }
@@ -2051,13 +2051,17 @@ function oTaper(g,x1,y1,x2,y2,w1,w2,c,oc){ pTaper(g,x1,y1,x2,y2,w1+2,w2+2,oc); p
 function oEll(g,cx,cy,rx,ry,c,oc){ pEll(g,cx,cy,rx+1,ry+1,oc); pEll(g,cx,cy,rx,ry,c); }
 function oRect(g,x,y,w,h,c,oc){ pR(g,x-1,y-1,w+2,h+2,oc); pR(g,x,y,w,h,c); }
 
+/* ink-rimmed shapes. a cartoon is an outline first and a colour second. */
+function iTaper(g,x1,y1,x2,y2,w1,w2,c,oc){ pTaper(g,x1,y1,x2,y2,w1+3,w2+3,oc); pTaper(g,x1,y1,x2,y2,w1,w2,c); }
+function iEll(g,cx,cy,rx,ry,c,oc){ pEll(g,cx,cy,rx+2,ry+2,oc); pEll(g,cx,cy,rx,ry,c); }
+
 function drawPrete(g, p, o={}){
   const face = p.face, gold = o.gold;
   const cos = o.cos || GS.cos;
   const BODY = gold?'#f0dfae':PAL.pale;
   const SHD  = gold?'#c9a45e':PAL.paleD;
   const HI   = gold?'#fff6dc':PAL.paleL;
-  const OC   = gold?'#6e5424':'#463d59';        // the outline that holds him together
+  const OC   = gold?'#5c4418':'#241d33';        // one hard ink line all the way round
   const alpha = o.alpha!==undefined?o.alpha:(p.alpha||1);
   if(alpha<1){ g.save(); g.globalAlpha=alpha; }
 
@@ -2066,24 +2070,24 @@ function drawPrete(g, p, o={}){
   const sq = clamp(p.squash,-1,1);
   const sY = 1 - sq*0.15, sX = 1 + sq*0.12;
 
-  /* starved-tall proportions: pole legs, one drum of a belly,
-     arms past the knee, and a small head on a long neck */
-  const LEG=30, TH=16, SN=16, AU2=15, AL=17;
+  /* cartoon proportions: two storeys of leg, a waist you could close one hand
+     around, a drum of a belly, and a head far too big for any of it */
+  const LEG=40, TH=21, SN=21, AU2=19, AL=22;
   const sp = Math.abs(p.vx);
-  const stride = clamp(sp*0.19, 0, 13);
-  const lift   = clamp(sp*0.10, 0, 7);
-  const bobA   = p.onGround ? Math.abs(Math.sin(p.phase*2))*clamp(sp*0.03,0,2) : 0;
+  const stride = clamp(sp*0.22, 0, 17);
+  const lift   = clamp(sp*0.11, 0, 8);
+  const bobA   = p.onGround ? Math.abs(Math.sin(p.phase*2))*clamp(sp*0.035,0,2.4) : 0;
   const hipY = by - LEG*sY - bobA;
   const hipX = bx + p.lean*2.5;
-  const chestY = hipY - 22*sY;
-  const chestX = hipX + p.lean*3;
+  const chestY = hipY - 26*sY;
+  const chestX = hipX + p.lean*3.4;
   const shY = chestY - 2;
 
   function legPose(i){
     const back = i===0;
     let fx, fy;
-    if(!p.onGround){ fx=(back?-5:5)*face; fy = p.vy<0? -3:1; }
-    else if(p.state==='block'){ fx=(back?-8:7)*face; fy=0; }
+    if(!p.onGround){ fx=(back?-6:6)*face; fy = p.vy<0? -4:1; }
+    else if(p.state==='block'){ fx=(back?-10:9)*face; fy=0; }
     else { const ph=p.phase+i*Math.PI, c=Math.cos(ph), s=Math.sin(ph);
       // cos falls while the foot is planted (it slides back under you) and
       // rises while it swings through — lift on the rising half, or you moonwalk
@@ -2092,46 +2096,53 @@ function drawPrete(g, p, o={}){
   }
   function drawLeg(i){
     const L=legPose(i), col=L.back?SHD:BODY;
-    const hx0=hipX+(L.back?-3:3)*face;
-    const knee=ik2(hx0,hipY,L.fx,L.fy-3,TH*sY,SN*sY,face>0?1:-1);
-    oTaper(g,hx0,hipY-2,knee.x,knee.y,5,4,col,OC);
-    oTaper(g,knee.x,knee.y,L.fx,L.fy-3,4,3,col,OC);
-    pEll(g,knee.x,knee.y,2,2,col);
-    // a long narrow foot
-    pR(g,L.fx-(face>0?3:5)-1,L.fy-4,10,5,OC);
-    pR(g,L.fx-(face>0?3:5),L.fy-3,8,3,col);
-    pR(g,L.fx-(face>0?3:5),L.fy-3,8,1,L.back?shade(SHD,0.08):shade(BODY,0.12));
-    if(!L.back) pTaper(g,hx0-1,hipY,knee.x-1,knee.y,1.6,1.2,HI);
+    const hx0=hipX+(L.back?-2.6:2.6)*face;
+    const knee=ik2(hx0,hipY,L.fx,L.fy-4,TH*sY,SN*sY,face>0?1:-1);
+    iTaper(g,hx0,hipY-2,knee.x,knee.y,3.4,2.8,col,OC);        // thigh: a pipe
+    iTaper(g,knee.x,knee.y,L.fx,L.fy-4,2.8,2.2,col,OC);       // shin: thinner still
+    iEll(g,knee.x,knee.y,2.2,2.2,col,OC);                     // a knob of a knee
+    // one long flat foot with a heel under the ankle
+    const f0=L.fx-(face>0?4:9);
+    pR(g,f0-1,L.fy-5,15,5,OC);
+    pR(g,f0,L.fy-4,13,3,col);
+    pR(g,f0,L.fy-4,13,1.2,L.back?shade(SHD,0.08):shade(BODY,0.14));
+    pEll(g,L.fx,L.fy-6,3,3,OC); pEll(g,L.fx,L.fy-6,2,2,col);
+    if(!L.back) pTaper(g,hx0-1,hipY,knee.x-1,knee.y,1.4,1,HI);
   }
   function armPose(back){
     let hx2,hy2;
-    if(o.armTarget){ hx2=o.armTarget.x-(back?11*face:0); hy2=o.armTarget.y+(back?9:0); }
-    else if(p.state==='block'){ hx2=chestX+(back?6:11)*face; hy2=chestY+(back?8:1); }
-    else if(p.state==='wail'){ hx2=chestX+(back?-12:14)*face; hy2=chestY-15+(back?8:0); }
-    else if(!p.onGround){ hx2=chestX-(back?4:8)*face; hy2=chestY+(p.vy<0?9:22); }
+    if(o.armTarget){ hx2=o.armTarget.x-(back?12*face:0); hy2=o.armTarget.y+(back?10:0); }
+    else if(p.state==='block'){ hx2=chestX+(back?7:13)*face; hy2=chestY+(back?9:1); }
+    else if(p.state==='wail'){ hx2=chestX+(back?-14:16)*face; hy2=chestY-18+(back?9:0); }
+    else if(!p.onGround){ hx2=chestX-(back?5:9)*face; hy2=chestY+(p.vy<0?11:27); }
     else { const ph=p.phase+(back?Math.PI:0);
-      hx2=chestX+Math.cos(ph)*stride*0.8*face-4.5*face;
-      hy2=chestY+28+Math.abs(Math.sin(ph))*2; }
+      hx2=chestX+Math.cos(ph)*stride*0.8*face-5*face;
+      hy2=chestY+34+Math.abs(Math.sin(ph))*2.4; }
     return {hx2,hy2};
   }
   function drawArm(back){
     const {hx2,hy2}=armPose(back);
     const col=back?SHD:BODY;
-    const sx0=chestX+(back?-3.5:3.5)*face;
+    const sx0=chestX+(back?-3:3)*face;
     const el=ik2(sx0,shY,hx2,hy2,AU2,AL,back?(face>0?-1:1):(face>0?1:-1));
-    oTaper(g,sx0,shY,el.x,el.y,4,3.4,col,OC);
-    oTaper(g,el.x,el.y,hx2,hy2,3.4,2.8,col,OC);
-    pEll(g,el.x,el.y,1.8,1.8,col);
-    // hands as big as palm leaves
+    iTaper(g,sx0,shY,el.x,el.y,3,2.6,col,OC);
+    iTaper(g,el.x,el.y,hx2,hy2,2.6,2.2,col,OC);
+    iEll(g,el.x,el.y,1.8,1.8,col,OC);
+    // hands like palm leaves — one big mitt, drawn as a shape and not as five sticks
     const ang=Math.atan2(hy2-el.y,hx2-el.x), cx2=Math.cos(ang), cy2=Math.sin(ang);
-    const px2=hx2+cx2*2.4, py2=hy2+cy2*2.4;
-    for(let f2=0;f2<4;f2++){ const fa=ang+(f2-1.5)*0.34;
-      pTaper(g,px2,py2,px2+Math.cos(fa)*6,py2+Math.sin(fa)*6,2.6,2,OC); }
-    oEll(g,px2,py2,2.8,3.3,col,OC);
-    for(let f2=0;f2<4;f2++){ const fa=ang+(f2-1.5)*0.34;
-      pTaper(g,px2,py2,px2+Math.cos(fa)*5.4,py2+Math.sin(fa)*5.4,1.5,1,col); }
-    if(!back) pEll(g,px2-cx2*1.1,py2-cy2*1.1,1.4,1.6,HI);
-    return {x:px2,y:py2};
+    const nx2=-cy2, ny2=cx2;                       // across the wrist
+    const px2=hx2+cx2*3.4, py2=hy2+cy2*3.4;
+    const tip={x:px2+cx2*6.4, y:py2+cy2*6.4};
+    const thx=px2+nx2*2.6*face, thy=py2+ny2*2.6*face;
+    // outline the whole hand first, then fill it — or the two rims eat the palm
+    pTaper(g,px2-nx2*1.2,py2-ny2*1.2,tip.x,tip.y,6.4,5.2,OC);
+    pEll(g,thx,thy,2.9,2.9,OC);
+    pTaper(g,px2-nx2*1.2,py2-ny2*1.2,tip.x,tip.y,4.6,3.4,col);
+    pEll(g,thx,thy,1.9,1.9,col);
+    for(let f2=0;f2<2;f2++){ const o2=(f2-0.5)*2.6;
+      pTaper(g,px2+nx2*o2+cx2*3,py2+ny2*o2+cy2*3,tip.x+nx2*o2*0.6,tip.y+ny2*o2*0.6,0.8,0.8,shade(col,-0.16)); }
+    if(!back) pEll(g,px2-nx2*1.8,py2-ny2*1.8,1.5,1.7,HI);
+    return {x:tip.x,y:tip.y};
   }
 
   /* ---- back to front ---- */
@@ -2139,100 +2150,100 @@ function drawPrete(g, p, o={}){
   const handB = drawArm(true);
   drawLeg(1);
 
-  stepCloth(p.cloth, hipX, hipY-4, 11*sX, o.dt||0.016, o.wind||0, p.vx);
-  drawCloth(g, p.cloth, cos.skirt||'ash', face, {oc:OC, flare:3});
+  stepCloth(p.cloth, hipX, hipY-4, 12*sX, o.dt||0.016, o.wind||0, p.vx);
+  drawCloth(g, p.cloth, cos.skirt||'ash', face, {oc:OC, flare:4});
 
-  // torso — narrow, ribbed, apologetic
-  oTaper(g, hipX, hipY-5, chestX, chestY+4, 6.5, 8, BODY, OC);
-  oRect(g, chestX-4, chestY-3, 8, 9, BODY, OC);
-  pR(g, chestX+(face>0?2:-4), chestY-3, 2, 9, SHD);
-  pR(g, chestX-4, chestY-3, 1.6, 9, HI);
-  for(let i=0;i<3;i++) pR(g, chestX-3, chestY+0.6+i*2.2, 6, 1, SHD);
-  pR(g, chestX-4, chestY-4, 8, 1.6, SHD);                       // collarbone
+  // torso — a slim column and two square shoulders. flat colour, no fuss.
+  iTaper(g, hipX, hipY-4, chestX, chestY+6, 4.4, 7, BODY, OC);
+  pR(g, chestX-7.6, chestY-7, 15.2, 13.4, OC);
+  pR(g, chestX-6, chestY-5.6, 12, 11, BODY);
+  pR(g, chestX+(face>0?3:-6), chestY-5.6, 3, 11, SHD);
+  pR(g, chestX-6, chestY-5.6, 2, 11, HI);
+  pR(g, chestX-6, chestY-5.6, 12, 1.6, shade(BODY,-0.1));         // a collarbone shelf
 
-  // the belly — the whole point of a prete
-  const belX = lerp(hipX,chestX,0.28) + p.bellyX;
+  // the belly — the whole point of a prete, and the joke of the silhouette
+  const belX = lerp(hipX,chestX,0.26) + p.bellyX;
   const belY = hipY - 10.5*sY + p.bellyY;
-  const brx = 8*sX, bry = 7.6*sY;
-  pEll(g, belX, belY+1, brx, bry, OC);            // a rim on the underside only
+  const brx = 10.6*sX, bry = 8.8*sY;
+  pEll(g, belX, belY, brx+2, bry+2, OC);
   pEll(g, belX, belY, brx, bry, BODY);
-  pEll(g, belX + 3*face, belY+1.4, brx*0.5, bry*0.66, SHD);
-  pEll(g, belX - 2.8*face, belY-2.6, brx*0.28, bry*0.26, HI);
-  pR(g, belX-0.5*face, belY+3, 1.4, 1.6, SHD);                  // navel
-  if(cos.goldleaf) for(let i=0;i<6;i++) pR(g, belX-5+((i*7)%10), belY-4+((i*5)%8), 2,2, PAL.goldL);
+  pEll(g, belX + 3.6*face, belY+1.6, brx*0.52, bry*0.66, SHD);
+  pEll(g, belX - 3.4*face, belY-3.2, brx*0.3, bry*0.28, HI);
+  pR(g, belX-0.6*face, belY+3.6, 1.6, 2, SHD);                  // navel
+  if(cos.goldleaf) for(let i=0;i<6;i++) pR(g, belX-6+((i*8)%12), belY-5+((i*5)%10), 2,2, PAL.goldL);
 
   const handF = drawArm(false);
   o.hands=[handB,handF];
 
-  /* ---- neck & head: a big head, a mop of hair, and shades ---- */
-  const headY = chestY - 17 + Math.sin(p.anim*1.6)*0.4;
-  const headX = chestX + p.lean*2 + (o.headX||0);
-  oTaper(g, chestX, chestY-4, headX, headY+6, 3.6, 3.2, SHD, OC);
-  const HRX=7.4, HRY=8;
-  oEll(g, headX, headY, HRX, HRY, BODY, OC);
-  pEll(g, headX+3.4*face, headY+1, HRX*0.6, HRY*0.72, SHD);     // shaded side
-  pEll(g, headX-2.8*face, headY-4, 2.6, 2, HI);                 // skull highlight
-  pEll(g, headX+0.8*face, headY+5.6, 4, 3, BODY);               // jaw
-  pR(g, headX-7*face, headY+1, 2, 3.2, SHD);                    // ear
-  pEll(g, headX-7.2*face, headY+1.4, 1.2, 1.6, OC);
+  /* ---- a long thin neck, and a head with its own weather ---- */
+  const headY = chestY - 22 + Math.sin(p.anim*1.6)*0.4;
+  const headX = chestX + p.lean*2.4 + (o.headX||0);
+  iTaper(g, chestX, chestY-6, headX, headY+8, 3.6, 3, shade(SHD,-0.1), OC);
+  const HRX=9.6, HRY=10.4;
+  iEll(g, headX, headY, HRX, HRY, BODY, OC);
+  pEll(g, headX+4.4*face, headY+1.2, HRX*0.58, HRY*0.72, SHD);  // the shaded side
+  pEll(g, headX-3.6*face, headY-5.2, 3.2, 2.4, HI);             // skull highlight
+  pEll(g, headX+1*face, headY+7.4, 5, 3.6, BODY);               // a small pointed jaw
+  pR(g, headX-9.4*face, headY+1, 2.6, 4.2, SHD);                // ear
+  pEll(g, headX-9.6*face, headY+1.6, 1.4, 1.8, OC);
 
   /* the hair: long, black, and never once combed */
   const HAIR='#1c1730', HAIR2='#2e2748', HAIRL='#463a68';
   const sway=Math.sin(p.anim*1.1)*0.9 + p.lean*1.2;
-  pEll(g, headX-0.6*face, headY-5.4, HRX*0.98, HRY*0.56, HAIR);   // the crown
-  pEll(g, headX-2.4*face, headY-6.2, HRX*0.5, HRY*0.3, HAIR2);
-  pEll(g, headX-3.6*face, headY-6.6, 2, 1, HAIRL);
+  pEll(g, headX-0.6*face, headY-6.8, HRX*1.03, HRY*0.58, HAIR);   // the crown
+  pEll(g, headX-3*face, headY-8.2, HRX*0.52, HRY*0.3, HAIR2);
+  pEll(g, headX-4.6*face, headY-8.8, 2.6, 1.2, HAIRL);
   // a fringe, hanging over the brow on the near side
-  for(let i2=0;i2<5;i2++){
-    const fx=headX+(i2-2.2)*2.4*face;
-    pTaper(g, fx, headY-6, fx-1.2*face, headY-1.6+((i2%2)?1.6:0), 2.6, 1.6, i2%2?HAIR:HAIR2);
+  for(let i2=0;i2<6;i2++){
+    const fx=headX+(i2-2.6)*2.9*face;
+    pTaper(g, fx, headY-7.6, fx-1.6*face, headY-1.4+((i2%2)?2:0), 3.3, 1.9, i2%2?HAIR:HAIR2);
   }
   // and a long tail of it down the back, drifting
-  for(let i2=0;i2<7;i2++){
-    const t2=i2/6;
-    const hx2=headX-(6.4+t2*3.2)*face + sway*t2*2.6;
-    const hy2=headY-3 + t2*15;
-    pEll(g, hx2, hy2, 3.2-t2*1.4, 3-t2*1.1, i2%2?HAIR:HAIR2);
+  for(let i2=0;i2<8;i2++){
+    const t2=i2/7;
+    const hx2=headX-(8.2+t2*4)*face + sway*t2*3;
+    const hy2=headY-4 + t2*20;
+    pEll(g, hx2, hy2, 4-t2*1.7, 3.8-t2*1.4, i2%2?HAIR:HAIR2);
   }
-  pEll(g, headX-6.6*face, headY-3.4, 2.2, 1.2, HAIRL);
+  pEll(g, headX-8.6*face, headY-4.4, 2.6, 1.4, HAIRL);
 
   /* the shades. a hungry ghost is still allowed to look good. */
-  const gy2 = headY-0.6;
-  const nearX = headX+3.1*face, farX = headX-2.9*face;
+  const gy2 = headY-0.4;
+  const nearX = headX+4*face, farX = headX-3.8*face;
   // temple arm back to the ear
-  pTaper(g, farX-2.4*face, gy2-0.6, headX-7*face, headY+0.6, 1.6, 1.4, '#241c18');
+  pTaper(g, farX-3*face, gy2-0.8, headX-9*face, headY+0.8, 2, 1.6, '#241c18');
   // the two lenses, the near one larger
-  oEll(g, farX, gy2, 2.5, 2.5, '#14101e', '#0b0812');
-  oEll(g, nearX, gy2, 3.1, 2.9, '#14101e', '#0b0812');
-  pR(g, headX-0.4*face, gy2-1.2, 3.2*face, 1.4, '#241c18');       // bridge
+  oEll(g, farX, gy2, 3.2, 3.2, '#14101e', '#0b0812');
+  oEll(g, nearX, gy2, 4, 3.7, '#14101e', '#0b0812');
+  pR(g, headX+(face>0?-0.6:-3.4), gy2-1.6, 4, 1.8, '#241c18');    // bridge
   // a gold rim along the top, and the light catching the near lens
-  pR(g, nearX-3, gy2-2.8, 6.4, 1.2, PAL.goldD);
-  pR(g, farX-2.4, gy2-2.6, 5, 1, shade(PAL.goldD,-0.2));
-  pTaper(g, nearX-1.6, gy2+1.4, nearX+0.6, gy2-1.6, 1.6, 1.2, 'rgba(255,255,255,0.55)');
-  pR(g, nearX+1.2, gy2-0.6, 1, 1, 'rgba(255,255,255,0.75)');
-  if(o.angry){ pR(g, nearX-3, gy2-3.4, 6.4, 1.4, PAL.ember); }
+  pR(g, nearX-4, gy2-3.6, 8.2, 1.6, PAL.goldD);
+  pR(g, farX-3, gy2-3.4, 6.2, 1.2, shade(PAL.goldD,-0.2));
+  pTaper(g, nearX-2, gy2+1.8, nearX+0.8, gy2-2, 2, 1.4, 'rgba(255,255,255,0.55)');
+  pR(g, nearX+1.6, gy2-0.8, 1.2, 1.2, 'rgba(255,255,255,0.75)');
+  if(o.angry){ pR(g, nearX-4, gy2-4.6, 8.2, 1.8, PAL.ember); }
   // a blink still shows: the lenses flash when the lights behind them go out
-  if(p.blink < 0){ pR(g, nearX-2.2, gy2, 4.4, 1, '#2a2138'); }
+  if(p.blink < 0){ pR(g, nearX-2.8, gy2, 5.6, 1.2, '#2a2138'); }
 
   // a mouth the size of the eye of a needle. it never opens wider.
   const mo=clamp(o.mouth||0,0,1)*0.35;
-  pEll(g, headX+0.8*face, headY+5.6, 0.9+mo*2, 0.9+mo*2, '#b4515e');
-  pR(g, headX+0.8*face, headY+5.6, 1, 1, '#5e1f2a');
+  pEll(g, headX+1*face, headY+7.4, 1.1+mo*2.4, 1.1+mo*2.4, '#b4515e');
+  pR(g, headX+1*face, headY+7.4, 1.2, 1.2, '#5e1f2a');
   /* ---- what you chose to wear ---- */
   if(cos.garland){
-    for(let i=0;i<10;i++){ const a=Math.PI*(i/9);
-      pEll(g, chestX+Math.cos(a+Math.PI)*7, chestY-3+Math.sin(a)*6.5, 1.6,1.6, i%3===0?'#ffce54':'#f6f0dc'); }
-    pEll(g, chestX, chestY+4.5, 1.6, 2.4, PAL.jadeL);
+    for(let i=0;i<12;i++){ const a=Math.PI*(i/11);
+      pEll(g, chestX+Math.cos(a+Math.PI)*8.4, chestY-4+Math.sin(a)*8, 1.8,1.8, i%3===0?'#ffce54':'#f6f0dc'); }
+    pEll(g, chestX, chestY+6, 1.8, 2.8, PAL.jadeL);
   }
   if(cos.sash){
-    pTaper(g, chestX-5, chestY-4, hipX+6*face, hipY-6, 5, 2.6, '#d8b04a');
-    pTaper(g, chestX-5, chestY-4, hipX+6*face, hipY-6, 1.8, 1, '#ffe89a');
+    pTaper(g, chestX-6, chestY-5, hipX+7*face, hipY-7, 5.6, 3, '#d8b04a');
+    pTaper(g, chestX-6, chestY-5, hipX+7*face, hipY-7, 2, 1.1, '#ffe89a');
   }
-  if(cos.beads) for(let i=0;i<8;i++){ const a=Math.PI*(i/7);
-    pEll(g, chestX+Math.cos(a+Math.PI)*6, chestY-2+Math.sin(a)*5, 1.3,1.3, i%2?'#6b4a2c':'#8a6440'); }
+  if(cos.beads) for(let i=0;i<9;i++){ const a=Math.PI*(i/8);
+    pEll(g, chestX+Math.cos(a+Math.PI)*7.2, chestY-3+Math.sin(a)*6.4, 1.5,1.5, i%2?'#6b4a2c':'#8a6440'); }
   if(cos.halo){
-    const hr=12+Math.sin(p.anim*2)*0.8;
-    for(let i=0;i<26;i++){ const a=i/26*TAU + p.anim*0.3;
+    const hr=15+Math.sin(p.anim*2)*0.9;
+    for(let i=0;i<30;i++){ const a=i/30*TAU + p.anim*0.3;
       pR(g, headX+Math.cos(a)*hr, headY-1+Math.sin(a)*hr*0.9, 1,1, i%2?PAL.goldL:PAL.gold); }
   }
   if(alpha<1) g.restore();
@@ -2568,7 +2579,7 @@ const GOAL = 108;                       // as many beads as a prayer mala
 const GS = {
   state:'title', t:0, merit:0, spent:0,
   skills:{}, cos:{skirt:'ash'}, q:{prayers:0,offerings:0,pets:0,gifts:0},
-  seen:{}, bag:{}, friends:{}, learned:{}, dawn:0, shake:0, hitstop:0,
+  seen:{}, bag:{}, friends:{}, learned:{}, mem:{}, dawn:0, shake:0, hitstop:0,
   camX:0, camY:0, wind:0, toasts:[], zoneName:0, tut:0,
 };
 const has = s => !!GS.skills[s];
@@ -2696,7 +2707,7 @@ const PHRA = {x:SHRINE_X+2, y:groundY(SHRINE_X)-64, anim:0, shown:false};
 const CAT  = {x:TAMARIND_X+16, y:groundY(TAMARIND_X)-104, state:'tree', anim:0, phase:0, face:-1, tx:0};
 
 /* the guide: a Khwan, the small life-spirit that lives in everyone */
-const KHWAN = {x:300, y:groundY(300)-60, tx:0, ty:0, anim:0, mood:'happy', blink:2, bub:null, bubT:0};
+const KHWAN = {x:300, y:groundY(300)-60, tx:0, ty:0, anim:0, mood:'happy', blink:2, bub:null, bubT:0, bubMax:0};
 
 /* ---------- the neighbours who happen to be dead ---------- */
 const SPIRITS = [
@@ -2779,7 +2790,7 @@ function stepParts(dt){
     if(p.t<0) continue;
     switch(p.k){
       case 'orb':{
-        const tx=P.x, ty=P.y-34, d=Math.max(1,dist(p.x,p.y,tx,ty));
+        const tx=P.x, ty=P.y-44, d=Math.max(1,dist(p.x,p.y,tx,ty));
         const sp2=Math.min(190,40+p.t*120);
         if(d<6){ addMerit(1,true); AU.orb(); pSpark(tx,ty,3); PT.splice(i,1); continue; }
         p.x+=(tx-p.x)/d*sp2*dt+Math.sin(p.t*7)*0.5; p.y+=(ty-p.y)/d*sp2*dt;
@@ -2856,13 +2867,14 @@ const TUT = [
   {id:'cook',  test:()=>Object.keys(GS.learned).length>0, say:'Tap the kitchen by the noodle cart.'},
   {id:'give',  test:()=>GS.q.gifts>0,                     say:'Now give it away. That is the whole game, really.'},
   {id:'ledger',test:()=>!!GS.seen.ledger,                 say:'Your ledger is the book, bottom left. Spent merit still counts.'},
+  {id:'past',  test:()=>!!GS.mem.take,                    say:'That was a piece of you. The PAST tab keeps every one it gives back.'},
 ];
 function stepKhwan(dt){
   const K2=KHWAN;
   K2.anim+=dt; K2.blink-=dt; if(K2.blink<-0.14) K2.blink=rnd(2.5,6);
   // float along behind your shoulder
   const side = -P.face;
-  const tx = P.x + side*22, ty = P.y - 46 + Math.sin(K2.anim*1.5)*3;
+  const tx = P.x + side*24, ty = P.y - 60 + Math.sin(K2.anim*1.5)*3;
   K2.x = lerp(K2.x, tx, 1-Math.pow(0.004,dt));
   K2.y = lerp(K2.y, ty, 1-Math.pow(0.006,dt));
   if(K2.bubT>0){ K2.bubT-=dt; if(K2.bubT<=0) K2.bub=null; }
@@ -2871,14 +2883,14 @@ function stepKhwan(dt){
     const step=TUT[GS.tut];
     if(step.test()){ GS.tut++; saveGame();
       const nxt=TUT[GS.tut];
-      if(nxt){ K2.bub=nxt.say; K2.bubT=7.5; AU.blip(); }
+      if(nxt){ K2.bub=nxt.say; K2.bubT=K2.bubMax=7.5; AU.blip(); }
     } else if(!K2.bub && !GS.seen['tut'+step.id]){
-      GS.seen['tut'+step.id]=true; K2.bub=step.say; K2.bubT=8;
+      GS.seen['tut'+step.id]=true; K2.bub=step.say; K2.bubT=K2.bubMax=8;
     }
   }
   if(Math.random()<dt*1.4) part({k:'sp',x:K2.x+rnd(-5,5),y:K2.y+rnd(-5,5),vx:rnd(-6,6),vy:rnd(-10,-2),life:rnd(.5,1),c:'#bfe8ff'});
 }
-function khwanSay(txt,t=6){ KHWAN.bub=txt; KHWAN.bubT=t; AU.blip(); }
+function khwanSay(txt,t=6){ KHWAN.bub=txt; KHWAN.bubT=t; KHWAN.bubMax=t; AU.blip(); }
 
 /* ============================================================
    PLAYER
@@ -2931,7 +2943,7 @@ function stepPlayer(dt){
   P.wailCd=Math.max(0,P.wailCd-dt);
   if(!busy && press('whistle') && P.wailCd<=0){
     P.wailCd=1.2; P.wailT=0.5; AU.wail();
-    pRing(P.x,P.y-38,'#fff0c0',80);
+    pRing(P.x,P.y-48,'#fff0c0',80);
     let greeted=0;
     for(const n of NPCS) if(Math.abs(n.x-P.x)<110){ n.mark={k:'call',t:1.6}; greeted++; }
     for(const s of SPIRITS) if(Math.abs(s.x-P.x)<130 && s.met){ s.wave=1.4; greeted++; }
@@ -3496,7 +3508,7 @@ function drawLighting(g,cx,cy){
     const fl=l.flick?1-Math.random()*l.flick:1; punch(l.x,l.y,l.r*fl,l.a); }
   const broken=LIGHTS.find(l=>l.broken);
   if(broken && !broken.on && Math.random()<0.05) punch(broken.x,broken.y,26,0.35);
-  punch(P.x,P.y-32, GS.cos.halo?46:34, 0.42);
+  punch(P.x,P.y-42, GS.cos.halo?58:44, 0.42);
   punch(KHWAN.x,KHWAN.y,26,0.5);
   for(const p of PT) if(p.k==='orb'&&p.t>=0) punch(p.x,p.y,10,0.55);
   for(const s of SPIRITS) punch(s.x, s.y-24, s.id==='krasue'?34:26, 0.34);
@@ -3562,7 +3574,7 @@ function render(){
   ctx.setTransform(SC,0,0,SC,0,0);
   ctx.imageSmoothingEnabled=false;
   if(GS.state==='title'){ drawTitle(); return; }
-  if(GS.state==='intro'){ drawIntro(); return; }
+  if(GS.state==='memory'){ drawMem(); return; }
   if(GS.state==='ascend'){ drawAscend(ctx); return; }
 
   const sh=GS.shake>0?GS.shake:0;
@@ -3815,7 +3827,7 @@ function drawTaskWorld(g){
   for(let i=0;i<4;i++){ const a=-0.6+i*0.4+(t.grip?0.55:0);
     pLimb(g,t.hx,t.hy,t.hx+Math.cos(a)*(t.grip?7:10.5),t.hy+Math.sin(a)*(t.grip?7:10.5),2,i%2?PAL.paleD:PAL.pale); }
   pLimb(g,t.hx,t.hy+2,t.hx-dirx*7,t.hy+7,2.4,PAL.paleD);
-  const sx0=P.x+P.face*6, sy0=P.y-52;
+  const sx0=P.x+P.face*6, sy0=P.y-66;
   const mid={x:(sx0+t.hx)/2,y:Math.max(sy0,t.hy)+16};
   let px0=sx0,py0=sy0;
   for(let i=1;i<=10;i++){
@@ -4316,16 +4328,21 @@ function talkPhra(){
       {w:'',t:'You bow at the little house on its single pillar — and something inside bows back.'},
       {w:'Phra Phum',t:'Ah. A prete. Tall one, you are standing on my land, on my road, in my village.'},
       {w:'You',t:'(You try to apologise. It comes out as a long thin whistle.)'},
-      {w:'Phra Phum',t:'I know. A needle\'s eye for a mouth. You took what was not offered, and the ledger tipped.'},
-      {w:'Phra Phum',t:'I keep this village\'s ledger. Karma is bookkeeping, and it runs both ways.'},
-      {w:'Phra Phum',t:'Earn one hundred and eight merit and I will open the road home myself.'},
-      {w:'Phra Phum',t:'Nobody needs saving. They need a hand, a hot meal, and somebody to notice them.'},
-      {w:'Phra Phum',t:'Pick things. Cook them. Give them away. Spent merit still counts as earned. Go and be useful.'},
+      {w:'Phra Phum',t:'I know. A needle\'s eye for a mouth, and a page you cannot read.'},
+      {w:'You',t:'(You ask him what you did. You ask it four different ways.)'},
+      {w:'Phra Phum',t:'I have your ledger here, and no, I will not read it out. It is not mine to say.'},
+      {w:'Phra Phum',t:'It opens on its own, a line at a time, as you earn the right to it.'},
+      {w:'Phra Phum',t:'Earn one hundred and eight merit and you will have all of it. Then the road home.'},
+      {w:'Phra Phum',t:'Pick things. Cook them. Give them away. Spent merit still counts as earned.'},
     ], ()=>{ GS.q.metPhra=true; addMerit(3); toast('+3 merit'); saveGame(); });
-  } else if(GS.merit>=GOAL && !GS.ready && !GS.q.done){
-    say([{w:'Phra Phum',t:'…One hundred and eight. Look at you. The ledger is level, tall one.'},
-         {w:'Phra Phum',t:'I have sent for the monk. Stand here at the shrine when you are ready, and we will pour the water.'}],
+  } else if(GS.merit>=GOAL && GS.mem.bowl && !GS.ready && !GS.q.done){
+    say([{w:'Phra Phum',t:'…One hundred and eight. The ledger is level, tall one. You have read the last page.'},
+         {w:'You',t:'(You ask whether she knows. Whether anyone told her you came back.)'},
+         {w:'Phra Phum',t:'She sets out the fourth bowl. What do you think she knows?'},
+         {w:'Phra Phum',t:'I have sent for the monk. Stand here at the shrine and we will pour the water.'}],
       ()=>{ GS.ready=true; saveGame(); });
+  } else if(GS.merit>=GOAL && !GS.q.done){
+    say([{w:'Phra Phum',t:'One hundred and eight, and one page still turning. Wait for it. It is nearly here.'}]);
   } else if(GS.q.done){
     say([{w:'Phra Phum',t:'Still here? Good. The morning suits you better than the night did.'}]);
   } else {
@@ -4424,8 +4441,8 @@ function stepCeremony(dt){
       if(c.i===6) AU.metta();
     } else c.lt=999;
   }
-  if(Math.random()<dt*9) pPetal(P.x,P.y-40);
-  if(Math.random()<dt*6) pSpark(P.x+rnd(-10,10),P.y-rnd(10,50),1,PAL.goldL);
+  if(Math.random()<dt*9) pPetal(P.x,P.y-52);
+  if(Math.random()<dt*6) pSpark(P.x+rnd(-12,12),P.y-rnd(10,64),1,PAL.goldL);
   for(const n of NPCS){ n.anim+=dt; n.y=groundY(n.x); }
   for(const s of SPIRITS) s.anim+=dt;
   TANI.anim+=dt; PHRA.anim+=dt; CAT.anim+=dt;
@@ -4487,7 +4504,7 @@ function drawEnd(g){
 }
 
 /* ============================================================
-   TITLE & INTRO
+   TITLE
    ============================================================ */
 const TP=makePrete(); TP.x=W*0.30; TP.y=214; TP.face=1;
 function drawTitle(){
@@ -4541,49 +4558,106 @@ function drawTitle(){
   pTxt(g,'tap the ground to walk  ·  tap a thing to use it',W/2,H-10,'#5a5468',6,'center');
 }
 /* ============================================================
-   THE INTRO — three things you did, played rather than watched.
-   Each beat hands you a verb: take, drink, and finally try to
-   cheat the scale. You cannot cheat the scale.
+   MEMORIES — you came up out of the ground with nothing, so the
+   past arrives in pieces. Each piece is a small scene you play.
    ============================================================ */
-const INTRO=[
-  { id:'take',  hint:'TAP THE FLOOR TO CREEP   ·   TAP THE COIN',
-    t:"In your last life you took what wasn't yours." },
-  { id:'drink', hint:'TAP TO DRINK   ·   AND AGAIN',
-    t:"And you drank what wasn't offered. You laughed past the temple gate — the bell rang for you anyway." },
-  { id:'scale', hint:'TAP LEFT AND RIGHT   ·   LEVEL THE SCALE',
-    t:'Then one night the counting stopped. Karma is patient, and exact.' },
+const MEMS=[
+  { id:'wake',  title:'THE GROUND', when:null,
+    hint:'TAP TO PUSH UP',
+    t:'You do not know your name. You do not know what you did. Only that the ground has let go of you.',
+    j:'You came up out of the earth with nothing. Not a name.' },
+  { id:'take',  title:'THE SHELF',  when:()=>GS.q.gifts>=1,
+    hint:'TAP THE FLOOR TO CREEP   ·   TAP THE COIN',
+    t:'A room you knew. Someone asleep an arm away. You took the coin out of her bowl.',
+    j:'You stole a coin from her bowl while she slept beside it.',
+    k:'You went somewhere just then. Your face went with you.' },
+  { id:'drink', title:'THE GATE',   when:()=>GS.q.metPhra && GS.merit>=26,
+    hint:'TAP TO DRINK   ·   AND AGAIN',
+    t:'You drank what was not offered, and laughed past the gate. The bell rang for you anyway.',
+    j:'You drank what was not offered, then laughed at the bell.',
+    k:'Do not chase it. It comes when it wants to come.' },
+  { id:'scale', title:'THE SCALE',  when:()=>GS.merit>=64,
+    hint:'TAP LEFT AND RIGHT   ·   LEVEL THE SCALE',
+    t:'At the end you tried to argue with the scale. It did not argue back.',
+    j:'You argued with the scale. It was the last thing you did.',
+    k:'That one I felt as well. I am sorry.' },
+  { id:'bowl',  title:'FOUR BOWLS', when:()=>GS.merit>=GOAL,
+    hint:'TAP TO REACH FOR THE BOWL',
+    t:'Four bowls. She has set out four every morning since the day you died.',
+    j:'Your mother. That coin was merit she was making for you.',
+    k:'I knew. I could not be the one to tell you.' },
 ];
-let introI=0, introCh=0, IN=null;
+let memI=0, memCh=0, IN=null, MEMFADE=0;
 const SHELF_X=252;
-function introScene(i){
-  const S={ t:0, flash:0, shake:0, done:false, px:[], puffs:[] };
-  if(i===0) Object.assign(S,{ mx:132, face:1, walk:0, noise:0, stir:0, took:0, reach:false, navx:null });
-  if(i===1) Object.assign(S,{ sips:0, tilt:0, bottle:1, bell:0, past:0 });
-  if(i===2) Object.assign(S,{ tug:0, tries:0, last:0, slam:0, soil:0, shut:0 });
+function memScene(i){
+  const S={ t:0, flash:0, shake:0, done:false, px:[], puffs:[], dust:[] };
+  for(let k=0;k<26;k++) S.dust.push({x:rnd(0,W),y:rnd(0,H),sp:rnd(3,11),r:rnd(0.6,1.5),a:rnd(0.08,0.3)});
+  const id=MEMS[i].id;
+  if(id==='wake')  Object.assign(S,{ up:0, push:0, out:0, quake:0 });
+  if(id==='take')  Object.assign(S,{ mx:132, face:1, walk:0, noise:0, stir:0, took:0, reach:false, navx:null });
+  if(id==='drink') Object.assign(S,{ sips:0, tilt:0, bottle:1, bell:0, past:0 });
+  if(id==='scale') Object.assign(S,{ tug:0, tries:0, last:0, slam:0, soil:0, shut:0 });
+  if(id==='bowl')  Object.assign(S,{ reach:0, tries:0, thru:0, fourth:0, cand:0 });
   return S;
 }
-function introSpark(S,x,y,n,col,sp=1){
+function memSpark(S,x,y,n,col,sp=1){
   for(let i=0;i<n;i++) S.px.push({x,y,vx:rnd(-40,40)*sp,vy:rnd(-70,-10)*sp,g:150,l:rnd(0.35,1.1),c:col,r:rnd(0.7,1.6)});
 }
-function finishIntro(){
-  IN=null; introI=0; introCh=0; clearPress();
-  GS.state='play'; GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
-  KHWAN.x=P.x+26; KHWAN.y=P.y-46;
-  say(WAKE, ()=>{ khwanSay('That way. East. I will be right here.',6); });
+/* remembering is not something you choose. it just starts. */
+function startMem(i){
+  memI=i; memCh=0; IN=null; MEMFADE=1;
+  GS.state='memory'; clearPress(); navStop();
+  AU.wail && AU.wail();
 }
-function stepIntro(dt){
-  if(!IN) IN=introScene(introI);
-  const S=IN, sc=INTRO[introI];
+function memReady(){
+  // do not cut Khwan off mid-sentence, but do not wait out the whole line either
+  if(GS.state!=='play' || DLG) return -1;
+  if(KHWAN.bub && KHWAN.bubT > (KHWAN.bubMax||6)-1.8) return -1;
+  for(let i=1;i<MEMS.length;i++){
+    if(GS.mem[MEMS[i].id]) continue;
+    if(MEMS[i].when && MEMS[i].when()) return i;
+  }
+  return -1;
+}
+function finishMem(){
+  const m=MEMS[memI];
+  GS.mem[m.id]=true; saveGame();
+  IN=null; memCh=0; clearPress();
+  GS.state='play'; GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
+  MEMFADE=1;
+  if(m.id==='wake'){
+    KHWAN.x=P.x+26; KHWAN.y=P.y-60;
+    say(WAKE, ()=>{ khwanSay('East. I will be right behind your shoulder.',6); });
+  } else {
+    GS.seen.newmem=true;
+    toast('a page came back — it is in your ledger','#b9a8d8');
+    khwanSay(m.k||'', 7);
+  }
+}
+function stepMem(dt){
+  if(!IN) IN=memScene(memI);
+  const S=IN, sc=MEMS[memI];
   S.t+=dt;
+  MEMFADE=Math.max(0,MEMFADE-dt*1.6);
   S.flash=Math.max(0,S.flash-dt*2.6); S.shake=Math.max(0,S.shake-dt*5.5);
   for(let i=S.px.length-1;i>=0;i--){ const q=S.px[i];
     q.x+=q.vx*dt; q.y+=q.vy*dt; q.vy+=q.g*dt; q.l-=dt; if(q.l<=0) S.px.splice(i,1); }
   for(let i=S.puffs.length-1;i>=0;i--){ const q=S.puffs[i];
     q.y-=q.sp*dt; q.l-=dt; if(q.l<=0) S.puffs.splice(i,1); }
-  if(press('back')){ AU.sel(); finishIntro(); return; }
+  for(const d of S.dust){ d.y-=d.sp*dt; d.x+=Math.sin((S.t+d.r)*0.7)*4*dt; if(d.y<-2){ d.y=H+2; d.x=rnd(0,W); } }
+  if(press('back') && memI>0){ AU.sel(); finishMem(); return; }
 
   if(!S.done){
-    if(sc.id==='take'){
+    if(sc.id==='wake'){
+      /* the first thing you ever do is push */
+      if(press('act')||press('tap')){
+        S.push++; S.up=Math.min(1,S.push/3); S.shake=0.7; S.quake=1;
+        AU.drum(); AU.step();
+        memSpark(S,W/2+26,168-S.up*60,10,'#4a3722',0.7);
+        if(S.push>=3){ S.done=true; S.flash=0.8; AU.gong(); memSpark(S,W/2+26,116,26,'#6a5236',1.4); }
+      }
+      S.quake=Math.max(0,S.quake-dt*3);
+    } else if(sc.id==='take'){
       /* creeping: moving makes noise, standing still lets it settle.
          a tap walks you along the room, or takes the coin once you can reach */
       let grab=false;
@@ -4604,7 +4678,7 @@ function stepIntro(dt){
       S.reach = S.mx>SHELF_X-40;
       if(grab || (S.reach && press('act'))){
         S.took=0.001; S.flash=1; S.shake=1; AU.ding(); AU.spark();
-        introSpark(S,SHELF_X,100,22,CL.goldL);
+        memSpark(S,SHELF_X,100,22,CL.goldL);
         S.done=true;
       }
     } else if(sc.id==='drink'){
@@ -4614,7 +4688,7 @@ function stepIntro(dt){
         S.puffs.push({x:196+rnd(-14,14),y:120,sp:20,l:1.3,s:['ha','ha ha','heh'][S.sips%3]});
         if(S.sips>=3){ S.done=true; AU.gong(); }
       }
-    } else {
+    } else if(sc.id==='scale'){
       /* the scale: alternate the two sides and it lifts a little, then sags right back */
       const l=press('left'), r=press('right');
       if(l||r){ const side=l?-1:1;
@@ -4625,14 +4699,25 @@ function stepIntro(dt){
       S.tug=Math.max(0,S.tug-dt*0.62);   // it always sags back. that is the point.
       if(S.t>1.8 && (S.tries>=8 || S.t>5.5)){
         S.done=true; S.slam=0.001; S.shake=1; AU.gong(); AU.drum();
-        introSpark(S,240,150,26,'#8a7a5a',1.5);
+        memSpark(S,240,150,26,'#8a7a5a',1.5);
       }
+    } else {
+      /* four bowls: you reach, and your hand goes through, three times */
+      S.cand=Math.min(1,S.cand+dt*0.7);
+      S.reach=Math.max(0,S.reach-dt*1.5);
+      if(press('act')||press('tap')){
+        S.tries++; S.reach=1; S.thru=1; AU.poof && AU.poof(); AU.blip();
+        memSpark(S,150,150,8,'#cfc4ae',0.5);
+        if(S.tries>=3){ S.done=true; AU.metta && AU.metta(); }
+      }
+      S.thru=Math.max(0,S.thru-dt*1.1);
     }
     return;
   }
 
   /* the beat after the verb — the scene plays itself out, then the line types */
-  if(sc.id==='take') S.took=Math.min(1,S.took+dt*2.6);
+  if(sc.id==='wake')  S.out=Math.min(1,S.out+dt*0.75);
+  if(sc.id==='take')  S.took=Math.min(1,S.took+dt*2.6);
   if(sc.id==='drink'){ S.past=Math.min(1,S.past+dt*0.62); S.tilt=lerp(S.tilt,0.06,dt*2);
     if(S.past>0.3 && S.bell<0.01){ S.bell=0.001; AU.gong(); }
     if(S.bell>0) S.bell=Math.min(1,S.bell+dt*1.1); }
@@ -4640,20 +4725,21 @@ function stepIntro(dt){
     if(S.slam>0.5){ S.soil=Math.min(1,S.soil+dt*0.85);
       if(Math.random()<dt*26) S.px.push({x:rnd(120,360),y:-4,vx:rnd(-6,6),vy:rnd(24,60),g:40,l:rnd(1.4,2.6),c:'#3a2c22',r:rnd(0.8,1.8)}); }
     if(S.soil>0.7) S.shut=Math.min(1,S.shut+dt*1.1); }
+  if(sc.id==='bowl'){ S.fourth=Math.min(1,S.fourth+dt*0.5);
+    S.reach=Math.max(0,S.reach-dt*1.5); S.thru=Math.max(0,S.thru-dt*1.1); }
 
-  introCh+=dt*82;
-  const ready = sc.id==='scale' ? S.shut>0.4 : S.t>0.35;
+  memCh+=dt*82;
+  const ready = sc.id==='scale'? S.shut>0.4 : sc.id==='bowl'? S.fourth>0.45 : sc.id==='wake'? S.out>0.5 : S.t>0.35;
   if(ready && (press('act')||press('tap'))){
     AU.blip();
-    if(introCh<sc.t.length){ introCh=sc.t.length; return; }
-    introI++; introCh=0; IN=null;
-    if(introI>=INTRO.length) finishIntro();
+    if(memCh<sc.t.length){ memCh=sc.t.length; return; }
+    finishMem();
   }
 }
 
 /* ---------- the scenes, drawn ---------- */
-/* a key prompt on its own little cloud */
-function introKey(g,cx,cy,label){
+/* a tap prompt on its own little cloud */
+function memKey(g,cx,cy,label){
   const w=Math.max(15,label.length*6+11), h=11;
   pR(g,cx-w/2-1,cy-h/2,w+2,h,CL.edge);
   pR(g,cx-w/2,cy-h/2-1,w,h+2,CL.edge);
@@ -4662,73 +4748,213 @@ function introKey(g,cx,cy,label){
   pR(g,cx-w/2,cy+h/2-2,w,2,CL.mid);
   pTxt(g,label,cx,cy+3,CL.ink,7,'center');
 }
-/* ---------- the scenes: flat, bold, and over quickly ---------- */
-/* one silhouette figure, drawn the same way in all three beats */
-function introGuy(g,x,y,face,walk,o={}){
-  const S='#0d0a16', S2='#1b1526', SK='#2a2138';
-  const sw=Math.sin(walk)*4, sw2=Math.sin(walk+Math.PI)*4;
+/* one cartoon figure, the man he was: ink line, flat colour, the shades */
+function memGuy(g,x,y,face,walk,o={}){
+  const OC='#1b1424';                                    // one hard ink line
+  const SH=o.shirt||'#4c5f8e', SHD=shade(SH,-0.26);
+  const PT=o.pants||'#3c3450', PTD=shade(PT,-0.26);
+  const SKN=o.skin||'#d8a878', SKD=shade(SKN,-0.22);
+  const sw=Math.sin(walk)*5, sw2=Math.sin(walk+Math.PI)*5;
+  const lift=Math.max(0,-Math.sin(walk))*2.4, lift2=Math.max(0,-Math.sin(walk+Math.PI))*2.4;
   const lean=o.lean||0;
-  const hipY=y-32, chestY=hipY-20, headY=chestY-16;
-  const RIM=o.rim||'rgba(255,216,140,0.22)';
-  // legs
-  pTaper(g,x-1.5,hipY,x-1.5+sw,y,5.5,4,S2);
-  pTaper(g,x+1.5,hipY,x+1.5+sw2,y,5.5,4,S);
-  pR(g,R(x-1.5+sw)-4,y-3,9,4,S); pR(g,R(x+1.5+sw2)-4,y-3,9,4,S2);
-  // body
-  pTaper(g,x+lean*0.4,hipY+2,x+lean,chestY,11,12,S);
-  pTaper(g,x+lean*0.4-4.5,hipY,x+lean-5,chestY+1,1.6,1.6,RIM);
-  // arms
-  // a reach goes to a named point, so the beat reads at a glance
-  const ax=o.armTo? o.armTo.x : x-sw*0.5;
-  const ay=o.armTo? o.armTo.y : chestY+16;
-  pTaper(g,x+lean,chestY+3,ax,ay,4.4,3.6,S2);
-  if(o.hold) pTaper(g,x+lean,chestY+3,x+10*face,chestY-12,4.4,3.6,S2);
-  // head, big, with the hair
-  pEll(g,x+lean+face*0.5,headY,9,9.6,S);
-  pTaper(g,x+lean-8,headY-4,x+lean-6.5,headY+4,1.6,1.6,RIM);
-  pEll(g,x+lean-face*0.6,headY-6.4,9,5.6,'#0a0812');
-  for(let i=0;i<5;i++) pTaper(g,x+lean+(i-2.2)*3*face,headY-7,x+lean+(i-2.4)*3*face,headY-1.6,3,2,'#0a0812');
-  for(let i=0;i<6;i++) pEll(g,x+lean-(7.6+i*1.6)*face,headY-2+i*3.4,3.4-i*0.42,3.2-i*0.38,i%2?'#0a0812':'#161022');
+  const hipY=y-30, chestY=hipY-19, headY=chestY-17;
+  // legs, back one first
+  iTaper(g,x-1.6,hipY,x-1.6+sw2,y-2-lift2,3.4,2.8,PTD,OC);
+  pR(g,R(x-1.6+sw2)-(face>0?3:7),y-4-lift2,11,4,OC);
+  pR(g,R(x-1.6+sw2)-(face>0?3:7)+1,y-3-lift2,9,2,'#241a2c');
+  iTaper(g,x+1.6,hipY,x+1.6+sw,y-2-lift,3.6,3,PT,OC);
+  pR(g,R(x+1.6+sw)-(face>0?3:7),y-4-lift,11,4,OC);
+  pR(g,R(x+1.6+sw)-(face>0?3:7)+1,y-3-lift,9,2,'#2e2238');
+  // the back arm goes behind the body
+  const bax=o.armTo? o.armTo.x-11*face : x+lean-sw*0.6-3*face;
+  const bay=o.armTo? o.armTo.y+9 : chestY+22;
+  iTaper(g,x+lean-3*face,chestY-1,bax,bay,2.6,2.2,SKD,OC);
+  pEll(g,bax,bay,2.6,2.8,SKD); pEll(g,bax,bay,2.6+1,2.8+1,OC); pEll(g,bax,bay,2.6,2.8,SKD);
+  // body: a shirt with square shoulders, tapering to the waist
+  iTaper(g,x+lean*0.4,hipY+2,x+lean,chestY+2,5.4,7.4,SH,OC);
+  pR(g,x+lean-8.4,chestY-6,17,13,OC);
+  pR(g,x+lean-7,chestY-4.6,14,11,SH);
+  pR(g,x+lean+(face>0?3.4:-7),chestY-4.6,3.6,11,SHD);
+  pR(g,x+lean-7,chestY-4.6,2,11,shade(SH,0.16));
+  pR(g,x+lean-7,chestY-4.6,14,1.6,shade(SH,-0.12));
+  // the front arm — a reach goes to a named point, so the beat reads at a glance
+  const ax=o.armTo? o.armTo.x : x+lean+sw*0.6+3*face;
+  const ay=o.armTo? o.armTo.y : chestY+22;
+  iTaper(g,x+lean+3*face,chestY-1,ax,ay,2.8,2.4,SKN,OC);
+  pEll(g,ax,ay,3.4,3.6,OC); pEll(g,ax,ay,2.6,2.8,SKN);
+  if(o.hold){ const bxo=x+lean+11*face, byo=chestY-11;
+    iTaper(g,x+lean+3*face,chestY-1,bxo,byo,2.8,2.4,SKN,OC);
+    pEll(g,bxo,byo,3.4,3.6,OC); pEll(g,bxo,byo,2.6,2.8,SKN); }
+  // neck and a big cartoon head
+  iTaper(g,x+lean,chestY-5,x+lean+face*0.5,headY+7,3,2.6,SKD,OC);
+  iEll(g,x+lean+face*0.5,headY,9.4,9.8,SKN,OC);
+  pEll(g,x+lean+face*4.2,headY+1.2,5.6,7,SKD);
+  pEll(g,x+lean+face*1,headY+7,4.6,3.2,SKN);
+  pR(g,x+lean-9.2*face,headY+1,2.4,4,SKD);
+  // the hair: black, uncombed, a fringe and a tail
+  const HR='#171226', HR2='#271f3c';
+  pEll(g,x+lean-face*0.6,headY-6.4,9.6,5.6,HR);
+  for(let i=0;i<6;i++) pTaper(g,x+lean+(i-2.6)*2.9*face,headY-7.4,x+lean+(i-2.9)*2.9*face,headY-1.4+((i%2)?2:0),3.2,1.9,i%2?HR:HR2);
+  for(let i=0;i<6;i++) pEll(g,x+lean-(8+i*1.7)*face,headY-3+i*3.3,3.6-i*0.44,3.4-i*0.4,i%2?HR:HR2);
   // the shades: the one thing that catches the light
-  const gy=headY-0.6;
-  pR(g,x+lean-6.4,gy-3.4,13,1.6,'#c9992f');
-  pEll(g,x+lean+3.8*face,gy,3.8,3.4,'#05040a'); pEll(g,x+lean-3.4*face,gy,3,3,'#05040a');
-  pTaper(g,x+lean+2.4*face,gy+1.8,x+lean+5*face,gy-2,2,1.4,'rgba(255,244,210,0.85)');
+  const gy=headY-0.4;
+  const nx=x+lean+3.9*face, fx2=x+lean-3.7*face;
+  pTaper(g,fx2-3*face,gy-0.8,x+lean-9*face,headY+0.8,2,1.6,'#241c18');
+  oEll(g,fx2,gy,3.1,3.1,'#14101e','#0a0810');
+  oEll(g,nx,gy,3.9,3.6,'#14101e','#0a0810');
+  pR(g,x+lean+(face>0?-0.6:-3.4),gy-1.6,4,1.8,'#241c18');
+  pR(g,nx-4,gy-3.5,8.2,1.6,'#d8ad3e');
+  pR(g,fx2-3,gy-3.3,6.2,1.2,'#a8842c');
+  pTaper(g,nx-2,gy+1.8,nx+0.8,gy-2,2,1.4,'rgba(255,250,230,0.8)');
+  pR(g,nx+1.6,gy-0.8,1.2,1.2,'#fffdf0');
+  // a mouth, so the face is a face
+  pR(g,x+lean+(face>0?0:-2.4),headY+6.6,2.6,1.2,'#7a3a42');
 }
-function introRoom(g,S){
+function memGrave(g,S){
+  /* a cross-section: a graveyard above the line, and you under it */
+  const GL=118, q=S.quake;
+  g.save(); if(q>0.02) g.translate(R(rnd(-2,2)*q),R(rnd(-2,2)*q));
+  pVGrad(g,0,0,W,GL,'#0d1230','#28325e',6);
+  for(let i=0;i<60;i++){ const st=STARS[i]; g.globalAlpha=0.22+0.5*st[3];
+    pR(g,st[0]*W,st[1]*GL*0.92,1,1,'#dfe6ff'); }
+  g.globalAlpha=1;
+  drawGlow(g,404,30,50,'#e8ecff',0.22);
+  pEll(g,404,30,15,15,'#f4f6ff'); pEll(g,399,25,4,4,'#dde2f4'); pEll(g,409,35,3,3,'#dde2f4');
+  // a row of chedis: a plinth, a bell, a cone, a spire. not bottles.
+  const CH='#0c1020', RM='rgba(220,232,255,0.11)';
+  for(let i=0;i<6;i++){ const x=36+i*84, h=18+((i*11)%12);
+    pR(g,x-14,GL-9,28,9,CH);  pR(g,x-14,GL-9,2,9,RM);
+    pR(g,x-11,GL-16,22,7,CH); pR(g,x-11,GL-16,2,7,RM);
+    pEll(g,x,GL-19,9,7,CH);
+    pTri(g,x,GL-24-h,x-7,GL-22,x+7,GL-22,CH);
+    pR(g,x-1,GL-32-h,3,10,CH);
+    pEll(g,x-4,GL-26-h*0.6,1.4,3,RM); }
+  // two slabs leaning where nobody straightened them
+  for(const [sx,sa] of [[168,0.12],[300,-0.16]]){
+    pTaper(g,sx,GL,sx+sa*54,GL-19,7,6,'#0e1224');
+    pTaper(g,sx,GL,sx+sa*54,GL-19,2,1.6,RM); }
+  for(let i=0;i<16;i++) pTaper(g,12+i*30,GL,8+i*30,GL-8-((i*7)%7),2,0.6,'#14261a');
+  pR(g,0,GL-3,W,3,'#1c2338');
+  pR(g,0,GL-1,W,1,'rgba(220,232,255,0.14)');
+  // below the line: earth in layers, roots, gravel
+  pVGrad(g,0,GL,W,H-GL,'#2c1f15','#100b07',5);
+  for(let i=0;i<34;i++) pR(g,(i*47)%W,GL+5+((i*29)%(H-GL-8)),5+((i*7)%16),1,'#3d2c1e');
+  // roots, which do not grow in straight lines and do not grow in step
+  for(let i=0;i<6;i++){
+    const seed=(i*2.399)%TAU, amp=9+((i*13)%11), br=1+((i*7)%3);
+    let rx=22+i*82+((i*29)%26), ry=GL, w=3.4;
+    for(let s2=0;s2<5;s2++){
+      const step=(H-GL)/4.4*(0.7+((i*3+s2*5)%7)*0.1);
+      const nx2=rx+Math.sin(seed+s2*1.31)*amp, ny2=ry+step;
+      pTaper(g,rx,ry,nx2,ny2,w,w*0.76,'#46331f');
+      if(s2===br) pTaper(g,rx,ry,rx+(((i+s2)%2)?1:-1)*(13+amp),ry+11+amp,1.6,0.5,'#3d2c1e');
+      w*=0.76; rx=nx2; ry=ny2;
+    }
+  }
+  for(let i=0;i<24;i++) pEll(g,(i*61)%W,GL+14+((i*37)%(H-GL-16)),1.4,1,'#5a4630');
+  // a broken pot, and one coin, lying wherever it fell
+  pEll(g,88,H-34,13,7,'#4a2f22'); pEll(g,88,H-36,10,4,'#1c130d');
+  pTaper(g,99,H-38,108,H-30,3,2,'#4a2f22');
+  drawGlow(g,332,H-46,15,'#c9992f',0.14);
+  pEll(g,332,H-46,3.4,2,'#c9992f'); pEll(g,331,H-47,1.6,1,'#ffe89a');
+  // you, lying in it, and the arm that is going to come out
+  const hy=GL+52-S.up*58, hx=W/2+30;
+  const bodyY=GL+64;
+  // the shape of him, mostly hidden: a shoulder, a chest, a face turned up
+  const bcx=W/2-26;
+  pEll(g,bcx+18,bodyY+2,32,9,'#3a3050');
+  pEll(g,bcx+22,bodyY-4,15,7,'#4a3e64');
+  pEll(g,bcx-14,bodyY+3,22,5,'#3a3050');                    // the sarong, sodden
+  pEll(g,bcx+2,bodyY-3,11.4,11.8,'#241d33');
+  pEll(g,bcx+2,bodyY-3,10.2,10.6,'#6e6486');                // a face, grey as the soil
+  pEll(g,bcx+2,bodyY-9,10.4,6,'#171226');                   // hair, matted with it
+  pR(g,bcx-4,bodyY-5.4,12,2,'#a8842c');                     // the rim of the shades
+  oEll(g,bcx-2,bodyY-3,3.4,3.2,'#14101e','#0b0812');
+  oEll(g,bcx+6,bodyY-3,2.8,2.8,'#14101e','#0b0812');
+  pEll(g,bcx+1,bodyY+5,2,1.4,'#8a5a62');
+  iTaper(g,W/2-2,bodyY-2,hx,hy+8,3,2.6,PAL.paleD,'#241d33');
+  // the hand, wide open
+  const OCX='#241d33';
+  pTaper(g,hx-1,hy+7,hx,hy-5,6.6,5.4,OCX); pEll(g,hx+3.2,hy+3,3,3,OCX);
+  pTaper(g,hx-1,hy+7,hx,hy-5,4.8,3.6,PAL.pale); pEll(g,hx+3.2,hy+3,2,2,PAL.pale);
+  for(let i=0;i<2;i++) pTaper(g,hx+(i-0.5)*2.6,hy+3,hx+(i-0.5)*1.8,hy-4,0.9,0.9,PAL.paleD);
+  // dirt breaking around it once the hand is near the surface
+  if(hy<GL+16){ for(let i=0;i<7;i++) pR(g,hx-9+i*3,GL-2+((i*5)%4),3,3,'#3d2c1e'); }
+  // how far you have got
+  for(let i=0;i<3;i++) pEll(g,26+i*13,H-18,3.4,3.4, i<S.push?'#c9992f':'#2e2a3c');
+  if(S.out>0.02){
+    /* and then you are out, standing on your own grave */
+    const k=Math.min(1,S.out*1.4);
+    g.globalAlpha=k;
+    // the cross-section closes up: now it is only a field with a hole in it
+    pVGrad(g,0,GL-2,W,H-GL+2,'#1b2417','#0b0f0b',4);
+    pR(g,0,GL-2,W,2,'#28321e');
+    for(let i=0;i<52;i++) pTaper(g,(i*19)%W,GL,(i*19)%W+((i%2)?3:-3),GL-5-((i*7)%6),1.4,0.5,'#22321d');
+    pEll(g,W/2+6,GL+10,36,10,'#080a06');
+    for(let i=0;i<16;i++) pEll(g,W/2-32+((i*17)%72),GL+3+((i*5)%8),3.6,2.2,'#3d2c1e');
+    const TP=makePrete(); TP.x=W/2+18; TP.y=GL+10; TP.face=-1; TP.blink=3; TP.squash=(1-k)*0.6;
+    for(let i2=0;i2<40;i2++){ stepPrete(TP,1/60); stepCloth(TP.cloth,TP.x,TP.y-40,12,1/60,0.1,0); }
+    drawPrete(g,TP,{dt:1/60,cos:{skirt:'ash'},rise:(1-k)*26});
+    g.globalAlpha=1;
+    for(let i=0;i<9;i++) pR(g,W/2-4+((i*13)%40),GL+2+((i*5)%8),3,2,'#3d2c1e');
+  }
+  g.restore();
+}
+function memRoom(g,S){
   /* a dark room, one warm window, one coin. nothing else. */
   const FL=210;
-  pVGrad(g,0,0,W,FL,'#241d33','#151022',5);
-  pR(g,0,FL,W,H-FL,'#0e0a16');
-  pR(g,0,FL-2,W,2,'#2a2138');
+  pVGrad(g,0,0,W,FL,'#3a2f4c','#1e1830',5);
+  pR(g,0,FL,W,H-FL,'#181222');
+  pR(g,0,FL-2,W,2,'#453862');
+  for(let i=0;i<8;i++) pR(g,0,FL+3+i*4,W,1,'#0f0b18');            // floorboards
+  for(let i=0;i<6;i++) pR(g,40+i*74,0,3,FL,'rgba(255,255,255,0.03)');
   // the window, and the light it throws on the floor
   pR(g,60,34,72,54,'#f0c060'); pR(g,60,34,72,10,'#ffe8a8');
   pR(g,94,34,4,54,'#241d33'); pR(g,60,58,72,4,'#241d33');
   pR(g,54,28,84,6,'#0a0812'); pR(g,54,88,84,6,'#0a0812');
-  g.globalAlpha=0.10; g.fillStyle='#ffd88a';
+  drawGlow(g,96,60,74,'#ffd88a',0.16);
+  g.globalAlpha=0.14; g.fillStyle='#ffd88a';
   g.beginPath(); g.moveTo(60,88); g.lineTo(132,88); g.lineTo(196,FL); g.lineTo(96,FL); g.closePath(); g.fill();
   g.globalAlpha=1;
   // somebody asleep: one lump, one mat
   const br=Math.sin(S.t*1.4)*0.8, stir=S.stir>0? Math.sin(S.t*15)*2:0;
-  pR(g,22,FL-6,84,6,'#241d33'); pR(g,22,FL-6,84,1,'#3a2f4e');
-  pEll(g,64+stir,FL-15+br,31,11,'#0d0a16');
-  pEll(g,64+stir,FL-21+br,26,4,'rgba(255,216,140,0.16)');
-  pEll(g,38+stir,FL-16+br,7.5,7.5,'#0d0a16');
-  pEll(g,36+stir,FL-19+br,4,2.4,'rgba(255,216,140,0.14)');
+  pR(g,18,FL-8,92,8,'#6d5a38'); pR(g,18,FL-8,92,2,'#9a8250');   // a woven mat
+  for(let i=0;i<10;i++) pR(g,21+i*9,FL-7,4,6,'#584626');
+  // a blanket, with somebody small under it
+  pEll(g,66+stir,FL-17+br,33,13,'#1c1626');
+  pEll(g,66+stir,FL-17+br,31,11.6,'#7a5f6e');
+  pEll(g,58+stir,FL-22+br,21,7,'#8f7080');
+  pEll(g,66+stir,FL-25+br,26,4,'rgba(255,216,140,0.22)');
+  for(let i=0;i<4;i++) pR(g,52+i*11+stir,FL-21+br,2,9,'#5e4854');
+  pEll(g,36+stir,FL-18+br,8.4,8.6,'#241d33');
+  pEll(g,36+stir,FL-18+br,7.4,7.6,'#c0a084');                   // a face on the pillow
+  pEll(g,34+stir,FL-22+br,7.4,4.4,'#9a90a4');                   // grey hair, if you look
+  pEll(g,32+stir,FL-23+br,3,1.6,'#b6adc0');
+  pR(g,32+stir,FL-18+br,3,1.2,'#241d33');                       // and an eye, shut
+  pR(g,32+stir,FL-14+br,3,1,'#8a5a52');
+  pEll(g,34+stir,FL-21+br,4.4,2.6,'rgba(255,216,140,0.22)');
   if(S.stir>0){ cloudBubble(g,150,96,44,16,86,FL-26,{seed:12});
     pTxt(g,'…mmh?',150,107,CL.ink,7,'center'); }
-  // the shelf and the coin
+  // the shelf, the bowl, and the coin in it
   const SY=124;
-  pR(g,SHELF_X-28,SY,58,5,'#241d33'); pR(g,SHELF_X-28,SY,58,1,'#453862');
-  pR(g,SHELF_X-22,SY+5,5,FL-SY-5,'#181223'); pR(g,SHELF_X+18,SY+5,5,FL-SY-5,'#181223');
-  pR(g,SHELF_X-22,SY+5,1,FL-SY-5,'#3a2f4e'); pR(g,SHELF_X+18,SY+5,1,FL-SY-5,'#3a2f4e');
-  pEll(g,SHELF_X,SY-3,13,4.5,'#2e2542'); pEll(g,SHELF_X,SY-4,10,3,'#3f3358');
+  pR(g,SHELF_X-32,SY,66,6,'#4a3524'); pR(g,SHELF_X-32,SY,66,2,'#7a5a38');
+  pR(g,SHELF_X-32,SY+6,66,2,'#2a1d14');
+  pR(g,SHELF_X-24,SY+8,6,FL-SY-8,'#3a2a1c'); pR(g,SHELF_X+20,SY+8,6,FL-SY-8,'#3a2a1c');
+  pR(g,SHELF_X-24,SY+8,2,FL-SY-8,'#5c4430'); pR(g,SHELF_X+20,SY+8,2,FL-SY-8,'#5c4430');
+  // the bowl. you will be looking at three more of these later.
+  pEll(g,SHELF_X,SY-3,11,5,'#2a1d14'); pEll(g,SHELF_X,SY-4,10,4.4,'#d8cdb8');
+  pEll(g,SHELF_X,SY-5,8.4,3.2,'#f4efe0');
+  // and a candle, burning down beside it
+  const cf0=1+Math.sin(S.t*7)*0.22;
+  pR(g,SHELF_X-22,SY-14,4,14,'#f4eede'); pR(g,SHELF_X-22,SY-14,1.6,14,'#fffcf0');
+  drawGlow(g,SHELF_X-20,SY-18,17*cf0,'#ffd257',0.30);
+  pEll(g,SHELF_X-20,SY-18,1.8*cf0,3*cf0,'#ffe89a'); pEll(g,SHELF_X-20,SY-17,1,1.6,'#fffdf0');
   if(S.took<0.02){
     const gl=0.5+0.5*Math.sin(S.t*4);
     drawGlow(g,SHELF_X,SY-12,22+gl*4,'#ffd257',0.42+gl*0.2);
     pEll(g,SHELF_X,SY-12-gl,4.4,4.4,'#ffe89a'); pEll(g,SHELF_X,SY-13-gl,2.4,2,'#fffdf0');
   }
-  introGuy(g,S.mx,FL,S.face,S.walk,{armTo:(S.reach&&!S.done)?{x:SHELF_X-4,y:SY-10}:null});
+  memGuy(g,S.mx,FL,S.face,S.walk,{armTo:(S.reach&&!S.done)?{x:SHELF_X-4,y:SY-10}:null});
   pR(g,0,FL,W,1,'#2a2138');
   if(S.took>0.05){
     const k=Math.min(1,S.took*1.6);
@@ -4737,13 +4963,13 @@ function introRoom(g,S){
   }
   // how quiet you are being
   const nx=W-104, n=clamp(S.noise,0,1);
-  pR(g,nx,18,88,7,'rgba(10,8,18,0.65)');
-  pR(g,nx+1,19,86*n,5, n>0.8?'#e0603c': n>0.5?'#e8b13c':'#5f9a52');
-  pTxt(g,'NOISE',nx,15,'#8a8098',6);
+  pR(g,nx,32,88,7,'rgba(10,8,18,0.65)');
+  pR(g,nx+1,33,86*n,5, n>0.8?'#e0603c': n>0.5?'#e8b13c':'#5f9a52');
+  pTxt(g,'NOISE',nx,29,'#a89ec0',6);
   if(S.reach && !S.done){ const b=0.5+0.5*Math.sin(S.t*7);
-    g.globalAlpha=0.7+b*0.3; introKey(g,SHELF_X,SY-34,'TAP'); g.globalAlpha=1; }
+    g.globalAlpha=0.7+b*0.3; memKey(g,SHELF_X,SY-34,'TAP'); g.globalAlpha=1; }
 }
-function introGate(g,S){
+function memGate(g,S){
   /* a moon, a gate, a bottle. the horizon tips as it empties. */
   g.save();
   g.translate(W/2,H/2); g.rotate(S.tilt); g.translate(-W/2,-H/2);
@@ -4760,45 +4986,49 @@ function introGate(g,S){
   pR(g,-40,FL,W+80,H-FL+60,'#0b0814');
   pR(g,-40,FL-1,W+80,2,'#1b1526');
   // two posts, a lintel, three flat roof tiers: a gate, not a cone
-  const GS='#0d0a16', GR='rgba(255,232,180,0.18)';
-  pR(g,GX-44,FL-72,11,72,GS); pR(g,GX+33,FL-72,11,72,GS);
+  const GSC='#0d0a16', GR='rgba(255,232,180,0.18)';
+  pR(g,GX-44,FL-72,11,72,GSC); pR(g,GX+33,FL-72,11,72,GSC);
   pR(g,GX-44,FL-72,2,72,GR);  pR(g,GX+33,FL-72,2,72,GR);
-  pR(g,GX-52,FL-80,104,9,GS); pR(g,GX-52,FL-80,104,2,GR);
+  pR(g,GX-52,FL-80,104,9,GSC); pR(g,GX-52,FL-80,104,2,GR);
   for(let i=0;i<3;i++){ const w2=94-i*22, y2=FL-92-i*10;
-    pR(g,GX-w2/2,y2,w2,9,GS); pR(g,GX-w2/2,y2,w2,2,GR); }
-  pTri(g,GX,FL-132,GX-13,FL-118,GX+13,FL-118,GS);
-  pR(g,GX-2,FL-140,5,10,GS);
+    pR(g,GX-w2/2,y2,w2,9,GSC); pR(g,GX-w2/2,y2,w2,2,GR); }
+  pTri(g,GX,FL-132,GX-13,FL-118,GX+13,FL-118,GSC);
+  pR(g,GX-2,FL-140,5,10,GSC);
   // the sky-hooks, angled off the lowest tier
-  pTaper(g,GX-47,FL-92,GX-58,FL-108,4,2,GS);
-  pTaper(g,GX+47,FL-92,GX+58,FL-108,4,2,GS);
+  pTaper(g,GX-47,FL-92,GX-58,FL-108,4,2,GSC);
+  pTaper(g,GX+47,FL-92,GX+58,FL-108,4,2,GSC);
   // the bell, and the ring
   const sw=Math.sin(S.t*5)*S.bell*6;
-  pR(g,GX-1,FL-71,2,10,GS);
+  pR(g,GX-1,FL-71,2,10,GSC);
   pEll(g,GX+sw,FL-54,7,8,'#e8b13c'); pEll(g,GX+sw,FL-56,4.6,5,'#ffd257');
   drawGlow(g,GX+sw,FL-54,20,'#ffd257',0.18+S.bell*0.2);
   if(S.bell>0.02){ for(let i=1;i<=3;i++){ g.globalAlpha=Math.max(0,0.4-i*0.11)*(1-S.bell*0.5);
       oEll(g,GX,FL-54,12+i*12+S.bell*20,11+i*11+S.bell*16,'rgba(0,0,0,0)','#ffd257'); }
     g.globalAlpha=1; }
   // you, and the bottle
+  for(let i=0;i<26;i++) pTaper(g,(i*19+7)%W,FL+2,(i*19+3)%W,FL-7-((i*7)%7),2,0.6,'#0f0c18');
   const px2=lerp(120,GX-4,S.past);
-  introGuy(g,px2,FL,1,S.past>0.02? S.t*7:0,{hold:S.past<0.05, lean:S.tilt*30});
+  memGuy(g,px2,FL,1,S.past>0.02? S.t*7:0,{hold:S.past<0.05, lean:S.tilt*30});
   if(S.past<0.06){
-    const bx=px2+9, by=FL-58;
+    // held up in the raised hand, where memGuy puts it
+    const bx=px2+11, by=FL-64;
+    pR(g,bx-5,by-1,11,22,'#1b1424');
     pR(g,bx-4,by,9,20,'#3f6a48');
     pR(g,bx-4,by+20-R(18*S.bottle),9,R(18*S.bottle),'#cfe8c0');
     pR(g,bx-2,by-6,5,6,'#3f6a48'); pR(g,bx-3,by-8,7,3,'#e8b13c');
+    pR(g,bx-3,by+3,2,14,'rgba(255,255,255,0.2)');
   }
   for(const q of S.puffs){ g.globalAlpha=clamp(q.l,0,1);
     pTxt(g,q.s,q.x,q.y,'#fff2c8',11,'center'); }
   g.globalAlpha=1;
   if(!S.done){
     const b=0.5+0.5*Math.sin(S.t*7);
-    g.globalAlpha=0.7+b*0.3; introKey(g,px2,FL-84,'TAP'); g.globalAlpha=1;
+    g.globalAlpha=0.7+b*0.3; memKey(g,px2,FL-84,'TAP'); g.globalAlpha=1;
     for(let i=0;i<3;i++) pEll(g,26+i*13,H-22,3.4,3.4, i<S.sips?'#e0603c':'#2e2a3c');
   }
   g.restore();
 }
-function introScale(g,S){
+function memScale(g,S){
   /* black, and one gold scale that will not be argued with */
   pVGrad(g,0,0,W,H,'#12101e','#050409',6);
   for(let i=0;i<30;i++){ const st=STARS[i+90];
@@ -4841,47 +5071,189 @@ function introScale(g,S){
   if(S.shut>0.01){ const k=S.shut*0.55;
     pR(g,0,0,W,R(H*k),'#050409'); pR(g,0,H-R(H*k),W,R(H*k)+1,'#050409'); }
 }
-function drawIntro(){
-  const g=ctx; const S=IN||introScene(introI), sc=INTRO[introI];
+function memBowl(g,S){
+  /* the same room, years later, by daylight. she is still at it. */
+  const FL=206, SX=124, SY=128, DX=372;
+  // a teak room, warm, worn, and swept every morning
+  pVGrad(g,0,0,W,FL,'#7a6250','#4a3a34',5);
+  for(let i=0;i<7;i++) pR(g,26+i*62,0,3,FL,'rgba(30,20,16,0.30)');   // wall planks
+  pR(g,0,FL-3,W,3,'#3a2c24');
+  pVGrad(g,0,FL,W,H-FL,'#5c4634','#38291e',4);
+  for(let i=0;i<16;i++) pR(g,0,FL+3+i*4,W,1,'#2a1e16');               // floorboards
+  // the door, and the day standing outside it
+  pR(g,DX-8,32,116,FL-32,'#241a14');
+  pVGrad(g,DX,40,100,FL-40,'#dcecec','#a8c8a0',5);
+  drawGlow(g,DX+50,110,120,'#f4f0d0',0.20);
+  // a yard, a low fence, and the tops of the banana trees behind it
+  for(let i=0;i<5;i++) pEll(g,DX+10+i*22,FL-40-((i*11)%14),16,9,'#8fae84');
+  pR(g,DX,FL-22,100,3,'#7a6a4a');
+  for(let i=0;i<7;i++) pR(g,DX+4+i*14,FL-26,3,20,'#8a7654');
+  pR(g,DX,FL-8,100,8,'#a8b894');
+  // and the head of him, filling the top of the doorway
+  const HX=DX+54, HY=40;
+  pEll(g,HX,HY,16,17,'#241d33'); pEll(g,HX,HY,14.8,15.8,PAL.pale);
+  pEll(g,HX+5,HY+2,8,11,PAL.paleD);
+  pEll(g,HX-3,HY+13,7,5,PAL.pale);
+  pEll(g,HX-1,HY-8,15.4,9,'#1c1730');
+  for(let i=0;i<6;i++) pTaper(g,HX+(i-3)*4.4,HY-9,HX+(i-3.3)*4.4,HY-1,4,2.4,i%2?'#1c1730':'#2e2748');
+  for(let i=0;i<5;i++) pEll(g,HX+13+i*2.4,HY-4+i*4.6,5-i*0.6,4.6-i*0.5,i%2?'#1c1730':'#2e2748');
+  const gy=HY+1.4;
+  oEll(g,HX-6.4,gy,5,4.8,'#14101e','#0b0812'); oEll(g,HX+5.6,gy,4.2,4.2,'#14101e','#0b0812');
+  pR(g,HX-1.6,gy-2.2,6,2.4,'#241c18');
+  pR(g,HX-11.4,gy-5,12,2.2,PAL.goldD); pR(g,HX+1.6,gy-4.8,8,1.6,shade(PAL.goldD,-0.2));
+  pTaper(g,HX-9,gy+2.6,HX-4.6,gy-2.6,2.6,1.8,'rgba(255,255,255,0.5)');
+  pEll(g,HX-4,HY+12,1.4,1.4,'#b4515e');
+  pR(g,DX-8,32,116,8,'#241a14'); pR(g,DX-8,32,10,FL-32,'#241a14'); pR(g,DX+100,32,12,FL-32,'#241a14');
+  pR(g,DX+2,40,2,FL-40,'rgba(255,246,214,0.16)');
+  // the light the door throws across the boards
+  g.globalAlpha=0.16; g.fillStyle='#fff6d2';
+  g.beginPath(); g.moveTo(DX,FL); g.lineTo(DX+100,FL); g.lineTo(W,H); g.lineTo(150,H); g.closePath(); g.fill();
+  g.globalAlpha=1;
+  // the altar shelf: a photograph, a candle, and the bowls
+  pR(g,SX-66,SY,138,7,'#5c4028'); pR(g,SX-66,SY,138,2,'#8a6640');
+  pR(g,SX-66,SY+7,138,2,'#3a2818');
+  pR(g,SX-58,SY+9,7,FL-SY-9,'#4a3220'); pR(g,SX+56,SY+9,7,FL-SY-9,'#4a3220');
+  pR(g,SX-58,SY+9,2,FL-SY-9,'#6d4d2e'); pR(g,SX+56,SY+9,2,FL-SY-9,'#6d4d2e');
+  // a photograph of a young man in sunglasses, which is the whole story
+  const PFX=SX-26, PFY=SY-36;
+  pR(g,PFX-16,PFY,32,34,'#3a2818'); pR(g,PFX-16,PFY,32,2,'#7a5a34');
+  pR(g,PFX-13,PFY+3,26,28,'#b8b0a0');
+  pEll(g,PFX,PFY+24,10,9,'#8a8072');
+  pEll(g,PFX,PFY+15,7.6,8,'#cfa882'); pEll(g,PFX,PFY+10,7.8,4.4,'#241d33');
+  for(let i=0;i<4;i++) pR(g,PFX-6+i*3,PFY+8,2,4,'#241d33');
+  pR(g,PFX-6,PFY+13.6,12,1.6,'#e8b93e');
+  pEll(g,PFX-2.6,PFY+15.4,2.6,2.2,'#14101e'); pEll(g,PFX+3,PFY+15.4,2.2,2,'#14101e');
+  pR(g,PFX-1,PFY+19,3,1,'#8a5a52');
+  pR(g,PFX-14,PFY+2,1,30,'rgba(255,255,255,0.18)');
+  // one candle, burning down
+  const cf=1+Math.sin(S.t*7)*0.22;
+  pR(g,SX+40,SY-16,5,16,'#f4eede'); pR(g,SX+40,SY-16,2,16,'#fffcf0');
+  drawGlow(g,SX+42,SY-20,20*cf,'#ffd257',0.38*S.cand);
+  pEll(g,SX+42,SY-21,2*cf,3.4*cf,'#ffe89a'); pEll(g,SX+42,SY-20,1,1.8,'#fffdf0');
+  // three bowls of rice, and then a fourth
+  const four=S.fourth>0.25? Math.min(1,(S.fourth-0.25)*3.4) : 0;
+  for(let i=0;i<4;i++){
+    const bx=SX-46+i*24, on=i<3? 1 : four;
+    if(on<=0.01) continue;
+    g.globalAlpha=on;
+    pEll(g,bx,SY-3,10,5,'#3a2818');
+    pEll(g,bx,SY-4,9,4.4,'#d8cdb8'); pEll(g,bx,SY-5,7.4,3.2,'#f4efe0');
+    pEll(g,bx,SY-8,5.4,3.4,'#fbf8ee'); pEll(g,bx-1.6,SY-9,2.4,1.6,'#fffdf6');
+    if(i===3) drawGlow(g,bx,SY-8,24,'#fff2c8',0.30*on);
+    g.globalAlpha=1;
+  }
+  // her: kneeling, facing the shelf, hands together. small, grey, unhurried.
+  const kx=228, ky=FL+2, br=Math.sin(S.t*1.05)*0.7;
+  const bow=S.fourth>0.3? 0.5+Math.sin(S.t*0.85)*0.5 : 0;
+  const OW='#241d33', DRS='#8a7f92', DRD='#6a5f78';
+  pEll(g,kx+2,ky-5,26,7,'rgba(20,14,10,0.42)');                  // her shadow on the boards
+  pEll(g,kx,ky-9,22,9,OW); pEll(g,kx,ky-10,20,8,DRD);            // shins folded under her
+  pTaper(g,kx+3,ky-9,kx-4-bow*4,ky-34+br,15,11,OW);
+  pTaper(g,kx+3,ky-9,kx-4-bow*4,ky-34+br,12.6,8.6,DRS);
+  pTaper(g,kx+7,ky-14,kx+1-bow*4,ky-32+br,4,3,DRD);
+  pR(g,kx-14-bow*4,ky-36+br,22,3,'#5a5068');                      // a shawl over the shoulders
+  // arms up, palms pressed, pointing at the shelf
+  const wx=kx-16-bow*7, wy=ky-30+br-bow*3;
+  pTaper(g,kx-3-bow*4,ky-30+br,wx,wy,3.6,3,OW);
+  pTaper(g,kx-3-bow*4,ky-30+br,wx,wy,2.4,1.9,'#c0a084');
+  pTaper(g,kx-6-bow*4,ky-31+br,wx-2,wy-1,2.4,1.9,'#a88a70');
+  pEll(g,wx-2,wy-1,3.2,4,OW); pEll(g,wx-2,wy-1,2.2,3,'#c0a084');
+  // her head, bowed
+  const hx=kx-7-bow*5, hy=ky-44+br+bow*2;
+  pEll(g,hx,hy,8.4,8.8,OW); pEll(g,hx,hy,7.4,7.8,'#c0a084');
+  pEll(g,hx+2.6,hy+1,4,5.4,'#a88a70');
+  pEll(g,hx+1,hy-5,8,4.6,'#9a90a4');                              // grey hair, pinned back
+  pEll(g,hx+4,hy-6,3.4,1.8,'#b6adc0');
+  pEll(g,hx+6,hy-1,2.6,3,'#8d8296');
+  pR(g,hx-6,hy+1,3,1.2,OW);                                       // an eye, shut
+  pR(g,hx-6,hy+5,3,1,'#8a5a52');
+  // you, outside the door, too tall for the house you grew up in
+  /* one impossibly long arm in through the door — it does not have to be
+     attached to anything on screen for you to know whose it is */
+  const rk=clamp(S.reach,0,1);
+  const shx=W+18, shy=132;
+  const hax=lerp(DX+8,SX+30,rk), hay=lerp(134,SY-9,rk);
+  g.globalAlpha=0.82;
+  const elx=lerp(shx,hax,0.42), ely=lerp(shy,hay,0.42)+16;   // an elbow, so it is an arm
+  iTaper(g,shx,shy,elx,ely,5.4,3.4,PAL.paleD,'#241d33');
+  iTaper(g,elx,ely,hax,hay,3.2,2.6,PAL.paleD,'#241d33');
+  pEll(g,elx,ely,2.6,2.6,'#241d33'); pEll(g,elx,ely,1.8,1.8,PAL.paleD);
+  pTaper(g,hax+5,hay+3,hax-7,hay-2,6.8,5.6,'#241d33'); pEll(g,hax+1,hay+6,3.2,3.2,'#241d33');
+  pTaper(g,hax+5,hay+3,hax-7,hay-2,5,3.8,PAL.pale);   pEll(g,hax+1,hay+6,2.1,2.1,PAL.pale);
+  for(let i=0;i<2;i++) pTaper(g,hax+1+(i-0.5)*2.6,hay+1,hax-6+(i-0.5)*2,hay-1,0.9,0.9,PAL.paleD);
+  g.globalAlpha=1;
+  if(S.thru>0.02){
+    /* your hand goes straight through it, every time */
+    g.globalAlpha=S.thru*0.75;
+    for(let i=1;i<=3;i++) oEll(g,SX+30,SY-8,6+i*8,4+i*5,'rgba(0,0,0,0)','#e8e0cc');
+    g.globalAlpha=1;
+  }
+  for(let i=0;i<3;i++) pEll(g,26+i*13,H-18,3.4,3.4, i<S.tries?'#b9a8d8':'#3a3448');
+  if(!S.done){ const bb=0.5+0.5*Math.sin(S.t*7);
+    g.globalAlpha=0.7+bb*0.3; memKey(g,SX+30,SY+26,'TAP'); g.globalAlpha=1; }
+}
+function drawMem(){
+  const g=ctx; const S=IN||memScene(memI), sc=MEMS[memI];
   g.save();
   if(S.shake>0.01) g.translate(R(rnd(-2,2)*S.shake),R(rnd(-2,2)*S.shake));
-  if(sc.id==='take') introRoom(g,S);
-  else if(sc.id==='drink') introGate(g,S);
-  else introScale(g,S);
+  if(sc.id==='wake') memGrave(g,S);
+  else if(sc.id==='take') memRoom(g,S);
+  else if(sc.id==='drink') memGate(g,S);
+  else if(sc.id==='scale') memScale(g,S);
+  else memBowl(g,S);
   for(const q of S.px){ g.globalAlpha=clamp(q.l,0,1);
     pEll(g,q.x,q.y,q.r||1.2,q.r||1.2,q.c); }
   g.globalAlpha=1;
   g.restore();
+  /* dust in the light, and dark in the corners: a memory is not a clean picture */
+  for(const d of S.dust){ g.globalAlpha=d.a; pR(g,d.x,d.y,d.r,d.r,'#e8e0d0'); }
+  g.globalAlpha=1;
+  drawVignette(g,0.30);
   if(S.flash>0.01){ g.globalAlpha=S.flash*0.5; pR(g,0,0,W,H,'#fff6de'); g.globalAlpha=1; }
+  /* letterbox: everything here is film, not gameplay */
+  pR(g,0,0,W,13,'#08060e'); pR(g,0,H-13,W,13,'#08060e');
+  pR(g,0,13,W,1,'rgba(255,255,255,0.06)'); pR(g,0,H-14,W,1,'rgba(255,255,255,0.06)');
+  if(memI>0){
+    pTxt(g,sc.title,10,10,'#8a7a5a',6);
+    pTxt(g,'A MEMORY',W-10,10,'#5a5468',6,'right');
+  } else pTxt(g,'THE GROUND',10,10,'#8a7a5a',6);
   /* the caption rides in on a bank of cloud, like everything else here */
   if(S.done){
-    const lines=wrap(g,sc.t.slice(0,introCh|0),W-84,8).slice(0,3);
+    const lines=wrap(g,sc.t.slice(0,memCh|0),W-84,8).slice(0,3);
     const bh=14+lines.length*12;
-    cloud(g,-20,H-bh,W+40,bh+12,{seed:5,flat:1});
-    let ty=H-bh+11;
+    cloud(g,-20,H-13-bh,W+40,bh+12,{seed:5,flat:1});
+    let ty=H-13-bh+11;
     for(const l of lines){ pTxt(g,l,W/2,ty,CL.ink,8,'center'); ty+=12; }
-    if((introCh|0)>=sc.t.length){ g.globalAlpha=0.55+0.45*Math.sin(GS.t*5);
-      icoDown(g,W-16,H-12,1.3,CL.ink3); g.globalAlpha=1; }
+    if((memCh|0)>=sc.t.length){ g.globalAlpha=0.55+0.45*Math.sin(GS.t*5);
+      icoDown(g,W-16,H-22,1.3,CL.ink3); g.globalAlpha=1; }
   } else {
-    g.globalAlpha=0.8; pTxt(g,sc.hint,W/2,H-9,'#8a8098',7,'center'); g.globalAlpha=1;
+    g.globalAlpha=0.8; pTxt(g,sc.hint,W/2,H-4,'#8a8098',7,'center'); g.globalAlpha=1;
   }
-  for(let i=0;i<INTRO.length;i++){
-    const on=i<=introI;
-    pEll(g,W/2-9+i*9,10,on?2.4:1.6,on?2.4:1.6,on?'#f2c14e':'#4a4458');
+  if(memI>0) pTxt(g,'skip',12,H-4,'#3a3448',6);
+  /* coming into a memory, and going out of one, is a white-out */
+  if(MEMFADE>0.01){ g.globalAlpha=Math.min(1,MEMFADE); pR(g,0,0,W,H,'#e8e4f0'); g.globalAlpha=1; }
+}
+/* the corners of every remembered thing are dark */
+let _VIG=null;
+function drawVignette(g,amt){
+  if(!_VIG){
+    _VIG=mkCv(W,H); const v=_VIG.getContext('2d');
+    const rg=v.createRadialGradient(W/2,H/2,H*0.28,W/2,H/2,H*0.86);
+    rg.addColorStop(0,'rgba(0,0,0,0)'); rg.addColorStop(1,'rgba(0,0,0,1)');
+    v.fillStyle=rg; v.fillRect(0,0,W,H);
   }
-  pTxt(g,'skip',12,H-9,'#4a4458',6);
+  g.globalAlpha=amt; g.drawImage(_VIG,0,0); g.globalAlpha=1;
 }
 
-
-
 const WAKE=[
-  {w:'???',t:'Oh! You are up. Do not panic.'},
-  {w:'???',t:'Better you hear this standing: you woke up in a graveyard.'},
-  {w:'You',t:'(It comes out as a thin whistle. Your mouth is a needle\'s eye.)'},
-  {w:'Khwan',t:'You came back up a prete. A hungry ghost, tall as the palms.'},
-  {w:'Khwan',t:'I am your Khwan. Your life-spirit. Nobody here will hurt you.'},
-  {w:'Khwan',t:'Your ledger tipped. We tip it back: pick, cook, make, give.'},
-  {w:'Khwan',t:'The shy ones need it most. Tap the road to walk. Go east.'},
+  {w:'???',t:'Easy. Stay down a moment. You have been under a long time.'},
+  {w:'You',t:'(You try to ask where you are. It comes out as a thin whistle.)'},
+  {w:'Khwan',t:'A graveyard, east of the village. You came back up a prete.'},
+  {w:'You',t:'(You reach for your name. There is nothing where it should be.)'},
+  {w:'Khwan',t:'I am your Khwan. Your life-spirit. I was there for all of it.'},
+  {w:'Khwan',t:'And no — do not ask me. A ledger is read by whoever wrote it.'},
+  {w:'Khwan',t:'Do good and it comes back in pieces. Pick, cook, make, give.'},
+  {w:'Khwan',t:'Tap the road to walk. Go east. You will remember. I am sorry.'},
 ];
 /* ============================================================
    PORTRAITS — pre-rendered once, so dialogue has a face
@@ -4897,8 +5269,8 @@ function buildPortrait(key){
   const place=(fn,scale,hx,hy)=>{ g.translate(half,half+4); g.scale(scale,scale); g.translate(-hx,-hy); fn(); };
   if(key==='you'||key==='prete'){
     const q=makePrete(); q.x=0; q.y=0; q.face=1; q.blink=3;
-    for(let k=0;k<30;k++){ stepPrete(q,1/60); stepCloth(q.cloth,0,-34,11,1/60,0,0); }
-    place(()=>drawPrete(g,q,{dt:1/60,cos:GS.cos||{skirt:'ash'}}), 2.5, 0, -65);
+    for(let k=0;k<30;k++){ stepPrete(q,1/60); stepCloth(q.cloth,0,-44,12,1/60,0,0); }
+    place(()=>drawPrete(g,q,{dt:1/60,cos:GS.cos||{skirt:"ash"}}), 2.0, 0, -84);
   } else if(key==='khwan'){
     place(()=>drawKhwan(g,{x:0,y:0,anim:1.2,blink:3,bub:null}), 3.2, 0, -1);
   } else if(key==='phra'){
@@ -5077,7 +5449,7 @@ function drawAscend(g){
     glow.addColorStop(0,'rgba(255,240,190,0.3)'); glow.addColorStop(1,'rgba(255,240,190,0)');
     g.fillStyle=glow; g.fillRect(q.x-44,py-78,88,88);
     drawPrete(g,q,{dt:1/60,wind:0.1,gold:A.done?1:0,
-      armTarget: (ph==='bless'&&A.beam>0.2)? {x:q.x,y:py-70} : null});
+      armTarget: (ph==='bless'&&A.beam>0.2)? {x:q.x,y:py-88} : null});
     q.x=sv.x; q.y=sv.y; q.vx=sv.vx; q.face=sv.face; q.state=sv.state;
     // the beam of blessing
     if(A.beam>0){
@@ -5216,6 +5588,7 @@ function drawMap(g,x0,y0,w,h){
   let obj = !GS.q.metPhra? 'go east to the spirit house'
     : GS.q.done? 'wander as long as you like'
     : GS.ready? 'return to the spirit house'
+    : GS.merit>=GOAL && !GS.mem.bowl? 'one page of you is still turning'
     : GS.merit>=GOAL? 'tell Phra Phum — the ledger is full'
     : SPIRITS.some(s=>!s.friend)? 'somebody out there is still waiting'
     : 'keep making things and giving them away';
@@ -5292,8 +5665,9 @@ function drawKhwanBubble(g){
   const w2=Math.max(...lines.map(l=>txtW(l,7)))+18;
   const bh=lines.length*10+12;
   const bx=clamp(x-w2/2, 6, W-w2-6);
-  // she keeps to the upper band, clear of the HUD above and the action below
-  const by=clamp(y-26-bh, 66, 116);
+  // she keeps to the upper band, clear of the HUD above — and clear of the top of
+  // his head, which is a hundred pixels off the ground and gets in the way
+  const by=clamp(Math.min(y-26-bh, P.y-GS.camY-114-bh), 58, 110);
   cloudBubble(g,bx+w2/2,by,w2,bh,x-4,y-9,{seed:5});
   lines.forEach((l,i)=>pTxt(g,l,bx+w2/2,by+14+i*10,CL.ink,7,'center'));
 }
@@ -5342,7 +5716,13 @@ function drawHUD(){
   if(PROMPT){
     const s=PROMPT.txt;
     const w2=txtW(s,7)+22;
-    const x=PROMPT.x-GS.camX, y=PROMPT.y-GS.camY;
+    const x=PROMPT.x-GS.camX;
+    /* he is a hundred pixels of prete: anything printed at a villager's height
+       lands on his chest, so lift the prompt clear of his head when he is under it */
+    const px=P.x-GS.camX;
+    let y=PROMPT.y-GS.camY;
+    if(Math.abs(x-px)<52) y=Math.min(y, P.y-GS.camY-128);
+    y=Math.max(y,76);
     cloud(g,x-w2/2,y-13,w2,14,{seed:6});
     pTxt(g,s,x,y-3,CL.ink,7,'center');
     if(PROMPT.sub){
@@ -5578,7 +5958,7 @@ function stepTree(dt){
   if(press('back')||press('tree')){ GS.state='play'; AU.sel(); clearPress(); return; }
   hitTap();                     // a tap lands on whatever was drawn there
   if(GS.state!=='tree') return; // ...which may have been the close button
-  if(press('heavy')||press('whistle')||press('give')){ TREE.tab=(TREE.tab+1)%4; TREE.row=0; AU.sel(); }
+  if(press('heavy')||press('whistle')||press('give')){ TREE.tab=(TREE.tab+1)%5; TREE.row=0; AU.sel(); }
   if(TREE.tab===0){
     const keys=Object.keys(SKILLS);
     if(press('left')){ TREE.col=(TREE.col+2)%3; AU.blip(); }
@@ -5708,22 +6088,52 @@ function drawLedger(g){
       if(t.wish && !GS.friends[t.id] && has('eye')) pTxt(g,'wish: '+t.wish, 22, H-11, '#3a4a30',6);
       pTxt(g,'recipe '+Object.keys(GS.learned).length+'/'+(Object.keys(RECIPES).length+Object.keys(CRAFTS).length),W-22,H-11,CL.ink3,6,'right');
     }
-  } else {
+  } else if(TREE.tab===3){
     drawMap(g,12,52,W-24,H-66);
+  } else {
+    drawPast(g);
   }
   drawLedgerTabs(g);      // drawn last so no page ever covers the tabs
 }
 /* flat tabs: scallops this close to the header would just pile up */
 function drawLedgerTabs(g){
-  ['SKILLS','LOOKS','FRIENDS','MAP'].forEach((t,i)=>{
-    const x=10+i*118, on=TREE.tab===i;
-    pR(g,x,34,112,15, on?'#f4e8c4':'rgba(20,18,34,0.72)');
-    pR(g,x,34,112,1, on?'#fff8e0':'rgba(255,255,255,0.14)');
-    if(on){ pR(g,x,48,112,1,'#c9992f'); pR(g,x,34,2,15,'#c9992f'); }
-    pTxt(g,t,x+56,45,on?CL.ink:'#cfc4ae',6,'center');
-    hitAdd(x,34,112,15,()=>{ TREE.tab=i; TREE.row=0; AU.sel(); });
+  ['SKILLS','LOOKS','FRIENDS','MAP','PAST'].forEach((t,i)=>{
+    const x=8+i*94, on=TREE.tab===i;
+    pR(g,x,34,90,15, on?'#f4e8c4':'rgba(20,18,34,0.72)');
+    pR(g,x,34,90,1, on?'#fff8e0':'rgba(255,255,255,0.14)');
+    if(on){ pR(g,x,48,90,1,'#c9992f'); pR(g,x,34,2,15,'#c9992f'); }
+    pTxt(g,t,x+45,45,on?CL.ink:'#cfc4ae',6,'center');
+    // a page you have not read yet nags at you from the tab
+    if(i===4 && GS.seen.newmem && !on) pEll(g,x+82,40,2.4,2.4,'#c85a6a');
+    hitAdd(x,34,90,15,()=>{ TREE.tab=i; TREE.row=0; AU.sel(); });
   });
 }
+/* ---------------- what you have got back ---------------- */
+/* flat rows: cloud scallops stacked five deep just eat each other */
+function drawPast(g){
+  GS.seen.newmem=false;
+  const got=MEMS.filter(m=>GS.mem[m.id]).length;
+  pTxt(g,'the page turns on its own, a line at a time',W/2,60,'#cfc4ae',6,'center');
+  MEMS.forEach((m,i)=>{
+    const y=64+i*38, on=!!GS.mem[m.id];
+    pR(g,14,y,W-28,34, on?'#f4e8c4':'rgba(18,16,30,0.6)');
+    pR(g,14,y,W-28,1, on?'#fff8e0':'rgba(255,255,255,0.12)');
+    pR(g,14,y+33,W-28,1, on?'#c9b98a':'rgba(0,0,0,0.34)');
+    if(on) pR(g,14,y,2,34,'#c9992f');
+    // a torn page, or a blank one
+    const px=34, py=y+17;
+    pR(g,px-6,py-10,12,19, on?'#fdf7e4':'#2a2640');
+    pR(g,px-6,py-10,12,1, on?'#c9b98a':'#3a3550');
+    if(on){ for(let k=0;k<4;k++) pR(g,px-4,py-6+k*4,8,1,'#b8a880'); }
+    else pTxt(g,'?',px,py+3,'#5a5468',8,'center');
+    pTxt(g, on? m.title : '- - -', 50, y+15, on?'#8f6a1e':'#5a5468', 9);
+    const line = on? m.j : 'not yet';
+    for(const l of wrap(g,line,W-96,7).slice(0,1)) pTxt(g,l,50,y+27,on?CL.ink2:'#4a4458',7);
+    if(on) pTxt(g,''+(i+1),W-24,y+21,'#b09a62',8,'right');
+  });
+  pTxt(g,got+' of '+MEMS.length+' pages',W/2,H-6,'#cfc4ae',6,'center');
+}
+
 /* ============================================================
    UPDATE
    ============================================================ */
@@ -5751,22 +6161,24 @@ function update(dt){
       }
       if(press('newgame')){ clearSave(); newGame(); AU.ding(); }
       break;
-    case 'intro':  stepIntro(dt); break;
+    case 'memory': stepMem(dt); break;
     case 'play':{
       stepDlg(dt);
       stepPlayer(dt);
       stepNpcs(dt);
       stepKhwan(dt);
+      /* the past does not wait to be asked */
+      { const mi=memReady(); if(mi>0){ startMem(mi); break; } }
       if(!DLG){
         checkInteract();
-        if(press('tree')||press('help')){ GS.state='tree'; TREE.tab=0; AU.sel(); }
+        if(press('tree')||press('help')){ GS.state='tree'; TREE.tab=GS.seen.newmem?4:0; AU.sel(); }
         if(press('map')){ GS.state='tree'; TREE.tab=3; AU.sel(); }
       }
       if(GS.ready && !GS.q.done && Math.abs(P.x-SHRINE_X)<44 && !DLG){ PROMPT=null; startCeremony(); }
       const gy=groundY(P.x);
       const look=clamp(P.vx*0.42,-46,46);
       GS.camX = lerp(GS.camX, clamp(P.x+look-W/2, 0, WORLD_W-W), 1-Math.pow(0.0009,dt));
-      const ty = clamp((gy-GBASE)*0.9 + (P.y<gy-74? (P.y-(gy-74))*0.45 : 0), -46, 40);
+      const ty = clamp((gy-GBASE)*0.9 + (P.y<gy-96? (P.y-(gy-96))*0.45 : 0), -52, 40);
       GS.camY = lerp(GS.camY, ty, 1-Math.pow(0.004,dt));
       break; }
     case 'task':     PROMPT=null; stepTask(dt); break;
@@ -5799,7 +6211,7 @@ function saveGame(){
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       v:2, merit:GS.merit, spent:GS.spent, mute:AU.muted,
       skills:GS.skills, cos:GS.cos, q:GS.q, seen:GS.seen,
-      bag:GS.bag, friends:GS.friends, learned:GS.learned, tut:GS.tut,
+      bag:GS.bag, friends:GS.friends, learned:GS.learned, tut:GS.tut, mem:GS.mem,
       met: SPIRITS.filter(s=>s.met).map(s=>s.id),
       pals: SPIRITS.filter(s=>s.friend).map(s=>s.id),
       x: (typeof P!=='undefined'&&P)?P.x:300,
@@ -5827,12 +6239,12 @@ function seedAtmosphere(){
 function newGame(){
   GS.merit=0; GS.spent=0; GS.skills={}; GS.cos={skirt:'ash'};
   GS.q={prayers:0,offerings:0,pets:0,gifts:0}; GS.seen={}; GS.bag={}; GS.friends={};
-  GS.learned={}; GS.tut=0; GS.dawn=0; GS.ready=false;
+  GS.learned={}; GS.tut=0; GS.dawn=0; GS.ready=false; GS.mem={};
   P.x=300; P.y=groundY(300); P.vx=0; P.vy=0; P.rise=0;
   KHWAN.x=300; KHWAN.y=groundY(300)-50;
   resetWorld();
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
-  introI=0; introCh=0; IN=null; GS.state='intro'; GS.t=0;
+  GS.t=0; startMem(0);
   saveGame();
 }
 function continueGame(sv){
@@ -5840,7 +6252,7 @@ function continueGame(sv){
   GS.skills=sv.skills||{}; GS.cos=Object.assign({skirt:'ash'},sv.cos||{});
   GS.q=Object.assign({prayers:0,offerings:0,pets:0,gifts:0},sv.q||{});
   GS.seen=sv.seen||{}; GS.bag=sv.bag||{}; GS.friends=sv.friends||{};
-  GS.learned=sv.learned||{}; GS.tut=sv.tut||0;
+  GS.learned=sv.learned||{}; GS.tut=sv.tut||0; GS.mem=sv.mem||{};
   resetWorld();
   if(sv.met)  for(const id of sv.met){ const s=SPIRIT_BY_ID[id]; if(s) s.met=true; }
   if(sv.pals) for(const id of sv.pals){ const s=SPIRIT_BY_ID[id]; if(s){ s.friend=true; s.met=true; } }
@@ -5848,9 +6260,9 @@ function continueGame(sv){
   if(GS.q.cat){ CAT.state='wander'; CAT.x=TAMARIND_X+40; CAT.y=groundY(CAT.x); }
   if(GS.q.metPhra) PHRA.shown=true;
   if(GS.q.done){ GS.dawn=1; GS.cos.halo=1; }
-  if(GS.merit>=GOAL && GS.q.metPhra && !GS.q.done) GS.ready=true;
+  if(GS.merit>=GOAL && GS.q.metPhra && GS.mem.bowl && !GS.q.done) GS.ready=true;
   P.x=clamp(sv.x||300,20,WORLD_W-20); P.y=groundY(P.x); P.vx=0; P.vy=0; P.rise=0;
-  KHWAN.x=P.x+26; KHWAN.y=P.y-46;
+  KHWAN.x=P.x+26; KHWAN.y=P.y-60;
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
   GS.state='play';
 }
