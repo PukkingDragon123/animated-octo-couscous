@@ -7,9 +7,10 @@ memory at all, and having to earn the story of your own life back.
 
 You wake under the soil and push your way out of it. You do not know your name.
 You do not know what you did. You are a **prete** — a hungry ghost, tall as the
-palm trees, thin as a pole, with hands like palm leaves, a mouth the size of a
-needle's eye, a head too big for any of it, a mop of black hair and a pair of
-sunglasses. You cannot eat anything you cook. You're going to cook a great deal
+palm trees and thin as a pole, ash-grey, with hands like palm leaves, a pot belly
+under a visible ribcage, a mouth the size of a needle's eye, one small orange
+nose, six hairs left, and two enormous ringed eyes that have not closed properly
+since. You cannot eat anything you cook. You're going to cook a great deal
 anyway.
 
 Nobody will tell you what you did. Not Khwan, who was there for all of it. Not
@@ -82,8 +83,8 @@ the two sides and the beam does lift — and then it sags right back, every time
 because that is the entire point. When you give up it slams, and the soil falls.
 
 **Four bowls.** The last page, and the only one you can't do anything about. The
-same room, years later, by daylight. A photograph on the altar of a young man in
-sunglasses. An old woman kneeling, bowing, setting out rice. Reach for the bowl —
+same room, years later, by daylight. A photograph on the altar of a young man who
+still had hair. An old woman kneeling, setting out rice. Reach for the bowl —
 your hand goes straight through, three times, and she never looks up. Then she
 sets out a fourth.
 
@@ -112,11 +113,14 @@ short thing and then leaves you alone with it.
 
 ![the graveyard you woke in](screenshots/the-graveyard.png)
 
-## The whole interface is made of clouds
+## The interface is one wooden box, cut from the same plank
 
-Every panel, bubble, tag and menu is a drawn cumulus with scalloped lobes, a lit
-top band and a soft shadow. Speakers get a round hand-drawn **portrait** on its
-own little cloud beside the dialogue, and only one voice talks at a time.
+Every panel, bubble, tag and menu is a **carved wooden frame** — a dark plank
+edge, a lit inner bevel, a parchment field — and every one stays exactly inside
+its own rectangle. Your merit sits on a small plaque in one corner; what you're
+carrying sits on a **toolbar** along the bottom, one slot per thing, the way a
+farming game does it. Speakers get a round hand-drawn **portrait** beside the
+dialogue, and only one voice talks at a time.
 
 Nothing in the interface is a font character standing in for a picture — the
 ticks, hearts, stars, arrows, flowers, prayer beads and the book on the menu
@@ -194,7 +198,7 @@ descend, and the ledger is waiting where you left it.
 
 ## The Ledger and the map
 
-Five tabs on a drifting cloud sky: **skills**, **looks**, **friends**, the
+Five wooden tabs over a drifting sky: **skills**, **looks**, **friends**, the
 **past** — your recovered memories, one flat page each, blank and question-marked
 until they come back, with a red dot on the tab when there's one you haven't read
 — and the whole 5,600-pixel road drawn as a **map**: seven named zones along the top, every
@@ -295,14 +299,19 @@ pixelated`. Boots in ~270ms and holds 60 fps.
 - **Nothing is a sprite sheet, and nothing is a font glyph.** Every character is a
   procedural puppet posed fresh each frame — two-bone IK limbs, a walk cycle
   driven by *distance travelled* so feet never slide, velocity lean, landing
-  squash, a pot belly on its own spring, and a verlet-simulated sarong. The prete
-  is drawn cartoon-first: one hard ink line all the way round, flat colour inside
-  it, forty pixels of leg, a waist you could close one hand around and a head far
-  too big for either. Every interface picture is drawn from pixel primitives too.
+  squash, a pot belly on its own spring, and a verlet-simulated cloth wrap. The
+  prete is drawn cartoon-first: one hard ink line all the way round, flat colour
+  inside it, forty-two pixels of leg on 3px-wide bones, arms that hang past the
+  hip, and a head far too big for either.
+- **He moves slowly, and late.** The head and the hands ride their own springs and
+  arrive a beat behind the shoulders; the body carries a slow idle sway and a
+  breath; the walk eases in and drifts out over most of a second instead of
+  snapping to speed. None of it is keyframed — it falls out of the simulation,
+  which is why it never repeats exactly.
 - **The cutscenes use the same rig ideas at a different scale.** The man you used
-  to be is the same silhouette in colour — shirt, jeans, the same shades — and the
-  prete himself walks out of his own grave in the first scene, drawn by the same
-  function that draws him in the village.
+  to be has hair and ordinary eyes and already that nose, and the prete himself
+  climbs out of his own grave in the first scene, drawn by the same function that
+  draws him in the village.
 - **The type is part of the art.** Two bitmap fonts defined as row bitmasks and
   rasterised in the page; each drawn string is cached to its own small canvas, so
   a line of text costs one blit rather than a few hundred rectangles. There is no
@@ -310,10 +319,10 @@ pixelated`. Boots in ~270ms and holds 60 fps.
 - **A 5,600-pixel road** through seven named zones over six parallax layers,
   pre-rendered once into cached canvases and built across frames behind a loading
   screen.
-- **Every cloud is drawn, then cached.** Panels, bubbles, keycaps and sky clouds
-  are scanline-filled once into offscreen canvases and reused; so are the radial
-  glows on every lantern, lamp, firefly and floating head. That's what keeps a UI
-  made entirely of soft shapes at 60 fps.
+- **Every panel is drawn, then cached.** Frames, bubbles, keycaps and sky clouds
+  are filled once into offscreen canvases and reused; so are the radial glows on
+  every lantern, lamp, firefly and floating head. One function draws every box in
+  the game, so the whole interface changes shape from a single place.
 - **Menus are hit-tested from the draw pass.** Each screen records where it put
   things as it paints them, so a tap resolves against real layout instead of a
   second copy of the geometry.

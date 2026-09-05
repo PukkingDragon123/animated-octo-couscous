@@ -57,7 +57,7 @@ const PAL = {
   wood:'#7d5a3c', woodD:'#563c27', woodL:'#9c7551',
   bone:'#f2ecd8', boneD:'#cfc4a8',
   skin:'#d8a878', skinD:'#b3855a',
-  pale:'#c9c0cf', paleD:'#9a8fa8', paleL:'#e6dff0',
+  pale:'#cdc8bc', paleD:'#9d9789', paleL:'#eae5d8',
   indigo:'#2c4a7c', indigoD:'#1b3054', indigoL:'#4a72ad',
   violet:'#7a4ad8', violetD:'#4a2a8c',
   ember:'#ff5c3c', emberD:'#c23a20',
@@ -871,7 +871,9 @@ function isLight(col){
     if(col[0]==='#'){ const c2=hx(col); r=c2[0]; g2=c2[1]; b=c2[2]; }
     else { const m=col.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/); if(m){ r=+m[1]; g2=+m[2]; b=+m[3]; } }
   }catch(e){}
-  v=(r*0.299+g2*0.587+b*0.114)>128;
+  // only genuinely pale ink gets a shadow. at 128 the mid browns on a parchment
+  // panel picked one up too, and it read as a line struck through the text.
+  v=(r*0.299+g2*0.587+b*0.114)>175;
   _lum.set(col,v); return v;
 }
 /* x,y is the LEFT BASELINE, as it always was */
@@ -1045,9 +1047,11 @@ function artRoadShrine(){
 /* ============================================================
    CLOUD UI — every panel in this game is a small cloud
    ============================================================ */
+/* the whole interface is one wooden box, cut from the same plank */
 const CL = {
-  top:'#fbf7ec', body:'#efe6d4', mid:'#e0d4bc', under:'#c9bb9e', rim:'#fffdf6',
-  edge:'#a89a80', ink:'#3b3128', ink2:'#7a6a55', ink3:'#a2907a',
+  top:'#fdf2d8', body:'#f4e3bc', mid:'#e6cf9e', under:'#d8bd88', rim:'#fffaea',
+  edge:'#3b2412', wood:'#8a5a2c', woodL:'#c9924e', woodD:'#5c3a1c',
+  ink:'#3b2a18', ink2:'#7a5a38', ink3:'#a08054',
   gold:'#c9992f', goldL:'#f2c14e',
 };
 function mixSafe(a,b,t){ try{ return mix(a,b,t); }catch(e){ return a; } }
@@ -1077,27 +1081,27 @@ function puffs(w,h,seed){
   p={top,bot,side,base}; _puffCache.set(key,p); return p;
 }
 function cloudDraw(g,x,y,w,h,o={}){
-  const P2=puffs(w,h,o.seed||((w*31+h*17)|0));
-  const body=o.body||CL.body, top=o.top||CL.top, under=o.under||CL.under, edge=o.edge||CL.edge;
-  const drop=o.drop===undefined?2:o.drop;
-  const flat=!!o.flat;
-  const lobes=(col,pad)=>{
-    if(!flat) for(const q of P2.bot) pEll(g,x+q.x,y+h+q.dy,q.r+pad,q.r*0.82+pad,col);
-    if(!flat) for(const q of P2.side){ pEll(g,x-q.dx,y+q.y,q.r+pad,q.r+pad,col); pEll(g,x+w+q.dx,y+q.y,q.r+pad,q.r+pad,col); }
-    pR(g,x-1-pad,y-pad,w+2+pad*2,h+pad*2,col);
-    for(const q of P2.top) pEll(g,x+q.x,y+q.dy,q.r+pad,q.r+pad,col);
-  };
-  if(drop){ g.save(); g.globalAlpha=(g.globalAlpha||1)*0.3; g.translate(0,drop+1); lobes('#0a0816',1); g.restore(); }
-  lobes(edge,1);
-  // fill, light on top and heavier underneath
-  if(!flat) for(const q of P2.bot) pEll(g,x+q.x,y+h+q.dy,q.r,q.r*0.82,under);
-  if(!flat) for(const q of P2.side){ pEll(g,x-q.dx,y+q.y,q.r,q.r,body); pEll(g,x+w+q.dx,y+q.y,q.r,q.r,body); }
-  pR(g,x-1,y,w+2,h,body);
-  pR(g,x-1,y+h*0.66,w+2,h*0.34,mixSafe(body,under,0.55));
-  for(const q of P2.top) pEll(g,x+q.x,y+q.dy,q.r,q.r,top);
-  pR(g,x-1,y,w+2,Math.max(3,h*0.4),top);
-  for(const q of P2.top) pEll(g,x+q.x-q.r*0.32,y+q.dy-q.r*0.36,q.r*0.46,q.r*0.3,o.rim||CL.rim);
-  if(o.acc) pR(g,x+6,y+h-1,w-12,1,o.acc);
+  /* Stardew's box: a dark plank edge, a lit inner bevel, a parchment field.
+     It stays exactly inside its rectangle — the old cloud lobes overhung by
+     fifteen pixels on every side, which is what buried the game underneath. */
+  const BG  = o.body || CL.body;
+  const BGD = o.under|| shade(BG,-0.12);
+  const F0  = o.edge || CL.edge;
+  const F1  = o.wood || CL.woodL;
+  const drop= o.drop===undefined?2:o.drop;
+  if(w<6||h<6){ pR(g,x,y,w,h,F0); pR(g,x+1,y+1,w-2,h-2,BG); return; }
+  if(drop){ g.save(); g.globalAlpha=(g.globalAlpha||1)*0.30;
+    pR(g,x+1,y+drop,w-2,h-1,'#0b0814'); g.restore(); }
+  // outer plank, corners notched a pixel so it reads as rounded
+  pR(g,x,y+1,w,h-2,F0); pR(g,x+1,y,w-2,h,F0);
+  // the lit bevel
+  pR(g,x+1,y+2,w-2,h-4,F1); pR(g,x+2,y+1,w-4,h-2,F1);
+  // the field
+  pR(g,x+2,y+3,w-4,h-6,BG); pR(g,x+3,y+2,w-6,h-4,BG);
+  pR(g,x+3,y+3,w-6,1,o.rim||shade(BG,0.30));
+  pR(g,x+3,y+h-4,w-6,1,BGD);
+  pR(g,x+2,y+h-3,w-4,1,CL.woodD);           // the frame's underside, in shadow
+  if(o.acc) pR(g,x+3,y+h-5,w-6,1,o.acc);
 }
 /* a free-floating cartoon cloud, for skies */
 function puffCloudDraw(g,cx,cy,w,h,seed,o={}){
@@ -1122,7 +1126,7 @@ function puffCloudDraw(g,cx,cy,w,h,seed,o={}){
   for(const b of blobs) pEll(g,b.x-b.r*0.3,b.y-b.r*0.5,b.r*0.34,b.r*0.22,o.rim||CL.rim);
 }
 /* clouds are expensive to scanline, so each distinct one is drawn once and reused */
-const CPAD=24, _cloudSprite=new Map();
+const CPAD=4, _cloudSprite=new Map();
 function cloudKey(w,h,o,extra){
   return (w|0)+'|'+(h|0)+'|'+(o.seed||0)+'|'+(o.top||'')+(o.body||'')+(o.under||'')+(o.edge||'')+(o.rim||'')+(o.acc||'')+'|'+(o.drop===undefined?2:o.drop)+'|'+(o.flat?'F':'')+extra;
 }
@@ -1178,15 +1182,13 @@ function drawGlow(g,x,y,r,col,alpha){
 function cloudTag(g,cx,cy,w,h,o={}){ cloud(g,cx-w/2,cy-h/2,w,h,o); }
 /* speech cloud with a tail of little puffs */
 function cloudBubble(g,cx,byTop,w,h,tailX,tailY,o={}){
-  cloud(g,cx-w/2,byTop,w,h,o);
-  const n=3;
-  for(let i=0;i<n;i++){
-    const t=(i+1)/(n+0.6);
-    const px2=lerp(cx,tailX,t), py=lerp(byTop+h,tailY,t), r=3.4-i*0.9;
-    pEll(g,px2,py,r+1,r+1,o.edge||CL.edge);
-    pEll(g,px2,py,r,r,o.body||CL.body);
-    pEll(g,px2-r*0.3,py-r*0.3,r*0.5,r*0.4,o.top||CL.top);
-  }
+  /* one wedge pointing at whoever is talking, clipped to a sane length */
+  const bx=cx-w/2, by2=byTop+h;
+  const tx=clamp(tailX, bx+8, bx+w-8), ty=Math.min(tailY, by2+11);
+  const F0=o.edge||CL.edge, BG=o.body||CL.body;
+  pTri(g, tx, ty, tx-6, by2-3, tx+6, by2-3, F0);
+  pTri(g, tx, ty-2, tx-4, by2-4, tx+4, by2-4, BG);
+  cloud(g,bx,byTop,w,h,o);
 }
 
 /* ============================================================
@@ -1968,7 +1970,7 @@ const SKIRTS = {
   plaid:{  base:'#a83f33', dark:'#7d211a', mark:'#e8dfc8', name:'red check' },
   gold:{   base:'#a8842c', dark:'#7a5f18', mark:'#ffe89a', name:'gold silk' },
   jade:{   base:'#2f6a4c', dark:'#1d472f', mark:'#a8dcb8', name:'jade weave' },
-  ash:{    base:'#6b5348', dark:'#463430', mark:'#9a7e6c', name:'the rag you woke in' },
+  ash:{    base:'#4a4a52', dark:'#2e2e36', mark:'#6a6a74', name:'the rag you woke in' },
 };
 function drawCloth(g, cl, sk, face, opt){
   const S2 = SKIRTS[sk] || SKIRTS.ash;
@@ -2029,28 +2031,37 @@ function makePrete(){
     x:0, y:0, vx:0, vy:0, face:1, onGround:true,
     phase:0, bob:0, squash:0, lean:0, blink:rnd(2,6),
     bellyX:0, bellyY:0, bellyVX:0, bellyVY:0,
-    cloth: makeCloth(6, 24),
+    headLag:0, headV:0, headBob:0, headBV:0,      // the head arrives a moment late
+    swayT:rnd(9), breath:0,
+    cloth: makeCloth(6, 15),
     state:'idle', anim:0, reachT:null, alpha:1,
   };
 }
+/* everything here is slow. he has been dead a while and is in no hurry. */
 function stepPrete(p, dt){
   const sp = Math.abs(p.vx);
-  p.phase += p.vx * dt * 0.135;                 // phase from distance — no foot slide, ever
-  if(sp < 2) p.phase = lerp(p.phase, Math.round(p.phase/Math.PI)*Math.PI, 1-Math.pow(0.001,dt));
-  p.lean = lerp(p.lean, clamp(p.vx*0.055,-0.9,0.9), 1-Math.pow(0.0001,dt));
-  p.squash = lerp(p.squash, 0, 1-Math.pow(0.00005,dt));
+  p.phase += p.vx * dt * 0.105;                 // phase from distance — long, slow strides
+  if(sp < 2) p.phase = lerp(p.phase, Math.round(p.phase/Math.PI)*Math.PI, 1-Math.pow(0.02,dt));
+  p.lean = lerp(p.lean, clamp(p.vx*0.05,-0.8,0.8), 1-Math.pow(0.02,dt));
+  p.squash = lerp(p.squash, 0, 1-Math.pow(0.0006,dt));
+  p.swayT += dt*0.55;
+  p.breath = Math.sin(p.anim*0.85);
   // the belly, which has opinions of its own
   const tx = -p.vx*0.05, ty = clamp(p.vy*0.035,-1.6,1.6);
-  p.bellyVX += (tx - p.bellyX)*34*dt; p.bellyVX *= Math.pow(0.02,dt); p.bellyX += p.bellyVX*dt;
-  p.bellyVY += (ty - p.bellyY)*30*dt; p.bellyVY *= Math.pow(0.03,dt); p.bellyY += p.bellyVY*dt;
-  p.blink -= dt; if(p.blink < -0.12) p.blink = rnd(2.4,6.5);
+  p.bellyVX += (tx - p.bellyX)*22*dt; p.bellyVX *= Math.pow(0.06,dt); p.bellyX += p.bellyVX*dt;
+  p.bellyVY += (ty - p.bellyY)*20*dt; p.bellyVY *= Math.pow(0.08,dt); p.bellyY += p.bellyVY*dt;
+  // the head drags behind the shoulders and settles late — the whole trick of "fluid"
+  const hx = -p.vx*0.055;
+  p.headV += (hx - p.headLag)*16*dt; p.headV *= Math.pow(0.10,dt); p.headLag += p.headV*dt;
+  const hy = -Math.abs(Math.sin(p.phase))*clamp(sp*0.022,0,1.4);
+  p.headBV += (hy - p.headBob)*20*dt; p.headBV *= Math.pow(0.10,dt); p.headBob += p.headBV*dt;
+  p.blink -= dt; if(p.blink < -0.14) p.blink = rnd(2.6,7);
   p.anim += dt;
 }
 /* outlined pixel shapes — a 1px darker rim is what makes small art read */
 function oTaper(g,x1,y1,x2,y2,w1,w2,c,oc){ pTaper(g,x1,y1,x2,y2,w1+2,w2+2,oc); pTaper(g,x1,y1,x2,y2,w1,w2,c); }
 function oEll(g,cx,cy,rx,ry,c,oc){ pEll(g,cx,cy,rx+1,ry+1,oc); pEll(g,cx,cy,rx,ry,c); }
 function oRect(g,x,y,w,h,c,oc){ pR(g,x-1,y-1,w+2,h+2,oc); pR(g,x,y,w,h,c); }
-
 /* ink-rimmed shapes. a cartoon is an outline first and a colour second. */
 function iTaper(g,x1,y1,x2,y2,w1,w2,c,oc){ pTaper(g,x1,y1,x2,y2,w1+3,w2+3,oc); pTaper(g,x1,y1,x2,y2,w1,w2,c); }
 function iEll(g,cx,cy,rx,ry,c,oc){ pEll(g,cx,cy,rx+2,ry+2,oc); pEll(g,cx,cy,rx,ry,c); }
@@ -2061,7 +2072,7 @@ function drawPrete(g, p, o={}){
   const BODY = gold?'#f0dfae':PAL.pale;
   const SHD  = gold?'#c9a45e':PAL.paleD;
   const HI   = gold?'#fff6dc':PAL.paleL;
-  const OC   = gold?'#5c4418':'#241d33';        // one hard ink line all the way round
+  const OC   = gold?'#5c4418':'#2b2620';        // one hard ink line all the way round
   const alpha = o.alpha!==undefined?o.alpha:(p.alpha||1);
   if(alpha<1){ g.save(); g.globalAlpha=alpha; }
 
@@ -2069,18 +2080,19 @@ function drawPrete(g, p, o={}){
   const bx = p.x, by = p.y - rise0;
   const sq = clamp(p.squash,-1,1);
   const sY = 1 - sq*0.15, sX = 1 + sq*0.12;
+  const sway = Math.sin(p.swayT)*0.9;           // he never stands quite still
 
-  /* cartoon proportions: two storeys of leg, a waist you could close one hand
-     around, a drum of a belly, and a head far too big for any of it */
-  const LEG=40, TH=21, SN=21, AU2=19, AL=22;
+  /* the shape of him: two storeys of leg, a narrow ribbed chest, arms that
+     hang past the hip, and a head far too big and far too awake */
+  const LEG=42, TH=20, SN=20, AU2=23, AL=25;
   const sp = Math.abs(p.vx);
-  const stride = clamp(sp*0.22, 0, 17);
-  const lift   = clamp(sp*0.11, 0, 8);
-  const bobA   = p.onGround ? Math.abs(Math.sin(p.phase*2))*clamp(sp*0.035,0,2.4) : 0;
+  const stride = clamp(sp*0.26, 0, 14);
+  const lift   = clamp(sp*0.11, 0, 6);
+  const bobA   = p.onGround ? Math.abs(Math.sin(p.phase*2))*clamp(sp*0.03,0,2) : 0;
   const hipY = by - LEG*sY - bobA;
-  const hipX = bx + p.lean*2.5;
-  const chestY = hipY - 26*sY;
-  const chestX = hipX + p.lean*3.4;
+  const hipX = bx + p.lean*2.4 + sway*0.4;
+  const chestY = hipY - 26*sY + p.breath*0.4;
+  const chestX = hipX + p.lean*3.2 + sway*0.5;
   const shY = chestY - 2;
 
   function legPose(i){
@@ -2096,53 +2108,58 @@ function drawPrete(g, p, o={}){
   }
   function drawLeg(i){
     const L=legPose(i), col=L.back?SHD:BODY;
-    const hx0=hipX+(L.back?-2.6:2.6)*face;
-    const knee=ik2(hx0,hipY,L.fx,L.fy-4,TH*sY,SN*sY,face>0?1:-1);
-    iTaper(g,hx0,hipY-2,knee.x,knee.y,3.4,2.8,col,OC);        // thigh: a pipe
-    iTaper(g,knee.x,knee.y,L.fx,L.fy-4,2.8,2.2,col,OC);       // shin: thinner still
-    iEll(g,knee.x,knee.y,2.2,2.2,col,OC);                     // a knob of a knee
+    const hx0=hipX+(L.back?-2.4:2.4)*face;
+    const knee=ik2(hx0,hipY,L.fx,L.fy-5,TH*sY,SN*sY,face>0?1:-1);
+    iTaper(g,hx0,hipY-2,knee.x,knee.y,3.2,2.6,col,OC);        // thigh
+    iTaper(g,knee.x,knee.y,L.fx,L.fy-5,2.6,2.0,col,OC);       // shin, thinner still
+    iEll(g,knee.x,knee.y,2,2,col,OC);                         // a knob of a knee
     // one long flat foot with a heel under the ankle
     const f0=L.fx-(face>0?4:9);
     pR(g,f0-1,L.fy-5,15,5,OC);
     pR(g,f0,L.fy-4,13,3,col);
     pR(g,f0,L.fy-4,13,1.2,L.back?shade(SHD,0.08):shade(BODY,0.14));
     pEll(g,L.fx,L.fy-6,3,3,OC); pEll(g,L.fx,L.fy-6,2,2,col);
-    if(!L.back) pTaper(g,hx0-1,hipY,knee.x-1,knee.y,1.4,1,HI);
   }
   function armPose(back){
     let hx2,hy2;
     if(o.armTarget){ hx2=o.armTarget.x-(back?12*face:0); hy2=o.armTarget.y+(back?10:0); }
-    else if(p.state==='block'){ hx2=chestX+(back?7:13)*face; hy2=chestY+(back?9:1); }
+    else if(p.state==='block'){ hx2=chestX+(back?7:13)*face; hy2=chestY+9; }
     else if(p.state==='wail'){ hx2=chestX+(back?-14:16)*face; hy2=chestY-18+(back?9:0); }
-    else if(!p.onGround){ hx2=chestX-(back?5:9)*face; hy2=chestY+(p.vy<0?11:27); }
-    else { const ph=p.phase+(back?Math.PI:0);
-      hx2=chestX+Math.cos(ph)*stride*0.8*face-5*face;
-      hy2=chestY+34+Math.abs(Math.sin(ph))*2.4; }
+    else if(!p.onGround){ hx2=chestX-(back?5:9)*face; hy2=chestY+(p.vy<0?13:30); }
+    else {
+      /* they hang almost straight, swing a beat behind the legs, and drift
+         on their own when he is standing still. never back across the chest. */
+      const ph=p.phase+(back?Math.PI:0)+0.5;
+      hx2=chestX+(Math.cos(ph)*stride*0.62+(back?-5:7))*face+sway*(back?0.6:1.1);
+      hy2=chestY+45+Math.abs(Math.sin(ph))*2+Math.sin(p.swayT*1.3+(back?2:0))*1.2;
+    }
     return {hx2,hy2};
   }
   function drawArm(back){
     const {hx2,hy2}=armPose(back);
     const col=back?SHD:BODY;
-    const sx0=chestX+(back?-3:3)*face;
-    const el=ik2(sx0,shY,hx2,hy2,AU2,AL,back?(face>0?-1:1):(face>0?1:-1));
-    iTaper(g,sx0,shY,el.x,el.y,3,2.6,col,OC);
-    iTaper(g,el.x,el.y,hx2,hy2,2.6,2.2,col,OC);
-    iEll(g,el.x,el.y,1.8,1.8,col,OC);
-    // hands like palm leaves — one big mitt, drawn as a shape and not as five sticks
+    const sx0=chestX+(back?-4:4)*face;
+    const el=ik2(sx0,shY,hx2,hy2,AU2,AL,back?(face>0?1:-1):(face>0?-1:1));
+    iTaper(g,sx0,shY,el.x,el.y,2.8,2.4,col,OC);
+    iTaper(g,el.x,el.y,hx2,hy2,2.4,2.0,col,OC);
+    iEll(g,el.x,el.y,1.7,1.7,col,OC);
+    /* the hands: long splayed fingers, drawn as a fan. outline the whole
+       hand first, then fill it, or the rims eat the palm. */
     const ang=Math.atan2(hy2-el.y,hx2-el.x), cx2=Math.cos(ang), cy2=Math.sin(ang);
-    const nx2=-cy2, ny2=cx2;                       // across the wrist
-    const px2=hx2+cx2*3.4, py2=hy2+cy2*3.4;
-    const tip={x:px2+cx2*6.4, y:py2+cy2*6.4};
-    const thx=px2+nx2*2.6*face, thy=py2+ny2*2.6*face;
-    // outline the whole hand first, then fill it — or the two rims eat the palm
-    pTaper(g,px2-nx2*1.2,py2-ny2*1.2,tip.x,tip.y,6.4,5.2,OC);
-    pEll(g,thx,thy,2.9,2.9,OC);
-    pTaper(g,px2-nx2*1.2,py2-ny2*1.2,tip.x,tip.y,4.6,3.4,col);
-    pEll(g,thx,thy,1.9,1.9,col);
-    for(let f2=0;f2<2;f2++){ const o2=(f2-0.5)*2.6;
-      pTaper(g,px2+nx2*o2+cx2*3,py2+ny2*o2+cy2*3,tip.x+nx2*o2*0.6,tip.y+ny2*o2*0.6,0.8,0.8,shade(col,-0.16)); }
-    if(!back) pEll(g,px2-nx2*1.8,py2-ny2*1.8,1.5,1.7,HI);
-    return {x:tip.x,y:tip.y};
+    const px2=hx2+cx2*2.6, py2=hy2+cy2*2.6;
+    const spread=0.38, FL=8.6;
+    const tips=[];
+    for(let f2=0;f2<4;f2++){ const fa=ang+(f2-1.5)*spread+Math.sin(p.swayT*1.7+f2)*0.03;
+      tips.push({x:px2+Math.cos(fa)*FL, y:py2+Math.sin(fa)*FL}); }
+    const thx=px2-cx2*0.6-cy2*4.2*face, thy=py2-cy2*0.6+cx2*4.2*face;
+    for(const t of tips) pTaper(g,px2,py2,t.x,t.y,2.9,2.1,OC);
+    pTaper(g,px2,py2,thx,thy,2.7,2.0,OC);
+    pEll(g,px2,py2,4,4,OC);
+    pEll(g,px2,py2,2.9,2.9,col);
+    for(const t of tips) pTaper(g,px2,py2,t.x,t.y,1.8,1.2,col);
+    pTaper(g,px2,py2,thx,thy,1.7,1.1,col);
+    if(!back) pEll(g,px2-cx2*1.2,py2-cy2*1.2,1.4,1.4,HI);
+    return {x:px2,y:py2};
   }
 
   /* ---- back to front ---- */
@@ -2150,100 +2167,102 @@ function drawPrete(g, p, o={}){
   const handB = drawArm(true);
   drawLeg(1);
 
-  stepCloth(p.cloth, hipX, hipY-4, 12*sX, o.dt||0.016, o.wind||0, p.vx);
-  drawCloth(g, p.cloth, cos.skirt||'ash', face, {oc:OC, flare:4});
+  stepCloth(p.cloth, hipX, hipY-3, 12*sX, o.dt||0.016, o.wind||0, p.vx);
+  drawCloth(g, p.cloth, cos.skirt||'ash', face, {oc:OC, flare:3});
 
-  // torso — a slim column and two square shoulders. flat colour, no fuss.
-  iTaper(g, hipX, hipY-4, chestX, chestY+6, 4.4, 7, BODY, OC);
-  pR(g, chestX-7.6, chestY-7, 15.2, 13.4, OC);
-  pR(g, chestX-6, chestY-5.6, 12, 11, BODY);
-  pR(g, chestX+(face>0?3:-6), chestY-5.6, 3, 11, SHD);
-  pR(g, chestX-6, chestY-5.6, 2, 11, HI);
-  pR(g, chestX-6, chestY-5.6, 12, 1.6, shade(BODY,-0.1));         // a collarbone shelf
+  // torso — a narrow column and two sloped shoulders
+  iTaper(g, hipX, hipY-3, chestX, chestY+6, 4.0, 6.2, BODY, OC);
+  pEll(g, chestX, chestY, 6.6, 8.8, OC);
+  pEll(g, chestX, chestY, 5.4, 7.6, BODY);
+  pEll(g, chestX+3*face, chestY+1, 2.6, 5.6, SHD);
+  pEll(g, chestX-3.2*face, chestY-3, 2.4, 2.0, HI);
+  // the ribs, which he would rather you did not look at
+  for(let i=0;i<4;i++){
+    const ry2 = chestY-3.4+i*3.2, w2 = 5.6-Math.abs(i-1.4)*0.7;
+    pTaper(g, chestX-w2, ry2, chestX+w2, ry2+0.5*face, 1.1, 1.1, shade(BODY,-0.16));
+  }
+  pR(g, chestX-0.5, chestY-4, 1, 11, shade(BODY,-0.10));        // sternum
+  pR(g, chestX-6.2, chestY-5.6, 12.4, 1.4, shade(BODY,-0.14));  // collarbone
 
-  // the belly — the whole point of a prete, and the joke of the silhouette
-  const belX = lerp(hipX,chestX,0.26) + p.bellyX;
-  const belY = hipY - 10.5*sY + p.bellyY;
-  const brx = 10.6*sX, bry = 8.8*sY;
+  // the belly — the whole point of a prete
+  const belX = lerp(hipX,chestX,0.24) + p.bellyX;
+  const belY = hipY - 8.6*sY + p.bellyY;
+  const brx = 7.8*sX, bry = 6.8*sY;
   pEll(g, belX, belY, brx+2, bry+2, OC);
   pEll(g, belX, belY, brx, bry, BODY);
-  pEll(g, belX + 3.6*face, belY+1.6, brx*0.52, bry*0.66, SHD);
-  pEll(g, belX - 3.4*face, belY-3.2, brx*0.3, bry*0.28, HI);
-  pR(g, belX-0.6*face, belY+3.6, 1.6, 2, SHD);                  // navel
-  if(cos.goldleaf) for(let i=0;i<6;i++) pR(g, belX-6+((i*8)%12), belY-5+((i*5)%10), 2,2, PAL.goldL);
+  pEll(g, belX + 3.2*face, belY+1.4, brx*0.52, bry*0.66, SHD);
+  pEll(g, belX - 3*face, belY-2.8, brx*0.3, bry*0.28, HI);
+  pR(g, belX-0.6*face, belY+3.2, 1.6, 1.8, SHD);                // navel
+  if(cos.goldleaf) for(let i=0;i<6;i++) pR(g, belX-5+((i*8)%10), belY-4+((i*5)%8), 2,2, PAL.goldL);
 
   const handF = drawArm(false);
   o.hands=[handB,handF];
 
-  /* ---- a long thin neck, and a head with its own weather ---- */
-  const headY = chestY - 22 + Math.sin(p.anim*1.6)*0.4;
-  const headX = chestX + p.lean*2.4 + (o.headX||0);
-  iTaper(g, chestX, chestY-6, headX, headY+8, 3.6, 3, shade(SHD,-0.1), OC);
-  const HRX=9.6, HRY=10.4;
-  iEll(g, headX, headY, HRX, HRY, BODY, OC);
-  pEll(g, headX+4.4*face, headY+1.2, HRX*0.58, HRY*0.72, SHD);  // the shaded side
-  pEll(g, headX-3.6*face, headY-5.2, 3.2, 2.4, HI);             // skull highlight
-  pEll(g, headX+1*face, headY+7.4, 5, 3.6, BODY);               // a small pointed jaw
-  pR(g, headX-9.4*face, headY+1, 2.6, 4.2, SHD);                // ear
-  pEll(g, headX-9.6*face, headY+1.6, 1.4, 1.8, OC);
-
-  /* the hair: long, black, and never once combed */
-  const HAIR='#1c1730', HAIR2='#2e2748', HAIRL='#463a68';
-  const sway=Math.sin(p.anim*1.1)*0.9 + p.lean*1.2;
-  pEll(g, headX-0.6*face, headY-6.8, HRX*1.03, HRY*0.58, HAIR);   // the crown
-  pEll(g, headX-3*face, headY-8.2, HRX*0.52, HRY*0.3, HAIR2);
-  pEll(g, headX-4.6*face, headY-8.8, 2.6, 1.2, HAIRL);
-  // a fringe, hanging over the brow on the near side
-  for(let i2=0;i2<6;i2++){
-    const fx=headX+(i2-2.6)*2.9*face;
-    pTaper(g, fx, headY-7.6, fx-1.6*face, headY-1.4+((i2%2)?2:0), 3.3, 1.9, i2%2?HAIR:HAIR2);
+  /* ---- the head. it is the reason anybody remembers him. ---- */
+  const headY = chestY - 20 + p.headBob + Math.sin(p.anim*1.1)*0.5;
+  const headX = chestX + p.lean*2.2 + p.headLag + sway*0.8 + (o.headX||0);
+  iTaper(g, chestX, chestY-5, headX, headY+9, 3.0, 2.6, shade(SHD,-0.08), OC);
+  const HRX=11.2, HRY=12.0;
+  // a lumpy skull, not an egg
+  pEll(g, headX, headY, HRX+2, HRY+2, OC);
+  pEll(g, headX-0.6*face, headY-7.2, HRX*0.86+2, 5.6, OC);
+  pEll(g, headX, headY, HRX, HRY, BODY);
+  pEll(g, headX-0.6*face, headY-7.2, HRX*0.86, 4.8, BODY);
+  pEll(g, headX+5*face, headY+1.4, HRX*0.5, HRY*0.66, SHD);   // the shaded side
+  pEll(g, headX-3.4*face, headY-6, 3.4, 2.2, HI);               // skull highlight
+  pEll(g, headX+1.2*face, headY+8.4, 4.6, 3.4, BODY);           // a small pointed jaw
+  pR(g, headX-10.6*face, headY+1.6, 2.6, 4.2, SHD);              // ear
+  pEll(g, headX-10.8*face, headY+2.2, 1.4, 1.8, OC);
+  // a few hairs, and not one more
+  for(let i2=0;i2<7;i2++){
+    const hx3=headX+(i2-3)*2.5*face;
+    const hh=3+((i2*5)%4);
+    pTaper(g, hx3, headY-11, hx3+Math.sin(p.swayT*1.6+i2)*1.8-0.8*face, headY-11-hh, 1.4, 0.5, '#8a8176');
   }
-  // and a long tail of it down the back, drifting
-  for(let i2=0;i2<8;i2++){
-    const t2=i2/7;
-    const hx2=headX-(8.2+t2*4)*face + sway*t2*3;
-    const hy2=headY-4 + t2*20;
-    pEll(g, hx2, hy2, 4-t2*1.7, 3.8-t2*1.4, i2%2?HAIR:HAIR2);
+
+  /* the eyes. enormous, ringed, and permanently startled. */
+  const EYE='#f4f1e6', RING='#8f8a80', PUP='#211f26';
+  const ey = headY - 0.6;
+  const nearX = headX + 4.2*face, farX = headX - 5.0*face;
+  pEll(g, farX, ey, 5.2, 5.3, RING);
+  pEll(g, nearX, ey, 6.1, 6.2, RING);
+  pEll(g, farX, ey, 4.1, 4.2, EYE);
+  pEll(g, nearX, ey, 4.9, 5.0, EYE);
+  const pdx = 0.7*face + Math.sin(p.swayT*0.8)*0.35, pdy = Math.sin(p.anim*0.6)*0.4;
+  pEll(g, farX+pdx, ey+pdy, 1.9, 2.0, PUP);
+  pEll(g, nearX+pdx, ey+pdy, 2.3, 2.4, PUP);
+  pR(g, farX+pdx-1.5, ey+pdy-1.7, 1.2, 1.2, '#fffdf6');
+  pR(g, nearX+pdx-1.8, ey+pdy-1.9, 1.4, 1.4, '#fffdf6');
+  if(o.angry){ pR(g, farX-4.6, ey-5.4, 9.2, 1.6, PAL.ember); pR(g, nearX-5.4, ey-5.8, 10.8, 1.8, PAL.ember); }
+  // a blink: two lids come down over the whole business
+  if(p.blink<0){
+    pEll(g, farX, ey, 4.4, 4.5, BODY); pEll(g, nearX, ey, 5.2, 5.3, BODY);
+    pR(g, farX-4.4, ey-0.4, 8.8, 1.2, SHD); pR(g, nearX-5.2, ey-0.6, 10.4, 1.3, SHD);
   }
-  pEll(g, headX-8.6*face, headY-4.4, 2.6, 1.4, HAIRL);
-
-  /* the shades. a hungry ghost is still allowed to look good. */
-  const gy2 = headY-0.4;
-  const nearX = headX+4*face, farX = headX-3.8*face;
-  // temple arm back to the ear
-  pTaper(g, farX-3*face, gy2-0.8, headX-9*face, headY+0.8, 2, 1.6, '#241c18');
-  // the two lenses, the near one larger
-  oEll(g, farX, gy2, 3.2, 3.2, '#14101e', '#0b0812');
-  oEll(g, nearX, gy2, 4, 3.7, '#14101e', '#0b0812');
-  pR(g, headX+(face>0?-0.6:-3.4), gy2-1.6, 4, 1.8, '#241c18');    // bridge
-  // a gold rim along the top, and the light catching the near lens
-  pR(g, nearX-4, gy2-3.6, 8.2, 1.6, PAL.goldD);
-  pR(g, farX-3, gy2-3.4, 6.2, 1.2, shade(PAL.goldD,-0.2));
-  pTaper(g, nearX-2, gy2+1.8, nearX+0.8, gy2-2, 2, 1.4, 'rgba(255,255,255,0.55)');
-  pR(g, nearX+1.6, gy2-0.8, 1.2, 1.2, 'rgba(255,255,255,0.75)');
-  if(o.angry){ pR(g, nearX-4, gy2-4.6, 8.2, 1.8, PAL.ember); }
-  // a blink still shows: the lenses flash when the lights behind them go out
-  if(p.blink < 0){ pR(g, nearX-2.8, gy2, 5.6, 1.2, '#2a2138'); }
-
+  /* one small orange nose, which is somehow the saddest part */
+  pTri(g, headX+1.8*face, ey+6.2, headX-0.8*face, ey+1.4, headX+4.2*face, ey+1.8, '#b8622c');
+  pTri(g, headX+1.8*face, ey+5.4, headX+0.2*face, ey+2.0, headX+3.6*face, ey+2.2, '#e08a44');
+  pR(g, headX+0.6*face, ey+4.4, 1, 1, '#f0a860');
   // a mouth the size of the eye of a needle. it never opens wider.
-  const mo=clamp(o.mouth||0,0,1)*0.35;
-  pEll(g, headX+1*face, headY+7.4, 1.1+mo*2.4, 1.1+mo*2.4, '#b4515e');
-  pR(g, headX+1*face, headY+7.4, 1.2, 1.2, '#5e1f2a');
+  const mo=clamp(o.mouth||0,0,1);
+  pEll(g, headX+1.4*face, ey+9.6, 1.7+mo*2.2, 2.1+mo*2.6, '#241c22');
+  pEll(g, headX+1.4*face, ey+10.4+mo, 1.1+mo, 1.0+mo, '#5e3f48');
+
   /* ---- what you chose to wear ---- */
   if(cos.garland){
     for(let i=0;i<12;i++){ const a=Math.PI*(i/11);
-      pEll(g, chestX+Math.cos(a+Math.PI)*8.4, chestY-4+Math.sin(a)*8, 1.8,1.8, i%3===0?'#ffce54':'#f6f0dc'); }
-    pEll(g, chestX, chestY+6, 1.8, 2.8, PAL.jadeL);
+      pEll(g, chestX+Math.cos(a+Math.PI)*8, chestY-1+Math.sin(a)*8, 1.8,1.8, i%3===0?'#ffce54':'#f6f0dc'); }
+    pEll(g, chestX, chestY+9, 1.8, 2.8, PAL.jadeL);
   }
   if(cos.sash){
-    pTaper(g, chestX-6, chestY-5, hipX+7*face, hipY-7, 5.6, 3, '#d8b04a');
-    pTaper(g, chestX-6, chestY-5, hipX+7*face, hipY-7, 2, 1.1, '#ffe89a');
+    pTaper(g, chestX-6, chestY-4, hipX+7*face, hipY-6, 5.4, 3, '#d8b04a');
+    pTaper(g, chestX-6, chestY-4, hipX+7*face, hipY-6, 2, 1.1, '#ffe89a');
   }
   if(cos.beads) for(let i=0;i<9;i++){ const a=Math.PI*(i/8);
-    pEll(g, chestX+Math.cos(a+Math.PI)*7.2, chestY-3+Math.sin(a)*6.4, 1.5,1.5, i%2?'#6b4a2c':'#8a6440'); }
+    pEll(g, chestX+Math.cos(a+Math.PI)*7, chestY+Math.sin(a)*6.6, 1.5,1.5, i%2?'#6b4a2c':'#8a6440'); }
   if(cos.halo){
-    const hr=15+Math.sin(p.anim*2)*0.9;
-    for(let i=0;i<30;i++){ const a=i/30*TAU + p.anim*0.3;
+    const hr=16+Math.sin(p.anim*1.4)*0.9;
+    for(let i=0;i<30;i++){ const a=i/30*TAU + p.anim*0.22;
       pR(g, headX+Math.cos(a)*hr, headY-1+Math.sin(a)*hr*0.9, 1,1, i%2?PAL.goldL:PAL.gold); }
   }
   if(alpha<1) g.restore();
@@ -2895,7 +2914,7 @@ function khwanSay(txt,t=6){ KHWAN.bub=txt; KHWAN.bubT=t; KHWAN.bubMax=t; AU.blip
 /* ============================================================
    PLAYER
    ============================================================ */
-const SPD = ()=> has('stride')? 118 : 88;
+const SPD = ()=> has('stride')? 98 : 72;
 function stepPlayer(dt){
   const busy = !!DLG || GS.state!=='play';
   let ax=0, ease=1;
@@ -2911,7 +2930,7 @@ function stepPlayer(dt){
     }
   }
   const target = ax*SPD()*ease;
-  const acc = ax!==0 ? (P.onGround?1000:620) : (P.onGround?1500:420);
+  const acc = ax!==0 ? (P.onGround?430:340) : (P.onGround?820:300);
   P.vx += clamp(target-P.vx, -acc*dt, acc*dt);
   if(ax!==0) P.face = ax;
 
@@ -3674,7 +3693,7 @@ function render(){
   if(GS.state==='end') drawEnd(ctx);
   if(TOUCH.on && uiShowsPads()) drawPads(ctx);
 }
-function uiShowsPads(){ return GS.state==='play'||GS.state==='task'; }
+function uiShowsPads(){ return (GS.state==='play'&&!DLG)||GS.state==='task'; }
 function bubble(g,x,y,txt){
   const w2=txtW(txt,6)+8;
   pR(g,x-w2/2,y-9,w2,11,'rgba(16,12,34,0.88)');
@@ -3769,15 +3788,17 @@ function padIcon(g,ic,x,y,c){
   else if(ic==='book') icoBook(g,x,y,1.8,c);
 }
 function drawPads(g){
+  /* wooden keys, pressed in when held — the same plank as every other panel */
   for(const t of TPADS){
-    const down=K[t.key];
-    const r=t.r+(down?1:0);
-    g.globalAlpha=down?1:0.82;
-    pCirc(g,t.x,t.y,r+1,CL.edge);
-    pCirc(g,t.x,t.y,r,down?CL.mid:CL.body);
-    pEll(g,t.x,t.y-r*0.42,r*0.78,r*0.4,down?CL.body:CL.top);
-    pEll(g,t.x-r*0.24,t.y-r*0.56,r*0.4,r*0.17,CL.rim);
-    padIcon(g,t.ic,t.x,t.y+1,down?'#8f4a2a':CL.ink);
+    const down=K[t.key], r=R(t.r), d=down?1:0;
+    const x=R(t.x-r), y=R(t.y-r+d), w=r*2, h=r*2;
+    g.globalAlpha=down?1:0.88;
+    if(!down){ g.save(); g.globalAlpha=0.34; pR(g,x+1,y+2,w-2,h-1,'#0b0814'); g.restore(); }
+    pR(g,x,y+1,w,h-2,CL.edge); pR(g,x+1,y,w-2,h,CL.edge);
+    pR(g,x+1,y+2,w-2,h-4,down?CL.wood:CL.woodL); pR(g,x+2,y+1,w-4,h-2,down?CL.wood:CL.woodL);
+    pR(g,x+2,y+3,w-4,h-6,down?CL.mid:CL.body); pR(g,x+3,y+2,w-6,h-4,down?CL.mid:CL.body);
+    if(!down) pR(g,x+3,y+3,w-6,1,CL.rim);
+    padIcon(g,t.ic,t.x,t.y+1+d,down?'#8f4a2a':CL.ink);
     g.globalAlpha=1;
   }
 }
@@ -4796,17 +4817,14 @@ function memGuy(g,x,y,face,walk,o={}){
   pEll(g,x+lean-face*0.6,headY-6.4,9.6,5.6,HR);
   for(let i=0;i<6;i++) pTaper(g,x+lean+(i-2.6)*2.9*face,headY-7.4,x+lean+(i-2.9)*2.9*face,headY-1.4+((i%2)?2:0),3.2,1.9,i%2?HR:HR2);
   for(let i=0;i<6;i++) pEll(g,x+lean-(8+i*1.7)*face,headY-3+i*3.3,3.6-i*0.44,3.4-i*0.4,i%2?HR:HR2);
-  // the shades: the one thing that catches the light
+  /* his face while he still had one: ordinary eyes, and already that nose */
   const gy=headY-0.4;
-  const nx=x+lean+3.9*face, fx2=x+lean-3.7*face;
-  pTaper(g,fx2-3*face,gy-0.8,x+lean-9*face,headY+0.8,2,1.6,'#241c18');
-  oEll(g,fx2,gy,3.1,3.1,'#14101e','#0a0810');
-  oEll(g,nx,gy,3.9,3.6,'#14101e','#0a0810');
-  pR(g,x+lean+(face>0?-0.6:-3.4),gy-1.6,4,1.8,'#241c18');
-  pR(g,nx-4,gy-3.5,8.2,1.6,'#d8ad3e');
-  pR(g,fx2-3,gy-3.3,6.2,1.2,'#a8842c');
-  pTaper(g,nx-2,gy+1.8,nx+0.8,gy-2,2,1.4,'rgba(255,250,230,0.8)');
-  pR(g,nx+1.6,gy-0.8,1.2,1.2,'#fffdf0');
+  const nx=x+lean+3.6*face, fx2=x+lean-3.4*face;
+  pEll(g,fx2,gy,2.4,2.6,'#f2ece0'); pEll(g,nx,gy,2.8,3.0,'#f2ece0');
+  pEll(g,fx2+0.5*face,gy+0.2,1.3,1.5,'#241c22'); pEll(g,nx+0.6*face,gy+0.2,1.5,1.7,'#241c22');
+  pR(g,fx2-0.9,gy-0.9,0.9,0.9,'#fffdf6'); pR(g,nx-1,gy-1,1,1,'#fffdf6');
+  pR(g,fx2-3,gy-3.4,6,1.2,shade(SKD,-0.3)); pR(g,nx-3.4,gy-3.6,6.8,1.3,shade(SKD,-0.3));
+  pTri(g,x+lean+1.6*face,gy+4.4,x+lean-0.4*face,gy+1,x+lean+3.4*face,gy+1.3,'#b8622c');
   // a mouth, so the face is a face
   pR(g,x+lean+(face>0?0:-2.4),headY+6.6,2.6,1.2,'#7a3a42');
 }
@@ -4865,13 +4883,17 @@ function memGrave(g,S){
   pEll(g,bcx+18,bodyY+2,32,9,'#3a3050');
   pEll(g,bcx+22,bodyY-4,15,7,'#4a3e64');
   pEll(g,bcx-14,bodyY+3,22,5,'#3a3050');                    // the sarong, sodden
-  pEll(g,bcx+2,bodyY-3,11.4,11.8,'#241d33');
-  pEll(g,bcx+2,bodyY-3,10.2,10.6,'#6e6486');                // a face, grey as the soil
-  pEll(g,bcx+2,bodyY-9,10.4,6,'#171226');                   // hair, matted with it
-  pR(g,bcx-4,bodyY-5.4,12,2,'#a8842c');                     // the rim of the shades
-  oEll(g,bcx-2,bodyY-3,3.4,3.2,'#14101e','#0b0812');
-  oEll(g,bcx+6,bodyY-3,2.8,2.8,'#14101e','#0b0812');
-  pEll(g,bcx+1,bodyY+5,2,1.4,'#8a5a62');
+  const fy0=bodyY-3;
+  pEll(g,bcx+2,fy0,11.8,12.2,'#241d33');
+  pEll(g,bcx+2,fy0,10.6,11,'#8e887c');                      // a face, grey as the soil
+  for(let i=0;i<5;i++) pTaper(g,bcx-2+i*2.2,fy0-10.4,bcx-3+i*2.4,fy0-13.6,1.3,0.5,'#6a6258');
+  // the eyes, open. they were open the whole time.
+  pEll(g,bcx-2.6,fy0,4.6,4.7,'#6d6760'); pEll(g,bcx+6.4,fy0,5.2,5.3,'#6d6760');
+  pEll(g,bcx-2.6,fy0,3.5,3.6,'#e8e3d4'); pEll(g,bcx+6.4,fy0,4.0,4.1,'#e8e3d4');
+  pEll(g,bcx-2,fy0+0.3,1.7,1.8,'#211f26'); pEll(g,bcx+7,fy0+0.3,1.9,2.0,'#211f26');
+  pR(g,bcx-3.4,fy0-1.2,1,1,'#fffdf6'); pR(g,bcx+5.6,fy0-1.3,1.1,1.1,'#fffdf6');
+  pTri(g,bcx+2.4,fy0+5.4,bcx+0.6,fy0+1.6,bcx+4.4,fy0+1.8,'#a8541f');
+  pEll(g,bcx+2,fy0+8,1.5,1.8,'#241c22');
   iTaper(g,W/2-2,bodyY-2,hx,hy+8,3,2.6,PAL.paleD,'#241d33');
   // the hand, wide open
   const OCX='#241d33';
@@ -5090,19 +5112,20 @@ function memBowl(g,S){
   for(let i=0;i<7;i++) pR(g,DX+4+i*14,FL-26,3,20,'#8a7654');
   pR(g,DX,FL-8,100,8,'#a8b894');
   // and the head of him, filling the top of the doorway
-  const HX=DX+54, HY=40;
-  pEll(g,HX,HY,16,17,'#241d33'); pEll(g,HX,HY,14.8,15.8,PAL.pale);
-  pEll(g,HX+5,HY+2,8,11,PAL.paleD);
+  const HX=DX+54, HY=42;
+  pEll(g,HX,HY,17,18,'#2b2620'); pEll(g,HX,HY,15.6,16.6,PAL.pale);
+  pEll(g,HX-1,HY-10,14,8,'#2b2620'); pEll(g,HX-1,HY-10,12.8,7,PAL.pale);
+  pEll(g,HX+6,HY+2,8,11,PAL.paleD);
   pEll(g,HX-3,HY+13,7,5,PAL.pale);
-  pEll(g,HX-1,HY-8,15.4,9,'#1c1730');
-  for(let i=0;i<6;i++) pTaper(g,HX+(i-3)*4.4,HY-9,HX+(i-3.3)*4.4,HY-1,4,2.4,i%2?'#1c1730':'#2e2748');
-  for(let i=0;i<5;i++) pEll(g,HX+13+i*2.4,HY-4+i*4.6,5-i*0.6,4.6-i*0.5,i%2?'#1c1730':'#2e2748');
-  const gy=HY+1.4;
-  oEll(g,HX-6.4,gy,5,4.8,'#14101e','#0b0812'); oEll(g,HX+5.6,gy,4.2,4.2,'#14101e','#0b0812');
-  pR(g,HX-1.6,gy-2.2,6,2.4,'#241c18');
-  pR(g,HX-11.4,gy-5,12,2.2,PAL.goldD); pR(g,HX+1.6,gy-4.8,8,1.6,shade(PAL.goldD,-0.2));
-  pTaper(g,HX-9,gy+2.6,HX-4.6,gy-2.6,2.6,1.8,'rgba(255,255,255,0.5)');
-  pEll(g,HX-4,HY+12,1.4,1.4,'#b4515e');
+  for(let i=0;i<7;i++) pTaper(g,HX+(i-3)*3.6,HY-16,HX+(i-3.4)*3.6,HY-20-((i*5)%5),1.8,0.6,'#8a8176');
+  const gy=HY+0.4;
+  pEll(g,HX-7,gy,7.6,7.7,'#8f8a80'); pEll(g,HX+6.4,gy,8.8,8.9,'#8f8a80');
+  pEll(g,HX-7,gy,6,6.1,'#f4f1e6');   pEll(g,HX+6.4,gy,7.1,7.2,'#f4f1e6');
+  pEll(g,HX-6,gy+0.4,2.8,2.9,'#211f26'); pEll(g,HX+7.4,gy+0.4,3.3,3.4,'#211f26');
+  pR(g,HX-8.2,gy-2.2,1.8,1.8,'#fffdf6'); pR(g,HX+5.2,gy-2.4,2,2,'#fffdf6');
+  pTri(g,HX+2.6,gy+9,HX-1,gy+1.8,HX+6,gy+2.4,'#b8622c');
+  pTri(g,HX+2.6,gy+7.8,HX+0.2,gy+2.8,HX+5,gy+3.2,'#e08a44');
+  pEll(g,HX+2,HY+14,2.4,3,'#241c22');
   pR(g,DX-8,32,116,8,'#241a14'); pR(g,DX-8,32,10,FL-32,'#241a14'); pR(g,DX+100,32,12,FL-32,'#241a14');
   pR(g,DX+2,40,2,FL-40,'rgba(255,246,214,0.16)');
   // the light the door throws across the boards
@@ -5114,16 +5137,18 @@ function memBowl(g,S){
   pR(g,SX-66,SY+7,138,2,'#3a2818');
   pR(g,SX-58,SY+9,7,FL-SY-9,'#4a3220'); pR(g,SX+56,SY+9,7,FL-SY-9,'#4a3220');
   pR(g,SX-58,SY+9,2,FL-SY-9,'#6d4d2e'); pR(g,SX+56,SY+9,2,FL-SY-9,'#6d4d2e');
-  // a photograph of a young man in sunglasses, which is the whole story
+  // a photograph of her son, taken while he still had hair, which is the whole story
   const PFX=SX-26, PFY=SY-36;
   pR(g,PFX-16,PFY,32,34,'#3a2818'); pR(g,PFX-16,PFY,32,2,'#7a5a34');
   pR(g,PFX-13,PFY+3,26,28,'#b8b0a0');
-  pEll(g,PFX,PFY+24,10,9,'#8a8072');
-  pEll(g,PFX,PFY+15,7.6,8,'#cfa882'); pEll(g,PFX,PFY+10,7.8,4.4,'#241d33');
+  pEll(g,PFX,PFY+25,10,9,'#7c7466');
+  pEll(g,PFX,PFY+15,7.6,8,'#cfa882');
+  pEll(g,PFX,PFY+9.6,7.8,4.4,'#241d33');
   for(let i=0;i<4;i++) pR(g,PFX-6+i*3,PFY+8,2,4,'#241d33');
-  pR(g,PFX-6,PFY+13.6,12,1.6,'#e8b93e');
-  pEll(g,PFX-2.6,PFY+15.4,2.6,2.2,'#14101e'); pEll(g,PFX+3,PFY+15.4,2.2,2,'#14101e');
-  pR(g,PFX-1,PFY+19,3,1,'#8a5a52');
+  pEll(g,PFX-2.8,PFY+15,2,2.1,'#f2ece0'); pEll(g,PFX+2.8,PFY+15,2,2.1,'#f2ece0');
+  pEll(g,PFX-2.6,PFY+15.2,1,1.1,'#14101e'); pEll(g,PFX+3,PFY+15.2,1,1.1,'#14101e');
+  pTri(g,PFX+0.4,PFY+19,PFX-1.2,PFY+16.4,PFX+2,PFY+16.6,'#b8622c');
+  pR(g,PFX-1,PFY+21,3,1,'#8a5a52');
   pR(g,PFX-14,PFY+2,1,30,'rgba(255,255,255,0.18)');
   // one candle, burning down
   const cf=1+Math.sin(S.t*7)*0.22;
@@ -5263,8 +5288,8 @@ function buildPortrait(key){
   const S2=48, c=mkCv(S2,S2), g=G2(c);
   const half=S2/2;
   // sky behind the face
-  pVGrad(g,0,0,S2,S2,'#2a2350','#4a3f6e',5);
-  for(let i=0;i<20;i++) pR(g,(i*13)%S2,(i*7)%S2,1,1,'rgba(255,246,224,0.35)');
+  pVGrad(g,0,0,S2,S2,'#e6d0a2','#b9945f',5);
+  for(let i=0;i<20;i++) pR(g,(i*13)%S2,(i*7)%S2,1,1,'rgba(255,250,232,0.30)');
   g.save();
   const place=(fn,scale,hx,hy)=>{ g.translate(half,half+4); g.scale(scale,scale); g.translate(-hx,-hy); fn(); };
   if(key==='you'||key==='prete'){
@@ -5675,21 +5700,31 @@ function drawKhwanBubble(g){
 /* ---------------- HUD ---------------- */
 function drawHUD(){
   const g=ctx;
-  /* one panel: the ledger line on top, what you are carrying underneath */
-  const ids=Object.keys(GS.bag).filter(k=>GS.bag[k]>0).slice(0,8);
-  const bw=96, pw=Math.max(bw+62, ids.length*19+14), ph=ids.length?40:22;
-  cloud(g,8,16,pw,ph,{seed:1});
-  pTxt(g,'merit',12,29,'#8f6a1e',8);
-  pR(g,44,23,bw,6,'#cbbfa6');
+  /* a small merit plaque in the corner, and the basket on a toolbar along the
+     bottom, the way a farming game does it. neither one covers the village. */
+  const bw=80;
+  cloud(g,6,6,bw+78,18,{seed:1});
+  pTxt(g,'merit',11,18,'#8f6a1e',7);
+  pR(g,40,11,bw,7,'#c2ab84'); pR(g,40,11,bw,1,'#a8906a');
   const pr=clamp(GS.merit/GOAL,0,1);
-  pR(g,44,23,bw*pr,6,meritFlash>0?'#fff0b0':PAL.gold);
-  pR(g,44,23,bw*pr,1,'#fffdf6');
-  for(let i=1;i<4;i++) pR(g,44+bw*i/4,23,1,6,'rgba(120,100,70,0.4)');
-  pTxt(g,GS.merit+'/'+GOAL,44+bw+5,29,CL.ink,7);
+  pR(g,40,11,bw*pr,7,meritFlash>0?'#fff0b0':PAL.gold);
+  pR(g,40,11,bw*pr,1,'#fffdf6');
+  for(let i=1;i<4;i++) pR(g,40+bw*i/4,11,1,7,'rgba(90,60,28,0.35)');
+  pTxt(g,GS.merit+'/'+GOAL,40+bw+4,18,CL.ink,7);
+
+  /* the toolbar: eight slots, always there, so you can see what you carry */
+  const ids=DLG? [] : Object.keys(GS.bag).filter(k=>GS.bag[k]>0).slice(0,8);
   if(ids.length){
-    pR(g,14,34,pw-12,1,'rgba(120,100,70,0.22)');
-    ids.forEach((id,i)=>{ drawIcon(g,id,22+i*19,45,0.62);
-      pTxt(g,''+GS.bag[id],28+i*19,52,CL.ink,6); });
+    const SL=22, n=Math.max(4,ids.length), tw=n*SL+6, tx=R(W/2-tw/2), ty=H-SL-8;
+    cloud(g,tx,ty,tw,SL+4,{seed:2});
+    for(let i=0;i<n;i++){
+      const sx=tx+3+i*SL, sy=ty+3;
+      pR(g,sx,sy,SL-2,SL-2,'#b89a6e'); pR(g,sx+1,sy+1,SL-4,SL-4,'#e8d3a6');
+      pR(g,sx+1,sy+1,SL-4,1,'#f6e7c6'); pR(g,sx+1,sy+SL-4,SL-4,1,'#c9ac80');
+      const id=ids[i]; if(!id) continue;
+      drawIcon(g,id,sx+(SL-2)/2,sy+9,0.66);
+      pTxt(g,''+GS.bag[id],sx+SL-5,sy+SL-5,CL.ink,7,'right');
+    }
   }
 
   const z=zoneAt(P.x);
@@ -5698,9 +5733,7 @@ function drawHUD(){
     GS.zoneName-=1/60;
     const a=clamp(GS.zoneName,0,1)*clamp((3.2-GS.zoneName)*3,0,1);
     g.globalAlpha=a;
-    const zw=txtW(GS._zoneZ.name,12)+24;
-    cloud(g,W-12-zw,16,zw,20,{seed:4});
-    pTxt(g,GS._zoneZ.name,W-24,30,CL.ink,12,'right');
+    pTxt(g,GS._zoneZ.name,W-10,19,'#ffe6b0',11,'right');
     g.globalAlpha=1;
   }
   GS.toasts.forEach((t,i)=>{
@@ -6000,16 +6033,17 @@ function drawLedger(g){
   for(let i=0;i<14;i++){
     const cx=((i*97 + GS.t*4)%(W+160))-80, cy=18+((i*53)%(H-40));
     g.globalAlpha=0.14;
-    puffCloud(g,cx,cy,46+((i*7)%54),20+((i*5)%16),i*3);
+    puffCloud(g,cx,cy,46+((i*7)%54),20+((i*5)%16),i*3,
+      {top:'#dfe6ff',body:'#c4cdf0',under:'#a6b0dc',edge:'#8f99c8',rim:'#f0f4ff'});
     g.globalAlpha=1;
   }
-  cloud(g,8,6,W-16,22,{seed:101});
-  pTxt(g,'THE LEDGER',16,23,'#8f6a1e',13);
+  cloud(g,8,4,W-16,26,{seed:101});
+  pTxt(g,'THE LEDGER',16,22,'#8f6a1e',13);
   pTxt(g,avail()+' merit to spend',W-52,17,'#8f6a1e',8,'right');
   pTxt(g,GS.merit+' earned · '+GS.spent+' spent',W-52,25,CL.ink3,6,'right');
   /* a close chevron in the corner of the header */
-  icoDown(g,W-26,18,1.5,CL.ink2);
-  hitAdd(W-42,6,38,22,()=>{ GS.state='play'; AU.sel(); });
+  icoDown(g,W-26,17,1.5,CL.ink2);
+  hitAdd(W-42,4,38,26,()=>{ GS.state='play'; AU.sel(); });
 
   if(TREE.tab===0){
     const keys=Object.keys(SKILLS);
@@ -6098,14 +6132,15 @@ function drawLedger(g){
 /* flat tabs: scallops this close to the header would just pile up */
 function drawLedgerTabs(g){
   ['SKILLS','LOOKS','FRIENDS','MAP','PAST'].forEach((t,i)=>{
-    const x=8+i*94, on=TREE.tab===i;
-    pR(g,x,34,90,15, on?'#f4e8c4':'rgba(20,18,34,0.72)');
-    pR(g,x,34,90,1, on?'#fff8e0':'rgba(255,255,255,0.14)');
-    if(on){ pR(g,x,48,90,1,'#c9992f'); pR(g,x,34,2,15,'#c9992f'); }
-    pTxt(g,t,x+45,45,on?CL.ink:'#cfc4ae',6,'center');
+    const x=8+i*94, on=TREE.tab===i, y=on?33:35, h=on?17:15;
+    pR(g,x,y+1,90,h-2,CL.edge); pR(g,x+1,y,88,h,CL.edge);
+    pR(g,x+1,y+2,88,h-4,on?CL.woodL:CL.woodD); pR(g,x+2,y+1,86,h-2,on?CL.woodL:CL.woodD);
+    pR(g,x+2,y+3,86,h-5,on?CL.body:'#4a3018'); pR(g,x+3,y+2,84,h-3,on?CL.body:'#4a3018');
+    if(on) pR(g,x+3,y+3,84,1,CL.rim);
+    pTxt(g,t,x+45,y+11,on?CL.ink:'#c2a880',6,'center');
     // a page you have not read yet nags at you from the tab
-    if(i===4 && GS.seen.newmem && !on) pEll(g,x+82,40,2.4,2.4,'#c85a6a');
-    hitAdd(x,34,90,15,()=>{ TREE.tab=i; TREE.row=0; AU.sel(); });
+    if(i===4 && GS.seen.newmem && !on) pEll(g,x+81,41,2.6,2.6,'#e05a48');
+    hitAdd(x,33,90,17,()=>{ TREE.tab=i; TREE.row=0; AU.sel(); });
   });
 }
 /* ---------------- what you have got back ---------------- */
