@@ -5,10 +5,10 @@ memory at all, and having to earn the story of your own life back.
 
 > karma is a ledger, and you are not allowed to read your own.
 
-You wake under the soil and push your way out of it. You do not know your name.
-You do not know what you did. You are a **prete** — a hungry ghost, tall as the
-palm trees and thin as a pole, ash-grey, with hands like palm leaves, a pot belly
-under a visible ribcage, a mouth the size of a needle's eye, one small orange
+You come to on the edge of a cremation ground with a small glowing thing already
+mid-sentence at your shoulder. You do not know your name. You do not know what
+you did. You are a **prete** — a hungry ghost, tall as the palm trees and thin as
+a pole, ash-grey, with hands like palm leaves, a pot belly under a visible ribcage, a mouth the size of a needle's eye, one small orange
 nose, six hairs left, and two enormous ringed eyes that have not closed properly
 since. You cannot eat anything you cook. You're going to cook a great deal
 anyway.
@@ -19,8 +19,13 @@ page at a time, as you earn the right to it** — and by the last page you will
 wish it hadn't.
 
 **Nothing in this game fights.** There are no enemies, no health bar and no way
-to lose. There is a village, some plants, a stove, a weaving mat, and eleven
-people — five of them dead — who each quietly want one small thing.
+to lose. There is a village, a vegetable field, a stove, a weaving mat, and
+eleven people — five of them dead — who each quietly want one small thing.
+
+The work is small and it is always the same shape: **somebody asks, you go and
+get it, you put it in their hands.** There is one request standing at any moment
+and it is printed across the top of the screen, so there is never a point where
+you are not sure what to do next.
 
 ![the title screen](screenshots/title.png)
 
@@ -54,22 +59,18 @@ the pans of the karma scale — the left and right thirds of the display stand i
 for left and right.
 
 A keyboard still works if you have one: arrows walk, **E** confirms, **G** gives,
-**C** whistles, **Tab** opens the ledger, **Q** jumps to the map, **M** mutes,
-**Esc** goes back. Turn a phone sideways. Progress saves in the browser.
+**C** whistles, **Tab** opens the ledger, **Q** jumps to the map, **V** switches
+between English and Thai, **M** mutes, **Esc** goes back. Turn a phone sideways. Progress saves in the browser.
 
 ![tap to walk, three buttons](screenshots/on-a-phone.png)
 
 ## The past comes back in pieces, and you play every one
 
-There is no prologue explaining who you were. There are **five memories**, and
-you have to earn four of them. They arrive without asking — you'll be walking
+There is no prologue explaining who you were. There are **four memories** and you
+earn every one of them. They arrive without asking — you'll be walking
 down the road and the world will white out — and each one is a short scene you
 play rather than watch: letterboxed, a title in the corner, dust in the light,
 and nobody narrating at you until after you've done the thing.
-
-**The ground.** *(the one you get for free)* Three taps to push your own arm up
-through the soil. Above the line: a row of chedis and a moon. Below it: roots, a
-broken pot, one gold coin nobody came back for, and you, face up, waiting.
 
 **The shelf.** Tap along the floor of a room you half know. Moving makes noise
 and standing still lets it settle; fill the meter and the shape asleep on the mat
@@ -93,14 +94,15 @@ page, and until the last one turns the ending will not start.
 
 | | | |
 |---|---|---|
-| ![the ground](screenshots/memory-the-ground.png) | ![the shelf](screenshots/memory-the-shelf.png) | ![the gate](screenshots/memory-the-gate.png) |
-| ![the scale](screenshots/memory-the-scale.png) | ![four bowls](screenshots/memory-four-bowls.png) | ![the ledger's past tab](screenshots/the-past.png) |
+| ![the shelf](screenshots/memory-the-shelf.png) | ![the gate](screenshots/memory-the-gate.png) | ![the scale](screenshots/memory-the-scale.png) |
+| ![four bowls](screenshots/memory-four-bowls.png) | ![the ledger's past tab](screenshots/the-past.png) | ![the village field](screenshots/the-field.png) |
 
 ## You wake up in a graveyard
 
 The game opens in the cremation ground at the west end of the village, which is
-where they buried you. A small round glowing thing is waiting to explain this,
-gently:
+where they buried you — no title crawl, no scene to sit through, just the world
+and somebody already talking to you. A small round glowing thing is explaining
+things, gently:
 
 > **Khwan:** *And no — do not ask me. A ledger is read by whoever wrote it.*
 
@@ -132,6 +134,27 @@ text is sharp instead of smeared.
 ![talking to Kong Koi](screenshots/making-friends.png)
 
 ## What you actually do
+
+**Farm the village field.** Five raised beds by the road under three strung
+lanterns, one crop to a bed — papaya, chilli, lemongrass, rice, coriander —
+each with a painted marker board so you can read the row from the far side of
+the street. **Sow, water, wait, pick.** Wet earth grows about twice as fast, and
+a picked bed hands you back two or three of the crop, a seed, and two merit. A
+crate of seed stands at the gate and is never empty, because a field you cannot
+start is a dead end rather than a challenge.
+
+Every one of those is a *gesture*, not a menu tick: he folds ninety pixels of
+leg into a crouch, reaches both long arms down to the soil, and the thing
+happens at the moment his hands actually get there.
+
+| | | |
+|---|---|---|
+| ![the field](screenshots/the-field.png) | ![planting](screenshots/planting.png) | ![a ripe row](screenshots/ripe.png) |
+
+**Do what somebody asked.** One villager wants one thing at a time. It is on the
+screen from the moment they think of it, they say it again out loud if you go
+and talk to them, and handing it over ends with both of you putting your hands
+together. Fill it and the next person thinks of something.
 
 **Pick things.** Rice and coriander in the paddies, chillies and lemongrass in
 the gardens, jasmine in the flower patches, bananas and mango and banana leaf in
@@ -171,6 +194,21 @@ afraid of big, she's afraid of *sudden*.
 **Give it away.** That's the whole game, really.
 
 ![handing something over](screenshots/giving.png)
+
+## Little scenes
+
+The first time something happens to you the game takes three seconds to notice
+it. Two black bars slide in, the rest of the road steps back into shadow, a pool
+of warm light stays on whoever it is about, and one line types itself along the
+bottom — the first seed you push into the ground, the first thing you grow, the
+first person who asks you for something, the first dead neighbour who is kind to
+you back.
+
+They play **over the world where it stands**, on the real characters, with the
+camera leaning onto them. Nothing pauses to a menu, nothing loads, nothing is
+locked behind one, and a tap gets you out. Each one plays exactly once, ever.
+
+![a little scene](screenshots/a-little-scene.png)
 
 ## Ascend, and be blessed
 
@@ -242,6 +280,43 @@ neighbour with a small problem:
 Plus five villagers, a monk who isn't supposed to want anything and would still
 like a leaf float, and a cat.
 
+## It speaks Thai, properly
+
+There is a language key in the top right of the ledger. Press it — or **V** —
+and the whole interface, every place name, every item, every skill, every prompt
+and every thing a bed can be told to do turns over into Thai.
+
+Thai is genuinely hard to draw at this size: forty-four consonants, vowels that
+sit above, below, in front of and behind the consonant they belong to, and four
+tone marks that stack on top of the ones already up there. Rather than
+hand-draw glyphs that might be subtly wrong, the game **rasterises the reader's
+own Thai face once per string and thresholds it to one bit**, so it lands on the
+same pixel grid as the rest of the type, with the vowels and tone marks exactly
+where the device says they go. Thai has no spaces between words, so the
+line-wrapper breaks Thai per character, which is what Thai typesetting does.
+
+The story prose — the memories, the villagers' lives, what Phra Phum will not
+tell you — stays in English. Everything you need in order to *play* is
+bilingual: the merit plaque, the standing request, the field prompts, the
+kitchen, the ledger, the map and the signposts.
+
+| | |
+|---|---|
+| ![the village in Thai](screenshots/thai-village.png) | ![the ledger in Thai](screenshots/thai-ledger.png) |
+
+## Everyone talks to you differently depending on how well they know you
+
+Nobody in the village has one line. Each of them has a register for a stranger,
+a register for somebody who has fed them, and a register for asking — and asking
+is the one that matters, because it is the only place in the game where a person
+tells you plainly what to go and do:
+
+> **Yai Pen:** *Eighty-one. I can still climb a ladder. That is what worries them.*
+> **Yai Pen:** *If I ask my son he will take a week. If I ask you it is done tonight.*
+> **Yai Pen:** *Bring me 2 jasmine. Then we are square.*
+
+Feed them once and the first line changes for good.
+
 ## The crossroads
 
 Five hand-painted **signposts** stand where the road forks, each with boards
@@ -293,7 +368,7 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~296 KB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~340 KB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Boots in ~270ms and holds 60 fps.
 
 - **Nothing is a sprite sheet, and nothing is a font glyph.** Every character is a
@@ -303,11 +378,25 @@ pixelated`. Boots in ~270ms and holds 60 fps.
   prete is drawn cartoon-first: one hard ink line all the way round, flat colour
   inside it, forty-two pixels of leg on 3px-wide bones, arms that hang past the
   hip, and a head far too big for either.
+- **A planted foot does not move.** The walk cycle is split into a stance half
+  and a swing half rather than driven by a cosine: through stance the foot
+  tracks straight backwards at exactly his walking speed, which is the only
+  shape that leaves it stationary against the ground. The phase advances one
+  half-cycle per step length travelled, so the identity that keeps it honest —
+  `phaseRate * stride === 1` — holds at every speed. Measured slip is 0.00 px/s
+  at five different speeds, in both directions.
+- **Working with your hands takes a beat.** Planting, watering, picking, giving
+  and putting your palms together are one system: a crouch, a reach and a
+  payload that fires at the middle of the movement, when his hands actually
+  arrive. Nothing in the field is instant, and nothing is a menu.
 - **He moves slowly, and late.** The head and the hands ride their own springs and
   arrive a beat behind the shoulders; the body carries a slow idle sway and a
   breath; the walk eases in and drifts out over most of a second instead of
   snapping to speed. None of it is keyframed — it falls out of the simulation,
   which is why it never repeats exactly.
+- **The little scenes are not a mode.** No state machine, no separate render
+  path: the bars, the dimming, the light pool and the typed line are one
+  function drawn over the live world, and the game underneath keeps running.
 - **The cutscenes use the same rig ideas at a different scale.** The man you used
   to be has hair and ordinary eyes and already that nose, and the prete himself
   climbs out of his own grave in the first scene, drawn by the same function that
@@ -333,6 +422,12 @@ pixelated`. Boots in ~270ms and holds 60 fps.
   stretch.
 - **All audio synthesized live** — crickets, frogs, a ranat-ek pentatonic figure,
   temple gongs, and one long prete whistle.
+- **The type has a second alphabet.** The bitmap faces cover Latin; Thai is
+  rasterised from the platform face and thresholded to 1-bit at draw time, then
+  cached like every other string. Translation happens at the drawing boundary —
+  `pTxt` and `wrap` look every string up on the way to the screen — so no call
+  site had to be touched and an untranslated string simply comes through in
+  English rather than going missing.
 - Autosave, a friends journal, canvas-drawn touch controls, and a dawn ending.
 
 Made with rice and incense. May you go to a good place.

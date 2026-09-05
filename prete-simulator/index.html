@@ -95,7 +95,7 @@ const KEYMAP = {
   ' ':'jump', z:'light', j:'light', x:'heavy', k:'heavy',
   c:'whistle', l:'whistle', shift:'block',
   e:'act', enter:'act', tab:'tree', t:'tree',
-  h:'help', m:'mute', escape:'back', r:'restart', n:'newgame', g:'give', f:'give', q:'map',
+  h:'help', m:'mute', escape:'back', r:'restart', n:'newgame', g:'give', f:'give', q:'map', v:'lang',
 };
 function keyDown(k){ if(!K[k]) PRESS[k]=true; K[k]=true; }
 function keyUp(k){ K[k]=false; }
@@ -138,7 +138,8 @@ function cvPos(ev){
 }
 /* in play the world takes taps as walk orders; everywhere else a tap is "go on" */
 function tapIsWalk(){
-  return typeof GS!=='undefined' && GS.state==='play' && !DLG;
+  return typeof GS!=='undefined' && GS.state==='play' && !DLG
+      && typeof VIG!=='undefined' && !VIG && !(typeof P!=='undefined' && P && P.act);
 }
 /* screens where the two halves of the display mean left and right */
 function tapSides(){
@@ -804,6 +805,11 @@ function artOffering(){ const c=mkCv(30,22),g=G2(c);
    lands on whole pixels instead of being a hinted webfont.
    F5 is 5x7 for everything; F3 is 3x5 for the small print.
    ============================================================ */
+const THAI_RE = /[\u0E00-\u0E7F]/;
+const THAI_STACK = 'sans-serif';
+const _thaiFace = ['"Noto Sans Thai"','"Noto Sans Thai UI"','"Leelawadee UI"','Leelawadee',
+                   'Thonburi','"Sarabun"','"Sukhumvit Set"','"Tahoma"',THAI_STACK].join(',');
+const isThai = s => THAI_RE.test(s);
 const F5W=5, F5H=7, F3W=3, F3H=5;
 const F5={'A':[[14,17,17,31,17,17,17],0],'B':[[30,17,17,30,17,17,30],0],'C':[[14,17,16,16,16,17,14],0],'D':[[30,17,17,17,17,17,30],0],'E':[[31,16,16,30,16,16,31],0],'F':[[31,16,16,30,16,16,16],0],'G':[[14,17,16,23,17,17,14],0],'H':[[17,17,17,31,17,17,17],0],'I':[[14,4,4,4,4,4,14],0],'J':[[7,2,2,2,2,18,12],0],'K':[[17,18,20,24,20,18,17],0],'L':[[16,16,16,16,16,16,31],0],'M':[[17,27,21,21,17,17,17],0],'N':[[17,25,21,21,19,17,17],0],'O':[[14,17,17,17,17,17,14],0],'P':[[30,17,17,30,16,16,16],0],'Q':[[14,17,17,17,21,18,13],0],'R':[[30,17,17,30,20,18,17],0],'S':[[15,16,16,14,1,1,30],0],'T':[[31,4,4,4,4,4,4],0],'U':[[17,17,17,17,17,17,14],0],'V':[[17,17,17,17,17,10,4],0],'W':[[17,17,17,21,21,21,10],0],'X':[[17,17,10,4,10,17,17],0],'Y':[[17,17,10,4,4,4,4],0],'Z':[[31,1,2,4,8,16,31],0],'a':[[0,0,14,1,15,17,15],0],'b':[[16,16,30,17,17,17,30],0],'c':[[0,0,14,16,16,16,14],0],'d':[[1,1,15,17,17,17,15],0],'e':[[0,0,14,17,31,16,14],0],'f':[[6,8,8,30,8,8,8],0],'g':[[15,17,17,15,1,17,14],1],'h':[[16,16,30,17,17,17,17],0],'i':[[4,0,12,4,4,4,14],0],'j':[[2,0,6,2,2,18,12],1],'k':[[16,16,18,20,24,20,18],0],'l':[[12,4,4,4,4,4,14],0],'m':[[0,0,26,21,21,21,21],0],'n':[[0,0,30,17,17,17,17],0],'o':[[0,0,14,17,17,17,14],0],'p':[[30,17,17,30,16,16,16],1],'q':[[15,17,17,15,1,1,1],1],'r':[[0,0,22,24,16,16,16],0],'s':[[0,0,15,16,14,1,30],0],'t':[[8,8,30,8,8,9,6],0],'u':[[0,0,17,17,17,19,13],0],'v':[[0,0,17,17,17,10,4],0],'w':[[0,0,17,21,21,21,10],0],'x':[[0,0,17,10,4,10,17],0],'y':[[17,17,17,15,1,17,14],1],'z':[[0,0,31,2,4,8,31],0],'0':[[14,17,19,21,25,17,14],0],'1':[[4,12,4,4,4,4,14],0],'2':[[14,17,1,2,4,8,31],0],'3':[[30,1,1,14,1,1,30],0],'4':[[2,6,10,18,31,2,2],0],'5':[[31,16,30,1,1,17,14],0],'6':[[6,8,16,30,17,17,14],0],'7':[[31,1,2,4,4,8,8],0],'8':[[14,17,17,14,17,17,14],0],'9':[[14,17,17,15,1,2,12],0],' ':[[0,0,0,0,0,0,0],0],'.':[[0,0,0,0,0,12,12],0],',':[[0,0,0,0,12,12,8],0],'\'':[[8,8,0,0,0,0,0],0],'"':[[10,10,0,0,0,0,0],0],'!':[[4,4,4,4,4,0,4],0],'?':[[14,17,1,6,4,0,4],0],':':[[0,12,12,0,12,12,0],0],';':[[0,12,12,0,12,12,8],0],'-':[[0,0,0,31,0,0,0],0],'+':[[0,4,4,31,4,4,0],0],'/':[[1,1,2,4,8,16,16],0],'(':[[2,4,8,8,8,4,2],0],')':[[8,4,2,2,2,4,8],0],'%':[[25,26,4,8,19,5,9],0],'*':[[0,21,14,31,14,21,0],0],'=':[[0,0,31,0,31,0,0],0],'#':[[10,31,10,10,31,10,0],0],'&':[[12,18,20,8,21,18,13],0],'—':[[0,0,0,31,0,0,0],0],'·':[[0,0,0,4,0,0,0],0],'…':[[0,0,0,0,0,21,0],0]};
 const F3={'A':[[2,5,7,5,5],0],'B':[[6,5,6,5,6],0],'C':[[3,4,4,4,3],0],'D':[[6,5,5,5,6],0],'E':[[7,4,6,4,7],0],'F':[[7,4,6,4,4],0],'G':[[3,4,5,5,3],0],'H':[[5,5,7,5,5],0],'I':[[7,2,2,2,7],0],'J':[[1,1,1,5,2],0],'K':[[5,5,6,5,5],0],'L':[[4,4,4,4,7],0],'M':[[5,7,7,5,5],0],'N':[[5,7,7,7,5],0],'O':[[2,5,5,5,2],0],'P':[[6,5,6,4,4],0],'Q':[[2,5,5,6,3],0],'R':[[6,5,6,5,5],0],'S':[[3,4,2,1,6],0],'T':[[7,2,2,2,2],0],'U':[[5,5,5,5,3],0],'V':[[5,5,5,5,2],0],'W':[[5,5,7,7,5],0],'X':[[5,5,2,5,5],0],'Y':[[5,5,2,2,2],0],'Z':[[7,1,2,4,7],0],'a':[[2,5,7,5,5],0],'b':[[6,5,6,5,6],0],'c':[[3,4,4,4,3],0],'d':[[6,5,5,5,6],0],'e':[[7,4,6,4,7],0],'f':[[7,4,6,4,4],0],'g':[[3,4,5,5,3],0],'h':[[5,5,7,5,5],0],'i':[[7,2,2,2,7],0],'j':[[1,1,1,5,2],0],'k':[[5,5,6,5,5],0],'l':[[4,4,4,4,7],0],'m':[[5,7,7,5,5],0],'n':[[5,7,7,7,5],0],'o':[[2,5,5,5,2],0],'p':[[6,5,6,4,4],0],'q':[[2,5,5,6,3],0],'r':[[6,5,6,5,5],0],'s':[[3,4,2,1,6],0],'t':[[7,2,2,2,2],0],'u':[[5,5,5,5,3],0],'v':[[5,5,5,5,2],0],'w':[[5,5,7,7,5],0],'x':[[5,5,2,5,5],0],'y':[[5,5,2,2,2],0],'z':[[7,1,2,4,7],0],'0':[[2,5,5,5,2],0],'1':[[2,6,2,2,7],0],'2':[[6,1,2,4,7],0],'3':[[6,1,2,1,6],0],'4':[[5,5,7,1,1],0],'5':[[7,4,6,1,6],0],'6':[[3,4,6,5,2],0],'7':[[7,1,2,2,2],0],'8':[[2,5,2,5,2],0],'9':[[2,5,3,1,6],0],' ':[[0,0,0,0,0],0],'.':[[0,0,0,0,2],0],',':[[0,0,0,2,4],0],'\'':[[2,2,0,0,0],0],'!':[[2,2,2,0,2],0],'?':[[6,1,2,0,2],0],':':[[0,2,0,2,0],0],'-':[[0,0,7,0,0],0],'/':[[1,1,2,4,4],0],'(':[[1,2,2,2,1],0],')':[[4,2,2,2,4],0],'+':[[0,2,7,2,0],0],'=':[[0,7,0,7,0],0],'—':[[0,0,7,0,0],0],'·':[[0,0,2,0,0],0],'…':[[0,0,0,0,5],0]};
@@ -822,9 +828,10 @@ function glyph(F,ch){
 }
 /* width in pixels of a string at a given size */
 function txtW(s,size=7){
-  const P=fontPick(size);
   s=String(s);
   if(!s.length) return 0;
+  if(THAI_RE.test(s)) return thaiMeasure(s,size);
+  const P=fontPick(size);
   return s.length*(P.w*P.s+P.gap)-P.gap;
 }
 function txtH(size=7){ const P=fontPick(size); return P.h*P.s; }
@@ -876,25 +883,203 @@ function isLight(col){
   v=(r*0.299+g2*0.587+b*0.114)>175;
   _lum.set(col,v); return v;
 }
+/* ============================================================
+   THAI — the hand-drawn 5x7 face has no Thai in it, and Thai is not a
+   font you can fake at that size: it stacks vowels above and below the
+   consonant and the marks have to land in the right place. So Thai is
+   rasterised once from whatever Thai face the device already has, then
+   thresholded to 1-bit and cached, which drops it onto the same pixel
+   grid as everything else. No network, no webfont, no combining logic
+   of our own to get wrong.
+   ============================================================ */
+/* the pixel height the Thai face is drawn at, per requested size. Thai needs
+   more headroom than latin: the vowel stack is two rows above the letter. */
+function thaiPx(size){ return size<=6?11 : size<=7?12 : size<=9?14 : size<=13?18 : Math.round(size*1.5); }
+const _thai=new Map();
+let _thMeasure=null;
+function thaiMeasure(s,size){
+  if(!_thMeasure) _thMeasure=mkCv(8,8).getContext('2d');
+  _thMeasure.font=thaiPx(size)+'px '+_thaiFace;
+  return Math.ceil(_thMeasure.measureText(s).width);
+}
+function thaiSprite(s,size,col,shadow){
+  const key='T|'+s+'|'+size+'|'+col+'|'+(shadow||'');
+  let c=_thai.get(key);
+  if(c) return c;
+  if(_thai.size>300) _thai.clear();
+  const px=thaiPx(size);
+  const w=Math.max(1,thaiMeasure(s,size)), h=px+px; // room for the stack above and the tail below
+  const src=mkCv(w+2,h), sg=src.getContext('2d');
+  sg.font=px+'px '+_thaiFace; sg.textBaseline='alphabetic'; sg.fillStyle='#fff';
+  sg.fillText(s,1,Math.round(px*1.35));
+  // threshold to 1-bit, so it is pixel art and not a blurry smear
+  const d=sg.getImageData(0,0,src.width,src.height).data;
+  c=mkCv(src.width+(shadow?1:0), src.height+(shadow?1:0));
+  const g=G2(c);
+  const stamp=(cc,ox,oy)=>{ g.fillStyle=cc;
+    for(let y=0;y<src.height;y++) for(let x=0;x<src.width;x++){
+      if(d[(y*src.width+x)*4+3]>110) g.fillRect(x+ox,y+oy,1,1); } };
+  if(shadow) stamp(shadow,1,1);
+  stamp(col,0,0);
+  c._base=Math.round(px*1.35);            // where the baseline sat inside the sprite
+  _thai.set(key,c);
+  return c;
+}
 /* x,y is the LEFT BASELINE, as it always was */
 function pTxt(g,s,x,y,col,size=7,align='left',bold){
-  s=String(s);
+  s=L(String(s));
   if(!s.length) return;
-  const P=fontPick(size);
   const w=txtW(s,size);
   let dx = align==='center'? -w/2 : align==='right'? -w : 0;
-  const c=txtSprite(s,size,col, isLight(col)?'rgba(8,6,18,0.8)':null);
+  const sh = isLight(col)?'rgba(8,6,18,0.8)':null;
+  if(isThai(s)){
+    const c=thaiSprite(s,size,col,sh);
+    g.drawImage(c, R(x+dx), R(y-c._base));
+    return;
+  }
+  const P=fontPick(size);
+  const c=txtSprite(s,size,col,sh);
   // baseline sits one pixel-row above the bottom of the cell
   g.drawImage(c, R(x+dx), R(y-P.h*P.s));
 }
 function wrap(g,s,maxW,size){
-  const words=String(s).split(' '), out=[]; let cur='';
+  s=L(String(s));
+  /* Thai is written without spaces between words. Breaking on spaces alone
+     would hand back one line the width of a paragraph, so Thai wraps by
+     character instead — which is what Thai typesetting does at this size. */
+  if(isThai(s) && txtW(s,size)>maxW){
+    const out=[]; let cur='';
+    for(const ch of s){
+      const t=cur+ch;
+      if(txtW(t,size)>maxW && cur){ out.push(cur); cur=ch; } else cur=t;
+    }
+    if(cur) out.push(cur);
+    return out;
+  }
+  const words=s.split(' '), out=[]; let cur='';
   for(const w2 of words){ const t=cur?cur+' '+w2:w2;
     if(txtW(t,size)>maxW && cur){ out.push(cur); cur=w2; } else cur=t; }
   if(cur) out.push(cur);
   return out;
 }
 function fontFor(){ return '7px monospace'; }   // nothing measures with canvas text now
+/* ============================================================
+   TWO LANGUAGES — English, and Thai, which is the language the
+   village would actually be speaking.
+
+   Translation happens at the drawing boundary rather than at the
+   hundreds of call sites: pTxt and wrap look every string up on
+   their way to the screen. A string with no entry comes through
+   unchanged, so nothing can go missing by being untranslated.
+   ============================================================ */
+let LANG = 'en';
+const TH = {
+  // --- the interface ---
+  'merit':'บุญ', 'THE LEDGER':'สมุดบุญ', 'back':'กลับ', 'skip':'ข้าม',
+  'SKILLS':'ทักษะ', 'LOOKS':'เครื่องแต่งกาย', 'FRIENDS':'เพื่อน', 'MAP':'แผนที่', 'PAST':'อดีต',
+  'BODY':'กาย', 'HANDS':'มือ', 'HEART':'ใจ',
+  'the body you woke up in':'ร่างที่ตื่นขึ้นมา',
+  'what your hands learn':'สิ่งที่มือได้เรียนรู้',
+  'the part that got you here':'ส่วนที่พาเจ้ามาถึงตรงนี้',
+  'learned':'เรียนแล้ว', 'worn':'สวมอยู่', 'wear':'สวม',
+  'friends':'เพื่อน', 'not yet':'ยังไม่ถึงเวลา',
+  'tap the ground to walk':'แตะพื้นเพื่อเดิน',
+  'tap to choose':'แตะเพื่อเลือก', 'tap a recipe':'แตะสูตรอาหาร',
+  'tap to make it':'แตะเพื่อลงมือทำ', 'you are missing something':'ของยังไม่ครบ',
+  'tap to pick, tap again to give':'แตะเพื่อเลือก แตะอีกครั้งเพื่อให้',
+  'THE KITCHEN':'ครัว', 'THE WORKBENCH':'โต๊ะจักสาน',
+  'DONE!':'เสร็จแล้ว!', 'perfect':'สมบูรณ์แบบ', 'good':'ดี', 'edible':'พอกินได้',
+  'you made two':'ได้มาสองชิ้น', 'you need':'ต้องใช้',
+  'hold — keep it in the green':'กดค้าง ให้อยู่ในแถบเขียว',
+  'tap each side on the beat':'แตะสลับซ้ายขวาให้ตรงจังหวะ',
+  'VILLAGE MAP':'แผนที่หมู่บ้าน',
+  'you are here':'เจ้าอยู่ตรงนี้',
+  'A MEMORY':'ความทรงจำ',
+  'the page turns on its own, a line at a time':'หน้ากระดาษพลิกเอง ทีละบรรทัด',
+  // --- what you can do ---
+  'cook something':'ทำอาหาร', 'sit and make something':'นั่งลงจักสาน',
+  'give':'ให้', 'pet':'ลูบหัว', 'ring the bell':'ตีระฆัง',
+  'say hello':'ทักทาย', 'speak to Phra Phum':'คุยกับพระภูมิ', 'pay respects':'ไหว้',
+  'approach politely':'เข้าไปอย่างสุภาพ', 'talk':'คุยด้วย',
+  'plant a seed':'ปลูกเมล็ด', 'water it':'รดน้ำ', 'harvest it':'เก็บเกี่ยว',
+  'it is growing':'กำลังโต', 'it needs water':'ต้องการน้ำ',
+  'lift the fallen tree':'ยกต้นไม้ที่ล้ม', 'reach up for the cat':'เอื้อมไปรับแมว',
+  'reach the junction box':'เอื้อมถึงกล่องไฟ', 'hang the fallen garland':'แขวนพวงมาลัยที่ร่วง',
+  // --- the places ---
+  'the graveyard':'ป่าช้า', 'the rice fields':'ทุ่งนา', 'the village road':'ถนนในหมู่บ้าน',
+  'the spirit house':'ศาลพระภูมิ', 'the banana grove':'ดงกล้วย', 'the temple':'วัด',
+  'the old forest':'ป่าเก่า', 'the field':'แปลงผัก',
+  // --- what things are ---
+  'sticky rice':'ข้าวเหนียว', 'banana':'กล้วย', 'mango':'มะม่วง', 'green papaya':'มะละกอดิบ',
+  'coconut':'มะพร้าว', 'chilli':'พริก', 'lemongrass':'ตะไคร้', 'lime':'มะนาว',
+  'coriander':'ผักชี', 'jasmine':'ดอกมะลิ', 'banana leaf':'ใบตอง', 'bamboo':'ไม้ไผ่',
+  'river clay':'ดินเหนียว', 'a handful of seed':'เมล็ดพันธุ์',
+  'papaya salad':'ส้มตำ', 'mango sticky rice':'ข้าวเหนียวมะม่วง', 'tom yum':'ต้มยำ',
+  'fried banana':'กล้วยทอด', 'coconut cakes':'ขนมครก',
+  'jasmine garland':'พวงมาลัย', 'leaf float':'กระทง', 'rice basket':'กระติบข้าว',
+  'paper lantern':'โคมไฟ', 'roadside shrine':'ศาลริมทาง',
+  'Papaya Salad':'ส้มตำ', 'Mango Sticky Rice':'ข้าวเหนียวมะม่วง', 'Tom Yum':'ต้มยำ',
+  'Fried Banana':'กล้วยทอด', 'Coconut Cakes':'ขนมครก',
+  'Jasmine Garland':'พวงมาลัย', 'Leaf Float':'กระทง', 'Rice Basket':'กระติบข้าว',
+  'Paper Lantern':'โคมไฟ', 'Roadside Shrine':'ศาลริมทาง',
+  // --- the skills ---
+  'Giant Stride':'ก้าวยักษ์', 'Palm-Leaf Reach':'เอื้อมใบลาน', 'Carrying Pole':'ไม้คาน',
+  'Light Body':'กายเบา', 'Steady Hands':'มือนิ่ง', 'Divine Tongue':'ลิ้นทิพย์',
+  'Deft Weaving':'สานคล่อง', 'Two Hands':'สองมือ', 'Merit Magnet':'บุญดึงดูด',
+  'Inner Eye':'ตาใน', 'Cool Heart':'ใจเย็น', 'Loving-Kindness':'เมตตา',
+  // --- the guide ---
+  'Tap the road. I will walk you there.':'แตะถนนสิ ข้าจะพาเจ้าเดินไปเอง',
+  'Tap a plant. Everything cooks from something.':'แตะต้นไม้ดู ทุกจานเริ่มจากของสักอย่าง',
+  'Now give it away. That is the whole game, really.':'ทีนี้ก็เอาไปให้เขา นั่นแหละคือทั้งหมด',
+  'The little gold house east of here keeps the ledger. Be polite.':'ศาลทองหลังเล็กทางตะวันออกเก็บสมุดบุญไว้ ทำตัวดี ๆ นะ',
+  'That was a piece of you. The PAST tab keeps every one it gives back.':'นั่นคือเศษหนึ่งของเจ้า แท็บอดีตเก็บไว้ให้ทุกชิ้น',
+  'East. I will be right behind your shoulder.':'ไปทางตะวันออก ข้าจะอยู่ข้างไหล่เจ้าเอง',
+  'The beds east of the stall are yours to tend. Sow, water, wait, pick.':'แปลงผักทางตะวันออกของแผงเป็นของเจ้า หยอด รดน้ำ รอ แล้วเก็บ',
+  'Somebody always needs one thing. It is written at the top of the screen.':'จะมีคนอยากได้อะไรสักอย่างเสมอ ดูที่ข้างบนจอ',
+  'Seed is in the crate at the end of the row.':'เมล็ดพันธุ์อยู่ในลังท้ายแถว',
+  'You have seed enough. Put it in the ground.':'เมล็ดพอแล้ว เอาลงดินเถอะ',
+  // --- the field, and what the village asks for ---
+  'sown':'หยอดแล้ว', 'watered':'รดน้ำแล้ว',
+  'the bed is empty':'แปลงว่างอยู่',
+  'needs':'อยากได้', 'Bring me':'ช่วยเอามาให้หน่อย',
+  'Then we are square.':'แค่นี้ก็หายกันแล้ว',
+  'talk to':'คุยกับ', 'pick':'เก็บ', 'give to':'ให้', 'take seed':'หยิบเมล็ดพันธุ์',
+  'seeds':'เมล็ดพันธุ์',
+  // --- the people ---
+  'Mali':'มาลี', 'Lung Somchai':'ลุงสมชาย', 'Luang Pi':'หลวงพี่',
+  'Yai Pen':'ยายเพ็ญ', "P'Nok":'พี่นก', 'Loong Dam':'ลุงดำ',
+  'Phra Phum':'พระภูมิ', 'Khwan':'ขวัญ', 'Tani':'นางตานี', 'You':'เจ้า',
+  // --- the little scenes ---
+  'A seed does not care what you used to be.':'เมล็ดไม่สนใจว่าเจ้าเคยเป็นอะไร',
+  'It wants earth, and water, and to be let alone a while.':'มันขอแค่ดิน น้ำ และเวลาสักหน่อย',
+  'Something grew here because you stayed.':'มีบางอย่างงอกขึ้นที่นี่ เพราะเจ้าอยู่',
+  'That has not been true of you for a very long time.':'นานมากแล้วที่ไม่มีอะไรงอกเพราะเจ้า',
+  'Somebody in this village needs something.':'มีคนในหมู่บ้านกำลังต้องการอะไรสักอย่าง',
+  'Bring it to them. That is the whole of the work.':'เอาไปให้เขา งานของเจ้ามีเท่านี้',
+  'They put their hands together, the way people do here.':'เขาพนมือไหว้ อย่างที่คนที่นี่ทำกัน',
+  'You find that your own hands still know how.':'มือของเจ้าเองก็ยังจำได้',
+  'A dead thing was kind to you, and you were kind back.':'ผีตนหนึ่งใจดีกับเจ้า และเจ้าใจดีตอบ',
+  'Nobody wrote it down. It counted anyway.':'ไม่มีใครจดไว้ แต่มันก็นับอยู่ดี',
+  // --- the guide, on the field ---
+  'Now water it. Wet earth grows twice as fast.':'ทีนี้ก็รดน้ำ ดินชื้นโตเร็วเป็นสองเท่า',
+  'That is the whole of farming. Sow, water, wait, pick.':'การทำไร่มีแค่นี้ หยอด รดน้ำ รอ เก็บ',
+  'No seed left. Pick a ripe bed and one comes back.':'เมล็ดหมดแล้ว เก็บแปลงที่สุกแล้วจะได้เมล็ดคืน',
+  // --- and the tone of the thing ---
+  'a memory':'ความทรงจำ',
+  'may you go to a good place':'ขอให้ไปสู่สุคติ',
+};
+function L(s){
+  if(LANG!=='th') return s;
+  const t=TH[s];
+  return t===undefined? s : t;
+}
+function setLang(l){
+  LANG=l;
+  try{ localStorage.setItem('prete-lang',l); }catch(e){}
+  if(typeof _txt!=='undefined') _txt.clear();
+}
+function toggleLang(){ setLang(LANG==='en'?'th':'en'); }
+{ try{ const l=localStorage.getItem('prete-lang'); if(l==='th'||l==='en') LANG=l; }catch(e){} }
 /* ============================================================
    MORE OF THE VILLAGE — the cozy half
    ============================================================ */
@@ -1790,7 +1975,7 @@ function paintPlay(){
     const l = addLight(x+9, groundY(x)-img.height+29, 62, PAL.lamp, 0.62, {id:'lamp'+i, flick:i===BROKEN_LAMP?1:0.04});
     if(i===BROKEN_LAMP){ l.on=false; l.broken=true; }
   });
-  for(const x of [1620,1860,2210,2430,2880,3040]) stamp(ART.jar, x, groundY(x)+2, 1);
+  for(const x of [1860,2210,2430,2880,3040]) stamp(ART.jar, x, groundY(x)+2, 1);
   for(const x of [1980,2044,2108,2900,2964]) stamp(ART.fence, x, groundY(x)+2, 1);
   stamp(ART.dog, 2280, groundY(2280)+2, 1);
   stamp(ART.cart, CART_X, groundY(CART_X)+2, 1);
@@ -1844,7 +2029,7 @@ function paintPlay(){
   addLight(2620, groundY(2620)-46, 42, PAL.lamp, 0.5);
   stamp(ART.stall[2], 1760, groundY(1760)+2, 1);
   addLight(1760, groundY(1760)-46, 42, PAL.lamp, 0.5);
-  for(const x of [1680, 2260, 2860]) stamp(ART.rack, x, groundY(x)+2, 1);
+  for(const x of [2260, 2860]) stamp(ART.rack, x, groundY(x)+2, 1);
   // signposts where one place becomes another
   for(const s of SIGNS) stamp(ART.sign, s.x, groundY(s.x)+2, 1);
   // offering tables through the village
@@ -2032,15 +2217,26 @@ function makePrete(){
     phase:0, bob:0, squash:0, lean:0, blink:rnd(2,6),
     bellyX:0, bellyY:0, bellyVX:0, bellyVY:0,
     headLag:0, headV:0, headBob:0, headBV:0,      // the head arrives a moment late
+    stride:6,
     swayT:rnd(9), breath:0,
     cloth: makeCloth(6, 15),
     state:'idle', anim:0, reachT:null, alpha:1,
+    act:null,                                     // {k,t,dur,hit} — a one-shot gesture
   };
 }
+/* A gesture: he crouches, reaches, and something happens at the middle of it.
+   Everything that used to be instant now costs a beat and looks like work. */
+function preteAct(k, dur, hit){ P.act={k, t:0, dur, hit:hit||null}; navStop(); }
+function preteBusy(){ return !!P.act; }
 /* everything here is slow. he has been dead a while and is in no hurry. */
 function stepPrete(p, dt){
   const sp = Math.abs(p.vx);
-  p.phase += p.vx * dt * 0.105;                 // phase from distance — long, slow strides
+  /* Step length grows with speed, and the phase advances exactly one half-cycle
+     per step length of ground covered. That identity — phaseRate * stride === 1 —
+     is the whole reason a planted foot stays put. It was 0.105 * 14 = 1.47, so
+     every planted foot slid backwards at half his walking speed, and he moonwalked. */
+  p.stride = lerp(p.stride, 6+8*clamp(sp/70,0,1), 1-Math.pow(0.008,dt));
+  p.phase += p.vx * dt * Math.PI / (2*p.stride);
   if(sp < 2) p.phase = lerp(p.phase, Math.round(p.phase/Math.PI)*Math.PI, 1-Math.pow(0.02,dt));
   p.lean = lerp(p.lean, clamp(p.vx*0.05,-0.8,0.8), 1-Math.pow(0.02,dt));
   p.squash = lerp(p.squash, 0, 1-Math.pow(0.0006,dt));
@@ -2056,6 +2252,11 @@ function stepPrete(p, dt){
   const hy = -Math.abs(Math.sin(p.phase))*clamp(sp*0.022,0,1.4);
   p.headBV += (hy - p.headBob)*20*dt; p.headBV *= Math.pow(0.10,dt); p.headBob += p.headBV*dt;
   p.blink -= dt; if(p.blink < -0.14) p.blink = rnd(2.6,7);
+  if(p.act){
+    const a=p.act; a.t += dt;
+    if(a.hit && a.t >= a.dur*0.46){ const f=a.hit; a.hit=null; f(); }   // the moment of contact
+    if(a.t >= a.dur) p.act = null;
+  }
   p.anim += dt;
 }
 /* outlined pixel shapes — a 1px darker rim is what makes small art read */
@@ -2086,10 +2287,19 @@ function drawPrete(g, p, o={}){
      hang past the hip, and a head far too big and far too awake */
   const LEG=42, TH=20, SN=20, AU2=23, AL=25;
   const sp = Math.abs(p.vx);
-  const stride = clamp(sp*0.26, 0, 14);
+  const stride = p.stride;
   const lift   = clamp(sp*0.11, 0, 6);
   const bobA   = p.onGround ? Math.abs(Math.sin(p.phase*2))*clamp(sp*0.03,0,2) : 0;
-  const hipY = by - LEG*sY - bobA;
+  /* a gesture bends him in the middle: down and up over its whole length,
+     so the crouch, the reach and the head all move on one clock. */
+  const ACT = p.act;
+  const au   = ACT ? clamp(ACT.t/ACT.dur, 0, 1) : 0;
+  const abell= ACT ? Math.sin(Math.pow(au,0.8)*Math.PI) : 0;
+  const kneel= !ACT ? 0
+             : ACT.k==='plant'||ACT.k==='pick' ? abell*16
+             : ACT.k==='water' ? abell*7
+             : ACT.k==='wai'   ? abell*3 : 0;
+  const hipY = by - LEG*sY - bobA + kneel;
   const hipX = bx + p.lean*2.4 + sway*0.4;
   const chestY = hipY - 26*sY + p.breath*0.4;
   const chestX = hipX + p.lean*3.2 + sway*0.5;
@@ -2100,10 +2310,22 @@ function drawPrete(g, p, o={}){
     let fx, fy;
     if(!p.onGround){ fx=(back?-6:6)*face; fy = p.vy<0? -4:1; }
     else if(p.state==='block'){ fx=(back?-10:9)*face; fy=0; }
-    else { const ph=p.phase+i*Math.PI, c=Math.cos(ph), s=Math.sin(ph);
-      // cos falls while the foot is planted (it slides back under you) and
-      // rises while it swings through — lift on the rising half, or you moonwalk
-      fx=c*stride*face; fy = s<0? -Math.abs(s)*lift : 0; }
+    else {
+      /* A cosine can only hold a foot still for one instant, so a cosine walk
+         always skates. Split it instead: half the cycle is STANCE, where the
+         foot tracks straight back at exactly his walking speed and therefore
+         does not move over the ground at all; the other half is SWING.
+         The sign comes from the phase, which is signed — multiplying by face
+         as well is what sent the whole cycle backwards when he faced left. */
+      const t=((p.phase+i*Math.PI)%TAU+TAU)%TAU;
+      if(t<Math.PI){                                   // planted
+        fx=stride*(1-2*t/Math.PI); fy=0;
+      } else {                                         // swinging through
+        const u=(t-Math.PI)/Math.PI;
+        const e=u<0.5? 2*u*u : 1-2*(1-u)*(1-u);        // ease out of the ground and back into it
+        fx=-stride+2*stride*e; fy=-Math.sin(u*Math.PI)*lift;
+      }
+    }
     return {back, fx:bx+fx, fy:by+fy};
   }
   function drawLeg(i){
@@ -2122,7 +2344,20 @@ function drawPrete(g, p, o={}){
   }
   function armPose(back){
     let hx2,hy2;
-    if(o.armTarget){ hx2=o.armTarget.x-(back?12*face:0); hy2=o.armTarget.y+(back?10:0); }
+    if(ACT && ACT.k==='wai'){
+      // both palms together at the chest, the way you thank anyone here
+      hx2=chestX+(back?2.5:5.5)*face; hy2=chestY+30-abell*27;
+    }
+    else if(ACT && ACT.k==='give'){
+      hx2=chestX+(10+abell*13)*face+(back?-6*face:0); hy2=chestY+34-abell*13+(back?5:0);
+    }
+    else if(ACT){
+      // down into the earth, both hands, the near one leading
+      const reach = ACT.k==='water'? 21 : 15;
+      hx2 = hipX + (reach*abell + 3)*face + (back? -9*face : 0);
+      hy2 = by - 6 - (1-abell)*30 + (back? 7 : 0);
+    }
+    else if(o.armTarget){ hx2=o.armTarget.x-(back?12*face:0); hy2=o.armTarget.y+(back?10:0); }
     else if(p.state==='block'){ hx2=chestX+(back?7:13)*face; hy2=chestY+9; }
     else if(p.state==='wail'){ hx2=chestX+(back?-14:16)*face; hy2=chestY-18+(back?9:0); }
     else if(!p.onGround){ hx2=chestX-(back?5:9)*face; hy2=chestY+(p.vy<0?13:30); }
@@ -2130,7 +2365,7 @@ function drawPrete(g, p, o={}){
       /* they hang almost straight, swing a beat behind the legs, and drift
          on their own when he is standing still. never back across the chest. */
       const ph=p.phase+(back?Math.PI:0)+0.5;
-      hx2=chestX+(Math.cos(ph)*stride*0.62+(back?-5:7))*face+sway*(back?0.6:1.1);
+      hx2=chestX+Math.cos(ph)*stride*0.62+(back?-5:7)*face+sway*(back?0.6:1.1);
       hy2=chestY+45+Math.abs(Math.sin(ph))*2+Math.sin(p.swayT*1.3+(back?2:0))*1.2;
     }
     return {hx2,hy2};
@@ -2199,8 +2434,10 @@ function drawPrete(g, p, o={}){
   o.hands=[handB,handF];
 
   /* ---- the head. it is the reason anybody remembers him. ---- */
-  const headY = chestY - 20 + p.headBob + Math.sin(p.anim*1.1)*0.5;
-  const headX = chestX + p.lean*2.2 + p.headLag + sway*0.8 + (o.headX||0);
+  const headTilt = ACT ? (ACT.k==='wai'? -abell*2 : abell*5) : 0;   // he looks at his hands
+  const headY = chestY - 20 + p.headBob + Math.sin(p.anim*1.1)*0.5 + headTilt;
+  const headX = chestX + p.lean*2.2 + p.headLag + sway*0.8 + (o.headX||0)
+              + (ACT && ACT.k!=='wai' ? abell*3*face : 0);
   iTaper(g, chestX, chestY-5, headX, headY+9, 3.0, 2.6, shade(SHD,-0.08), OC);
   const HRX=11.2, HRY=12.0;
   // a lumpy skull, not an egg
@@ -2284,7 +2521,8 @@ function drawVillager(g, v, o={}){
   const stride=clamp(sp*0.2,0,4.6), lift=clamp(sp*0.1,0,2.4);
   const bob = Math.abs(Math.sin(v.phase*2))*clamp(sp*0.03,0,1);
   const hipY=v.y-LEG-bob, hipX=v.x;
-  const wai = v.state==='wai' || o.wai;
+  const rk  = v.react ? v.react.k : null;
+  const wai = v.state==='wai' || o.wai || rk==='wai';
   // legs
   for(let i=0;i<2;i++){
     const ph=v.phase+i*Math.PI, c=Math.cos(ph), s=Math.sin(ph);
@@ -2309,6 +2547,8 @@ function drawVillager(g, v, o={}){
     const back=i===0;
     let hx2,hy2;
     if(wai){ hx2=hipX+1.5*face; hy2=chestY-4; }
+    else if(rk==='wave' && !back){ hx2=hipX+4.5*face; hy2=chestY-4+Math.sin(v.anim*13)*2.6; }
+    else if(rk==='clap'){ hx2=hipX+(back?1.2:3.2)*face; hy2=chestY+1-Math.abs(Math.sin(v.anim*11))*2.4; }
     else if(v.carry && !back){ hx2=hipX+5*face; hy2=chestY+3; }
     else { const ph=v.phase+(back?Math.PI:0); hx2=hipX+Math.cos(ph)*stride*0.7*face; hy2=chestY+9; }
     const el=ik2(hipX+(back?-3:3)*face,chestY+1,hx2,hy2,5,5,back?(face>0?-1:1):(face>0?1:-1));
@@ -2599,6 +2839,7 @@ const GS = {
   state:'title', t:0, merit:0, spent:0,
   skills:{}, cos:{skirt:'ash'}, q:{prayers:0,offerings:0,pets:0,gifts:0},
   seen:{}, bag:{}, friends:{}, learned:{}, mem:{}, dawn:0, shake:0, hitstop:0,
+  farm:null, req:null,
   camX:0, camY:0, wind:0, toasts:[], zoneName:0, tut:0,
 };
 const has = s => !!GS.skills[s];
@@ -2635,6 +2876,7 @@ const ITEMS = {
   leaf:      {n:'banana leaf',   c:'#3f8f5f', k:'craft'},
   bamboo:    {n:'bamboo',        c:'#c2b46a', k:'craft'},
   clay:      {n:'river clay',    c:'#9a6b4a', k:'craft'},
+  seed:      {n:'a handful of seed', c:'#c9a86a', k:'seed'},
   // cooked
   somtam:      {n:'papaya salad',      c:'#c9d84a', k:'dish'},
   stickyMango: {n:'mango sticky rice', c:'#f0c860', k:'dish'},
@@ -2721,6 +2963,66 @@ const DAM   = addNpc({id:'dam',  x:2900, skin:'#c9986f',skinD:'#a87c58',shirt:'#
                       wants:'tomyum', line:'Drove the rice truck for forty years. Misses it loudly.'});
 const VILLAGERS = [YAI,NOK,DAM];
 
+/* ============================================================
+   VOICES
+
+   Everyone gets three registers: how they talk to a stranger,
+   how they talk to somebody who has fed them, and how they ask
+   for a thing. The asking register is the one that matters —
+   it is the only place in the game where a person tells you
+   plainly what to go and do.
+   ============================================================ */
+const VOICE = {
+  mali: {
+    cold:['I am seven. Papa says seven is old enough to carry things. It is not.',
+          'You are taller than the shop. Do you have to duck under the wires?'],
+    warm:['Sit down — no, lower. There. Now we are almost the same size.',
+          'I told everyone at school about you. Nobody believed me. Still a good day.'],
+    chat:['Meow-Meow sleeps on my feet now. Both feet. At once.'],
+    ask: ['I am not allowed to ask grown-ups for things. You are not a grown-up.'] },
+  uncle: {
+    cold:['Thirty years on this corner. Ask anybody where the noodles are.',
+          'Sit if you like. Everybody stands. Nobody sits.'],
+    warm:['There is a bowl with your name on it, and no, you cannot pay.',
+          'You keep the road busy at night. Good for business, oddly.'],
+    chat:['The stock has been on since four. It is not ready. It is never ready.'],
+    ask: ['I would send the boy, but the boy is thirty-one and lives in the city.'] },
+  monk: {
+    cold:['Sit where you like. The step is cool at this hour.',
+          'Nobody has been afraid of you all week. You may not have noticed.'],
+    warm:['You have been busy. The village says so, which is louder than you do.',
+          'Merit is not a score. But people do like to see the number go up.'],
+    chat:['The bell wants ringing at dusk. It does not much mind by whom.'],
+    ask: ['I am not supposed to want things. Here we are anyway.'] },
+  yai: {
+    cold:['Eighty-one. I can still climb a ladder. That is what worries them.',
+          'Speak up. And stop stooping, you will get a back like mine.'],
+    warm:['You are a good one. I have been wrong about people before, but not often.',
+          'Take some fruit. No. Take it.'],
+    chat:['My knees tell the weather. Rain by Thursday.'],
+    ask: ['If I ask my son he will take a week. If I ask you it is done tonight.'] },
+  nok: {
+    cold:['Stall is open, gossip is free, mind the step.',
+          'You want to know something about this village? Wrong. You want to know everything.'],
+    warm:['Anything you need, tall one, I know who has it.',
+          'People come to my stall just to ask about you now. I let them.'],
+    chat:['The field wants water. It always wants water. That is a field.'],
+    ask: ['I could get it myself. I am not going to. That is what neighbours are for.'] },
+  dam: {
+    cold:['Forty years driving rice. Then they gave me a chair.',
+          'Do not tell me about the west road. I built the west road.'],
+    warm:['You lifted that tree like it was a broom handle. I am still thinking about it.',
+          'Come round when the pot is on. Bring nothing. Bring an appetite.'],
+    chat:['Engine sounds wrong from here. That is not my truck. Still sounds wrong.'],
+    ask: ['My legs are done. My mouth is fine. So I am asking.'] },
+};
+/* what a standing request sounds like out loud, so nobody has to guess */
+function reqAsk(v){
+  if(REQ.who!==v.id || !REQ.item) return null;
+  const left = REQ.n - REQ.got;
+  return L('Bring me')+' '+left+' '+L(ITEMS[REQ.item].n)+'. '+L('Then we are square.');
+}
+
 const TANI = {x:TANI_X, y:groundY(TANI_X)-4, anim:0, face:-1, waveT:0};
 const PHRA = {x:SHRINE_X+2, y:groundY(SHRINE_X)-64, anim:0, shown:false};
 const CAT  = {x:TAMARIND_X+16, y:groundY(TAMARIND_X)-104, state:'tree', anim:0, phase:0, face:-1, tx:0};
@@ -2775,9 +3077,9 @@ const NODES = [];
 function addNode(x,item,n=1,art='bush'){ NODES.push({x,y:groundY(x),item,n,art,ready:true,t:0}); }
 addNode(960,'rice',2,'paddy');  addNode(1060,'rice',2,'paddy'); addNode(1290,'herb',2,'paddy');
 addNode(1390,'herb',2,'paddy'); addNode(1120,'clay',2,'clay');  addNode(1180,'clay',2,'clay');
-addNode(1620,'chili',2,'chili');addNode(1960,'lemongrass',2,'lemongrass'); addNode(2210,'lime',2,'lime');
+addNode(1620,'chili',2,'chili');addNode(1660,'lemongrass',2,'lemongrass'); addNode(2210,'lime',2,'lime');
 addNode(2460,'chili',2,'chili'); addNode(2560,'papaya',2,'bush'); addNode(2960,'papaya',2,'bush');
-addNode(1740,'flower',3,'flowers'); addNode(2320,'flower',3,'flowers'); addNode(3600,'flower',3,'flowers');
+addNode(1845,'flower',3,'flowers'); addNode(2320,'flower',3,'flowers'); addNode(3600,'flower',3,'flowers');
 addNode(3120,'banana',3,'banana'); addNode(3260,'banana',3,'banana'); addNode(3480,'mango',2,'banana');
 addNode(3560,'leaf',3,'leaf');   addNode(3700,'leaf',3,'leaf');  addNode(3420,'mango',2,'banana');
 addNode(1490,'coconut',2,'coconut'); addNode(2680,'coconut',2,'coconut'); addNode(4200,'coconut',2,'coconut');
@@ -2882,9 +3184,11 @@ function stepDlg(dt){
 const TUT = [
   {id:'walk',  test:()=>Math.abs(P.x-300)>90,             say:'Tap the road. I will walk you there.'},
   {id:'gather',test:()=>bagCount()>0,                     say:'Tap a plant. Everything cooks from something.'},
+  {id:'farm',  test:()=>(GS.q.harvest||0)>0,              say:'The beds east of the stall are yours to tend. Sow, water, wait, pick.'},
   {id:'guide2',test:()=>GS.q.metPhra,                     say:'The little gold house east of here keeps the ledger. Be polite.'},
   {id:'cook',  test:()=>Object.keys(GS.learned).length>0, say:'Tap the kitchen by the noodle cart.'},
   {id:'give',  test:()=>GS.q.gifts>0,                     say:'Now give it away. That is the whole game, really.'},
+  {id:'req',   test:()=>(GS.q.reqs||0)>0,                 say:'Somebody always needs one thing. It is written at the top of the screen.'},
   {id:'ledger',test:()=>!!GS.seen.ledger,                 say:'Your ledger is the book, bottom left. Spent merit still counts.'},
   {id:'past',  test:()=>!!GS.mem.take,                    say:'That was a piece of you. The PAST tab keeps every one it gives back.'},
 ];
@@ -2916,7 +3220,7 @@ function khwanSay(txt,t=6){ KHWAN.bub=txt; KHWAN.bubT=t; KHWAN.bubMax=t; AU.blip
    ============================================================ */
 const SPD = ()=> has('stride')? 98 : 72;
 function stepPlayer(dt){
-  const busy = !!DLG || GS.state!=='play';
+  const busy = !!DLG || GS.state!=='play' || !!P.act || !!VIG;
   let ax=0, ease=1;
   if(busy) navStop();
   else {
@@ -2984,6 +3288,7 @@ let prayTimer=14, activePray=null, offering=null, offerTimer=40;
 function stepNpcs(dt){
   for(const n of NPCS){
     n.anim+=dt;
+    if(n.react){ n.react.t-=dt; if(n.react.t<=0) n.react=null; }
     if(n.mark){ n.mark.t-=dt; if(n.mark.t<=0) n.mark=null; }
     if(n.bub){ n.bub.t-=dt; if(n.bub.t<=0) n.bub=null; }
     n.phase += n.vx*dt*0.22;
@@ -3171,6 +3476,359 @@ function unlockCos(id, free){
   if(free){ GS.seen['own_'+id]=true; toast('unlocked: '+COSMETICS[id].n, PAL.jadeL); AU.unlock(); }
   saveGame();
 }
+/* ============================================================
+   THE VILLAGE FIELD — the one job that is yours and comes back
+   every time. Plant, water, wait, pick. Six beds, one crop each,
+   so there is never a menu and never a question about what a bed
+   is going to grow.
+   ============================================================ */
+const FARM_X = 1990, PLOT_N = 5, PLOT_GAP = 26;
+const PLOT_CROPS = ['papaya','chili','lemongrass','rice','herb'];
+const GROW_A = 11, GROW_B = 13;          // seconds, dry. water roughly halves it.
+const PLOTS = [];
+for(let i=0;i<PLOT_N;i++)
+  PLOTS.push({ i, x: FARM_X - ((PLOT_N-1)/2)*PLOT_GAP + i*PLOT_GAP,
+               crop: PLOT_CROPS[i], stage:0, t:0, wet:0, pop:0, sway:rnd(TAU) });
+/* stage 0 bare · 1 sown · 2 sprouted · 3 ready */
+function plotAt(x){ for(const pl of PLOTS) if(Math.abs(pl.x-x)<12) return pl; return null; }
+function stepFarm(dt){
+  for(const pl of PLOTS){
+    pl.sway += dt*0.7;
+    if(pl.pop>0) pl.pop -= dt;
+    if(!pl.stage) continue;
+    const rate = pl.wet>0 ? 2.1 : 0.85;
+    if(pl.wet>0) pl.wet -= dt;
+    pl.t += dt*rate;
+    const need = pl.stage===1? GROW_A : GROW_B;
+    if(pl.stage<3 && pl.t>=need){
+      pl.stage++; pl.t=0; pl.pop=0.9;
+      if(pl.stage===3){ AU.ranat(880,0,0.04); for(let k=0;k<5;k++) pSpark(pl.x+rnd(-6,6), groundY(pl.x)-16, 1, PAL.jadeL); }
+      else AU.blip();
+    }
+  }
+}
+const SEED_BOX_X = FARM_X - ((PLOT_N-1)/2)*PLOT_GAP - 32;   // clear of the broken lamp at 2060
+/* the village keeps a crate of seed by the gate. It is never empty, because a
+   field you cannot start is not a challenge, it is a dead end. */
+function takeSeed(){
+  const n = 3 - (GS.bag.seed||0);
+  if(n<=0){ khwanSay('You have seed enough. Put it in the ground.'); AU.blip(); return; }
+  preteAct('pick', 0.8, ()=>{
+    bagAdd('seed', n, true);
+    AU.ranat(660,0,0.05);
+    toast('+'+n+' '+L('a handful of seed'), '#c9a86a');
+    for(let k=0;k<6;k++) part({k:'pop',x:SEED_BOX_X,y:groundY(SEED_BOX_X)-12,vx:rnd(-24,24),vy:rnd(-40,-12),life:.6,c:'#c9a86a'});
+    if(!GS.seen.seedbox){ GS.seen.seedbox=true;
+      khwanSay('The crate is the village\'s. Take what you will plant, and no more.',7); }
+    saveGame();
+  });
+}
+function drawSeedBox(g){
+  const x=SEED_BOX_X, gy=groundY(x);
+  if(x-GS.camX<-40 || x-GS.camX>W+40) return;
+  pR(g,x-9,gy-13,18,13,'#3b2412');
+  pR(g,x-8,gy-12,16,11,'#9a7040');
+  pR(g,x-8,gy-12,16,2,'#c09256');
+  pR(g,x-8,gy-6,16,1,'#7a5630');
+  for(let k=0;k<3;k++) pR(g,x-6+k*5,gy-11,1,9,'#7a5630');
+  // seed heaped above the rim
+  pEll(g,x,gy-13,7,2.6,'#3b2412');
+  pEll(g,x,gy-13.6,6,2,'#c9a86a');
+  pEll(g,x-2,gy-14,2.4,1.2,'#e2c48c');
+  const bl=0.5+0.5*Math.sin(GS.t*2.4);
+  if((GS.bag.seed||0)===0) pR(g,x,gy-20-bl*2,1,1,rgba(PAL.goldL,0.4+0.5*bl));
+}
+function plotPrompt(pl){
+  if(pl.stage===0) return bagHas('seed')? 'plant a seed' : 'the bed is empty';
+  if(pl.stage===3) return 'harvest it';
+  return pl.wet>0? 'it is growing' : 'it needs water';
+}
+function usePlot(pl){
+  P.face = pl.x < P.x ? -1 : 1;
+  if(pl.stage===0){
+    if(!bagHas('seed')){ khwanSay('No seed left. Pick a ripe bed and one comes back.'); AU.blip(); return; }
+    preteAct('plant', 1.05, ()=>{
+      if(!bagTake('seed',1)) return;
+      pl.stage=1; pl.t=0; pl.wet=0; pl.pop=1;
+      AU.step(); pDust(pl.x, groundY(pl.x), 8);
+      for(let k=0;k<4;k++) part({k:'sp',x:pl.x+rnd(-4,4),y:groundY(pl.x)-6,vx:rnd(-8,8),vy:rnd(-14,-4),life:.6,c:'#c9a86a'});
+      toast(L('sown'),'#c9a86a');
+      if(!GS.seen.sown){ GS.seen.sown=true;
+        vignette('firstSeed');
+        khwanSay('Now water it. Wet earth grows twice as fast.',7); }
+      saveGame();
+    });
+    return;
+  }
+  if(pl.stage===3){
+    preteAct('pick', 1.0, ()=>{
+      const n = has('two')? 3 : 2;
+      bagAdd(pl.crop, n, true); bagAdd('seed', 1, true);
+      addMerit(2); GS.q.harvest=(GS.q.harvest||0)+1;
+      toast('+2 '+L('merit')+'  '+n+' '+L(ITEMS[pl.crop].n), PAL.jadeL);
+      for(let k=0;k<9;k++) part({k:'pop',x:pl.x,y:groundY(pl.x)-18,vx:rnd(-30,30),vy:rnd(-56,-18),life:.7,c:ITEMS[pl.crop].c});
+      AU.ranat(700,0,0.05); AU.ranat(1046,0.08,0.04);
+      pl.stage=0; pl.t=0; pl.wet=0; pl.pop=1;
+      if(GS.q.harvest===1) vignette('firstHarvest');
+      saveGame();
+    });
+    return;
+  }
+  // watering: he has the reach, and the pond is right there
+  preteAct('water', 1.15, ()=>{
+    pl.wet = 9; pl.pop = 0.6;
+    AU.pour();
+    for(let k=0;k<14;k++) part({k:'water',x:pl.x+rnd(-7,7),y:groundY(pl.x)-30,vx:rnd(-8,8),vy:rnd(30,70),life:.55});
+    toast(L('watered'),'#8fc4e8');
+  });
+}
+/* ---- the field, drawn ----
+   He is ninety pixels tall and stands in front of it, so everything that
+   tells you the state of a bed has to clear his knee: the ripe plant is
+   tall, the ready-icon floats above it, and every bed keeps a painted
+   marker post you can read from the far side of the road. ---- */
+function drawFarm(g){
+  const x0=PLOTS[0].x-18, x1=PLOTS[PLOT_N-1].x+18;
+  if(x1-GS.camX<-40 || x0-GS.camX>W+40) return;
+  const fy0=groundY((x0+x1)/2);
+
+  /* somebody strung three lanterns over the beds so the work could go on
+     after dark. It is also the only reason you can see the field at all. */
+  const lx0=x0-4, lx1=x1+4, ly=fy0-62;
+  pR(g,lx0,ly,2,42,'#6d5138'); pR(g,lx0,ly,1,42,'#8a684a');
+  pR(g,lx1,ly,2,42,'#6d5138'); pR(g,lx1,ly,1,42,'#8a684a');
+  for(let k=0;k<3;k++){
+    const t=(k+1)/4, lxx=lerp(lx0,lx1,t), sag=Math.sin(t*Math.PI)*5;
+    pR(g,lxx,ly+sag-1,1,4,'#4a3a2a');
+    const fl=0.82+0.18*Math.sin(GS.t*3.1+k*2.3);
+    const gr=g.createRadialGradient(lxx,ly+sag+7,1,lxx,ly+sag+7,46);
+    gr.addColorStop(0,'rgba(255,208,120,'+(0.34*fl).toFixed(3)+')');
+    gr.addColorStop(1,'rgba(255,190,90,0)');
+    g.fillStyle=gr; g.fillRect(lxx-46,ly+sag-39,92,92);
+    pEll(g,lxx,ly+sag+7,4.2,5.2,'#3b2412');
+    pEll(g,lxx,ly+sag+7,3.1,4.1,rgba('#ffd898',fl));
+    pEll(g,lxx-1,ly+sag+6,1.2,1.6,'#fff4d0');
+    pR(g,lxx-1,ly+sag+2,2,1,'#8a684a');
+  }
+  { const sagY=ly+2;
+    for(let sx2=lx0; sx2<lx1; sx2+=3){
+      const t=(sx2-lx0)/(lx1-lx0);
+      pR(g,sx2,sagY+Math.sin(t*Math.PI)*5,3,1,'rgba(40,30,20,0.7)'); } }
+
+  // the fence behind the row: two rails and a post every bed
+  pR(g,x0-8,fy0-21,x1-x0+16,2,'#5d4735');
+  pR(g,x0-8,fy0-21,x1-x0+16,1,'#7a5c44');
+  pR(g,x0-8,fy0-13,x1-x0+16,2,'#54402f');
+  for(let fx=x0-8; fx<x1+10; fx+=13){
+    const gy=groundY(fx);
+    pR(g,fx,gy-23,2,23,'#6d5138'); pR(g,fx,gy-23,1,23,'#8a684a');
+    pR(g,fx,gy-24,2,1,'#a07c58');
+  }
+
+  for(const pl of PLOTS){
+    const gy=groundY(pl.x), pop=Math.max(0,pl.pop), sw=Math.sin(pl.sway)*1.2;
+    // a raised bed of turned earth, dark when it has been watered
+    pEll(g,pl.x,gy,13,5.4,'#3d2b1c');
+    pEll(g,pl.x,gy-2,12.4,5,'#7d5c3c');
+    pEll(g,pl.x,gy-3.4,10.6,3.8, pl.wet>0? '#553f27':'#8f6b47');
+    for(let k=0;k<5;k++) pR(g,pl.x-8+k*4,gy-4.6,2,1,pl.wet>0?'#3a2a1a':'#8d6a48');
+    if(pl.wet>0 && Math.random()<0.05) part({k:'sp',x:pl.x+rnd(-7,7),y:gy-5,vx:0,vy:-6,life:.5,c:'#8fc4e8'});
+
+    if(pl.stage===1){                       // sown: a seed and one green thread
+      pEll(g,pl.x,gy-5,3.6,2,'#5a4230');
+      pR(g,pl.x,gy-8,1,3,'#7fa85e');
+    } else if(pl.stage===2){                // sprouted: a stem and two leaves
+      pTaper(g,pl.x,gy-3,pl.x+sw*0.6,gy-16,2.6,1.5,'#5f9a52');
+      pEll(g,pl.x+sw*0.6-3.6,gy-14,3.8,2.2,'#6fbf62');
+      pEll(g,pl.x+sw*0.6+3.6,gy-16,3.8,2.2,'#5f9a52');
+    } else if(pl.stage===3){                // ripe: tall enough to see past him
+      pTaper(g,pl.x,gy-3,pl.x+sw,gy-27,3.4,1.8,'#4f8a46');
+      for(let k=0;k<5;k++){ const a=Math.PI*(0.12+k*0.19), s2=k%2?1:-1;
+        pEll(g,pl.x+sw*0.7+Math.cos(a)*8*s2, gy-22+Math.sin(a)*5, 4.4,2.6, k%2?'#5f9a52':'#6fbf62'); }
+      const fl=Math.sin(GS.t*2.2+pl.i)*1.4;
+      drawIcon(g,pl.crop,pl.x+sw,gy-34+fl,0.72);
+      const bl=0.5+0.5*Math.sin(GS.t*3+pl.i);
+      for(let k=0;k<3;k++){ const a=GS.t*1.6+k*2.1;
+        pR(g,pl.x+sw+Math.cos(a)*9, gy-34+fl+Math.sin(a)*4, 1,1, rgba(PAL.goldL,0.3+0.5*bl)); }
+    }
+    if(pop>0.02){ g.globalAlpha=clamp(pop,0,1)*0.8;
+      for(let k=0;k<6;k++){ const a=k/6*TAU;
+        pR(g,pl.x+Math.cos(a)*(10+(1-pop)*9), gy-9+Math.sin(a)*(4+(1-pop)*4),1,1,'#e8dfc8'); }
+      g.globalAlpha=1; }
+
+    // the marker post: what this bed grows, painted on a board, always legible
+    pR(g,pl.x+12,gy-17,2,17,'#7d5a3c');
+    pR(g,pl.x+11,gy-18,4,2,'#96704c');
+    pR(g,pl.x+8,gy-27,11,10,'#3b2412');
+    pR(g,pl.x+9,gy-26,9,8,'#c9a468');
+    pR(g,pl.x+9,gy-26,9,1,'#e2c48c');
+    drawIcon(g,pl.crop,pl.x+13.5,gy-22,0.4);
+  }
+}
+/* ============================================================
+   WHAT THE VILLAGE NEEDS — one request at a time, always visible,
+   so there is never a moment where you do not know what to do.
+   ============================================================ */
+const REQ = { who:null, item:null, n:1, got:0, cool:6 };
+const REQ_POOL = [
+  {id:'uncle', items:['papaya','chili','lime']},
+  {id:'nok',   items:['coconut','rice','banana']},
+  {id:'yai',   items:['flower','leaf','herb']},
+  {id:'dam',   items:['lemongrass','chili','mango']},
+  {id:'mali',  items:['banana','mango','coconut']},
+];
+function reqWho(){ return REQ.who? NPCS.find(n=>n.id===REQ.who) : null; }
+function newRequest(){
+  const p = pick(REQ_POOL.filter(r=>r.id!==REQ.who));
+  REQ.who=p.id; REQ.item=pick(p.items); REQ.n=1+((Math.random()*3)|0); REQ.got=0; REQ.cool=0;
+  const n=reqWho();
+  if(n){ n.mark={k:'star',t:4}; npcReact(n,'wave',1.6);
+         if(Math.abs(n.x-P.x)<180) AU.blip(); }
+  vignette('firstRequest');
+  saveGame();
+}
+function stepRequests(dt){
+  if(!GS.q.metPhra) return;
+  if(!REQ.who){ REQ.cool-=dt; if(REQ.cool<=0) newRequest(); return; }
+  const n=reqWho(); if(n && Math.random()<dt*0.5) n.mark={k:'star',t:1.2};
+}
+/* giving the requested thing counts toward it */
+function reqGive(target,id){
+  if(!REQ.who || target.id!==REQ.who || id!==REQ.item) return false;
+  REQ.got++;
+  if(REQ.got>=REQ.n){
+    const m=6+REQ.n*2;
+    addMerit(m); toast('+'+m+' '+L('merit'), PAL.goldL);
+    for(let i=0;i<8;i++) pOrb(target.x+rnd(-8,8), target.y-30+rnd(-6,6), i*0.12);
+    REQ.who=null; REQ.item=null; REQ.cool=rnd(16,30);
+    GS.q.reqs=(GS.q.reqs||0)+1;
+    if(!vignette('reqDone', target)) npcReact(target,'wai',2.4);
+    saveGame();
+  } else {
+    npcReact(target,'clap',1.2);
+    toast(REQ.got+'/'+REQ.n, PAL.jadeL);
+  }
+  return true;
+}
+function reqLine(){
+  if(!REQ.who) return null;
+  const n=reqWho(); if(!n) return null;
+  const who=L(n.name), what=L(ITEMS[REQ.item].n);
+  const tail = REQ.got? '  ('+REQ.got+'/'+REQ.n+')' : '';
+  return LANG==='th'
+    ? who+' '+L('needs')+' '+what+' '+REQ.n+tail
+    : who+' '+L('needs')+' '+REQ.n+' '+what+tail;
+}
+/* ============================================================
+   LITTLE SCENES
+
+   Not a state machine and not a menu: three or four seconds
+   played over the world exactly where it stands. The bars come
+   down, the camera leans onto whoever it is about, one or two
+   lines are said, and it lets go again. Tap skips a line; tap
+   twice and it is over. Nothing is ever locked behind one.
+   ============================================================ */
+var VIG = null;
+
+const VIGS = {
+  firstSeed: { once:true, dur:0, at:()=>P.x, hold:0.9,
+    lines:['A seed does not care what you used to be.',
+           'It wants earth, and water, and to be let alone a while.'] },
+  firstHarvest: { once:true, at:()=>P.x, hold:0.9,
+    lines:['Something grew here because you stayed.',
+           'That has not been true of you for a very long time.'] },
+  firstRequest: { once:true, at:()=>P.x, hold:0.8,
+    lines:['Somebody in this village needs something.',
+           'Bring it to them. That is the whole of the work.'] },
+  reqDone: { at:()=>VIG.who? (P.x+VIG.who.x)/2 : P.x, hold:0.7,
+    lines:['They put their hands together, the way people do here.',
+           'You find that your own hands still know how.'],
+    start(v){ if(v.who){ npcReact(v.who,'wai',3.2); v.who.face = P.x>v.who.x? 1:-1; }
+              P.face = v.who && v.who.x<P.x ? -1 : 1; },
+    step(v){ if(v.t>0.55 && !v.did){ v.did=true; preteAct('wai',2.4); AU.metta&&AU.metta(); } } },
+  firstFriend: { once:true, at:()=>P.x, hold:0.8,
+    lines:['A dead thing was kind to you, and you were kind back.',
+           'Nobody wrote it down. It counted anyway.'] },
+};
+
+function vignette(id, who){
+  const d = VIGS[id];
+  if(!d || VIG || DLG || GS.state!=='play') return false;
+  if(d.once && GS.seen['vig_'+id]) return false;
+  GS.seen['vig_'+id] = true;
+  VIG = { id, d, t:0, line:0, ch:0, who:who||null, x:0, out:0 };
+  VIG.x = d.at ? d.at() : P.x;
+  navStop(); clearPress(); PROMPT=null;
+  if(d.start) d.start(VIG);
+  AU.blip();
+  saveGame();
+  return true;
+}
+
+function stepVig(dt){
+  if(!VIG) return;
+  const d = VIG.d;
+  VIG.t += dt;
+  if(VIG.out>0){ VIG.out -= dt; if(VIG.out<=0) VIG=null; return; }
+
+  // the camera leans onto the subject and stays there
+  const tx = clamp(VIG.x - W/2, 0, WORLD_W-W);
+  GS.camX = lerp(GS.camX, tx, 1-Math.pow(0.004,dt));
+
+  const raw = L(String(d.lines[VIG.line]));
+  VIG.ch += dt*44;
+  const done = VIG.ch >= raw.length;
+  const advance = ()=>{
+    VIG.line++; VIG.ch=0;
+    if(VIG.line >= d.lines.length){ VIG.out=0.4; VIG.line=d.lines.length-1; }
+  };
+  if(press('act')||press('tap')){
+    AU.blip();
+    if(!done) VIG.ch = raw.length; else advance();
+  }
+  else if(done && VIG.ch >= raw.length + (d.hold||0.8)*44) advance();
+  if(d.step && VIG) d.step(VIG, dt);
+}
+
+function drawVig(g){
+  if(!VIG) return;
+  const d = VIG.d;
+  const inT  = clamp(VIG.t/0.4, 0, 1);
+  const outT = VIG.out>0 ? clamp(VIG.out/0.4, 0, 1) : 1;
+  const k    = Math.min(inT, outT);
+  const bar  = Math.round(24*(k*k*(3-2*k)));          // smoothstep, so it slides
+  if(bar<=0) return;
+
+  // a pool of light on whoever this is about, and the rest steps back
+  const sx = VIG.x - GS.camX;
+  const gr = g.createRadialGradient(sx, H*0.60, 12, sx, H*0.60, 132);
+  gr.addColorStop(0,'rgba(255,238,196,0.09)');
+  gr.addColorStop(1,'rgba(9,7,17,'+(0.40*k).toFixed(3)+')');
+  g.fillStyle=gr; g.fillRect(0,0,W,H);
+
+  pR(g,0,0,W,bar,'#0c0a13');
+  pR(g,0,H-bar,W,bar,'#0c0a13');
+  pR(g,0,bar-1,W,1,'rgba(255,214,140,0.16)');
+  pR(g,0,H-bar,W,1,'rgba(255,214,140,0.16)');
+
+  if(bar < 20) return;
+  const full = L(String(d.lines[VIG.line]));
+  const shown = full.slice(0, Math.max(0, VIG.ch|0));
+  if(shown.length){
+    const lines = wrap(g, shown, W-60, 7);
+    const y0 = H - bar - 6 - (lines.length-1)*10;
+    for(let i=0;i<lines.length;i++)
+      pTxt(g, lines[i], W/2, y0+i*10, '#f2e6c8', 7, 'center');
+  }
+  if(VIG.ch >= full.length && VIG.out<=0){
+    g.globalAlpha = 0.45+0.45*Math.sin(GS.t*6);
+    icoDown(g, W-22, H-bar-8, 1.2, PAL.gold);
+    g.globalAlpha = 1;
+  }
+}
+
+/* ---- villagers react with their bodies, not just a speech bubble ---- */
+function npcReact(n, k, t){ if(n && NPCS.indexOf(n)>=0) n.react = {k, t, dur:t}; }
 /* ============================================================
    ITEM ICONS — every ingredient drawn, not lettered
    ============================================================ */
@@ -3419,10 +4077,16 @@ function stepGive(dt){
   clearPress();
 }
 function doGive(t,id){
+  // a standing request is what they actually asked for, so it settles first
+  if(reqGive(t,id)){ pHeart(t.x,t.y-30); pSpark(t.x,t.y-26,10,PAL.goldL); AU.metta();
+    GS.q.gifts=(GS.q.gifts||0)+1; preteAct('give',0.9); saveGame(); return; }
   const want = t.wants===id;
   const isSpirit = !!t.art;
   const name = isSpirit? t.name : t.name;
   GS.q.gifts=(GS.q.gifts||0)+1;
+  P.face = t.x < P.x ? -1 : 1;
+  preteAct('give', 0.9);
+  npcReact(t,'wai',1.8);
   pHeart(t.x, t.y-30); pSpark(t.x,t.y-26,10,PAL.goldL);
   if(want){
     const already = GS.friends[t.id];
@@ -3436,9 +4100,10 @@ function doGive(t,id){
     if(!already && isSpirit && t.gift) lines.push({w:'',t:'They press something into your enormous hand: '+ITEMS[t.gift].n+'.'});
     say(lines, ()=>{
       addMerit(merit);
-      toast('+'+merit+' merit · '+name+' is glad', PAL.goldL);
+      toast('+'+merit+' '+L('merit'), PAL.goldL);
       if(!already && isSpirit && t.gift) bagAdd(t.gift,3,true);
-      if(!already && isSpirit) khwanSay('Look at that. A friend. That is worth more than the merit, whatever the ledger says.');
+      if(!already && isSpirit && !vignette('firstFriend'))
+        khwanSay('Look at that. A friend. Worth more than the merit, whatever the ledger says.');
       for(let i=0;i<6;i++) pOrb(t.x+rnd(-8,8), t.y-30+rnd(-6,6), i*0.15);
       saveGame();
     });
@@ -3449,7 +4114,7 @@ function doGive(t,id){
     say([{w:name,t: isSpirit
       ? 'Oh! That is very kind. I cannot really… but I will keep it. Thank you, honestly.'
       : 'Ah, thank you! I will find someone to share it with.'}],
-      ()=>{ toast('+2 merit · kindly received'); saveGame(); });
+      ()=>{ toast('+2 '+L('merit')); saveGame(); });
   }
 }
 /* ============================================================
@@ -3618,6 +4283,7 @@ function render(){
   }
 
   drawSigns(ctx);
+  drawFarm(ctx); drawSeedBox(ctx);
   if(GS.state==='play') drawNavMark(ctx);
   // gatherable plants
   for(const nd of NODES){
@@ -3683,8 +4349,9 @@ function render(){
   vg.addColorStop(0,'rgba(8,6,20,0)'); vg.addColorStop(1,'rgba(8,6,20,0.4)');
   ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
-  if(GS.state==='play'){ drawKhwanBubble(ctx); drawHUD(); }
+  if(GS.state==='play' && !VIG){ drawKhwanBubble(ctx); drawHUD(); }
   else if(GS.state==='task') drawTaskHUD(ctx);
+  drawVig(ctx);
   drawDialog(ctx);
   if(GS.state==='tree') drawLedger(ctx);
   if(GS.state==='act')  drawAct(ctx);
@@ -3693,7 +4360,7 @@ function render(){
   if(GS.state==='end') drawEnd(ctx);
   if(TOUCH.on && uiShowsPads()) drawPads(ctx);
 }
-function uiShowsPads(){ return (GS.state==='play'&&!DLG)||GS.state==='task'; }
+function uiShowsPads(){ return (GS.state==='play'&&!DLG&&!VIG)||GS.state==='task'; }
 function bubble(g,x,y,txt){
   const w2=txtW(txt,6)+8;
   pR(g,x-w2/2,y-9,w2,11,'rgba(16,12,34,0.88)');
@@ -4261,21 +4928,30 @@ function checkInteract(){
   for(const s of SPIRITS){
     if(near(s.x,40)){
       const y = s.id==='krasue'? s.y-76 : s.y-56;
-      set(s.x,y, s.met? 'talk to '+s.name : 'say hello', ()=>talkSpirit(s), 'give');
+      set(s.x,y, s.met? L('talk to')+' '+L(s.name) : 'say hello', ()=>talkSpirit(s), 'give');
     }
   }
   if(!PROMPT && !GS.q.garland && GS.q.metPhra && near(SHRINE_X-16,30))
     set(SHRINE_X-16, groundY(SHRINE_X)-100,'hang the fallen garland', ()=>startTask('garland',SHRINE_X));
   if(!PROMPT && near(PHRA.x,40) && PHRA.shown) set(PHRA.x,PHRA.y-30,'speak to Phra Phum', talkPhra);
   if(!PROMPT && near(PHRA.x,40) && !PHRA.shown) set(SHRINE_X,groundY(SHRINE_X)-96,'pay respects', talkPhra);
+  if(!PROMPT){
+    const pl=plotAt(P.x);
+    if(pl && near(pl.x,15)){
+      const t=plotPrompt(pl);
+      if(t==='the bed is empty')
+        set(pl.x, groundY(pl.x)-30, t, ()=>khwanSay('Seed is in the crate at the end of the row.'));
+      else set(pl.x, groundY(pl.x)-30, t, ()=>usePlot(pl));
+    }
+  }
   if(!PROMPT && near(KITCHEN_X,34)) set(KITCHEN_X, groundY(KITCHEN_X)-64,'cook something', ()=>startActivity('cook'));
   if(!PROMPT && near(CRAFT_X,34))   set(CRAFT_X,   groundY(CRAFT_X)-52,'sit and make something', ()=>startActivity('craft'));
-  if(!PROMPT && near(TANI.x,36)) set(TANI.x,TANI.y-40,'talk to Tani', talkTani);
+  if(!PROMPT && near(TANI.x,36)) set(TANI.x,TANI.y-40,L('talk to')+' '+L('Tani'), talkTani);
   if(!PROMPT && near(MONK.x,30)) set(MONK.x,MONK.y-30,'approach politely', talkMonk, 'give');
   if(!PROMPT && near(UNCLE.x,28)) set(UNCLE.x,UNCLE.y-30,'talk', talkUncle, 'give');
-  if(!PROMPT && near(MALI.x,26))  set(MALI.x,MALI.y-26,'talk to Mali', talkMali, 'give');
+  if(!PROMPT && near(MALI.x,26))  set(MALI.x,MALI.y-26,L('talk to')+' '+L('Mali'), talkMali, 'give');
   for(const v of VILLAGERS) if(!PROMPT && near(v.x,26))
-    set(v.x,v.y-28,'talk to '+v.name, ()=>talkVillager(v), 'give');
+    set(v.x,v.y-28, L('talk to')+' '+L(v.name), ()=>talkVillager(v), 'give');
   if(!PROMPT && !GS.q.cat && GS.q.maliMet && near(TAMARIND_X+16,50))
     set(TAMARIND_X+16,groundY(TAMARIND_X)-118,'reach up for the cat', ()=>startTask('cat',TAMARIND_X));
   if(!PROMPT && GS.q.cat && CAT.state==='wander' && near(CAT.x,20)) set(CAT.x,CAT.y-20,'pet',()=>{
@@ -4297,10 +4973,12 @@ function checkInteract(){
     if(!GS.seen.bell){ GS.seen.bell=true; addMerit(4); toast('+4 merit · the bell carries a long way'); }
     else toast('the bell hums','#cfc4ae');
   });
-  // plants last, so people always win the prompt
+  // the seed crate and the plants come last, so people always win the prompt
+  if(!PROMPT && near(SEED_BOX_X,16))
+    set(SEED_BOX_X, groundY(SEED_BOX_X)-24, 'take seed', takeSeed);
   if(!PROMPT) for(const nd of NODES){
     if(nd.ready && near(nd.x,22)){ const it=ITEMS[nd.item];
-      set(nd.x, nd.y-30, 'pick '+it.n, ()=>gather(nd)); break; }
+      set(nd.x, nd.y-30, L('pick')+' '+L(it.n), ()=>gather(nd)); break; }
   }
   // arriving on a tapped spot interacts with whatever is standing there
   if(PROMPT && (press('act') || navTake())){ const f=PROMPT.fn; PROMPT=null; f(); }
@@ -4329,10 +5007,26 @@ function talkSpirit(s){
                               : 'I would not ask. But you did ask, so — that.'}]);
 }
 function talkVillager(v){
-  const made=GS.friends[v.id];
-  if(made){ say([{w:v.name,t:pick(['Come and sit, tall one. There is always room on the step.','Everyone stopped locking the gate at night, you know. Since you started walking about.'])}]); return; }
-  say([{w:v.name,t:v.line},
-       {w:v.name,t:'…What I would really like is '+ITEMS[v.wants].n+'. Not that I would ever ask.'}]);
+  /* Three beats, never more: who they are to you, what they need, and
+     one line of village. The middle beat is the only one that is ever
+     a job, and it says the job out loud so nothing has to be guessed. */
+  const V = VOICE[v.id] || {};
+  const warm = (GS.friends[v.id]||0) > 0;
+  const lines = [];
+  lines.push({w:v.name, t: pick(warm ? (V.warm||[v.line]) : (V.cold||[v.line]))});
+
+  const ask = reqAsk(v);
+  if(ask){
+    npcReact(v,'wave',1.4);
+    lines.push({w:v.name, t: pick(V.ask||['I need something, if you have a moment.'])});
+    lines.push({w:v.name, t: ask});
+  } else if(!warm){
+    lines.push({w:v.name, t:'What I would really like is '+L(ITEMS[v.wants].n)+'. Not that I would ever ask.'});
+  } else {
+    npcReact(v,'wai',1.6);
+    lines.push({w:v.name, t: pick(V.chat||['The rice is doing what rice does.'])});
+  }
+  say(lines);
 }
 function talkMali(){
   if(!GS.q.cat){
@@ -4583,10 +5277,6 @@ function drawTitle(){
    past arrives in pieces. Each piece is a small scene you play.
    ============================================================ */
 const MEMS=[
-  { id:'wake',  title:'THE GROUND', when:null,
-    hint:'TAP TO PUSH UP',
-    t:'You do not know your name. You do not know what you did. Only that the ground has let go of you.',
-    j:'You came up out of the earth with nothing. Not a name.' },
   { id:'take',  title:'THE SHELF',  when:()=>GS.q.gifts>=1,
     hint:'TAP THE FLOOR TO CREEP   ·   TAP THE COIN',
     t:'A room you knew. Someone asleep an arm away. You took the coin out of her bowl.',
@@ -4614,7 +5304,6 @@ function memScene(i){
   const S={ t:0, flash:0, shake:0, done:false, px:[], puffs:[], dust:[] };
   for(let k=0;k<26;k++) S.dust.push({x:rnd(0,W),y:rnd(0,H),sp:rnd(3,11),r:rnd(0.6,1.5),a:rnd(0.08,0.3)});
   const id=MEMS[i].id;
-  if(id==='wake')  Object.assign(S,{ up:0, push:0, out:0, quake:0 });
   if(id==='take')  Object.assign(S,{ mx:132, face:1, walk:0, noise:0, stir:0, took:0, reach:false, navx:null });
   if(id==='drink') Object.assign(S,{ sips:0, tilt:0, bottle:1, bell:0, past:0 });
   if(id==='scale') Object.assign(S,{ tug:0, tries:0, last:0, slam:0, soil:0, shut:0 });
@@ -4626,6 +5315,7 @@ function memSpark(S,x,y,n,col,sp=1){
 }
 /* remembering is not something you choose. it just starts. */
 function startMem(i){
+  if(!MEMS[i]) return;                       // a page that is not there is not a crash
   memI=i; memCh=0; IN=null; MEMFADE=1;
   GS.state='memory'; clearPress(); navStop();
   AU.wail && AU.wail();
@@ -4634,7 +5324,7 @@ function memReady(){
   // do not cut Khwan off mid-sentence, but do not wait out the whole line either
   if(GS.state!=='play' || DLG) return -1;
   if(KHWAN.bub && KHWAN.bubT > (KHWAN.bubMax||6)-1.8) return -1;
-  for(let i=1;i<MEMS.length;i++){
+  for(let i=0;i<MEMS.length;i++){
     if(GS.mem[MEMS[i].id]) continue;
     if(MEMS[i].when && MEMS[i].when()) return i;
   }
@@ -4646,14 +5336,9 @@ function finishMem(){
   IN=null; memCh=0; clearPress();
   GS.state='play'; GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
   MEMFADE=1;
-  if(m.id==='wake'){
-    KHWAN.x=P.x+26; KHWAN.y=P.y-60;
-    say(WAKE, ()=>{ khwanSay('East. I will be right behind your shoulder.',6); });
-  } else {
-    GS.seen.newmem=true;
-    toast('a page came back — it is in your ledger','#b9a8d8');
-    khwanSay(m.k||'', 7);
-  }
+  GS.seen.newmem=true;
+  toast('a page came back — it is in your ledger','#b9a8d8');
+  khwanSay(m.k||'', 7);
 }
 function stepMem(dt){
   if(!IN) IN=memScene(memI);
@@ -4666,19 +5351,10 @@ function stepMem(dt){
   for(let i=S.puffs.length-1;i>=0;i--){ const q=S.puffs[i];
     q.y-=q.sp*dt; q.l-=dt; if(q.l<=0) S.puffs.splice(i,1); }
   for(const d of S.dust){ d.y-=d.sp*dt; d.x+=Math.sin((S.t+d.r)*0.7)*4*dt; if(d.y<-2){ d.y=H+2; d.x=rnd(0,W); } }
-  if(press('back') && memI>0){ AU.sel(); finishMem(); return; }
+  if(press('back')){ AU.sel(); finishMem(); return; }
 
   if(!S.done){
-    if(sc.id==='wake'){
-      /* the first thing you ever do is push */
-      if(press('act')||press('tap')){
-        S.push++; S.up=Math.min(1,S.push/3); S.shake=0.7; S.quake=1;
-        AU.drum(); AU.step();
-        memSpark(S,W/2+26,168-S.up*60,10,'#4a3722',0.7);
-        if(S.push>=3){ S.done=true; S.flash=0.8; AU.gong(); memSpark(S,W/2+26,116,26,'#6a5236',1.4); }
-      }
-      S.quake=Math.max(0,S.quake-dt*3);
-    } else if(sc.id==='take'){
+    if(sc.id==='take'){
       /* creeping: moving makes noise, standing still lets it settle.
          a tap walks you along the room, or takes the coin once you can reach */
       let grab=false;
@@ -4737,7 +5413,6 @@ function stepMem(dt){
   }
 
   /* the beat after the verb — the scene plays itself out, then the line types */
-  if(sc.id==='wake')  S.out=Math.min(1,S.out+dt*0.75);
   if(sc.id==='take')  S.took=Math.min(1,S.took+dt*2.6);
   if(sc.id==='drink'){ S.past=Math.min(1,S.past+dt*0.62); S.tilt=lerp(S.tilt,0.06,dt*2);
     if(S.past>0.3 && S.bell<0.01){ S.bell=0.001; AU.gong(); }
@@ -4750,7 +5425,7 @@ function stepMem(dt){
     S.reach=Math.max(0,S.reach-dt*1.5); S.thru=Math.max(0,S.thru-dt*1.1); }
 
   memCh+=dt*82;
-  const ready = sc.id==='scale'? S.shut>0.4 : sc.id==='bowl'? S.fourth>0.45 : sc.id==='wake'? S.out>0.5 : S.t>0.35;
+  const ready = sc.id==='scale'? S.shut>0.4 : sc.id==='bowl'? S.fourth>0.45 : S.t>0.35;
   if(ready && (press('act')||press('tap'))){
     AU.blip();
     if(memCh<sc.t.length){ memCh=sc.t.length; return; }
@@ -4827,100 +5502,6 @@ function memGuy(g,x,y,face,walk,o={}){
   pTri(g,x+lean+1.6*face,gy+4.4,x+lean-0.4*face,gy+1,x+lean+3.4*face,gy+1.3,'#b8622c');
   // a mouth, so the face is a face
   pR(g,x+lean+(face>0?0:-2.4),headY+6.6,2.6,1.2,'#7a3a42');
-}
-function memGrave(g,S){
-  /* a cross-section: a graveyard above the line, and you under it */
-  const GL=118, q=S.quake;
-  g.save(); if(q>0.02) g.translate(R(rnd(-2,2)*q),R(rnd(-2,2)*q));
-  pVGrad(g,0,0,W,GL,'#0d1230','#28325e',6);
-  for(let i=0;i<60;i++){ const st=STARS[i]; g.globalAlpha=0.22+0.5*st[3];
-    pR(g,st[0]*W,st[1]*GL*0.92,1,1,'#dfe6ff'); }
-  g.globalAlpha=1;
-  drawGlow(g,404,30,50,'#e8ecff',0.22);
-  pEll(g,404,30,15,15,'#f4f6ff'); pEll(g,399,25,4,4,'#dde2f4'); pEll(g,409,35,3,3,'#dde2f4');
-  // a row of chedis: a plinth, a bell, a cone, a spire. not bottles.
-  const CH='#0c1020', RM='rgba(220,232,255,0.11)';
-  for(let i=0;i<6;i++){ const x=36+i*84, h=18+((i*11)%12);
-    pR(g,x-14,GL-9,28,9,CH);  pR(g,x-14,GL-9,2,9,RM);
-    pR(g,x-11,GL-16,22,7,CH); pR(g,x-11,GL-16,2,7,RM);
-    pEll(g,x,GL-19,9,7,CH);
-    pTri(g,x,GL-24-h,x-7,GL-22,x+7,GL-22,CH);
-    pR(g,x-1,GL-32-h,3,10,CH);
-    pEll(g,x-4,GL-26-h*0.6,1.4,3,RM); }
-  // two slabs leaning where nobody straightened them
-  for(const [sx,sa] of [[168,0.12],[300,-0.16]]){
-    pTaper(g,sx,GL,sx+sa*54,GL-19,7,6,'#0e1224');
-    pTaper(g,sx,GL,sx+sa*54,GL-19,2,1.6,RM); }
-  for(let i=0;i<16;i++) pTaper(g,12+i*30,GL,8+i*30,GL-8-((i*7)%7),2,0.6,'#14261a');
-  pR(g,0,GL-3,W,3,'#1c2338');
-  pR(g,0,GL-1,W,1,'rgba(220,232,255,0.14)');
-  // below the line: earth in layers, roots, gravel
-  pVGrad(g,0,GL,W,H-GL,'#2c1f15','#100b07',5);
-  for(let i=0;i<34;i++) pR(g,(i*47)%W,GL+5+((i*29)%(H-GL-8)),5+((i*7)%16),1,'#3d2c1e');
-  // roots, which do not grow in straight lines and do not grow in step
-  for(let i=0;i<6;i++){
-    const seed=(i*2.399)%TAU, amp=9+((i*13)%11), br=1+((i*7)%3);
-    let rx=22+i*82+((i*29)%26), ry=GL, w=3.4;
-    for(let s2=0;s2<5;s2++){
-      const step=(H-GL)/4.4*(0.7+((i*3+s2*5)%7)*0.1);
-      const nx2=rx+Math.sin(seed+s2*1.31)*amp, ny2=ry+step;
-      pTaper(g,rx,ry,nx2,ny2,w,w*0.76,'#46331f');
-      if(s2===br) pTaper(g,rx,ry,rx+(((i+s2)%2)?1:-1)*(13+amp),ry+11+amp,1.6,0.5,'#3d2c1e');
-      w*=0.76; rx=nx2; ry=ny2;
-    }
-  }
-  for(let i=0;i<24;i++) pEll(g,(i*61)%W,GL+14+((i*37)%(H-GL-16)),1.4,1,'#5a4630');
-  // a broken pot, and one coin, lying wherever it fell
-  pEll(g,88,H-34,13,7,'#4a2f22'); pEll(g,88,H-36,10,4,'#1c130d');
-  pTaper(g,99,H-38,108,H-30,3,2,'#4a2f22');
-  drawGlow(g,332,H-46,15,'#c9992f',0.14);
-  pEll(g,332,H-46,3.4,2,'#c9992f'); pEll(g,331,H-47,1.6,1,'#ffe89a');
-  // you, lying in it, and the arm that is going to come out
-  const hy=GL+52-S.up*58, hx=W/2+30;
-  const bodyY=GL+64;
-  // the shape of him, mostly hidden: a shoulder, a chest, a face turned up
-  const bcx=W/2-26;
-  pEll(g,bcx+18,bodyY+2,32,9,'#3a3050');
-  pEll(g,bcx+22,bodyY-4,15,7,'#4a3e64');
-  pEll(g,bcx-14,bodyY+3,22,5,'#3a3050');                    // the sarong, sodden
-  const fy0=bodyY-3;
-  pEll(g,bcx+2,fy0,11.8,12.2,'#241d33');
-  pEll(g,bcx+2,fy0,10.6,11,'#8e887c');                      // a face, grey as the soil
-  for(let i=0;i<5;i++) pTaper(g,bcx-2+i*2.2,fy0-10.4,bcx-3+i*2.4,fy0-13.6,1.3,0.5,'#6a6258');
-  // the eyes, open. they were open the whole time.
-  pEll(g,bcx-2.6,fy0,4.6,4.7,'#6d6760'); pEll(g,bcx+6.4,fy0,5.2,5.3,'#6d6760');
-  pEll(g,bcx-2.6,fy0,3.5,3.6,'#e8e3d4'); pEll(g,bcx+6.4,fy0,4.0,4.1,'#e8e3d4');
-  pEll(g,bcx-2,fy0+0.3,1.7,1.8,'#211f26'); pEll(g,bcx+7,fy0+0.3,1.9,2.0,'#211f26');
-  pR(g,bcx-3.4,fy0-1.2,1,1,'#fffdf6'); pR(g,bcx+5.6,fy0-1.3,1.1,1.1,'#fffdf6');
-  pTri(g,bcx+2.4,fy0+5.4,bcx+0.6,fy0+1.6,bcx+4.4,fy0+1.8,'#a8541f');
-  pEll(g,bcx+2,fy0+8,1.5,1.8,'#241c22');
-  iTaper(g,W/2-2,bodyY-2,hx,hy+8,3,2.6,PAL.paleD,'#241d33');
-  // the hand, wide open
-  const OCX='#241d33';
-  pTaper(g,hx-1,hy+7,hx,hy-5,6.6,5.4,OCX); pEll(g,hx+3.2,hy+3,3,3,OCX);
-  pTaper(g,hx-1,hy+7,hx,hy-5,4.8,3.6,PAL.pale); pEll(g,hx+3.2,hy+3,2,2,PAL.pale);
-  for(let i=0;i<2;i++) pTaper(g,hx+(i-0.5)*2.6,hy+3,hx+(i-0.5)*1.8,hy-4,0.9,0.9,PAL.paleD);
-  // dirt breaking around it once the hand is near the surface
-  if(hy<GL+16){ for(let i=0;i<7;i++) pR(g,hx-9+i*3,GL-2+((i*5)%4),3,3,'#3d2c1e'); }
-  // how far you have got
-  for(let i=0;i<3;i++) pEll(g,26+i*13,H-18,3.4,3.4, i<S.push?'#c9992f':'#2e2a3c');
-  if(S.out>0.02){
-    /* and then you are out, standing on your own grave */
-    const k=Math.min(1,S.out*1.4);
-    g.globalAlpha=k;
-    // the cross-section closes up: now it is only a field with a hole in it
-    pVGrad(g,0,GL-2,W,H-GL+2,'#1b2417','#0b0f0b',4);
-    pR(g,0,GL-2,W,2,'#28321e');
-    for(let i=0;i<52;i++) pTaper(g,(i*19)%W,GL,(i*19)%W+((i%2)?3:-3),GL-5-((i*7)%6),1.4,0.5,'#22321d');
-    pEll(g,W/2+6,GL+10,36,10,'#080a06');
-    for(let i=0;i<16;i++) pEll(g,W/2-32+((i*17)%72),GL+3+((i*5)%8),3.6,2.2,'#3d2c1e');
-    const TP=makePrete(); TP.x=W/2+18; TP.y=GL+10; TP.face=-1; TP.blink=3; TP.squash=(1-k)*0.6;
-    for(let i2=0;i2<40;i2++){ stepPrete(TP,1/60); stepCloth(TP.cloth,TP.x,TP.y-40,12,1/60,0.1,0); }
-    drawPrete(g,TP,{dt:1/60,cos:{skirt:'ash'},rise:(1-k)*26});
-    g.globalAlpha=1;
-    for(let i=0;i<9;i++) pR(g,W/2-4+((i*13)%40),GL+2+((i*5)%8),3,2,'#3d2c1e');
-  }
-  g.restore();
 }
 function memRoom(g,S){
   /* a dark room, one warm window, one coin. nothing else. */
@@ -5221,8 +5802,7 @@ function drawMem(){
   const g=ctx; const S=IN||memScene(memI), sc=MEMS[memI];
   g.save();
   if(S.shake>0.01) g.translate(R(rnd(-2,2)*S.shake),R(rnd(-2,2)*S.shake));
-  if(sc.id==='wake') memGrave(g,S);
-  else if(sc.id==='take') memRoom(g,S);
+  if(sc.id==='take') memRoom(g,S);
   else if(sc.id==='drink') memGate(g,S);
   else if(sc.id==='scale') memScale(g,S);
   else memBowl(g,S);
@@ -5238,10 +5818,8 @@ function drawMem(){
   /* letterbox: everything here is film, not gameplay */
   pR(g,0,0,W,13,'#08060e'); pR(g,0,H-13,W,13,'#08060e');
   pR(g,0,13,W,1,'rgba(255,255,255,0.06)'); pR(g,0,H-14,W,1,'rgba(255,255,255,0.06)');
-  if(memI>0){
-    pTxt(g,sc.title,10,10,'#8a7a5a',6);
-    pTxt(g,'A MEMORY',W-10,10,'#5a5468',6,'right');
-  } else pTxt(g,'THE GROUND',10,10,'#8a7a5a',6);
+  pTxt(g,sc.title,10,10,'#8a7a5a',6);
+  pTxt(g,'A MEMORY',W-10,10,'#5a5468',6,'right');
   /* the caption rides in on a bank of cloud, like everything else here */
   if(S.done){
     const lines=wrap(g,sc.t.slice(0,memCh|0),W-84,8).slice(0,3);
@@ -5254,7 +5832,7 @@ function drawMem(){
   } else {
     g.globalAlpha=0.8; pTxt(g,sc.hint,W/2,H-4,'#8a8098',7,'center'); g.globalAlpha=1;
   }
-  if(memI>0) pTxt(g,'skip',12,H-4,'#3a3448',6);
+  pTxt(g,'skip',12,H-4,'#3a3448',6);
   /* coming into a memory, and going out of one, is a white-out */
   if(MEMFADE>0.01){ g.globalAlpha=Math.min(1,MEMFADE); pR(g,0,0,W,H,'#e8e4f0'); g.globalAlpha=1; }
 }
@@ -5610,7 +6188,8 @@ function drawMap(g,x0,y0,w,h){
   pEll(g,yx,ry-2+bob,3.6,3.6,'#e05a48'); pEll(g,yx-1,ry-3+bob,1.4,1.4,'#ffb0a0');
   pTxt(g,'you are here',yx,ry+16+bob,'#8f2a20',6,'center');
   icoHeart(g,x0+17,y0+h-12,0.7,CL.ink3); pTxt(g,'friends   ? still waiting',x0+24,y0+h-10,CL.ink3,6);
-  let obj = !GS.q.metPhra? 'go east to the spirit house'
+  let obj = reqLine()? reqLine()
+    : !GS.q.metPhra? 'go east to the spirit house'
     : GS.q.done? 'wander as long as you like'
     : GS.ready? 'return to the spirit house'
     : GS.merit>=GOAL && !GS.mem.bowl? 'one page of you is still turning'
@@ -5703,17 +6282,19 @@ function drawHUD(){
   /* a small merit plaque in the corner, and the basket on a toolbar along the
      bottom, the way a farming game does it. neither one covers the village. */
   const bw=80;
-  cloud(g,6,6,bw+78,18,{seed:1});
+  const mtxt = GS.merit+'/'+GOAL;
+  cloud(g,6,6,40+bw+4+txtW(mtxt,7)+6-6,18,{seed:1});
   pTxt(g,'merit',11,18,'#8f6a1e',7);
   pR(g,40,11,bw,7,'#c2ab84'); pR(g,40,11,bw,1,'#a8906a');
   const pr=clamp(GS.merit/GOAL,0,1);
   pR(g,40,11,bw*pr,7,meritFlash>0?'#fff0b0':PAL.gold);
   pR(g,40,11,bw*pr,1,'#fffdf6');
   for(let i=1;i<4;i++) pR(g,40+bw*i/4,11,1,7,'rgba(90,60,28,0.35)');
-  pTxt(g,GS.merit+'/'+GOAL,40+bw+4,18,CL.ink,7);
+  pTxt(g,mtxt,40+bw+4,18,CL.ink,7);
 
   /* the toolbar: eight slots, always there, so you can see what you carry */
   const ids=DLG? [] : Object.keys(GS.bag).filter(k=>GS.bag[k]>0).slice(0,8);
+  GS._bar = ids.length>0;
   if(ids.length){
     const SL=22, n=Math.max(4,ids.length), tw=n*SL+6, tx=R(W/2-tw/2), ty=H-SL-8;
     cloud(g,tx,ty,tw,SL+4,{seed:2});
@@ -5725,6 +6306,14 @@ function drawHUD(){
       drawIcon(g,id,sx+(SL-2)/2,sy+9,0.66);
       pTxt(g,''+GS.bag[id],sx+SL-5,sy+SL-5,CL.ink,7,'right');
     }
+  }
+
+  const task = reqLine();
+  if(task && !DLG){
+    const tw=txtW(task,7)+22;
+    cloud(g,6,26,tw,16,{seed:3,body:'#f0e2b4'});
+    icoStar(g,15,34,0.8,'#c9992f');
+    pTxt(g,task,23,37,CL.ink,7);
   }
 
   const z=zoneAt(P.x);
@@ -5763,9 +6352,11 @@ function drawHUD(){
       cloud(g,x-w3/2,y+6,w3,12,{seed:8,top:'#eef7e6',body:'#dcecd0',under:'#c2d6b4',edge:'#96ab88'});
       pTxt(g,PROMPT.sub,x,y+14,'#3a4a30',6,'center'); }
   }
-  if(!PROMPT && !DLG){
+  /* the hint has to clear the toolbar, and it has to stop once you have
+     plainly understood it — a permanent instruction is just clutter */
+  if(!PROMPT && !DLG && !GS.q.gifts){
     g.globalAlpha=0.8;
-    pTxt(g,'tap the ground to walk',W/2,H-8,'#e8e0d0',6,'center');
+    pTxt(g,'tap the ground to walk',W/2,GS._bar? H-36 : H-8,'#e8e0d0',6,'center');
     g.globalAlpha=1;
   }
 }
@@ -6044,6 +6635,12 @@ function drawLedger(g){
   /* a close chevron in the corner of the header */
   icoDown(g,W-26,17,1.5,CL.ink2);
   hitAdd(W-42,4,38,26,()=>{ GS.state='play'; AU.sel(); });
+  /* the language key. Thai is drawn from whatever Thai face the device has. */
+  const lw=30, lx=W-84;
+  pR(g,lx,10,lw,14,CL.edge); pR(g,lx+1,11,lw-2,12,CL.woodL);
+  pR(g,lx+2,12,lw-4,10,LANG==='th'?'#f2e2b4':CL.body);
+  pTxt(g,LANG==='th'?'ไทย':'EN',lx+lw/2,20,CL.ink,7,'center');
+  hitAdd(lx,8,lw+4,18,()=>{ toggleLang(); AU.sel(); });
 
   if(TREE.tab===0){
     const keys=Object.keys(SKILLS);
@@ -6185,6 +6782,7 @@ function update(dt){
     f.y=f.hy+Math.cos(f.t*0.7)*10+Math.sin(f.t*0.53)*5;
   }
   if(press('mute')){ AU.toggle(); toast(AU.muted?'sound off':'sound on','#9ecbff'); }
+  if(press('lang')){ toggleLang(); toast(LANG==='th'?'ภาษาไทย':'English','#9ecbff'); }
 
   switch(GS.state){
     case 'title':
@@ -6198,13 +6796,16 @@ function update(dt){
       break;
     case 'memory': stepMem(dt); break;
     case 'play':{
+      stepVig(dt);
       stepDlg(dt);
       stepPlayer(dt);
       stepNpcs(dt);
+      stepFarm(dt);
+      stepRequests(dt);
       stepKhwan(dt);
       /* the past does not wait to be asked */
-      { const mi=memReady(); if(mi>0){ startMem(mi); break; } }
-      if(!DLG){
+      { const mi=memReady(); if(mi>=0){ startMem(mi); break; } }
+      if(!DLG && !VIG){
         checkInteract();
         if(press('tree')||press('help')){ GS.state='tree'; TREE.tab=GS.seen.newmem?4:0; AU.sel(); }
         if(press('map')){ GS.state='tree'; TREE.tab=3; AU.sel(); }
@@ -6212,7 +6813,7 @@ function update(dt){
       if(GS.ready && !GS.q.done && Math.abs(P.x-SHRINE_X)<44 && !DLG){ PROMPT=null; startCeremony(); }
       const gy=groundY(P.x);
       const look=clamp(P.vx*0.42,-46,46);
-      GS.camX = lerp(GS.camX, clamp(P.x+look-W/2, 0, WORLD_W-W), 1-Math.pow(0.0009,dt));
+      if(!VIG) GS.camX = lerp(GS.camX, clamp(P.x+look-W/2, 0, WORLD_W-W), 1-Math.pow(0.0009,dt));
       const ty = clamp((gy-GBASE)*0.9 + (P.y<gy-96? (P.y-(gy-96))*0.45 : 0), -52, 40);
       GS.camY = lerp(GS.camY, ty, 1-Math.pow(0.004,dt));
       break; }
@@ -6247,6 +6848,8 @@ function saveGame(){
       v:2, merit:GS.merit, spent:GS.spent, mute:AU.muted,
       skills:GS.skills, cos:GS.cos, q:GS.q, seen:GS.seen,
       bag:GS.bag, friends:GS.friends, learned:GS.learned, tut:GS.tut, mem:GS.mem,
+      farm:PLOTS.map(p=>({s:p.stage,t:p.t,w:p.wet})),
+      req:REQ.who?{w:REQ.who,i:REQ.item,n:REQ.n,g:REQ.got}:null,
       met: SPIRITS.filter(s=>s.met).map(s=>s.id),
       pals: SPIRITS.filter(s=>s.friend).map(s=>s.id),
       x: (typeof P!=='undefined'&&P)?P.x:300,
@@ -6275,11 +6878,17 @@ function newGame(){
   GS.merit=0; GS.spent=0; GS.skills={}; GS.cos={skirt:'ash'};
   GS.q={prayers:0,offerings:0,pets:0,gifts:0}; GS.seen={}; GS.bag={}; GS.friends={};
   GS.learned={}; GS.tut=0; GS.dawn=0; GS.ready=false; GS.mem={};
-  P.x=300; P.y=groundY(300); P.vx=0; P.vy=0; P.rise=0;
+  for(const pl of PLOTS){ pl.stage=0; pl.t=0; pl.wet=0; pl.pop=0; }
+  PLOTS[2].stage=3;                    // one bed ready, so the loop shows itself
+  GS.bag.seed=3;
+  REQ.who=null; REQ.item=null; REQ.got=0; REQ.cool=8;
+  P.x=300; P.y=groundY(300); P.vx=0; P.vy=0; P.rise=0; P.act=null; VIG=null;
   KHWAN.x=300; KHWAN.y=groundY(300)-50;
   resetWorld();
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
-  GS.t=0; startMem(0);
+  GS.t=0; GS.state='play'; IN=null; MEMFADE=1;
+  KHWAN.x=P.x+26; KHWAN.y=P.y-60;
+  say(WAKE, ()=>{ khwanSay('East. I will be right behind your shoulder.',6); });
   saveGame();
 }
 function continueGame(sv){
@@ -6288,6 +6897,8 @@ function continueGame(sv){
   GS.q=Object.assign({prayers:0,offerings:0,pets:0,gifts:0},sv.q||{});
   GS.seen=sv.seen||{}; GS.bag=sv.bag||{}; GS.friends=sv.friends||{};
   GS.learned=sv.learned||{}; GS.tut=sv.tut||0; GS.mem=sv.mem||{};
+  if(sv.farm) sv.farm.forEach((f,i)=>{ const pl=PLOTS[i]; if(pl){ pl.stage=f.s|0; pl.t=+f.t||0; pl.wet=+f.w||0; } });
+  if(sv.req && ITEMS[sv.req.i]){ REQ.who=sv.req.w; REQ.item=sv.req.i; REQ.n=sv.req.n|0; REQ.got=sv.req.g|0; }
   resetWorld();
   if(sv.met)  for(const id of sv.met){ const s=SPIRIT_BY_ID[id]; if(s) s.met=true; }
   if(sv.pals) for(const id of sv.pals){ const s=SPIRIT_BY_ID[id]; if(s){ s.friend=true; s.met=true; } }
@@ -6296,7 +6907,7 @@ function continueGame(sv){
   if(GS.q.metPhra) PHRA.shown=true;
   if(GS.q.done){ GS.dawn=1; GS.cos.halo=1; }
   if(GS.merit>=GOAL && GS.q.metPhra && GS.mem.bowl && !GS.q.done) GS.ready=true;
-  P.x=clamp(sv.x||300,20,WORLD_W-20); P.y=groundY(P.x); P.vx=0; P.vy=0; P.rise=0;
+  P.x=clamp(sv.x||300,20,WORLD_W-20); P.y=groundY(P.x); P.vx=0; P.vy=0; P.rise=0; P.act=null; VIG=null;
   KHWAN.x=P.x+26; KHWAN.y=P.y-60;
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
   GS.state='play';
