@@ -1,13 +1,14 @@
 # Prete Simulator
 
-A quiet side-scrolling game about coming up out of a Thai graveyard with no
-memory at all, and having to earn the story of your own life back.
+A quiet side-scrolling game about waking up in a flooded rice field with no
+memory at all, being handed one season's work by the goddess who owns the
+field, and having to earn the story of your own life back.
 
 > karma is a ledger, and you are not allowed to read your own.
 
-You come to on the edge of a cremation ground with a small glowing thing already
-mid-sentence at your shoulder. You do not know your name. You do not know what
-you did. You are a **prete** — a hungry ghost, tall as the palm trees and thin as
+You come to face down in standing water, in an abandoned paddy west of the
+village, with a small glowing thing already mid-sentence at your shoulder. You
+do not know your name. You do not know what you did. You are a **prete** — a hungry ghost, tall as the palm trees and thin as
 a pole, ash-grey, with hands like palm leaves, a pot belly under a visible ribcage, a mouth the size of a needle's eye, one small orange
 nose, six hairs left, and two enormous ringed eyes that have not closed properly
 since. You cannot eat anything you cook. You're going to cook a great deal
@@ -19,29 +20,36 @@ page at a time, as you earn the right to it** — and by the last page you will
 wish it hadn't.
 
 **Nothing in this game fights.** There are no enemies, no health bar and no way
-to lose. There is a village, a derelict farm nobody has worked in years, a
-stove, a weaving mat, and eleven people — five of them dead — who each quietly
-want one small thing.
+to lose. There is one rice field, a village further up the road, a derelict farm
+nobody has worked in years, a stove, a weaving mat, and twelve people — six of
+them dead — who each quietly want one small thing.
 
-**The loop is a livelihood.** Forage, cook, sell it at the stall for baht; take
-the baht west and rent the abandoned farm; turn beds, flood the นาข้าว, plant
-durian, buy chickens; then cook what you grew for the people who ordered it by
-name. Merit is what the ledger counts and baht is what the landlord counts, and
-you cannot get both out of the same bowl of food — giving it away earns one,
-selling it earns the other. That choice is the game.
+**It starts with one field and nothing else.** The village is east and the mist
+does not lift off that road until the rice is in, so the first ten minutes are a
+barn, a water jar, a paddy, and a rice goddess standing in the mud telling you
+what to do with them, in order. Seed. Water. Mud. Waiting. Thanks. Nothing else
+in the game is explained until you need it.
+
+**Then it is a livelihood.** Forage, cook, sell it at the stall for baht; rent
+the rest of that farm off the notice on the gate; turn beds, flood the second
+นาข้าว, plant durian, buy chickens; then cook what you grew for the people who
+ordered it by name. Merit is what the ledger counts and baht is what the
+landlord counts, and you cannot get both out of the same bowl of food — giving
+it away earns one, selling it earns the other. That choice is the game.
 
 Your dead friends will work the farm for you. That is not a metaphor: feed a
 hungry ghost once and it will come and water your beds while you are away.
 
 ![the title screen](screenshots/title.png)
 
-**Playtime:** an hour or so · built for phones, fine on desktop · sound on if you can
+**Playtime:** an hour and a bit · built for phones, fine on desktop · sound on if you can
 
 ## Play
 
 Open `index.html` in any browser. One self-contained file — no build, no assets,
 no dependencies, and **not a single network request**: the art, the sound and the
-lettering are all generated in the page. Boots in about a quarter of a second.
+lettering are all generated in the page. The road is built behind a loading
+screen in about half a second.
 
 ## Controls
 
@@ -103,23 +111,55 @@ page, and until the last one turns the ending will not start.
 | ![the shelf](screenshots/memory-the-shelf.png) | ![the gate](screenshots/memory-the-gate.png) | ![the scale](screenshots/memory-the-scale.png) |
 | ![four bowls](screenshots/memory-four-bowls.png) | ![the ledger's past tab](screenshots/the-past.png) | ![the village field](screenshots/the-field.png) |
 
-## You wake up in a graveyard
+## You wake up in somebody else's rice field
 
-The game opens in the cremation ground at the west end of the village, which is
-where they buried you — no title crawl, no scene to sit through, just the world
-and somebody already talking to you. A small round glowing thing is explaining
-things, gently:
+The game opens face down in standing water in an abandoned paddy — no title
+crawl, no scene to sit through, just mud, the smell of it, and somebody already
+talking to you.
 
 > **Khwan:** *And no — do not ask me. A ledger is read by whoever wrote it.*
 
 That's **Khwan** — the life-spirit Thai belief says everybody carries and almost
 nobody hears. She was with you for every bit of the life you can't remember, and
 she will not tell you a word of it. What she will do is follow you, float at your
-shoulder, and teach you one nudge at a time: how to walk, how to pick things, how
-to cook, how to give something away. After each page comes back she says one
-short thing and then leaves you alone with it.
+shoulder, and teach you one nudge at a time. After each page of your past comes
+back she says one short thing and then leaves you alone with it.
 
-![the graveyard you woke in](screenshots/the-graveyard.png)
+**And there is somebody standing out in the water.**
+
+![you wake in the field](screenshots/waking.png)
+
+## Mae Posop, who owns the field
+
+**แม่โพสพ.** Thai farmers have apologised to her for centuries — for dropping a
+grain, for stepping on a fallen ear, for cutting when she was still carrying.
+She is not a quest-giver with a marker over her head. She is standing in your
+paddy because it is her paddy too, and it has stood empty two years and she has
+taken it personally.
+
+> **Mae Posop:** *You cannot eat. Good. Then you will not be tempted to keep any
+> of it.*
+
+She teaches the whole of a rice crop, one step at a time, in the order a field
+actually happens — and she comes to meet you along the bund while she is doing
+it, so the one character who explains the game can never end up somewhere you
+can't reach:
+
+| | |
+|---|---|
+| **Seed** | there is a sack of it in your barn, by the gate |
+| **Water** | the โอ่ง in the shade of the house has never once run dry |
+| **Mud** | let the water in, and put the seed down into it — gently, it is somebody |
+| **Waiting** | keep the water up and let it alone. Rice has never once been hurried |
+| **Thanks** | it is bowing. That is it asking. Cut it, and say thank you out loud |
+
+Finish that and the mist lifts off the road east, and the village — which eats
+what you just cut — is open. She stays in the field afterwards, and she still
+has opinions.
+
+| | | |
+|---|---|---|
+| ![Mae Posop in the paddy](screenshots/mae-posop.png) | ![the barn](screenshots/the-barn.png) | ![the water jar](screenshots/the-jar.png) |
 
 ## The interface is one wooden box, cut from the same plank
 
@@ -150,6 +190,13 @@ tree, a sapling, a chicken, a roof that keeps the rain out.
 | | | |
 |---|---|---|
 | ![the derelict farm](screenshots/derelict.png) | ![the notice](screenshots/the-notice.png) | ![the farm board](screenshots/farm-board.png) |
+
+**A barn, and a water jar.** Seed comes out of a **ยุ้งข้าว** — a rice granary
+up on four posts, with a ladder and a hatch — and the tools you have earned hang
+on the wall of it, so the skill tree has somewhere in the world to show up.
+Water comes out of the **โอ่ง**, and it is a trip rather than a click: the jar
+never runs dry, but you can only carry two waterings at a time until you go and
+earn a proper can.
 
 **Five dry beds.** One crop to a bed — green papaya, chilli, holy basil,
 galangal, morning glory — each with a painted marker board you can read from the
@@ -199,6 +246,54 @@ saying what they are doing, and you can send any of them back to the road from
 the board at the gate. One job to one ghost.
 
 ![a ghost working the farm](screenshots/farmhands.png)
+
+## Things that fly at dusk
+
+Six of them, each drawn and each moving its own way, because that is the whole
+pleasure of it: you learn that a dragonfly hangs perfectly still and then darts,
+that a firefly cannot be hurried, that a grasshopper only goes when you get
+close, and that a rhinoceros beetle does not care about you at all.
+
+| | |
+|---|---|
+| **หิ่งห้อย** firefly | drifts over the water after dark and blinks · 14฿ |
+| **แมงปอ** dragonfly | hangs still, then darts. Paddies only · 18฿ |
+| **จักจั่น** cicada | clings to a trunk and shouts about it · 22฿ |
+| **ด้วงกว่าง** rhinoceros beetle | walks a branch at night, horn first · 34฿ |
+| **ตั๊กแตน** grasshopper | one enormous hop at a time · 11฿ |
+| **ผีเสื้อ** butterfly | never in a straight line · 16฿ |
+
+You need the net from your ledger, and then it is a swing rather than a click:
+you get three, the hoop has a real radius, and the bug is living its own life
+the whole time. Miss and it bolts. A beetle is worth more than a day of papaya,
+which is exactly why children in this village spend the whole of dusk in the
+long grass. Catch all six and the ledger notices.
+
+![catching a firefly](screenshots/the-net.png)
+
+## Planks, and a roof that keeps the rain out
+
+There is a fallen trunk and a chopping stump on the track outside the gate. With
+an **axe** you can hold to wind up — the axe rises, an arc fills, it gets heavy —
+and let go to strike. Line up on the wedge and a plank splits off; miss and it
+bounces and you feel it. Four to a session.
+
+The shack then goes up in **three stages, paid in planks rather than only baht**:
+
+| | | |
+|---|---|---|
+| **mend the roof** | there is sky where there should be thatch | 6 planks · 30฿ |
+| **board the walls** | and a shutter that closes | 9 planks · 55฿ |
+| **lay a proper floor** | somebody could live here again | 12 planks · 80฿ |
+
+And the building changes at every stage — a hole through the ridge, then a mat
+tacked over the gap and planks stacked ready, then a lit window and a lamp by
+the door, then a ladder worth climbing, a mat at the top of it, and something
+green in a pot. A prete has no use for a house. You build one anyway.
+
+| | |
+|---|---|
+| ![chopping](screenshots/chopping.png) | ![the finished house](screenshots/the-house.png) |
 
 ## Money, and orders
 
@@ -310,14 +405,21 @@ line at the bottom telling you what to do next.
 
 Every card is a tap target: tap it to read it, tap it again to choose it.
 
-The skill tree runs down three columns:
+The skill tree runs down four columns, and the last one is **tools**:
 
-| BODY | HANDS | HEART |
-|---|---|---|
-| Giant Stride | Steady Hands | Merit Magnet |
-| Palm-Leaf Reach | Divine Tongue | Inner Eye |
-| Carrying Pole | Deft Weaving | Cool Heart |
-| Light Body | Two Hands | Loving-Kindness |
+| BODY | HANDS | HEART | TOOLS |
+|---|---|---|---|
+| Giant Stride | Steady Hands | Merit Magnet | Sickle |
+| Palm-Leaf Reach | Divine Tongue | Inner Eye | Watering Can |
+| Carrying Pole | Deft Weaving | Cool Heart | Bug Net |
+| Light Body | Two Hands | Loving-Kindness | Axe |
+
+**Tools are the cheapest column in the game on purpose** — two merit for the
+sickle — because the farm needs them to open up at all and nothing there should
+ever be a wall. Each one changes what your hands can do, and each one appears
+hanging on the barn wall once it's yours. And it is **Mae Posop** who meets you
+at the top of the climb when you ascend for one: the rice mother handing you a
+sickle is a different kind of blessing from a god handing you a virtue.
 
 **Inner Eye** is the one to save for: it shows a little thought-cloud over
 everybody's head with the thing they're quietly hoping for, so you never have to
@@ -362,7 +464,13 @@ line-wrapper breaks Thai per character, which is what Thai typesetting does.
 The story prose — the memories, the villagers' lives, what Phra Phum will not
 tell you — stays in English. Everything you need in order to *play* is
 bilingual: the merit plaque, the standing request, the field prompts, the
-kitchen, the ledger, the map and the signposts.
+kitchen, the ledger, the map, the signposts, and every step of the rice lesson.
+
+Some words stay Thai in both languages, because there is no English for them
+and the English would be worse: **นาข้าว** for a bunded flooded rice field,
+**โอ่ง** for the big glazed water jar that stands in the shade of every house,
+**ยุ้งข้าว** for the granary up on its posts, and **แม่โพสพ** for the woman
+standing in your paddy.
 
 | | |
 |---|---|
@@ -433,8 +541,9 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~400 KB, 480×270 canvas integer-scaled with `image-rendering:
-pixelated`. Boots in ~270ms and holds 60 fps.
+One HTML file, ~460 KB, 480×270 canvas integer-scaled with `image-rendering:
+pixelated`. Parses and initialises in about a tenth of a second, has the whole
+road built inside half a second behind a loading screen, and holds 60 fps.
 
 - **Nothing is a sprite sheet, and nothing is a font glyph.** Every character is a
   procedural puppet posed fresh each frame — two-bone IK limbs, a walk cycle
@@ -463,6 +572,23 @@ pixelated`. Boots in ~270ms and holds 60 fps.
   trees and animals all advance on the same fixed step as everything else, and
   so do the ghosts you hired — the harvester really does walk the row and put
   things in your basket while you are two zones away buying seed.
+- **The tutorial cannot get stuck behind itself.** Mae Posop's rice lesson does
+  not step forward one beat at a time; it scans backwards from the last step for
+  the furthest thing that has demonstrably happened, because harvesting a paddy
+  resets its stage and "keep the water up" can never be true again afterwards.
+  She also walks the bund towards you while she is teaching, so the one
+  character who explains the game can never end up somewhere you can't tap.
+- **Every prompt in the world is one ordered list.** Fixed furniture first — the
+  barn, the jar, the log, her — then the beds and paddies, then people, then the
+  things flying about. A dragonfly drifting over a ripe bed must never be what
+  your tap lands on. (The people loop was missing the guard the rest of the list
+  had, which is how Krahang came to be answering for the water jar.)
+- **The bugs each have their own motion, not a shared wander.** A dragonfly
+  accelerates in bursts and coasts; a firefly integrates two slow sines; a
+  grasshopper is a ballistic arc with a cooldown; a cicada is pinned to a trunk
+  and emits an actual synthesized chirp; a beetle ignores you entirely. Each is
+  clamped to the patch it was spawned in and despawns when you are far enough
+  away.
 - **The little scenes are not a mode.** No state machine, no separate render
   path: the bars, the dimming, the light pool and the typed line are one
   function drawn over the live world, and the game underneath keeps running.
@@ -501,6 +627,12 @@ pixelated`. Boots in ~270ms and holds 60 fps.
   `pTxt` and `wrap` look every string up on the way to the screen — so no call
   site had to be touched and an untranslated string simply comes through in
   English rather than going missing.
+- **Sprite-baked static art.** The rice, the tree crowns, the farmhouse, the pen
+  and the barn are hundreds of tapers and ellipses each, and they are the same
+  hundreds every frame — so each is painted once into a small canvas and blitted
+  from then on, keyed by whatever about it can actually change. Verified
+  pixel-exact against painting straight into the world: zero pixels differ at
+  every farm location. It bought 12 fps.
 - Autosave, a friends journal, canvas-drawn touch controls, and a dawn ending.
 
 Made with rice and incense. May you go to a good place.
