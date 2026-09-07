@@ -19,17 +19,23 @@ page at a time, as you earn the right to it** — and by the last page you will
 wish it hadn't.
 
 **Nothing in this game fights.** There are no enemies, no health bar and no way
-to lose. There is a village, a vegetable field, a stove, a weaving mat, and
-eleven people — five of them dead — who each quietly want one small thing.
+to lose. There is a village, a derelict farm nobody has worked in years, a
+stove, a weaving mat, and eleven people — five of them dead — who each quietly
+want one small thing.
 
-The work is small and it is always the same shape: **somebody asks, you go and
-get it, you put it in their hands.** There is one request standing at any moment
-and it is printed across the top of the screen, so there is never a point where
-you are not sure what to do next.
+**The loop is a livelihood.** Forage, cook, sell it at the stall for baht; take
+the baht west and rent the abandoned farm; turn beds, flood the นาข้าว, plant
+durian, buy chickens; then cook what you grew for the people who ordered it by
+name. Merit is what the ledger counts and baht is what the landlord counts, and
+you cannot get both out of the same bowl of food — giving it away earns one,
+selling it earns the other. That choice is the game.
+
+Your dead friends will work the farm for you. That is not a metaphor: feed a
+hungry ghost once and it will come and water your beds while you are away.
 
 ![the title screen](screenshots/title.png)
 
-**Playtime:** ~45 minutes · built for phones, fine on desktop · sound on if you can
+**Playtime:** an hour or so · built for phones, fine on desktop · sound on if you can
 
 ## Play
 
@@ -133,28 +139,85 @@ text is sharp instead of smeared.
 
 ![talking to Kong Koi](screenshots/making-friends.png)
 
-## What you actually do
+## The farm
 
-**Farm the village field.** Five raised beds by the road under three strung
-lanterns, one crop to a bed — papaya, chilli, lemongrass, rice, coriander —
-each with a painted marker board so you can read the row from the far side of
-the street. **Sow, water, wait, pick.** Wet earth grows about twice as fast, and
-a picked bed hands you back two or three of the crop, a seed, and two merit. A
-crate of seed stands at the gate and is never empty, because a field you cannot
-start is a dead end rather than a challenge.
+Out west in the rice fields there is a shack with a hole in the roof, an empty
+pen, and a notice still nailed to the gate. **One hundred and twenty baht and it
+is yours** — the first bed, a handful of seed, and every other thing on the
+place for sale on the board by the gate: another bed, a rice field, a hole for a
+tree, a sapling, a chicken, a roof that keeps the rain out.
+
+| | | |
+|---|---|---|
+| ![the derelict farm](screenshots/derelict.png) | ![the notice](screenshots/the-notice.png) | ![the farm board](screenshots/farm-board.png) |
+
+**Five dry beds.** One crop to a bed — green papaya, chilli, holy basil,
+galangal, morning glory — each with a painted marker board you can read from the
+far side of the road. **Sow, water, wait, pick.** Wet earth grows about twice as
+fast; manure in your basket when you sow makes it faster still.
+
+**Two นาข้าว.** A rice field is a different animal: a bunded box you flood, sow,
+and then keep flooded, because rice in a dry paddy simply stops and waits. It
+takes about twice as long as a bed and pays four rice, two bran and two seed —
+and while it is standing there full of water it holds the moon in it.
+
+**Three fruit trees.** Buy a sapling and put it in a hole and then *wait* —
+durian, mangosteen, rambutan take the better part of a minute to come up and
+then bear for the rest of the game. A durian is worth thirty-six baht on its
+own, which is most of a bed's whole crop.
+
+**A pen.** Chickens, ducks and one very large water buffalo. Keep rice bran in
+the trough and they leave you eggs, duck eggs, buffalo milk and manure every
+little while. Stop feeding them and they simply stop — nothing on this farm can
+die, they just look at you about it.
+
+| | | |
+|---|---|---|
+| ![the rice fields](screenshots/paddies.png) | ![the orchard](screenshots/orchard.png) | ![the pen](screenshots/the-pen.png) |
+| ![planting](screenshots/planting.png) | ![a ripe row](screenshots/ripe.png) | ![the field at night](screenshots/the-field.png) |
 
 Every one of those is a *gesture*, not a menu tick: he folds ninety pixels of
 leg into a crouch, reaches both long arms down to the soil, and the thing
 happens at the moment his hands actually get there.
 
-| | | |
-|---|---|---|
-| ![the field](screenshots/the-field.png) | ![planting](screenshots/planting.png) | ![a ripe row](screenshots/ripe.png) |
+## Ghosts make good farmhands
 
-**Do what somebody asked.** One villager wants one thing at a time. It is on the
-screen from the moment they think of it, they say it again out loud if you go
-and talk to them, and handing it over ends with both of you putting your hands
-together. Fill it and the next person thinks of something.
+Feed a hungry ghost the thing it has been waiting a century for and it becomes
+your friend. Ask a friend for help and it stops haunting its patch of road,
+comes to the farm, and takes a job:
+
+| Who | What they do |
+|---|---|
+| **Kong Koi** hops the row with a bucket | waters any bed that has gone dry |
+| **Krahang** flies in on his baskets | picks whatever is ripe and puts it in your basket |
+| **Phi Pop** minds the trough | keeps bran in front of the animals |
+| **Krasue** floats the dikes at night | keeps the water up in the นาข้าว, and cuts the rice |
+| **Tai Hong** stands under the trees | brings the fruit down |
+
+They keep at it whether or not you are on screen, they wear a small badge
+saying what they are doing, and you can send any of them back to the road from
+the board at the gate. One job to one ghost.
+
+![a ghost working the farm](screenshots/farmhands.png)
+
+## Money, and orders
+
+**P'Nok buys anything.** Raw produce, cooked dishes, woven things — the stall
+takes it all and pays in baht, one item at a time or the whole basket at once.
+A dish is always worth more than the sum of its parts, which is the entire
+argument for owning a stove.
+
+**And the village orders supper by name.** Up to three standing orders at a
+time — *P'Nok wants 2 Tom Yum · 122฿* — printed across the top of the screen,
+listed in full on the board by the stall, and repeated out loud if you go and
+ask the person yourself. Cook it, carry it to them, and they pay in coins *and*
+merit. It is the only thing in the game that pays both.
+
+| | |
+|---|---|
+| ![the stall](screenshots/the-stall.png) | ![the order board](screenshots/order-board.png) |
+
+## What else you do
 
 **Pick things.** Rice and coriander in the paddies, chillies and lemongrass in
 the gardens, jasmine in the flower patches, bananas and mango and banana leaf in
@@ -191,7 +254,8 @@ afraid of big, she's afraid of *sudden*.
 |---|---|
 | ![the workbench](screenshots/the-workbench.png) | ![the village road at night](screenshots/village-night.png) |
 
-**Give it away.** That's the whole game, really.
+**Give it away.** Merit is the ledger; coins are the landlord. Every made thing
+in your basket is a choice between the two.
 
 ![handing something over](screenshots/giving.png)
 
@@ -331,7 +395,8 @@ village is.
 
 Fill 108 merit — as many as the beads on a prayer mala — and the last page turns.
 Then the village throws you a water-pouring ceremony at dawn, and everyone you
-befriended comes to see you off.
+befriended comes to see you off. The farm keeps going without you; somebody will
+find the lanterns still burning over the beds and wonder who left them on.
 
 ![the ceremony](screenshots/ceremony.png)
 
@@ -368,7 +433,7 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~340 KB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~400 KB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Boots in ~270ms and holds 60 fps.
 
 - **Nothing is a sprite sheet, and nothing is a font glyph.** Every character is a
@@ -394,6 +459,10 @@ pixelated`. Boots in ~270ms and holds 60 fps.
   breath; the walk eases in and drifts out over most of a second instead of
   snapping to speed. None of it is keyframed — it falls out of the simulation,
   which is why it never repeats exactly.
+- **The farm runs whether or not you are looking at it.** Crops, rice, fruit
+  trees and animals all advance on the same fixed step as everything else, and
+  so do the ghosts you hired — the harvester really does walk the row and put
+  things in your basket while you are two zones away buying seed.
 - **The little scenes are not a mode.** No state machine, no separate render
   path: the bars, the dimming, the light pool and the typed line are one
   function drawn over the live world, and the game underneath keeps running.
@@ -422,6 +491,10 @@ pixelated`. Boots in ~270ms and holds 60 fps.
   stretch.
 - **All audio synthesized live** — crickets, frogs, a ranat-ek pentatonic figure,
   temple gongs, and one long prete whistle.
+- **The baht sign is a drawn glyph.** It lives in the Thai Unicode block, so
+  every price was being rasterised from the platform's Thai face and coming out
+  in a different typeface from the number beside it. It has its own 5x7 bitmap
+  now, and the Thai matcher steps around it.
 - **The type has a second alphabet.** The bitmap faces cover Latin; Thai is
   rasterised from the platform face and thresholded to 1-bit at draw time, then
   cached like every other string. Translation happens at the drawing boundary —

@@ -147,6 +147,7 @@ function tapSides(){
   switch(GS.state){
     case 'act':    return !!ACT && ACT.phase==='do' && (ACT.k.t==='rhythm' || ACT.k.t==='place');
     case 'give':   return true;
+    case 'shop':   return false;
     case 'ascend': return !!ASC && ASC.phase==='climb';
     case 'memory': return MEMS[memI].id==='scale';
     default:       return false;
@@ -805,14 +806,14 @@ function artOffering(){ const c=mkCv(30,22),g=G2(c);
    lands on whole pixels instead of being a hinted webfont.
    F5 is 5x7 for everything; F3 is 3x5 for the small print.
    ============================================================ */
-const THAI_RE = /[\u0E00-\u0E7F]/;
+const THAI_RE = /[\u0E01-\u0E3E\u0E40-\u0E7F]/;   // everything Thai but ฿, which we draw ourselves
 const THAI_STACK = 'sans-serif';
 const _thaiFace = ['"Noto Sans Thai"','"Noto Sans Thai UI"','"Leelawadee UI"','Leelawadee',
                    'Thonburi','"Sarabun"','"Sukhumvit Set"','"Tahoma"',THAI_STACK].join(',');
 const isThai = s => THAI_RE.test(s);
 const F5W=5, F5H=7, F3W=3, F3H=5;
-const F5={'A':[[14,17,17,31,17,17,17],0],'B':[[30,17,17,30,17,17,30],0],'C':[[14,17,16,16,16,17,14],0],'D':[[30,17,17,17,17,17,30],0],'E':[[31,16,16,30,16,16,31],0],'F':[[31,16,16,30,16,16,16],0],'G':[[14,17,16,23,17,17,14],0],'H':[[17,17,17,31,17,17,17],0],'I':[[14,4,4,4,4,4,14],0],'J':[[7,2,2,2,2,18,12],0],'K':[[17,18,20,24,20,18,17],0],'L':[[16,16,16,16,16,16,31],0],'M':[[17,27,21,21,17,17,17],0],'N':[[17,25,21,21,19,17,17],0],'O':[[14,17,17,17,17,17,14],0],'P':[[30,17,17,30,16,16,16],0],'Q':[[14,17,17,17,21,18,13],0],'R':[[30,17,17,30,20,18,17],0],'S':[[15,16,16,14,1,1,30],0],'T':[[31,4,4,4,4,4,4],0],'U':[[17,17,17,17,17,17,14],0],'V':[[17,17,17,17,17,10,4],0],'W':[[17,17,17,21,21,21,10],0],'X':[[17,17,10,4,10,17,17],0],'Y':[[17,17,10,4,4,4,4],0],'Z':[[31,1,2,4,8,16,31],0],'a':[[0,0,14,1,15,17,15],0],'b':[[16,16,30,17,17,17,30],0],'c':[[0,0,14,16,16,16,14],0],'d':[[1,1,15,17,17,17,15],0],'e':[[0,0,14,17,31,16,14],0],'f':[[6,8,8,30,8,8,8],0],'g':[[15,17,17,15,1,17,14],1],'h':[[16,16,30,17,17,17,17],0],'i':[[4,0,12,4,4,4,14],0],'j':[[2,0,6,2,2,18,12],1],'k':[[16,16,18,20,24,20,18],0],'l':[[12,4,4,4,4,4,14],0],'m':[[0,0,26,21,21,21,21],0],'n':[[0,0,30,17,17,17,17],0],'o':[[0,0,14,17,17,17,14],0],'p':[[30,17,17,30,16,16,16],1],'q':[[15,17,17,15,1,1,1],1],'r':[[0,0,22,24,16,16,16],0],'s':[[0,0,15,16,14,1,30],0],'t':[[8,8,30,8,8,9,6],0],'u':[[0,0,17,17,17,19,13],0],'v':[[0,0,17,17,17,10,4],0],'w':[[0,0,17,21,21,21,10],0],'x':[[0,0,17,10,4,10,17],0],'y':[[17,17,17,15,1,17,14],1],'z':[[0,0,31,2,4,8,31],0],'0':[[14,17,19,21,25,17,14],0],'1':[[4,12,4,4,4,4,14],0],'2':[[14,17,1,2,4,8,31],0],'3':[[30,1,1,14,1,1,30],0],'4':[[2,6,10,18,31,2,2],0],'5':[[31,16,30,1,1,17,14],0],'6':[[6,8,16,30,17,17,14],0],'7':[[31,1,2,4,4,8,8],0],'8':[[14,17,17,14,17,17,14],0],'9':[[14,17,17,15,1,2,12],0],' ':[[0,0,0,0,0,0,0],0],'.':[[0,0,0,0,0,12,12],0],',':[[0,0,0,0,12,12,8],0],'\'':[[8,8,0,0,0,0,0],0],'"':[[10,10,0,0,0,0,0],0],'!':[[4,4,4,4,4,0,4],0],'?':[[14,17,1,6,4,0,4],0],':':[[0,12,12,0,12,12,0],0],';':[[0,12,12,0,12,12,8],0],'-':[[0,0,0,31,0,0,0],0],'+':[[0,4,4,31,4,4,0],0],'/':[[1,1,2,4,8,16,16],0],'(':[[2,4,8,8,8,4,2],0],')':[[8,4,2,2,2,4,8],0],'%':[[25,26,4,8,19,5,9],0],'*':[[0,21,14,31,14,21,0],0],'=':[[0,0,31,0,31,0,0],0],'#':[[10,31,10,10,31,10,0],0],'&':[[12,18,20,8,21,18,13],0],'—':[[0,0,0,31,0,0,0],0],'·':[[0,0,0,4,0,0,0],0],'…':[[0,0,0,0,0,21,0],0]};
-const F3={'A':[[2,5,7,5,5],0],'B':[[6,5,6,5,6],0],'C':[[3,4,4,4,3],0],'D':[[6,5,5,5,6],0],'E':[[7,4,6,4,7],0],'F':[[7,4,6,4,4],0],'G':[[3,4,5,5,3],0],'H':[[5,5,7,5,5],0],'I':[[7,2,2,2,7],0],'J':[[1,1,1,5,2],0],'K':[[5,5,6,5,5],0],'L':[[4,4,4,4,7],0],'M':[[5,7,7,5,5],0],'N':[[5,7,7,7,5],0],'O':[[2,5,5,5,2],0],'P':[[6,5,6,4,4],0],'Q':[[2,5,5,6,3],0],'R':[[6,5,6,5,5],0],'S':[[3,4,2,1,6],0],'T':[[7,2,2,2,2],0],'U':[[5,5,5,5,3],0],'V':[[5,5,5,5,2],0],'W':[[5,5,7,7,5],0],'X':[[5,5,2,5,5],0],'Y':[[5,5,2,2,2],0],'Z':[[7,1,2,4,7],0],'a':[[2,5,7,5,5],0],'b':[[6,5,6,5,6],0],'c':[[3,4,4,4,3],0],'d':[[6,5,5,5,6],0],'e':[[7,4,6,4,7],0],'f':[[7,4,6,4,4],0],'g':[[3,4,5,5,3],0],'h':[[5,5,7,5,5],0],'i':[[7,2,2,2,7],0],'j':[[1,1,1,5,2],0],'k':[[5,5,6,5,5],0],'l':[[4,4,4,4,7],0],'m':[[5,7,7,5,5],0],'n':[[5,7,7,7,5],0],'o':[[2,5,5,5,2],0],'p':[[6,5,6,4,4],0],'q':[[2,5,5,6,3],0],'r':[[6,5,6,5,5],0],'s':[[3,4,2,1,6],0],'t':[[7,2,2,2,2],0],'u':[[5,5,5,5,3],0],'v':[[5,5,5,5,2],0],'w':[[5,5,7,7,5],0],'x':[[5,5,2,5,5],0],'y':[[5,5,2,2,2],0],'z':[[7,1,2,4,7],0],'0':[[2,5,5,5,2],0],'1':[[2,6,2,2,7],0],'2':[[6,1,2,4,7],0],'3':[[6,1,2,1,6],0],'4':[[5,5,7,1,1],0],'5':[[7,4,6,1,6],0],'6':[[3,4,6,5,2],0],'7':[[7,1,2,2,2],0],'8':[[2,5,2,5,2],0],'9':[[2,5,3,1,6],0],' ':[[0,0,0,0,0],0],'.':[[0,0,0,0,2],0],',':[[0,0,0,2,4],0],'\'':[[2,2,0,0,0],0],'!':[[2,2,2,0,2],0],'?':[[6,1,2,0,2],0],':':[[0,2,0,2,0],0],'-':[[0,0,7,0,0],0],'/':[[1,1,2,4,4],0],'(':[[1,2,2,2,1],0],')':[[4,2,2,2,4],0],'+':[[0,2,7,2,0],0],'=':[[0,7,0,7,0],0],'—':[[0,0,7,0,0],0],'·':[[0,0,2,0,0],0],'…':[[0,0,0,0,5],0]};
+const F5={'A':[[14,17,17,31,17,17,17],0],'B':[[30,17,17,30,17,17,30],0],'C':[[14,17,16,16,16,17,14],0],'D':[[30,17,17,17,17,17,30],0],'E':[[31,16,16,30,16,16,31],0],'F':[[31,16,16,30,16,16,16],0],'G':[[14,17,16,23,17,17,14],0],'H':[[17,17,17,31,17,17,17],0],'I':[[14,4,4,4,4,4,14],0],'J':[[7,2,2,2,2,18,12],0],'K':[[17,18,20,24,20,18,17],0],'L':[[16,16,16,16,16,16,31],0],'M':[[17,27,21,21,17,17,17],0],'N':[[17,25,21,21,19,17,17],0],'O':[[14,17,17,17,17,17,14],0],'P':[[30,17,17,30,16,16,16],0],'Q':[[14,17,17,17,21,18,13],0],'R':[[30,17,17,30,20,18,17],0],'S':[[15,16,16,14,1,1,30],0],'T':[[31,4,4,4,4,4,4],0],'U':[[17,17,17,17,17,17,14],0],'V':[[17,17,17,17,17,10,4],0],'W':[[17,17,17,21,21,21,10],0],'X':[[17,17,10,4,10,17,17],0],'Y':[[17,17,10,4,4,4,4],0],'Z':[[31,1,2,4,8,16,31],0],'a':[[0,0,14,1,15,17,15],0],'b':[[16,16,30,17,17,17,30],0],'c':[[0,0,14,16,16,16,14],0],'d':[[1,1,15,17,17,17,15],0],'e':[[0,0,14,17,31,16,14],0],'f':[[6,8,8,30,8,8,8],0],'g':[[15,17,17,15,1,17,14],1],'h':[[16,16,30,17,17,17,17],0],'i':[[4,0,12,4,4,4,14],0],'j':[[2,0,6,2,2,18,12],1],'k':[[16,16,18,20,24,20,18],0],'l':[[12,4,4,4,4,4,14],0],'m':[[0,0,26,21,21,21,21],0],'n':[[0,0,30,17,17,17,17],0],'o':[[0,0,14,17,17,17,14],0],'p':[[30,17,17,30,16,16,16],1],'q':[[15,17,17,15,1,1,1],1],'r':[[0,0,22,24,16,16,16],0],'s':[[0,0,15,16,14,1,30],0],'t':[[8,8,30,8,8,9,6],0],'u':[[0,0,17,17,17,19,13],0],'v':[[0,0,17,17,17,10,4],0],'w':[[0,0,17,21,21,21,10],0],'x':[[0,0,17,10,4,10,17],0],'y':[[17,17,17,15,1,17,14],1],'z':[[0,0,31,2,4,8,31],0],'0':[[14,17,19,21,25,17,14],0],'1':[[4,12,4,4,4,4,14],0],'2':[[14,17,1,2,4,8,31],0],'3':[[30,1,1,14,1,1,30],0],'4':[[2,6,10,18,31,2,2],0],'5':[[31,16,30,1,1,17,14],0],'6':[[6,8,16,30,17,17,14],0],'7':[[31,1,2,4,4,8,8],0],'8':[[14,17,17,14,17,17,14],0],'9':[[14,17,17,15,1,2,12],0],' ':[[0,0,0,0,0,0,0],0],'.':[[0,0,0,0,0,12,12],0],',':[[0,0,0,0,12,12,8],0],'\'':[[8,8,0,0,0,0,0],0],'"':[[10,10,0,0,0,0,0],0],'!':[[4,4,4,4,4,0,4],0],'?':[[14,17,1,6,4,0,4],0],':':[[0,12,12,0,12,12,0],0],';':[[0,12,12,0,12,12,8],0],'-':[[0,0,0,31,0,0,0],0],'+':[[0,4,4,31,4,4,0],0],'/':[[1,1,2,4,8,16,16],0],'(':[[2,4,8,8,8,4,2],0],')':[[8,4,2,2,2,4,8],0],'%':[[25,26,4,8,19,5,9],0],'*':[[0,21,14,31,14,21,0],0],'=':[[0,0,31,0,31,0,0],0],'#':[[10,31,10,10,31,10,0],0],'&':[[12,18,20,8,21,18,13],0],'—':[[0,0,0,31,0,0,0],0],'·':[[0,0,0,4,0,0,0],0],'…':[[0,0,0,0,0,21,0],0],'฿':[[4,30,21,30,21,30,4],0]};
+const F3={'A':[[2,5,7,5,5],0],'B':[[6,5,6,5,6],0],'C':[[3,4,4,4,3],0],'D':[[6,5,5,5,6],0],'E':[[7,4,6,4,7],0],'F':[[7,4,6,4,4],0],'G':[[3,4,5,5,3],0],'H':[[5,5,7,5,5],0],'I':[[7,2,2,2,7],0],'J':[[1,1,1,5,2],0],'K':[[5,5,6,5,5],0],'L':[[4,4,4,4,7],0],'M':[[5,7,7,5,5],0],'N':[[5,7,7,7,5],0],'O':[[2,5,5,5,2],0],'P':[[6,5,6,4,4],0],'Q':[[2,5,5,6,3],0],'R':[[6,5,6,5,5],0],'S':[[3,4,2,1,6],0],'T':[[7,2,2,2,2],0],'U':[[5,5,5,5,3],0],'V':[[5,5,5,5,2],0],'W':[[5,5,7,7,5],0],'X':[[5,5,2,5,5],0],'Y':[[5,5,2,2,2],0],'Z':[[7,1,2,4,7],0],'a':[[2,5,7,5,5],0],'b':[[6,5,6,5,6],0],'c':[[3,4,4,4,3],0],'d':[[6,5,5,5,6],0],'e':[[7,4,6,4,7],0],'f':[[7,4,6,4,4],0],'g':[[3,4,5,5,3],0],'h':[[5,5,7,5,5],0],'i':[[7,2,2,2,7],0],'j':[[1,1,1,5,2],0],'k':[[5,5,6,5,5],0],'l':[[4,4,4,4,7],0],'m':[[5,7,7,5,5],0],'n':[[5,7,7,7,5],0],'o':[[2,5,5,5,2],0],'p':[[6,5,6,4,4],0],'q':[[2,5,5,6,3],0],'r':[[6,5,6,5,5],0],'s':[[3,4,2,1,6],0],'t':[[7,2,2,2,2],0],'u':[[5,5,5,5,3],0],'v':[[5,5,5,5,2],0],'w':[[5,5,7,7,5],0],'x':[[5,5,2,5,5],0],'y':[[5,5,2,2,2],0],'z':[[7,1,2,4,7],0],'0':[[2,5,5,5,2],0],'1':[[2,6,2,2,7],0],'2':[[6,1,2,4,7],0],'3':[[6,1,2,1,6],0],'4':[[5,5,7,1,1],0],'5':[[7,4,6,1,6],0],'6':[[3,4,6,5,2],0],'7':[[7,1,2,2,2],0],'8':[[2,5,2,5,2],0],'9':[[2,5,3,1,6],0],' ':[[0,0,0,0,0],0],'.':[[0,0,0,0,2],0],',':[[0,0,0,2,4],0],'\'':[[2,2,0,0,0],0],'!':[[2,2,2,0,2],0],'?':[[6,1,2,0,2],0],':':[[0,2,0,2,0],0],'-':[[0,0,7,0,0],0],'/':[[1,1,2,4,4],0],'(':[[1,2,2,2,1],0],')':[[4,2,2,2,4],0],'+':[[0,2,7,2,0],0],'=':[[0,7,0,7,0],0],'—':[[0,0,7,0,0],0],'·':[[0,0,2,0,0],0],'…':[[0,0,0,0,5],0],'฿':[[2,7,7,7,2],0]};
 /* pick the font and the whole-number scale for a requested size */
 function fontPick(size){
   if(size<=6)  return {f:F3, w:F3W, h:F3H, s:1, gap:1};
@@ -1006,7 +1007,7 @@ const TH = {
   'lift the fallen tree':'ยกต้นไม้ที่ล้ม', 'reach up for the cat':'เอื้อมไปรับแมว',
   'reach the junction box':'เอื้อมถึงกล่องไฟ', 'hang the fallen garland':'แขวนพวงมาลัยที่ร่วง',
   // --- the places ---
-  'the graveyard':'ป่าช้า', 'the rice fields':'ทุ่งนา', 'the village road':'ถนนในหมู่บ้าน',
+  'the graveyard':'ป่าช้า', 'the rice fields':'ทุ่งนา', 'rice fields':'นาข้าว', 'the village road':'ถนนในหมู่บ้าน',
   'the spirit house':'ศาลพระภูมิ', 'the banana grove':'ดงกล้วย', 'the temple':'วัด',
   'the old forest':'ป่าเก่า', 'the field':'แปลงผัก',
   // --- what things are ---
@@ -1036,8 +1037,72 @@ const TH = {
   'East. I will be right behind your shoulder.':'ไปทางตะวันออก ข้าจะอยู่ข้างไหล่เจ้าเอง',
   'The beds east of the stall are yours to tend. Sow, water, wait, pick.':'แปลงผักทางตะวันออกของแผงเป็นของเจ้า หยอด รดน้ำ รอ แล้วเก็บ',
   'Somebody always needs one thing. It is written at the top of the screen.':'จะมีคนอยากได้อะไรสักอย่างเสมอ ดูที่ข้างบนจอ',
+  'There is a derelict farm west in the rice fields, with a notice on the gate.':'มีไร่ร้างอยู่ทางตะวันตกในทุ่งนา มีประกาศติดอยู่ที่ประตู',
+  'Sow, water, wait, pick. That is the whole of a bed.':'หว่าน รดน้ำ รอ แล้วเก็บ แปลงผักมีแค่นี้',
+  'The rice fields want flooding, then sowing, then a long wait. Rice is patient work.':'นาข้าวต้องปล่อยน้ำ แล้วหว่าน แล้วรอนาน ข้าวเป็นงานของคนใจเย็น',
+  'Somebody has ordered food. Cook it, carry it to them, and they pay.':'มีคนสั่งอาหาร ทำแล้วเอาไปให้ เขาจ่ายเงิน',
+  'A spirit you have fed will work your farm. Ask one.':'ผีที่เจ้าเลี้ยงข้าวจะมาช่วยทำไร่ ลองขอดู',
+  'Now give it away. Merit is the ledger. Coins are the landlord.':'เอาไปให้เขาสิ บุญคือสมุด เงินคือค่าเช่า',
+  'rent the farm, west in the rice fields':'ไปเช่าไร่ ทางตะวันตกในทุ่งนา',
   'Seed is in the crate at the end of the row.':'เมล็ดพันธุ์อยู่ในลังท้ายแถว',
   'You have seed enough. Put it in the ground.':'เมล็ดพอแล้ว เอาลงดินเถอะ',
+  // --- what the garden and the orchard grow ---
+  'galangal':'ข่า', 'holy basil':'กะเพรา', 'pandan leaf':'ใบเตย',
+  'kaffir lime':'มะกรูด', 'morning glory':'ผักบุ้ง',
+  'durian':'ทุเรียน', 'mangosteen':'มังคุด', 'rambutan':'เงาะ',
+  'longan':'ลำไย', 'jackfruit':'ขนุน',
+  'egg':'ไข่', 'duck egg':'ไข่เป็ด', 'buffalo milk':'นมควาย',
+  'manure':'ปุ๋ยคอก', 'rice bran':'รำข้าว',
+  'chicken':'ไก่', 'duck':'เป็ด', 'buffalo':'ควาย',
+  // --- the new dishes ---
+  'holy basil rice':'ผัดกะเพรา', 'green curry':'แกงเขียวหวาน',
+  'durian sticky rice':'ข้าวเหนียวทุเรียน', 'pandan custard':'สังขยาใบเตย',
+  'fruit in coconut':'ผลไม้ในกะทิ',
+  'Pad Kaphrao':'ผัดกะเพรา', 'Green Curry':'แกงเขียวหวาน',
+  'Durian Sticky Rice':'ข้าวเหนียวทุเรียน', 'Pandan Custard':'สังขยาใบเตย',
+  'Fruit in Coconut':'ผลไม้ในกะทิ',
+  // --- money ---
+  '฿ more':'฿', 'from the pen':'จากคอกสัตว์', 'fed':'ให้อาหารแล้ว',
+  'kinds':'อย่าง', 'sell the whole basket':'ขายทั้งตะกร้า',
+  'nothing here just now':'ยังไม่มีอะไร',
+  // --- the counters ---
+  'THE STALL':'แผงขายของ', 'FOR RENT':'ให้เช่า', 'THE FARM':'ไร่นา',
+  'ORDERS':'รายการสั่ง', 'A PAIR OF HANDS':'มือช่วยงาน',
+  'buy and sell':'ซื้อขาย', 'read the orders':'ดูรายการสั่ง',
+  'read the notice':'อ่านประกาศ', 'read the farm board':'อ่านป้ายไร่',
+  'rent the farm':'เช่าไร่', 'mend the roof':'ซ่อมหลังคา',
+  'clear another bed':'เปิดแปลงใหม่', 'open up a rice field':'เปิดนาข้าว',
+  'dig an orchard hole':'ขุดหลุมปลูกต้นไม้', 'plant a':'ปลูก', 'buy a':'ซื้อ',
+  'in the pen':'ในคอก', 'planted':'ปลูกแล้ว',
+  'the roof is mended':'ซ่อมหลังคาแล้ว', 'a new bed, turned over':'แปลงใหม่ พรวนดินแล้ว',
+  'the dike is built':'ทำคันนาแล้ว', 'a hole, waiting for a tree':'หลุมรอต้นไม้',
+  'welcome to the pen':'ยินดีต้อนรับเข้าคอก',
+  'the farm wants for nothing':'ไร่ไม่ขาดอะไรแล้ว', 'go and work it':'ไปลงมือทำเถอะ',
+  // --- the farm, worked ---
+  'the pen is empty':'คอกยังว่าง',
+  'take what they left you':'เก็บของจากคอก',
+  'the animals want feeding':'สัตว์หิวแล้ว', 'the animals are settled':'สัตว์อิ่มแล้ว',
+  'flood it and sow the rice':'ปล่อยน้ำแล้วหว่านข้าว', 'cut the rice':'เกี่ยวข้าว',
+  'the rice is coming on':'ข้าวกำลังตั้งท้อง', 'let the water back in':'ปล่อยน้ำเข้านา',
+  'the paddy is dry':'นาแห้ง', 'flooded and sown':'ปล่อยน้ำและหว่านแล้ว',
+  'the water is up':'น้ำเต็มนาแล้ว',
+  'pick the fruit':'เก็บผลไม้', 'nothing ripe yet':'ยังไม่สุก',
+  'it is still a sapling':'ยังเป็นต้นกล้า', 'nothing planted here':'ยังไม่ได้ปลูก',
+  'sown, and fed':'หว่านและใส่ปุ๋ยแล้ว',
+  'bears for ever, once it is grown':'โตแล้วออกผลไปตลอด',
+  // --- the ghosts who work for you ---
+  'ask them to help':'ขอให้มาช่วยงาน',
+  'water the beds':'รดน้ำแปลงผัก', 'pick what is ripe':'เก็บที่สุกแล้ว',
+  'keep the water up':'ดูแลน้ำในนา', 'mind the orchard':'ดูแลสวนผลไม้',
+  'feed the animals':'ให้อาหารสัตว์',
+  'doing this now':'กำลังทำอยู่', 'taken by':'ทำอยู่แล้วโดย',
+  'nothing, thank you':'ไม่ต้องแล้ว ขอบใจ', 'send back':'ให้กลับ',
+  'comes to the farm':'มาช่วยที่ไร่', 'goes back to the road':'กลับไปที่ถนน',
+  'what should they do?':'ให้ช่วยอะไรดี',
+  // --- orders ---
+  'wants':'สั่ง', 'Could you make me':'ช่วยทำให้หน่อยได้ไหม',
+  '฿ for it':'฿ นะ',
+  'nobody is hungry yet':'ยังไม่มีใครหิว', 'give it a little while':'รออีกหน่อย',
   // --- the field, and what the village asks for ---
   'sown':'หยอดแล้ว', 'watered':'รดน้ำแล้ว',
   'the bed is empty':'แปลงว่างอยู่',
@@ -1561,6 +1626,53 @@ function drawPlate(g,id,x,y,s=1){
         pEll(g,cx2,cy2-S2(2),S2(4),S2(3),'#fff6e0');
         pR(g,cx2-S2(1),cy2-S2(3),S2(2),S2(2),i%2?'#4f9e5c':'#e8a13c'); }
       break;
+    case 'padkaphrao':
+      // rice on one side, the basil stir-fry on the other, and the fried egg on top
+      pEll(g,x,y+S2(5),S2(30),S2(9),'#e8dfc8'); pEll(g,x,y+S2(3),S2(28),S2(8),'#f6f0dc');
+      for(let i=0;i<9;i++) pEll(g,x-S2(20)+S2((i%5)*4),y-S2(2)+S2(((i/5)|0)*4),S2(5),S2(3),'#fffaf0');
+      pEll(g,x+S2(10),y+S2(1),S2(15),S2(6),'#3f5f2c'); pEll(g,x+S2(10),y,S2(14),S2(5),'#4f7a3c');
+      for(let i=0;i<7;i++) pEll(g,x+S2(2)+S2(i*3),y-S2(2)-S2((i%2)*2),S2(3),S2(2),i%2?'#5f9a52':'#3f7a3c');
+      for(let i=0;i<4;i++) pTaper(g,x+S2(3)+S2(i*6),y-S2(1),x+S2(6)+S2(i*6),y+S2(3),S2(3),S2(1),'#d8483a');
+      pEll(g,x-S2(2),y-S2(9),S2(13),S2(6),'#fffaf0'); pEll(g,x-S2(2),y-S2(10),S2(11),S2(5),'#fffdf6');
+      pEll(g,x-S2(1),y-S2(10),S2(5),S2(3.4),'#f0b83c'); pEll(g,x-S2(2),y-S2(11),S2(2),S2(1.4),'#ffd257');
+      break;
+    case 'greenCurry':
+      pEll(g,x,y+S2(4),S2(30),S2(11),'#c9c4b8'); pEll(g,x,y+S2(2),S2(28),S2(10),'#eae6da');
+      pEll(g,x,y,S2(24),S2(8),'#5f9a52'); pEll(g,x-S2(4),y-S2(2),S2(13),S2(4),'#7fbf6a');
+      for(let i=0;i<6;i++) pEll(g,x-S2(14)+S2(i*5.6),y-S2(1),S2(3.4),S2(2.2),'#3f7a3c');
+      for(let i=0;i<4;i++) pEll(g,x-S2(10)+S2(i*7),y-S2(4),S2(2.6),S2(1.8),'#e8dfc8');
+      for(let i=0;i<3;i++) pTaper(g,x-S2(9)+S2(i*10),y-S2(5),x-S2(4)+S2(i*10),y+S2(1),S2(3),S2(1),'#c8342a');
+      for(let i=0;i<3;i++) pEll(g,x-S2(8)+S2(i*8),y-S2(12)-S2(i%2*3),S2(3),S2(2),'rgba(240,240,235,0.45)');
+      break;
+    case 'durianRice':
+      pEll(g,x,y+S2(5),S2(30),S2(9),'#f6f0dc');
+      for(let i=0;i<12;i++) pR(g,x-S2(22)+S2((i%6)*3),y+S2(1)+S2(((i/6)|0)*3),S2(2),S2(2),'#f2ecd8');
+      pR(g,x-S2(22),y-S2(2),S2(18),S2(6),'#fffaf0');
+      pEll(g,x+S2(9),y-S2(1),S2(10),S2(9),'#8a7a2c'); pEll(g,x+S2(9),y-S2(2),S2(9),S2(8),'#c2a44a');
+      for(let i=0;i<11;i++){ const a=i/11*TAU;
+        pTri(g,x+S2(9)+Math.cos(a)*S2(12),y-S2(2)+Math.sin(a)*S2(11),
+             x+S2(9)+Math.cos(a-0.3)*S2(7),y-S2(2)+Math.sin(a-0.3)*S2(6),
+             x+S2(9)+Math.cos(a+0.3)*S2(7),y-S2(2)+Math.sin(a+0.3)*S2(6),'#a89040'); }
+      pR(g,x-S2(16),y-S2(6),S2(9),S2(2),'#fffaf0');
+      break;
+    case 'sangkhaya':
+      pEll(g,x,y+S2(5),S2(28),S2(9),'#c9c4b8');
+      pR(g,x-S2(22),y-S2(6),S2(44),S2(13),'#b8b0a0'); pR(g,x-S2(21),y-S2(5),S2(42),S2(11),'#8fc48a');
+      pR(g,x-S2(21),y-S2(5),S2(42),S2(2),'#b0dca8');
+      for(let i=0;i<5;i++) pR(g,x-S2(16)+S2(i*8),y-S2(1),S2(3),S2(3),'#6faa66');
+      for(let i=0;i<3;i++) pTaper(g,x-S2(24),y+S2(1)+S2(i*3),x-S2(30),y-S2(4)+S2(i*4),S2(2.4),S2(1),'#2f7a4c');
+      for(let i=0;i<2;i++) pEll(g,x+S2(6)+S2(i*8),y-S2(12),S2(3),S2(2),'rgba(240,240,235,0.4)');
+      break;
+    case 'ruamMit':
+      pEll(g,x,y+S2(4),S2(28),S2(10),'#c9c4b8'); pEll(g,x,y+S2(2),S2(26),S2(9),'#eae6da');
+      pEll(g,x,y,S2(22),S2(7),'#f6f2e6'); pEll(g,x-S2(4),y-S2(2),S2(12),S2(3.4),'#fffdf6');
+      pEll(g,x-S2(10),y-S2(3),S2(4),S2(3.4),'#7a2a4a'); pEll(g,x-S2(11),y-S2(4),S2(1.6),S2(1),'#a04a68');
+      pEll(g,x-S2(1),y-S2(4),S2(4),S2(3.4),'#d8433a');
+      for(let i=0;i<8;i++){ const a=i/8*TAU; pTaper(g,x-S2(1)+Math.cos(a)*S2(2),y-S2(4)+Math.sin(a)*S2(2),
+        x-S2(1)+Math.cos(a)*S2(6),y-S2(4)+Math.sin(a)*S2(5),S2(1.2),S2(0.6),i%2?'#3f8f3c':'#c03a30'); }
+      pEll(g,x+S2(9),y-S2(3),S2(4),S2(3.4),'#b08a5e');
+      for(let i=0;i<6;i++) pR(g,x-S2(15)+S2(i*5),y+S2(1),S2(2.6),S2(2.6),'#e8f0f8');
+      break;
     default: drawIcon(g,id,x,y,s*2);
   }
   // steam
@@ -1695,7 +1807,7 @@ const GBASE = 216;
 
 const ZONES = [
   {id:'charnel', a:0,    b:760,  name:'the graveyard', s:'graveyard'},
-  {id:'paddy',   a:760,  b:1480, name:'the rice fields', s:'paddies'},
+  {id:'paddy',   a:760,  b:1480, name:'the rice fields', s:'the farm'},
   {id:'villageW',a:1480, b:2320, name:'the village road', s:'village'},
   {id:'centre',  a:2320, b:3000, name:'the spirit house', s:'shrine'},
   {id:'grove',   a:3000, b:3800, name:'the banana grove', el:1, s:'grove'},
@@ -1728,13 +1840,13 @@ const LAMP_XS = [1520,1700,1880,2060,2250,2440,2640,2840,3020];
 const BROKEN_LAMP = 3;                 // x 2060 — the dark stretch
 const SHRINE_X = 2500, CART_X = 2790, TAMARIND_X = 2650;
 const TANI_X = 3340, SALA_X = 4080, CHEDI_X = 4330;
-const FALLEN_TREE_X = 1268, POND_X = 1120;
+const FALLEN_TREE_X = 1990, POND_X = 700;
 const HOUSE_XS = [1560,1790,2160,2350,2720,2960];
 
 /* crossroads: a post with two boards, so you always know which way is which */
 const SIGNS = [
   {x:742,  l:'the rice fields',    r:'the graveyard'},
-  {x:1462, l:'the village',      r:'the rice fields'},
+  {x:1478, l:'the village',      r:'the rice fields'},
   {x:3040, l:'the banana grove',  r:'the spirit house'},
   {x:3820, l:'the temple',            r:'the banana grove'},
   {x:4620, l:'the old forest',     r:'the temple'},
@@ -1948,10 +2060,9 @@ function paintPlay(){
     }
     if(i%3===0){ pEll(g,x-6,gy-2,4,3,'#c0392f'); pEll(g,x-6,gy-3,3,2,'#e05a48'); }  // a red drink, left out
   }
-  // --- paddy: dikes, scarecrow, buffalo skull on a post ---
-  stamp(ART.scare, 980, groundY(980)+2, 1);
-  stamp(ART.scare, 1330, groundY(1330)+2, 0.85);
-  for(let x=800;x<1460;x+=64){ const gy=groundY(x); pR(g,x,gy-3,54,4,'#6f6046'); pR(g,x,gy-3,54,1,'#8a7a5c'); }
+  // --- the rice fields: dikes west of the farm, and one scarecrow on it ---
+  stamp(ART.scare, 1180, groundY(1180)+2, 1);
+  for(let x=770;x<800;x+=64){ const gy=groundY(x); pR(g,x,gy-3,54,4,'#6f6046'); pR(g,x,gy-3,54,1,'#8a7a5c'); }
   // the fallen tree across the road (a task for someone tall)
   {
     const x=FALLEN_TREE_X, gy=groundY(x);
@@ -2012,6 +2123,15 @@ function paintPlay(){
     // candle rail
     for(let i=0;i<7;i++){ const cx2=4000+i*40, cy=groundY(cx2);
       pR(g,cx2,cy-14,3,14,'#b8a894'); pR(g,cx2,cy-16,3,3,'#f6e2a0'); }
+  }
+  /* the farm's own lights. They stay off until somebody rents the place,
+     which is most of what makes a derelict farm look derelict. */
+  for(const [lx,dy,r,a,id] of [[FARMHOUSE_X+10,-58,46,0.58,'farmHouse'],
+                               [PEN_X+24,-30,36,0.46,'farmPen'],
+                               [BED_XS[2],-44,62,0.52,'farmBeds'],
+                               [PADDY_XS[0]+40,-34,50,0.42,'farmPaddy'],
+                               [TREE_XS[1],-56,46,0.40,'farmOrchard']]){
+    const l=addLight(lx, groundY(lx)+dy, r, PAL.lamp, a, {id, flick:0.05}); l.on=false;
   }
   // Lung Somchai's outdoor kitchen, beside the cart
   { const k=ART.kitchen; stamp(k, KITCHEN_X, groundY(KITCHEN_X)+2, 1);
@@ -2836,7 +2956,7 @@ function drawCat(g,c){
    ============================================================ */
 const GOAL = 108;                       // as many beads as a prayer mala
 const GS = {
-  state:'title', t:0, merit:0, spent:0,
+  state:'title', t:0, merit:0, spent:0, baht:0,
   skills:{}, cos:{skirt:'ash'}, q:{prayers:0,offerings:0,pets:0,gifts:0},
   seen:{}, bag:{}, friends:{}, learned:{}, mem:{}, dawn:0, shake:0, hitstop:0,
   farm:null, req:null,
@@ -2877,12 +2997,35 @@ const ITEMS = {
   bamboo:    {n:'bamboo',        c:'#c2b46a', k:'craft'},
   clay:      {n:'river clay',    c:'#9a6b4a', k:'craft'},
   seed:      {n:'a handful of seed', c:'#c9a86a', k:'seed'},
+  // --- what actually grows in a Thai garden ---
+  galangal:  {n:'galangal',      c:'#e8d9b0', k:'herb'},
+  basil:     {n:'holy basil',    c:'#3f7a3c', k:'herb'},
+  pandan:    {n:'pandan leaf',   c:'#2f7a4c', k:'herb'},
+  kaffir:    {n:'kaffir lime',   c:'#5f9a3c', k:'herb'},
+  morning:   {n:'morning glory', c:'#6fae5c', k:'herb'},
+  // --- the orchard ---
+  durian:    {n:'durian',        c:'#c2a44a', k:'fruit'},
+  mangosteen:{n:'mangosteen',    c:'#7a2a4a', k:'fruit'},
+  rambutan:  {n:'rambutan',      c:'#d8433a', k:'fruit'},
+  longan:    {n:'longan',        c:'#b08a5e', k:'fruit'},
+  jackfruit: {n:'jackfruit',     c:'#c9b03c', k:'fruit'},
+  // --- the animals give these back ---
+  egg:       {n:'egg',           c:'#f2e4c8', k:'animal'},
+  duckEgg:   {n:'duck egg',      c:'#e2ecd8', k:'animal'},
+  milk:      {n:'buffalo milk',  c:'#f6f2e6', k:'animal'},
+  manure:    {n:'manure',        c:'#6b4e33', k:'farm'},
+  bran:      {n:'rice bran',     c:'#d3b478', k:'farm'},
   // cooked
   somtam:      {n:'papaya salad',      c:'#c9d84a', k:'dish'},
   stickyMango: {n:'mango sticky rice', c:'#f0c860', k:'dish'},
   tomyum:      {n:'tom yum',           c:'#e0603c', k:'dish'},
   friedBanana: {n:'fried banana',      c:'#d89a48', k:'dish'},
   khanomkrok:  {n:'coconut cakes',     c:'#f2e2c0', k:'dish'},
+  padkaphrao:  {n:'holy basil rice',   c:'#4f7a3c', k:'dish'},
+  greenCurry:  {n:'green curry',       c:'#6fa85c', k:'dish'},
+  durianRice:  {n:'durian sticky rice',c:'#d8bc52', k:'dish'},
+  sangkhaya:   {n:'pandan custard',    c:'#8fc48a', k:'dish'},
+  ruamMit:     {n:'fruit in coconut',  c:'#e8d0d8', k:'dish'},
   // made
   garland:  {n:'jasmine garland', c:'#f6f0dc', k:'craft'},
   krathong: {n:'leaf float',      c:'#4f9e5c', k:'craft'},
@@ -2896,6 +3039,11 @@ const RECIPES = {
   tomyum:      {out:'tomyum',      need:{lemongrass:1,chili:1,lime:1,herb:1},steps:['boil','mix'],   n:'Tom Yum',           d:'Sour, hot, and loud. A soup that argues back.'},
   friedBanana: {out:'friedBanana', need:{banana:2,coconut:1},                steps:['fry','plate'],  n:'Fried Banana',      d:'The smell alone brings children from three houses away.'},
   khanomkrok:  {out:'khanomkrok',  need:{coconut:2,rice:1},                  steps:['pour','fry'],   n:'Coconut Cakes',     d:'Little coconut puddings in a dimpled pan. Two make a pair.'},
+  padkaphrao:  {out:'padkaphrao',  need:{basil:2,chili:1,egg:1,rice:1},      steps:['fry','plate'],  n:'Pad Kaphrao',       d:'Holy basil, chilli, an egg on top. What everybody eats when nobody can decide.'},
+  greenCurry:  {out:'greenCurry',  need:{galangal:1,chili:2,coconut:1,basil:1},steps:['boil','mix'],  n:'Green Curry',       d:'Green because of the chillies, sweet because of the coconut, and never mild.'},
+  durianRice:  {out:'durianRice',  need:{durian:1,rice:1,coconut:1},          steps:['steam','plate'],n:'Durian Sticky Rice',d:'Half the village will smell this and come. The other half will smell it and leave.'},
+  sangkhaya:   {out:'sangkhaya',   need:{pandan:2,egg:2,coconut:1},           steps:['steam','pour'], n:'Pandan Custard',    d:'Steamed soft and green, eaten with bread or with sticky rice, or with a spoon standing up.'},
+  ruamMit:     {out:'ruamMit',     need:{mangosteen:1,rambutan:1,coconut:1},  steps:['plate','pour'], n:'Fruit in Coconut',  d:'Whatever the orchard gave you, in sweet coconut milk, over ice you do not have.'},
 };
 const CRAFTS = {
   garland:  {out:'garland',  need:{flower:3},                 steps:['thread','tie'],  n:'Jasmine Garland', d:'Thread the jasmine, tie it off, hang it where it will be seen.'},
@@ -3016,13 +3164,6 @@ const VOICE = {
     chat:['Engine sounds wrong from here. That is not my truck. Still sounds wrong.'],
     ask: ['My legs are done. My mouth is fine. So I am asking.'] },
 };
-/* what a standing request sounds like out loud, so nobody has to guess */
-function reqAsk(v){
-  if(REQ.who!==v.id || !REQ.item) return null;
-  const left = REQ.n - REQ.got;
-  return L('Bring me')+' '+left+' '+L(ITEMS[REQ.item].n)+'. '+L('Then we are square.');
-}
-
 const TANI = {x:TANI_X, y:groundY(TANI_X)-4, anim:0, face:-1, waveT:0};
 const PHRA = {x:SHRINE_X+2, y:groundY(SHRINE_X)-64, anim:0, shown:false};
 const CAT  = {x:TAMARIND_X+16, y:groundY(TAMARIND_X)-104, state:'tree', anim:0, phase:0, face:-1, tx:0};
@@ -3039,7 +3180,7 @@ const SPIRITS = [
    wish:'Something soft. He has no teeth, and is sensitive about it.',
    thanks:['…it is soft. It is SOFT. I can eat it.','Nobody has cooked for me in a hundred and forty years.'],
    gift:'khanomkrok'},
-  {id:'krahang', x:1180, name:'Krahang', en:'Krahang', art:'krahang',
+  {id:'krahang', x:770, name:'Krahang', en:'Krahang', art:'krahang',
    wants:'basket', met:false, friend:false, y:0,
    hi:['Do not laugh. I have had a very difficult evening.'],
    about:'He flies at night on two winnowing baskets. He came down hard in the paddy; both are kindling now.',
@@ -3068,21 +3209,26 @@ const SPIRITS = [
    thanks:['They will see it. They will slow down.','That is all it ever was.'],
    gift:'clay'},
 ];
-for(const s of SPIRITS){ s.y=groundY(s.x); s.anim=rnd(9); s.face=-1; s.hurtT=0; s.attackT=0; s.hop=0; s.bob=rnd(TAU); }
+for(const s of SPIRITS){ s.home=s.x; s.y=groundY(s.x); s.anim=rnd(9); s.face=-1; s.hurtT=0; s.attackT=0; s.hop=0; s.bob=rnd(TAU); s.hand=null; }
 const SPIRIT_BY_ID = {}; for(const s of SPIRITS) SPIRIT_BY_ID[s.id]=s;
 const GIFTEES = ()=> [...SPIRITS, MALI, UNCLE, MONK, YAI, NOK, DAM];
 
 /* ---------- things growing that you can pick ---------- */
 const NODES = [];
 function addNode(x,item,n=1,art='bush'){ NODES.push({x,y:groundY(x),item,n,art,ready:true,t:0}); }
-addNode(960,'rice',2,'paddy');  addNode(1060,'rice',2,'paddy'); addNode(1290,'herb',2,'paddy');
-addNode(1390,'herb',2,'paddy'); addNode(1120,'clay',2,'clay');  addNode(1180,'clay',2,'clay');
+/* the rice fields belong to the farm now, so nothing wild grows inside the fence */
+addNode(650,'clay',2,'clay');   addNode(745,'clay',2,'clay');  addNode(600,'herb',2,'paddy');
 addNode(1620,'chili',2,'chili');addNode(1660,'lemongrass',2,'lemongrass'); addNode(2210,'lime',2,'lime');
 addNode(2460,'chili',2,'chili'); addNode(2560,'papaya',2,'bush'); addNode(2960,'papaya',2,'bush');
 addNode(1845,'flower',3,'flowers'); addNode(2320,'flower',3,'flowers'); addNode(3600,'flower',3,'flowers');
 addNode(3120,'banana',3,'banana'); addNode(3260,'banana',3,'banana'); addNode(3480,'mango',2,'banana');
 addNode(3560,'leaf',3,'leaf');   addNode(3700,'leaf',3,'leaf');  addNode(3420,'mango',2,'banana');
 addNode(1490,'coconut',2,'coconut'); addNode(2680,'coconut',2,'coconut'); addNode(4200,'coconut',2,'coconut');
+/* the wild things the new dishes need, growing where they would grow */
+addNode(3300,'pandan',3,'paddy');  addNode(3760,'pandan',3,'paddy');
+addNode(2500,'basil',3,'chili');   addNode(2920,'basil',3,'chili');
+addNode(4260,'galangal',2,'clay'); addNode(4520,'galangal',2,'clay');
+addNode(4740,'kaffir',2,'lime');   addNode(3980,'longan',2,'banana');
 addNode(4700,'bamboo',3,'bamboo'); addNode(4880,'bamboo',3,'bamboo'); addNode(5100,'bamboo',3,'bamboo');
 addNode(5240,'leaf',3,'leaf');    addNode(4640,'herb',2,'paddy');
 
@@ -3184,11 +3330,15 @@ function stepDlg(dt){
 const TUT = [
   {id:'walk',  test:()=>Math.abs(P.x-300)>90,             say:'Tap the road. I will walk you there.'},
   {id:'gather',test:()=>bagCount()>0,                     say:'Tap a plant. Everything cooks from something.'},
-  {id:'farm',  test:()=>(GS.q.harvest||0)>0,              say:'The beds east of the stall are yours to tend. Sow, water, wait, pick.'},
   {id:'guide2',test:()=>GS.q.metPhra,                     say:'The little gold house east of here keeps the ledger. Be polite.'},
   {id:'cook',  test:()=>Object.keys(GS.learned).length>0, say:'Tap the kitchen by the noodle cart.'},
-  {id:'give',  test:()=>GS.q.gifts>0,                     say:'Now give it away. That is the whole game, really.'},
-  {id:'req',   test:()=>(GS.q.reqs||0)>0,                 say:'Somebody always needs one thing. It is written at the top of the screen.'},
+  {id:'give',  test:()=>GS.q.gifts>0,                     say:'Now give it away. Merit is the ledger. Coins are the landlord.'},
+  {id:'sell',  test:()=>(GS.q.sold||0)>0,                 say:"P'Nok buys anything. Sell her something and see what a coin feels like."},
+  {id:'rent',  test:()=>FARM.rented,                      say:'There is a derelict farm west in the rice fields, with a notice on the gate.'},
+  {id:'farm',  test:()=>(GS.q.harvest||0)>0,              say:'Sow, water, wait, pick. That is the whole of a bed.'},
+  {id:'rice',  test:()=>(GS.q.rice||0)>0,                 say:'The rice fields want flooding, then sowing, then a long wait. Rice is patient work.'},
+  {id:'order', test:()=>(GS.q.orders||0)>0,               say:'Somebody has ordered food. Cook it, carry it to them, and they pay.'},
+  {id:'hand',  test:()=>handCount()>0,                    say:'A spirit you have fed will work your farm. Ask one.'},
   {id:'ledger',test:()=>!!GS.seen.ledger,                 say:'Your ledger is the book, bottom left. Spent merit still counts.'},
   {id:'past',  test:()=>!!GS.mem.take,                    say:'That was a piece of you. The PAST tab keeps every one it gives back.'},
 ];
@@ -3477,67 +3627,220 @@ function unlockCos(id, free){
   saveGame();
 }
 /* ============================================================
-   THE VILLAGE FIELD — the one job that is yours and comes back
-   every time. Plant, water, wait, pick. Six beds, one crop each,
-   so there is never a menu and never a question about what a bed
-   is going to grow.
+   THE FARM YOU RENT
+
+   There is a derelict place out in the rice fields with nobody's
+   name on it. Pay the landlord and it is yours to work: five dry
+   beds for the garden, two นาข้าว for the rice, three holes for
+   fruit trees, and a pen with nothing in it yet.
+
+   Everything here costs money and gives money back, and the
+   money comes from the kitchen — you cook what you grow and the
+   village buys it. Merit comes from giving it away instead.
    ============================================================ */
-const FARM_X = 1990, PLOT_N = 5, PLOT_GAP = 26;
-const PLOT_CROPS = ['papaya','chili','lemongrass','rice','herb'];
-const GROW_A = 11, GROW_B = 13;          // seconds, dry. water roughly halves it.
-const PLOTS = [];
-for(let i=0;i<PLOT_N;i++)
-  PLOTS.push({ i, x: FARM_X - ((PLOT_N-1)/2)*PLOT_GAP + i*PLOT_GAP,
-               crop: PLOT_CROPS[i], stage:0, t:0, wet:0, pop:0, sway:rnd(TAU) });
-/* stage 0 bare · 1 sown · 2 sprouted · 3 ready */
-function plotAt(x){ for(const pl of PLOTS) if(Math.abs(pl.x-x)<12) return pl; return null; }
-function stepFarm(dt){
-  for(const pl of PLOTS){
-    pl.sway += dt*0.7;
-    if(pl.pop>0) pl.pop -= dt;
-    if(!pl.stage) continue;
-    const rate = pl.wet>0 ? 2.1 : 0.85;
-    if(pl.wet>0) pl.wet -= dt;
-    pl.t += dt*rate;
-    const need = pl.stage===1? GROW_A : GROW_B;
-    if(pl.stage<3 && pl.t>=need){
-      pl.stage++; pl.t=0; pl.pop=0.9;
-      if(pl.stage===3){ AU.ranat(880,0,0.04); for(let k=0;k<5;k++) pSpark(pl.x+rnd(-6,6), groundY(pl.x)-16, 1, PAL.jadeL); }
-      else AU.blip();
-    }
+const FARM_GATE = 838, FARMHOUSE_X = 900, PEN_X = 962;
+const BED_XS    = [1015, 1047, 1079, 1111, 1143];
+const PADDY_XS  = [1215, 1290];
+const TREE_XS   = [1360, 1400, 1440];
+
+const RENT      = 120;                  // what the landlord wants for the place
+const BED_COST  = 30, PADDY_COST = 90;
+const SAPLINGS  = { durian:{cost:170,n:'durian'}, mangosteen:{cost:110,n:'mangosteen'}, rambutan:{cost:80,n:'rambutan'} };
+const STOCK_COST= { chicken:45, duck:60, buffalo:240 };
+
+/* one crop to a bed, so a bed never needs a menu */
+const BED_CROPS = ['papaya','chili','basil','galangal','morning'];
+const GROW_A = 11, GROW_B = 13;         // seconds per stage, dry. water halves it.
+
+/* the whole farm, in one object, because the whole farm is one save field */
+const FARM = {
+  rented:false, house:0,
+  beds:0, paddies:0, trees:0,
+  pen:{ chicken:0, duck:0, buffalo:0, feed:0, egg:0, degg:0, milk:0, dung:0, t:0 },
+  hands:{},                             // spirit id -> job id
+};
+const PLOTS = [], PADDIES = [], TREES = [];
+for(let i=0;i<BED_XS.length;i++)
+  PLOTS.push({ i, x:BED_XS[i], crop:BED_CROPS[i], stage:0, t:0, wet:0, fert:0, pop:0, sway:rnd(TAU) });
+for(let i=0;i<PADDY_XS.length;i++)
+  PADDIES.push({ i, x:PADDY_XS[i], stage:0, t:0, flood:0, pop:0, sway:rnd(TAU) });
+for(let i=0;i<TREE_XS.length;i++)
+  TREES.push({ i, x:TREE_XS[i], crop:null, grow:0, fruit:0, t:0, pop:0, sway:rnd(TAU) });
+
+/* Rice, tree crowns and farm furniture are hundreds of tapers and ellipses
+   each, and they are the same hundreds every frame. Draw them once into a small
+   canvas and blit that instead. */
+const _farmSpr = new Map();
+function farmSprite(key, w, h, paint){
+  let c=_farmSpr.get(key);
+  if(!c){
+    if(_farmSpr.size>60) _farmSpr.clear();
+    c=mkCv(Math.max(1,Math.ceil(w)), Math.max(1,Math.ceil(h)));
+    paint(G2(c));
+    _farmSpr.set(key,c);
   }
+  return c;
 }
-const SEED_BOX_X = FARM_X - ((PLOT_N-1)/2)*PLOT_GAP - 32;   // clear of the broken lamp at 2060
-/* the village keeps a crate of seed by the gate. It is never empty, because a
-   field you cannot start is not a challenge, it is a dead end. */
+/* bake a thing that stands on the ground at (x, gy): the painter is handed a
+   context and the local coordinates its ground point sits at, so one function
+   draws both the sprite and, if it ever needed to, the live version */
+function baked(g, key, x, gy, w, h, ax, ay, paint){
+  /* the anchor has to land on a whole pixel, or the sprite's own rounding and
+     the blit's rounding disagree and the thing shifts half a pixel */
+  ax=R(ax); ay=R(ay);
+  g.drawImage(farmSprite(key, w, h, gg=>paint(gg, ax, ay)), R(x-ax), R(gy-ay));
+}
+
+const farmOpen = ()=> FARM.rented;
+const bedOpen  = pl => FARM.rented && pl.i < FARM.beds;
+const padOpen  = pd => FARM.rented && pd.i < FARM.paddies;
+const treeOpen = tr => FARM.rented && tr.i < FARM.trees;
+
+/* ---------- finding what you are standing at ---------- */
+function plotAt(x){ for(const pl of PLOTS) if(bedOpen(pl) && Math.abs(pl.x-x)<14) return pl; return null; }
+function paddyAt(x){ for(const pd of PADDIES) if(padOpen(pd) && Math.abs(pd.x-x)<30) return pd; return null; }
+function treeAt(x){ for(const tr of TREES) if(treeOpen(tr) && Math.abs(tr.x-x)<18) return tr; return null; }
+
+/* The crate by the gate. It holds exactly one seed and only when you have
+   none at all, because a field you cannot start is a dead end, not a puzzle.
+   Everything past that first seed you buy at the stall or grow yourself. */
+const SEED_CRATE_X = FARM_GATE + 28;
 function takeSeed(){
-  const n = 3 - (GS.bag.seed||0);
-  if(n<=0){ khwanSay('You have seed enough. Put it in the ground.'); AU.blip(); return; }
+  if((GS.bag.seed||0) > 0){ khwanSay('You have seed. Put it in the ground.'); AU.blip(); return; }
   preteAct('pick', 0.8, ()=>{
-    bagAdd('seed', n, true);
+    bagAdd('seed', 1, true);
     AU.ranat(660,0,0.05);
-    toast('+'+n+' '+L('a handful of seed'), '#c9a86a');
-    for(let k=0;k<6;k++) part({k:'pop',x:SEED_BOX_X,y:groundY(SEED_BOX_X)-12,vx:rnd(-24,24),vy:rnd(-40,-12),life:.6,c:'#c9a86a'});
+    toast('+1 '+L('a handful of seed'), '#c9a86a');
+    for(let k=0;k<6;k++) part({k:'pop',x:SEED_CRATE_X,y:groundY(SEED_CRATE_X)-12,vx:rnd(-24,24),vy:rnd(-40,-12),life:.6,c:'#c9a86a'});
     if(!GS.seen.seedbox){ GS.seen.seedbox=true;
-      khwanSay('The crate is the village\'s. Take what you will plant, and no more.',7); }
+      khwanSay('That crate always has one left in it. For more than one, see the stall.',7); }
     saveGame();
   });
 }
 function drawSeedBox(g){
-  const x=SEED_BOX_X, gy=groundY(x);
+  const x=SEED_CRATE_X, gy=groundY(x);
   if(x-GS.camX<-40 || x-GS.camX>W+40) return;
   pR(g,x-9,gy-13,18,13,'#3b2412');
   pR(g,x-8,gy-12,16,11,'#9a7040');
   pR(g,x-8,gy-12,16,2,'#c09256');
   pR(g,x-8,gy-6,16,1,'#7a5630');
   for(let k=0;k<3;k++) pR(g,x-6+k*5,gy-11,1,9,'#7a5630');
-  // seed heaped above the rim
   pEll(g,x,gy-13,7,2.6,'#3b2412');
   pEll(g,x,gy-13.6,6,2,'#c9a86a');
   pEll(g,x-2,gy-14,2.4,1.2,'#e2c48c');
   const bl=0.5+0.5*Math.sin(GS.t*2.4);
   if((GS.bag.seed||0)===0) pR(g,x,gy-20-bl*2,1,1,rgba(PAL.goldL,0.4+0.5*bl));
 }
+
+/* ============================================================
+   GROWING
+   ============================================================ */
+function stepFarm(dt){
+  if(FARM._lit!==FARM.rented){
+    FARM._lit=FARM.rented;
+    for(const l of LIGHTS) if(l.id && l.id.indexOf('farm')===0) l.on=FARM.rented;
+  }
+  for(const pl of PLOTS){
+    pl.sway += dt*0.7;
+    if(pl.pop>0) pl.pop -= dt;
+    if(!pl.stage) continue;
+    let rate = pl.wet>0 ? 2.1 : 0.85;
+    if(pl.fert>0) rate *= 1.5;                 // manure is worth carrying up the road
+    if(pl.wet>0) pl.wet -= dt;
+    pl.t += dt*rate;
+    const need = pl.stage===1? GROW_A : GROW_B;
+    if(pl.stage<3 && pl.t>=need){
+      pl.stage++; pl.t=0; pl.pop=0.9;
+      if(pl.stage===3){ pl.fert=0; AU.ranat(880,0,0.04);
+        for(let k=0;k<5;k++) pSpark(pl.x+rnd(-6,6), groundY(pl.x)-16, 1, PAL.jadeL); }
+      else AU.blip();
+    }
+  }
+  /* rice takes its time and wants standing water the whole way */
+  for(const pd of PADDIES){
+    pd.sway += dt*0.55;
+    if(pd.pop>0) pd.pop -= dt;
+    if(pd.flood>0) pd.flood -= dt*0.5;
+    if(!pd.stage) continue;
+    if(pd.flood<=0) continue;                  // a dry paddy simply waits
+    pd.t += dt;
+    const need = pd.stage===1? 16 : 20;
+    if(pd.stage<3 && pd.t>=need){
+      pd.stage++; pd.t=0; pd.pop=1;
+      if(pd.stage===3){ AU.ranat(660,0,0.05); AU.ranat(990,0.09,0.04);
+        for(let k=0;k<8;k++) pSpark(pd.x+rnd(-24,24), groundY(pd.x)-20, 1, '#e8d06a'); }
+      else AU.blip();
+    }
+  }
+  /* a fruit tree is planted once and then bears for ever, slowly */
+  for(const tr of TREES){
+    tr.sway += dt*0.4;
+    if(tr.pop>0) tr.pop -= dt;
+    if(!tr.crop) continue;
+    if(tr.grow<1){ tr.grow = Math.min(1, tr.grow + dt/34); if(tr.grow>=1){ AU.ranat(520,0,0.05); tr.pop=1; } continue; }
+    if(tr.fruit<3){ tr.t += dt; if(tr.t>=22){ tr.t=0; tr.fruit++; tr.pop=0.7; AU.blip(); } }
+  }
+  stepPen(dt);
+}
+
+/* ============================================================
+   THE ANIMALS — they never die and they never leave. If you stop
+   feeding them they simply stop giving anything back, and look at
+   you about it.
+   ============================================================ */
+function penHas(){ const p=FARM.pen; return p.chicken+p.duck+p.buffalo; }
+function stepPen(dt){
+  const p=FARM.pen;
+  if(!penHas()) return;
+  p.t += dt;
+  if(p.feed>0){
+    p.feed -= dt*(0.12*penHas());
+    if(p.t>=9){
+      p.t=0;
+      if(p.chicken) p.egg  = Math.min(9, p.egg  + p.chicken);
+      if(p.duck)    p.degg = Math.min(9, p.degg + p.duck);
+      if(p.buffalo) p.milk = Math.min(6, p.milk + p.buffalo);
+      p.dung = Math.min(9, p.dung + Math.ceil(penHas()/2));
+      AU.blip();
+    }
+  } else { p.feed=0; p.t=0; }
+}
+function penFull(){ const p=FARM.pen; return p.egg+p.degg+p.milk+p.dung; }
+function penCollect(){
+  const p=FARM.pen;
+  if(!penHas()){ khwanSay('There is nothing in the pen yet. The stall sells chickens.'); AU.blip(); return; }
+  if(!penFull()){
+    khwanSay(p.feed>0? 'Nothing yet. Give them an hour.' : 'They are hungry. Rice bran, from the stall.');
+    AU.blip(); return;
+  }
+  preteAct('pick', 1.0, ()=>{
+    let got=0;
+    const take=(k,id)=>{ if(p[k]>0){ bagAdd(id,p[k],true); got+=p[k]; p[k]=0; } };
+    take('egg','egg'); take('degg','duckEgg'); take('milk','milk'); take('dung','manure');
+    AU.ranat(760,0,0.05);
+    toast('+'+got+' '+L('from the pen'), '#e8d0a0');
+    for(let k=0;k<8;k++) part({k:'pop',x:PEN_X+rnd(-18,18),y:groundY(PEN_X)-14,vx:rnd(-24,24),vy:rnd(-46,-14),life:.7,c:'#f2e4c8'});
+    saveGame();
+  });
+}
+function penFeed(){
+  const p=FARM.pen;
+  if(!penHas()){ khwanSay('Buy an animal first.'); AU.blip(); return; }
+  if(!bagHas('bran')){ khwanSay('You have no bran. Mill rice, or buy a sack at the stall.'); AU.blip(); return; }
+  preteAct('give', 0.9, ()=>{
+    bagTake('bran',1);
+    p.feed = Math.min(60, p.feed + 30);
+    AU.step();
+    for(let k=0;k<10;k++) part({k:'pop',x:PEN_X+rnd(-20,20),y:groundY(PEN_X)-8,vx:rnd(-14,14),vy:rnd(-24,-6),life:.6,c:'#d3b478'});
+    toast(L('fed'),'#d3b478');
+    if(!GS.seen.fed){ GS.seen.fed=true; khwanSay('A fed animal gives you something back every little while. Come and look in the pen.',7); }
+    saveGame();
+  });
+}
+
+/* ============================================================
+   WORKING A BED
+   ============================================================ */
 function plotPrompt(pl){
   if(pl.stage===0) return bagHas('seed')? 'plant a seed' : 'the bed is empty';
   if(pl.stage===3) return 'harvest it';
@@ -3546,13 +3849,14 @@ function plotPrompt(pl){
 function usePlot(pl){
   P.face = pl.x < P.x ? -1 : 1;
   if(pl.stage===0){
-    if(!bagHas('seed')){ khwanSay('No seed left. Pick a ripe bed and one comes back.'); AU.blip(); return; }
+    if(!bagHas('seed')){ khwanSay('No seed left. There is a crate at the gate.'); AU.blip(); return; }
     preteAct('plant', 1.05, ()=>{
       if(!bagTake('seed',1)) return;
       pl.stage=1; pl.t=0; pl.wet=0; pl.pop=1;
+      if(bagHas('manure') && bagTake('manure',1)){ pl.fert=1; toast(L('sown, and fed'),'#c9a86a'); }
+      else toast(L('sown'),'#c9a86a');
       AU.step(); pDust(pl.x, groundY(pl.x), 8);
       for(let k=0;k<4;k++) part({k:'sp',x:pl.x+rnd(-4,4),y:groundY(pl.x)-6,vx:rnd(-8,8),vy:rnd(-14,-4),life:.6,c:'#c9a86a'});
-      toast(L('sown'),'#c9a86a');
       if(!GS.seen.sown){ GS.seen.sown=true;
         vignette('firstSeed');
         khwanSay('Now water it. Wet earth grows twice as fast.',7); }
@@ -3564,8 +3868,8 @@ function usePlot(pl){
     preteAct('pick', 1.0, ()=>{
       const n = has('two')? 3 : 2;
       bagAdd(pl.crop, n, true); bagAdd('seed', 1, true);
-      addMerit(2); GS.q.harvest=(GS.q.harvest||0)+1;
-      toast('+2 '+L('merit')+'  '+n+' '+L(ITEMS[pl.crop].n), PAL.jadeL);
+      addMerit(1,true); GS.q.harvest=(GS.q.harvest||0)+1;
+      toast('+'+n+' '+L(ITEMS[pl.crop].n), PAL.jadeL);
       for(let k=0;k<9;k++) part({k:'pop',x:pl.x,y:groundY(pl.x)-18,vx:rnd(-30,30),vy:rnd(-56,-18),life:.7,c:ITEMS[pl.crop].c});
       AU.ranat(700,0,0.05); AU.ranat(1046,0.08,0.04);
       pl.stage=0; pl.t=0; pl.wet=0; pl.pop=1;
@@ -3574,7 +3878,6 @@ function usePlot(pl){
     });
     return;
   }
-  // watering: he has the reach, and the pond is right there
   preteAct('water', 1.15, ()=>{
     pl.wet = 9; pl.pop = 0.6;
     AU.pour();
@@ -3582,142 +3885,979 @@ function usePlot(pl){
     toast(L('watered'),'#8fc4e8');
   });
 }
-/* ---- the field, drawn ----
-   He is ninety pixels tall and stands in front of it, so everything that
-   tells you the state of a bed has to clear his knee: the ripe plant is
-   tall, the ready-icon floats above it, and every bed keeps a painted
-   marker post you can read from the far side of the road. ---- */
+
+/* ============================================================
+   WORKING A PADDY — flood it, sow it, wait a long while, cut it
+   ============================================================ */
+function paddyPrompt(pd){
+  if(pd.stage===0) return bagHas('seed')? 'flood it and sow the rice' : 'the paddy is dry';
+  if(pd.stage===3) return 'cut the rice';
+  return pd.flood>0? 'the rice is coming on' : 'let the water back in';
+}
+function usePaddy(pd){
+  P.face = pd.x < P.x ? -1 : 1;
+  if(pd.stage===0){
+    if(!bagHas('seed')){ khwanSay('Rice starts as seed too. The crate is at the gate.'); AU.blip(); return; }
+    preteAct('plant', 1.2, ()=>{
+      if(!bagTake('seed',1)) return;
+      pd.stage=1; pd.t=0; pd.flood=40; pd.pop=1;
+      AU.pour();
+      for(let k=0;k<18;k++) part({k:'water',x:pd.x+rnd(-26,26),y:groundY(pd.x)-14,vx:rnd(-10,10),vy:rnd(10,40),life:.6});
+      toast(L('flooded and sown'),'#8fc4e8');
+      if(!GS.seen.paddy){ GS.seen.paddy=true;
+        khwanSay('Rice is slow and it wants the water kept up. Everything here waits on the rice.',8); }
+      saveGame();
+    });
+    return;
+  }
+  if(pd.stage===3){
+    preteAct('pick', 1.3, ()=>{
+      const n = 4 + (has('two')?2:0);
+      bagAdd('rice', n, true); bagAdd('bran', 2, true); bagAdd('seed', 2, true);
+      addMerit(2,true); GS.q.rice=(GS.q.rice||0)+1;
+      toast('+'+n+' '+L('sticky rice')+' · '+L('rice bran'), '#e8d06a');
+      for(let k=0;k<16;k++) part({k:'pop',x:pd.x+rnd(-24,24),y:groundY(pd.x)-22,vx:rnd(-34,34),vy:rnd(-62,-18),life:.8,c:'#e8d06a'});
+      AU.ranat(660,0,0.06); AU.ranat(880,0.09,0.05); AU.ranat(1180,0.18,0.04);
+      pd.stage=0; pd.t=0; pd.flood=0; pd.pop=1;
+      if(GS.q.rice===1) vignette('firstRice');
+      saveGame();
+    });
+    return;
+  }
+  preteAct('water', 1.25, ()=>{
+    pd.flood = 40; pd.pop = 0.6;
+    AU.pour();
+    for(let k=0;k<20;k++) part({k:'water',x:pd.x+rnd(-28,28),y:groundY(pd.x)-24,vx:rnd(-8,8),vy:rnd(24,60),life:.6});
+    toast(L('the water is up'),'#8fc4e8');
+  });
+}
+
+/* ============================================================
+   THE ORCHARD
+   ============================================================ */
+function treePrompt(tr){
+  if(!tr.crop) return 'nothing planted here';
+  if(tr.grow<1) return 'it is still a sapling';
+  return tr.fruit>0? 'pick the fruit' : 'nothing ripe yet';
+}
+function useTree(tr){
+  if(!tr.crop || tr.grow<1 || tr.fruit<=0){ khwanSay(L(treePrompt(tr))); AU.blip(); return; }
+  P.face = tr.x < P.x ? -1 : 1;
+  preteAct('pick', 1.1, ()=>{
+    const n=tr.fruit; tr.fruit=0; tr.pop=1;
+    bagAdd(tr.crop, n, true);
+    addMerit(1,true);
+    toast('+'+n+' '+L(ITEMS[tr.crop].n), ITEMS[tr.crop].c);
+    for(let k=0;k<10;k++) part({k:'pop',x:tr.x,y:groundY(tr.x)-40,vx:rnd(-26,26),vy:rnd(-40,-8),life:.8,c:ITEMS[tr.crop].c});
+    AU.ranat(590,0,0.05); AU.ranat(784,0.1,0.04);
+    saveGame();
+  });
+}
+
+/* ============================================================
+   THE FARM, DRAWN
+   ============================================================ */
 function drawFarm(g){
-  const x0=PLOTS[0].x-18, x1=PLOTS[PLOT_N-1].x+18;
-  if(x1-GS.camX<-40 || x0-GS.camX>W+40) return;
-  const fy0=groundY((x0+x1)/2);
+  const x0=FARM_GATE-30, x1=TREE_XS[TREE_XS.length-1]+40;
+  if(x1-GS.camX<-60 || x0-GS.camX>W+60) return;
+  if(FARM.rented) drawFarmLights(g);
+  drawFarmGate(g);
+  drawSeedBox(g);
+  drawFarmhouse(g);
+  drawPen(g);
+  for(const pl of PLOTS) drawBed(g,pl);
+  for(const pd of PADDIES) drawPaddy(g,pd);
+  for(const tr of TREES) drawFruitTree(g,tr);
+}
 
-  /* somebody strung three lanterns over the beds so the work could go on
-     after dark. It is also the only reason you can see the field at all. */
-  const lx0=x0-4, lx1=x1+4, ly=fy0-62;
-  pR(g,lx0,ly,2,42,'#6d5138'); pR(g,lx0,ly,1,42,'#8a684a');
-  pR(g,lx1,ly,2,42,'#6d5138'); pR(g,lx1,ly,1,42,'#8a684a');
-  for(let k=0;k<3;k++){
-    const t=(k+1)/4, lxx=lerp(lx0,lx1,t), sag=Math.sin(t*Math.PI)*5;
-    pR(g,lxx,ly+sag-1,1,4,'#4a3a2a');
-    const fl=0.82+0.18*Math.sin(GS.t*3.1+k*2.3);
-    const gr=g.createRadialGradient(lxx,ly+sag+7,1,lxx,ly+sag+7,46);
-    gr.addColorStop(0,'rgba(255,208,120,'+(0.34*fl).toFixed(3)+')');
-    gr.addColorStop(1,'rgba(255,190,90,0)');
-    g.fillStyle=gr; g.fillRect(lxx-46,ly+sag-39,92,92);
-    pEll(g,lxx,ly+sag+7,4.2,5.2,'#3b2412');
-    pEll(g,lxx,ly+sag+7,3.1,4.1,rgba('#ffd898',fl));
-    pEll(g,lxx-1,ly+sag+6,1.2,1.6,'#fff4d0');
-    pR(g,lxx-1,ly+sag+2,2,1,'#8a684a');
+/* Somebody strung lanterns over the beds the week the place was rented, and
+   nobody has taken them down. It is the only reason you can work after dark. */
+function drawFarmLights(g){
+  const a=BED_XS[0]-26, b=TREE_XS[TREE_XS.length-1]+10;
+  if(b-GS.camX<-40 || a-GS.camX>W+40) return;
+  const gy=groundY((a+b)/2), ly=gy-66;
+  for(const px of [a,b]){ pR(g,px,ly,2,40,'#6d5138'); pR(g,px,ly,1,40,'#8a684a'); pR(g,px-1,ly-2,4,2,'#a07c58'); }
+  /* the wire sags the whole width of the farm; only draw the bit of it that is
+     actually on screen, which is a sixth of it */
+  const s0=Math.max(a, GS.camX-6), s1=Math.min(b, GS.camX+W+6);
+  for(let sx=a+Math.ceil((s0-a)/3)*3; sx<s1; sx+=3){
+    const t=(sx-a)/(b-a);
+    pR(g,sx,ly+2+Math.sin(t*Math.PI)*7,3,1,'rgba(40,30,20,0.7)');
   }
-  { const sagY=ly+2;
-    for(let sx2=lx0; sx2<lx1; sx2+=3){
-      const t=(sx2-lx0)/(lx1-lx0);
-      pR(g,sx2,sagY+Math.sin(t*Math.PI)*5,3,1,'rgba(40,30,20,0.7)'); } }
-
-  // the fence behind the row: two rails and a post every bed
-  pR(g,x0-8,fy0-21,x1-x0+16,2,'#5d4735');
-  pR(g,x0-8,fy0-21,x1-x0+16,1,'#7a5c44');
-  pR(g,x0-8,fy0-13,x1-x0+16,2,'#54402f');
-  for(let fx=x0-8; fx<x1+10; fx+=13){
-    const gy=groundY(fx);
-    pR(g,fx,gy-23,2,23,'#6d5138'); pR(g,fx,gy-23,1,23,'#8a684a');
-    pR(g,fx,gy-24,2,1,'#a07c58');
+  const COL=['#ffd27a','#ffb87a','#ffe0a0','#ffc98a','#ffd27a','#ffbe86','#ffdb96'];
+  for(let k=0;k<7;k++){
+    const t=(k+1)/8, lxx=lerp(a,b,t), sag=Math.sin(t*Math.PI)*7;
+    if(lxx-GS.camX<-46||lxx-GS.camX>W+46) continue;
+    const c=COL[k], fl=0.82+0.18*Math.sin(GS.t*2.8+k*1.7);
+    drawGlow(g,lxx,ly+sag+8,34,'#ffce7c',0.32*fl);
+    // a paper lantern: two dark caps and a lit barrel between them
+    const by=ly+sag+8;
+    pR(g,lxx,ly+sag+2,1,4,'#4a3a2a');
+    pR(g,lxx-3,by-4,7,1,'#3b2412');
+    pEll(g,lxx,by,4,4.4,'#3b2412');
+    pEll(g,lxx,by,3.2,3.6,rgba(c,fl));
+    pEll(g,lxx-1,by-1,1.4,1.8,'#fff4d0');
+    pR(g,lxx-3,by+4,7,1,'#3b2412');
+    pR(g,lxx,by+5,1,2,rgba('#c9992f',0.8));
   }
+}
 
-  for(const pl of PLOTS){
-    const gy=groundY(pl.x), pop=Math.max(0,pl.pop), sw=Math.sin(pl.sway)*1.2;
-    // a raised bed of turned earth, dark when it has been watered
-    pEll(g,pl.x,gy,13,5.4,'#3d2b1c');
-    pEll(g,pl.x,gy-2,12.4,5,'#7d5c3c');
-    pEll(g,pl.x,gy-3.4,10.6,3.8, pl.wet>0? '#553f27':'#8f6b47');
-    for(let k=0;k<5;k++) pR(g,pl.x-8+k*4,gy-4.6,2,1,pl.wet>0?'#3a2a1a':'#8d6a48');
-    if(pl.wet>0 && Math.random()<0.05) part({k:'sp',x:pl.x+rnd(-7,7),y:gy-5,vx:0,vy:-6,life:.5,c:'#8fc4e8'});
+/* the gate, and the board the landlord nailed to it */
+function drawFarmGate(g){
+  const x=FARM_GATE, gy=groundY(x);
+  if(x-GS.camX<-60||x-GS.camX>W+60) return;
+  for(const px of [x-16,x+16]){
+    pR(g,px,gy-46,4,46,'#6d5138'); pR(g,px,gy-46,2,46,'#8a684a');
+    pR(g,px-1,gy-48,6,3,'#7a5c40');
+  }
+  pR(g,x-18,gy-50,40,4,'#5d4735'); pR(g,x-18,gy-50,40,1,'#7a5c44');
+  // the board itself, hung slightly crooked because nobody has straightened it
+  const by=gy-44;
+  pR(g,x-15,by,32,22,'#3b2412');
+  pR(g,x-14,by+1,30,20, FARM.rented? '#c9a468' : '#a08a62');
+  pR(g,x-14,by+1,30,1,'#e2c48c');
+  for(let i=0;i<3;i++) pR(g,x-11,by+5+i*5,24-i*3,1,'#6b4a2c');
+  if(!FARM.rented){
+    const bl=0.5+0.5*Math.sin(GS.t*2.4);
+    pR(g,x+1,by-8-bl*2,1,1,rgba(PAL.goldL,0.4+0.5*bl));
+    for(let i=0;i<3;i++) pR(g,x-8+i*7,by+16,3,3,'#7a2a24');    // FOR RENT, in red
+  }
+  // a fence running east from the gate, so the farm has an edge
+  for(let fx=x+22; fx<BED_XS[0]-24; fx+=14){
+    const fgy=groundY(fx);
+    pR(g,fx,fgy-18,2,18,'#6d5138'); pR(g,fx,fgy-18,1,18,'#856448');
+  }
+  pR(g,x+22,gy-14,BED_XS[0]-24-x-22,2,'#5d4735');
+}
 
-    if(pl.stage===1){                       // sown: a seed and one green thread
-      pEll(g,pl.x,gy-5,3.6,2,'#5a4230');
-      pR(g,pl.x,gy-8,1,3,'#7fa85e');
-    } else if(pl.stage===2){                // sprouted: a stem and two leaves
-      pTaper(g,pl.x,gy-3,pl.x+sw*0.6,gy-16,2.6,1.5,'#5f9a52');
-      pEll(g,pl.x+sw*0.6-3.6,gy-14,3.8,2.2,'#6fbf62');
-      pEll(g,pl.x+sw*0.6+3.6,gy-16,3.8,2.2,'#5f9a52');
-    } else if(pl.stage===3){                // ripe: tall enough to see past him
-      pTaper(g,pl.x,gy-3,pl.x+sw,gy-27,3.4,1.8,'#4f8a46');
-      for(let k=0;k<5;k++){ const a=Math.PI*(0.12+k*0.19), s2=k%2?1:-1;
-        pEll(g,pl.x+sw*0.7+Math.cos(a)*8*s2, gy-22+Math.sin(a)*5, 4.4,2.6, k%2?'#5f9a52':'#6fbf62'); }
-      const fl=Math.sin(GS.t*2.2+pl.i)*1.4;
-      drawIcon(g,pl.crop,pl.x+sw,gy-34+fl,0.72);
-      const bl=0.5+0.5*Math.sin(GS.t*3+pl.i);
-      for(let k=0;k<3;k++){ const a=GS.t*1.6+k*2.1;
-        pR(g,pl.x+sw+Math.cos(a)*9, gy-34+fl+Math.sin(a)*4, 1,1, rgba(PAL.goldL,0.3+0.5*bl)); }
+/* the shack. Derelict until you pay, then somebody fixes the roof. */
+function drawFarmhouse(g){
+  const x=FARMHOUSE_X, gy=groundY(x);
+  if(x-GS.camX<-70||x-GS.camX>W+70) return;
+  const fix=FARM.house;
+  baked(g,'house'+(fix>0.5?1:0), x, gy, 74, 92, 38, 88,
+        (gg,ax,ay)=>paintFarmhouse(gg,ax,ay,fix));
+  if(fix>0.5){
+    // the doorway lamp is the only part that moves, so it is the only part
+    // that is not in the sprite
+    const fl=0.85+0.15*Math.sin(GS.t*3.1);
+    drawGlow(g,x+22,gy-40,40,'#ffce7c',0.34*fl);
+    pEll(g,x+22,gy-42,3.2,4.2,rgba('#ffd27a',fl));
+    pEll(g,x+21,gy-43,1.2,1.6,'#fff4d0');
+  }
+}
+function paintFarmhouse(g,x,gy,fix){
+  const WALL = fix>0.5? '#8a6142' : '#6a5a48';
+  const ROOF = fix>0.5? '#7a3b30' : '#4a4038';
+  // stilts
+  for(let i=0;i<4;i++){ const sx=x-22+i*14;
+    pR(g,sx,gy-26,5,26, '#4a3728'); pR(g,sx,gy-26,2,26,'#5f4a37'); }
+  pR(g,x-26,gy-30,56,5,'#5f4a37'); pR(g,x-26,gy-30,56,1,'#7d6449');
+  // walls
+  pR(g,x-24,gy-58,48,28,WALL);
+  for(let y=gy-55;y<gy-30;y+=5) pR(g,x-24,y,48,1,shade(WALL,-0.22));
+  pR(g,x+12,gy-58,12,28,shade(WALL,-0.2));
+  if(fix<0.5){ // holes in the wall where the planks went
+    pR(g,x-14,gy-50,7,9,'#241a14'); pR(g,x+2,gy-42,5,7,'#241a14');
+  } else {
+    pR(g,x+2,gy-52,13,11,'#3a2b20'); pR(g,x+3,gy-51,11,9,PAL.lamp);
+    pR(g,x+3,gy-51,11,2,shade(PAL.lamp,0.25));
+  }
+  pR(g,x-20,gy-44,13,14,'#2c2018'); pR(g,x-19,gy-43,11,13,'#241a14');
+  // roof
+  for(let i=0;i<7;i++){
+    const t=i/6, yy=lerp(gy-58,gy-76,t), ww=lerp(58,14,t);
+    pR(g,x-ww/2,yy-3,ww,4, i%2? shade(ROOF,-0.16):ROOF);
+    pR(g,x-ww/2,yy-3,ww,1, shade(ROOF,0.12));
+  }
+  if(fix<0.5){ // a hole right through the ridge
+    pR(g,x-6,gy-74,13,7,'#12100c');
+    for(let i=0;i<4;i++) pTaper(g,x-6+i*4,gy-68,x-8+i*5,gy-76,2,1,'#3a332a');
+  } else {
+    pTaper(g,x-1,gy-76,x-7,gy-84,3,1,PAL.gold);
+    pTaper(g,x+1,gy-76,x+7,gy-84,3,1,PAL.gold);
+    pR(g,x-1,gy-82,2,7,PAL.goldD);
+  }
+  pR(g,x-30,gy-59,60,3,shade(ROOF,-0.3));
+  if(fix>0.5){
+    // the bracket and shade of the door lamp; the flame is drawn live
+    pR(g,x+22,gy-50,1,5,'#4a3a2a');
+    pEll(g,x+22,gy-42,4.4,5.4,'#3b2412');
+    // somebody lives here now: a stool, a jar, a line of washing
+    pR(g,x+22,gy-8,7,8,'#8a5e3a'); pEll(g,x+25,gy-9,4,2,'#6b4529');
+    pR(g,x-34,gy-24,1,10,'#3a3630');
+    for(let i=0;i<2;i++) pR(g,x-33+i*9,gy-24,7,9, i?'#4a7a9e':'#e8dfc8');
+    for(let i=0;i<4;i++) pR(g,x-14+i*3,gy-30,2,2,'#3f7a52');
+  } else {
+    // weeds through the floor, and the door hanging open
+    for(let i=0;i<9;i++) pTaper(g,x-26+i*7,gy,x-28+i*7,gy-7-((i*5)%6),2,0.6,'#3f5a3c');
+  }
+}
+
+/* the pen: a rail fence, a coop, and whoever you have bought */
+function drawPen(g){
+  const x=PEN_X, gy=groundY(x);
+  if(x-GS.camX<-70||x-GS.camX>W+70) return;
+  const p=FARM.pen;
+  // fence, coop and straw never change; the lamp and the animals do
+  baked(g,'pen', x, gy, 80, 48, 40, 40, (gg,ax,ay)=>paintPen(gg,ax,ay,x,gy));
+  { const fl=0.84+0.16*Math.sin(GS.t*2.6);
+    drawGlow(g,x+34,gy-26,32,'#ffce7c',0.28*fl);
+    pEll(g,x+34,gy-28,2.4,3.2,rgba('#ffd27a',fl)); }
+  // the animals
+  for(let i=0;i<p.chicken;i++) drawHen(g, x-26+i*11, gy, i);
+  for(let i=0;i<p.duck;i++)    drawDuck(g, x-4+i*12, gy, i);
+  if(p.buffalo) drawBuffalo(g, x+2, gy);
+  // hungry animals look at you about it
+  if(penHas() && p.feed<=0){
+    const bl=0.5+0.5*Math.sin(GS.t*3);
+    pTxt(g,'!',x+30,gy-30-bl*2,'#e8b13c',7,'center');
+  }
+  if(penFull()){
+    const bl=0.5+0.5*Math.sin(GS.t*2.6);
+    for(let k=0;k<3;k++){ const a=GS.t*1.4+k*2.1;
+      pR(g,x+Math.cos(a)*10, gy-34+Math.sin(a)*4, 1,1, rgba(PAL.goldL,0.35+0.5*bl)); }
+    pEll(g,x,gy-36,3.4,2.6,'#3b2412'); pEll(g,x,gy-36.6,2.6,2,'#f2e4c8');
+  }
+}
+function drawHen(g,x,gy,i){
+  const t=GS.t*1.6+i*2.1, peck=Math.max(0,Math.sin(t))*2;
+  const B='#f2ece0', BD='#cfc4a8';
+  pEll(g,x,gy-6,5,4,B); pEll(g,x+1.6,gy-6,3,3,BD);
+  pEll(g,x-4,gy-9+peck,3,3,B);
+  pTri(g,x-7,gy-9+peck,x-4,gy-10+peck,x-4,gy-8+peck,'#e8a13c');
+  pR(g,x-5,gy-11+peck,3,2,'#c0392f');
+  pR(g,x-4.5,gy-9.6+peck,1,1,'#2c2020');
+  pTaper(g,x+4,gy-7,x+7,gy-10,3,1,BD);
+  pR(g,x-2,gy-2,1,2,'#e8a13c'); pR(g,x+1,gy-2,1,2,'#e8a13c');
+}
+function drawDuck(g,x,gy,i){
+  const t=GS.t*1.2+i*1.7, wob=Math.sin(t)*1.4;
+  const B='#e2ecd8', BD='#b8c8a8';
+  pEll(g,x+wob*0.3,gy-6,6,4,B); pEll(g,x+2,gy-6,3.4,3,BD);
+  pEll(g,x-5+wob*0.3,gy-10,3.2,3,B);
+  pR(g,x-9+wob*0.3,gy-10,4,2,'#e8b13c');
+  pR(g,x-5.4+wob*0.3,gy-10.6,1,1,'#2c2020');
+  pTaper(g,x+5,gy-7,x+8,gy-9,3,1,BD);
+  pR(g,x-1,gy-2,1,2,'#e8b13c'); pR(g,x+2,gy-2,1,2,'#e8b13c');
+}
+function drawBuffalo(g,x,gy){
+  const t=GS.t*0.7, br=Math.sin(t)*0.6;
+  const B='#5a5560', BD='#3f3b46';
+  pEll(g,x,gy-5,4,3,'rgba(10,8,20,0.35)');
+  pR(g,x-9,gy-9,4,9,BD); pR(g,x+5,gy-9,4,9,BD);
+  pEll(g,x,gy-15+br,13,8,B); pEll(g,x+5,gy-14+br,7,6,BD);
+  pEll(g,x-13,gy-18+br,6,5,B); pEll(g,x-15,gy-16+br,4,3,BD);
+  pR(g,x-18,gy-16+br,4,3,'#2e2a34');                     // the muzzle
+  pR(g,x-15,gy-19+br,1,1,'#f2ece0');
+  // horns, swept back the way a water buffalo's are
+  pTaper(g,x-12,gy-22+br,x-19,gy-26+br,3,1.4,'#c9c0a8');
+  pTaper(g,x-12,gy-22+br,x-5,gy-26+br,3,1.4,'#b8ae96');
+  pTaper(g,x+12,gy-14+br,x+17,gy-8+br,3,1,BD);           // tail
+}
+
+/* ---------- one dry bed ---------- */
+function drawBed(g,pl){
+  const gy=groundY(pl.x);
+  if(pl.x-GS.camX<-40||pl.x-GS.camX>W+40) return;
+  if(!bedOpen(pl)){
+    // not yours yet: rough ground and a stake where the bed would be
+    pEll(g,pl.x,gy,12,4,'#4a4436');
+    for(let i=0;i<5;i++) pTaper(g,pl.x-8+i*4,gy,pl.x-9+i*4,gy-5-((i*5)%5),2,0.6,'#4f6a44');
+    pR(g,pl.x+10,gy-14,2,14,'#6d5138');
+    if(FARM.rented){ const bl=0.5+0.5*Math.sin(GS.t*2+pl.i);
+      pR(g,pl.x+10,gy-19-bl*2,1,1,rgba('#8fc48a',0.3+0.4*bl)); }
+    return;
+  }
+  const pop=Math.max(0,pl.pop), sw=Math.sin(pl.sway)*1.2;
+  pEll(g,pl.x,gy,13,5.4,'#3d2b1c');
+  pEll(g,pl.x,gy-2,12.4,5,'#7d5c3c');
+  pEll(g,pl.x,gy-3.4,10.6,3.8, pl.wet>0? '#553f27':'#8f6b47');
+  for(let k=0;k<5;k++) pR(g,pl.x-8+k*4,gy-4.6,2,1,pl.wet>0?'#3a2a1a':'#8d6a48');
+  if(pl.fert>0) for(let k=0;k<4;k++) pR(g,pl.x-6+k*4,gy-5.4,2,1,'#5a4028');
+  if(pl.wet>0 && Math.random()<0.05) part({k:'sp',x:pl.x+rnd(-7,7),y:gy-5,vx:0,vy:-6,life:.5,c:'#8fc4e8'});
+
+  if(pl.stage===1){ pEll(g,pl.x,gy-5,3.6,2,'#5a4230'); pR(g,pl.x,gy-8,1,3,'#7fa85e'); }
+  else if(pl.stage===2){
+    pTaper(g,pl.x,gy-3,pl.x+sw*0.6,gy-16,2.6,1.5,'#5f9a52');
+    pEll(g,pl.x+sw*0.6-3.6,gy-14,3.8,2.2,'#6fbf62');
+    pEll(g,pl.x+sw*0.6+3.6,gy-16,3.8,2.2,'#5f9a52');
+  } else if(pl.stage===3){
+    pTaper(g,pl.x,gy-3,pl.x+sw,gy-27,3.4,1.8,'#4f8a46');
+    for(let k=0;k<5;k++){ const a=Math.PI*(0.12+k*0.19), s2=k%2?1:-1;
+      pEll(g,pl.x+sw*0.7+Math.cos(a)*8*s2, gy-22+Math.sin(a)*5, 4.4,2.6, k%2?'#5f9a52':'#6fbf62'); }
+    const fl=Math.sin(GS.t*2.2+pl.i)*1.4;
+    drawIcon(g,pl.crop,pl.x+sw,gy-34+fl,0.72);
+    const bl=0.5+0.5*Math.sin(GS.t*3+pl.i);
+    for(let k=0;k<3;k++){ const a=GS.t*1.6+k*2.1;
+      pR(g,pl.x+sw+Math.cos(a)*9, gy-34+fl+Math.sin(a)*4, 1,1, rgba(PAL.goldL,0.3+0.5*bl)); }
+  }
+  if(pop>0.02){ g.globalAlpha=clamp(pop,0,1)*0.8;
+    for(let k=0;k<6;k++){ const a=k/6*TAU;
+      pR(g,pl.x+Math.cos(a)*(10+(1-pop)*9), gy-9+Math.sin(a)*(4+(1-pop)*4),1,1,'#e8dfc8'); }
+    g.globalAlpha=1; }
+  // the marker board, readable from the far side of the road
+  pR(g,pl.x+12,gy-17,2,17,'#7d5a3c');
+  pR(g,pl.x+11,gy-18,4,2,'#96704c');
+  pR(g,pl.x+8,gy-27,11,10,'#3b2412');
+  pR(g,pl.x+9,gy-26,9,8,'#c9a468');
+  pR(g,pl.x+9,gy-26,9,1,'#e2c48c');
+  drawIcon(g,pl.crop,pl.x+13.5,gy-22,0.4);
+}
+
+/* ---------- นาข้าว ----------
+   A paddy is a shallow box: an earth bund all the way round, the water
+   sitting a little below the top of it, and the rice standing in that.
+   Drawn flat it just looks like a row of sticks, so the bund does the
+   work of telling you this is a field and not a fence. ---------- */
+function drawPaddy(g,pd){
+  const gy=groundY(pd.x), HW=32, D=7;          // half width, and how deep the box is
+  if(pd.x-GS.camX<-80||pd.x-GS.camX>W+80) return;
+  if(!padOpen(pd)){
+    pEll(g,pd.x,gy-1,HW,6,'#4a4436');
+    for(let i=0;i<11;i++) pTaper(g,pd.x-HW+4+i*6,gy-2,pd.x-HW+3+i*6,gy-8-((i*7)%6),2,0.6,'#4f6a44');
+    pR(g,pd.x+HW-4,gy-16,2,14,'#6d5138');
+    pR(g,pd.x+HW-8,gy-24,10,9,'#3b2412'); pR(g,pd.x+HW-7,gy-23,8,7,'#8a7458');
+    return;
+  }
+  const wet = pd.flood>0;
+  // the sunken field, then the water or the cracked mud in it
+  pR(g,pd.x-HW,gy-D,HW*2,D+3,'#3a2c1e');
+  if(wet){
+    pR(g,pd.x-HW+1,gy-D+2,HW*2-2,D,'#1d3a52');
+    for(let i=1;i<HW*2-2;i+=3){
+      const x=pd.x-HW+1+i, sh=Math.sin(GS.t*1.3+i*0.28)*0.7;
+      pR(g,x,gy-D+3+sh,3,1,'#2b5f80');
     }
-    if(pop>0.02){ g.globalAlpha=clamp(pop,0,1)*0.8;
-      for(let k=0;k<6;k++){ const a=k/6*TAU;
-        pR(g,pl.x+Math.cos(a)*(10+(1-pop)*9), gy-9+Math.sin(a)*(4+(1-pop)*4),1,1,'#e8dfc8'); }
-      g.globalAlpha=1; }
+    // the moon lying in it, which is the whole reason to stand here at night
+    pR(g,pd.x-HW*0.55,gy-D+3,HW*0.9,1,'rgba(214,236,255,0.30)');
+    pR(g,pd.x-HW*0.3,gy-D+5,HW*0.5,1,'rgba(190,225,255,0.18)');
+    if(Math.random()<0.05) part({k:'sp',x:pd.x+rnd(-HW,HW),y:gy-D+3,vx:0,vy:-5,life:.5,c:'#8fc4e8'});
+  } else {
+    pR(g,pd.x-HW+1,gy-D+2,HW*2-2,D,'#5e4d38');
+    for(let i=0;i<13;i++) pR(g,pd.x-HW+4+i*5,gy-D+3+((i%3)),4,1,'#43372a');
+  }
+  const sw=Math.sin(pd.sway)*1.2;
+  /* the rice, painted once per stage and blitted — the whole field swaying as
+     one block is what a rice field does in wind anyway */
+  if(pd.stage>0){
+    baked(g,'rice'+pd.stage, pd.x+sw, gy-D+3, HW*2+10, 36, HW+5, 34,
+          (gg,ax,ay)=>paintRice(gg,ax,ay,pd.stage));
+    if(pd.stage===3){
+      const bl=0.5+0.5*Math.sin(GS.t*2.6+pd.i);
+      for(let k=0;k<5;k++){ const a=GS.t*1.2+k*1.3;
+        pR(g,pd.x+Math.cos(a)*22, gy-D-28+Math.sin(a)*6, 1,1, rgba('#ffe89a',0.3+0.5*bl)); }
+    }
+  }
+  // the bund, drawn last so the rice grows out of behind it
+  pR(g,pd.x-HW-4,gy-D,HW*2+8,4,'#7a6a4c');
+  pR(g,pd.x-HW-4,gy-D,HW*2+8,1,'#9a8a68');
+  pR(g,pd.x-HW-4,gy-D+3,HW*2+8,3,'#54452f');
+  for(let i=0;i<7;i++) pTaper(g,pd.x-HW+i*11,gy-D,pd.x-HW+i*11-1,gy-D-4,1.6,0.6,'#4f6a44');
+  if(pd.pop>0.02){ g.globalAlpha=clamp(pd.pop,0,1)*0.7;
+    for(let k=0;k<9;k++){ const a=k/9*TAU;
+      pR(g,pd.x+Math.cos(a)*(22+(1-pd.pop)*14), gy-D-8+Math.sin(a)*(5+(1-pd.pop)*4),1,1,'#dff0ff'); }
+    g.globalAlpha=1; }
+  // the marker post
+  pR(g,pd.x+HW-1,gy-22,2,20,'#7d5a3c');
+  pR(g,pd.x+HW-5,gy-33,11,11,'#3b2412');
+  pR(g,pd.x+HW-4,gy-32,9,9,'#c9a468'); pR(g,pd.x+HW-4,gy-32,9,1,'#e2c48c');
+  drawIcon(g,'rice',pd.x+HW+0.5,gy-27,0.42);
+}
 
-    // the marker post: what this bed grows, painted on a board, always legible
-    pR(g,pl.x+12,gy-17,2,17,'#7d5a3c');
-    pR(g,pl.x+11,gy-18,4,2,'#96704c');
-    pR(g,pl.x+8,gy-27,11,10,'#3b2412');
-    pR(g,pl.x+9,gy-26,9,8,'#c9a468');
-    pR(g,pl.x+9,gy-26,9,1,'#e2c48c');
-    drawIcon(g,pl.crop,pl.x+13.5,gy-22,0.4);
+/* ---------- a fruit tree ----------
+   These are the slowest thing on the farm and they have to look like it:
+   a proper trunk, a crown you could stand under, and each kind its own
+   silhouette so you can tell the orchard apart at a glance. ---------- */
+const TREE_LOOK = {
+  durian:     { leaf:'#2b5a38', dark:'#1e4429', lit:'#3f7a4c', H:96, CW:20, CH:26, tall:1 },
+  mangosteen: { leaf:'#204a34', dark:'#163726', lit:'#356b47', H:74, CW:24, CH:20, tall:0 },
+  rambutan:   { leaf:'#2f6a42', dark:'#215030', lit:'#4a8f58', H:70, CW:28, CH:17, tall:0 },
+};
+function drawFruitTree(g,tr){
+  const gy=groundY(tr.x);
+  if(tr.x-GS.camX<-70||tr.x-GS.camX>W+70) return;
+  if(!treeOpen(tr)){
+    pEll(g,tr.x,gy,9,4,'#4a3524'); pEll(g,tr.x,gy-1,7,3,'#3a2a1a');
+    pR(g,tr.x+8,gy-12,2,12,'#6d5138');
+    return;
+  }
+  if(!tr.crop){
+    pEll(g,tr.x,gy,11,4.6,'#4a3524'); pEll(g,tr.x,gy-1,9,3.6,'#2e2114');
+    for(let i=0;i<4;i++) pR(g,tr.x-7+i*4,gy-3,3,1,'#5f4630');
+    const bl=0.5+0.5*Math.sin(GS.t*2+tr.i);
+    pR(g,tr.x,gy-15-bl*2,1,1,rgba('#8fc48a',0.3+0.4*bl));
+    // a spade left leaning in the hole, so it reads as waiting, not abandoned
+    pTaper(g,tr.x+7,gy-2,tr.x+11,gy-19,2,1.6,'#7d5a3c');
+    pR(g,tr.x+10,gy-23,3,5,'#8a8f9e');
+    return;
+  }
+  const T=TREE_LOOK[tr.crop]||TREE_LOOK.rambutan;
+  /* a whole tree is four hundred scanline shapes and it is the same four
+     hundred every frame; bake it per kind and per how much fruit is on it */
+  const q = tr.grow>=1? 9 : Math.round(tr.grow*8);
+  baked(g,'tree|'+tr.crop+'|'+q+'|'+tr.fruit, tr.x, gy,
+        T.CW*3.4+24, T.H+T.CH*2.4+16, (T.CW*3.4+24)/2, T.H+T.CH*2.4+15,
+        (gg,ax,ay)=>paintTree(gg,ax,ay,tr,T));
+  if(tr.grow>=1 && tr.fruit>0){
+    const cy=gy-(12+(T.H-12)), bl=0.5+0.5*Math.sin(GS.t*2.4+tr.i);
+    for(let m=0;m<4;m++){ const a=GS.t*1.3+m*1.6;
+      pR(g,tr.x+Math.cos(a)*(T.CW+6), cy+Math.sin(a)*(T.CH+4), 1,1, rgba(PAL.goldL,0.3+0.5*bl)); }
+  }
+  if(tr.pop>0.02){ g.globalAlpha=clamp(tr.pop,0,1)*0.8;
+    for(let m=0;m<7;m++){ const a=m/7*TAU;
+      pR(g,tr.x+Math.cos(a)*(T.CW+2+(1-tr.pop)*12), gy-T.H*0.6+Math.sin(a)*(T.CH+2+(1-tr.pop)*8),1,1,'#e8dfc8'); }
+    g.globalAlpha=1; }
+  // the name board at the foot of the tree, which does not sway with it
+  pR(g,tr.x+10,gy-12,2,12,'#7d5a3c');
+  pR(g,tr.x+6,gy-22,11,10,'#3b2412');
+  pR(g,tr.x+7,gy-21,9,8,'#c9a468'); pR(g,tr.x+7,gy-21,9,1,'#e2c48c');
+  drawIcon(g,tr.crop,tr.x+11.5,gy-17,0.4);
+}
+/* one paddy's worth of rice, drawn upright — the sway is applied to the blit,
+   because a rice field leans as one sheet and not stalk by stalk */
+/* the standing parts of the pen. wx/wgy are where it really is, so the posts
+   can still follow the ground the way they did when this was drawn live */
+function paintPen(g,x,gy,wx,wgy){
+  for(let dx=-32; dx<=32; dx+=13){
+    const dy=groundY(wx+dx)-wgy;
+    pR(g,x+dx,gy+dy-20,2,20,'#6d5138'); pR(g,x+dx,gy+dy-20,1,20,'#856448');
+  }
+  pR(g,x-32,gy-18,66,2,'#5d4735'); pR(g,x-32,gy-18,66,1,'#7a5c44');
+  pR(g,x-32,gy-10,66,2,'#54402f');
+  // the hurricane lamp on the corner post, minus its flame
+  pR(g,x+34,gy-34,1,4,'#4a3a2a');
+  pEll(g,x+34,gy-28,3.4,4.4,'#3b2412');
+  // the coop
+  pR(g,x+16,gy-24,18,14,'#7d5a3c'); pR(g,x+16,gy-24,18,2,'#9c7551');
+  pR(g,x+21,gy-16,7,6,'#241a14');
+  pTri(g,x+25,gy-32,x+14,gy-24,x+36,gy-24,'#5d4030');
+  // straw on the ground
+  for(let i=0;i<12;i++) pR(g,x-30+i*5,gy-1,4,1, i%2?'#c9a86a':'#a8863f');
+}
+function paintRice(g,x,gy,stage){
+  const HW=32;
+  if(stage===1){
+    for(let i=0;i<22;i++){ const px=x-HW+4+i*2.8, o=((i*7)%3)-1;
+      pTaper(g,px,gy,px+o,gy-8,1.5,0.9,'#5f9a58'); }
+  } else if(stage===2){
+    for(let i=0;i<26;i++){ const px=x-HW+3+i*2.4, h=13+((i*7)%6), o=((i*5)%3)-1;
+      pTaper(g,px,gy,px+o,gy-h,2,0.9,'#3f7a46');
+      pTaper(g,px+o,gy-h,px+o-3,gy-h+5,1.6,0.8,'#6fbf62');
+      pTaper(g,px+o,gy-h,px+o+3,gy-h+6,1.5,0.7,'#4f9256'); }
+  } else if(stage===3){
+    for(let i=0;i<26;i++){ const px=x-HW+3+i*2.4, h=17+((i*7)%6), o=((i*5)%3)-1;
+      pTaper(g,px,gy,px+o,gy-h,2.2,1,'#9a8a3a');
+      // the head is heavy and bows over, which is how you know it is ready
+      pTaper(g,px+o,gy-h,px+o+4,gy-h+7,2.6,1.2,'#d8bc52');
+      for(let k=0;k<4;k++) pEll(g,px+o+1.2+k*1,gy-h+1.8+k*1.7,1.4,1.1,'#f2dc86'); }
+  }
+}
+function paintTree(g,x,gy,tr,T){
+  const k=tr.grow;
+  const H = 12 + k*(T.H-12);
+  const CW = 5 + k*(T.CW-5), CH = 4 + k*(T.CH-4);
+  const cx = x, cy = gy-H;
+  pEll(g,x,gy,7+k*7,3.6,'#42301f');
+  pTaper(g,x,gy+1,x-6-k*5,gy-1,5,2,'#4a3524');
+  pTaper(g,x,gy+1,x+6+k*5,gy-1,5,2,'#3d2a1a');
+  pTaper(g,x,gy,cx,cy+CH*0.4, 3+k*5, 2+k*2.4,'#5a4436');
+  pTaper(g,x+1.4,gy,cx+1.4,cy+CH*0.5, 1.4+k*1.6,1,'#6d5442');
+  pTaper(g,x-1.6,gy,cx-1.6,cy+CH*0.5, 1.2+k*1.2,1,'#43301f');
+  if(k<0.6){
+    for(let i=0;i<5;i++) pEll(g,cx+((i%2)?4:-4),cy+i*3.4,4.4,2.6, i%2?T.leaf:T.lit);
+    return;
+  }
+  for(let i=0;i<4;i++){ const a=Math.PI*(0.22+i*0.19);
+    pTaper(g,cx,cy+CH*0.5, cx-Math.cos(a)*CW*0.7, cy-Math.sin(a)*CH*0.3, 3,1.4,'#4a3524'); }
+  const blobs=[];
+  if(T.tall){
+    for(let r=0;r<4;r++){ const w=CW*(1-r*0.2), yy=cy-r*CH*0.36;
+      for(let i=0;i<5;i++) blobs.push({x:cx+(i-2)*w*0.42, y:yy+((i%2)?2:-2), r:CH*0.44}); }
+    blobs.push({x:cx, y:cy-CH*1.5, r:CH*0.4});
+  } else {
+    for(let i=0;i<11;i++){ const a=i/11*TAU;
+      blobs.push({x:cx+Math.cos(a)*CW*0.72, y:cy+Math.sin(a)*CH*0.72, r:CH*0.62}); }
+    for(let i=0;i<6;i++){ const a=i/6*TAU+0.5;
+      blobs.push({x:cx+Math.cos(a)*CW*0.34, y:cy+Math.sin(a)*CH*0.32, r:CH*0.6}); }
+  }
+  for(const b of blobs) pEll(g,b.x,b.y,b.r*1.25,b.r,T.dark);
+  for(const b of blobs) pEll(g,b.x,b.y-b.r*0.16,b.r*1.08,b.r*0.84,T.leaf);
+  for(let i=0;i<blobs.length;i+=2){ const b=blobs[i];
+    pEll(g,b.x-b.r*0.24,b.y-b.r*0.36,b.r*0.6,b.r*0.42,T.lit); }
+  // leaf speckle, which is what makes a canopy read as leaves
+  for(let i=0;i<70;i++){
+    const a=(i*2.399)%TAU, rr=Math.sqrt((i%11)/11);
+    pR(g, cx+Math.cos(a)*CW*rr*1.15, cy+Math.sin(a)*CH*rr*1.15 - (T.tall? CH*0.5:0),
+       1,1, i%3? T.lit : shade(T.leaf,0.22));
+  }
+  for(let i=0;i<tr.fruit;i++){
+    const a=1.0+i*1.45;
+    const fx=cx+Math.cos(a)*CW*0.66, fy=cy+CH*0.5+Math.abs(Math.sin(a))*CH*0.45;
+    pR(g,fx,fy-7,1,6,'#3a2a1a');
+    drawIcon(g,tr.crop,fx,fy,0.8);
   }
 }
 /* ============================================================
-   WHAT THE VILLAGE NEEDS — one request at a time, always visible,
-   so there is never a moment where you do not know what to do.
+   MONEY, AND WHAT IT IS FOR
+
+   Merit is what the ledger counts. Baht is what the landlord
+   counts, and they are earned in opposite directions: you get
+   merit for giving a thing away and baht for selling it, and you
+   cannot do both with the same bowl of food. That is the game.
    ============================================================ */
-const REQ = { who:null, item:null, n:1, got:0, cool:6 };
-const REQ_POOL = [
-  {id:'uncle', items:['papaya','chili','lime']},
-  {id:'nok',   items:['coconut','rice','banana']},
-  {id:'yai',   items:['flower','leaf','herb']},
-  {id:'dam',   items:['lemongrass','chili','mango']},
-  {id:'mali',  items:['banana','mango','coconut']},
-];
-function reqWho(){ return REQ.who? NPCS.find(n=>n.id===REQ.who) : null; }
-function newRequest(){
-  const p = pick(REQ_POOL.filter(r=>r.id!==REQ.who));
-  REQ.who=p.id; REQ.item=pick(p.items); REQ.n=1+((Math.random()*3)|0); REQ.got=0; REQ.cool=0;
-  const n=reqWho();
-  if(n){ n.mark={k:'star',t:4}; npcReact(n,'wave',1.6);
-         if(Math.abs(n.x-P.x)<180) AU.blip(); }
-  vignette('firstRequest');
+const PRICE = {
+  // what P'Nok will pay you for raw produce
+  rice:6, papaya:5, chili:4, lemongrass:4, lime:4, herb:3, coconut:7, banana:4, mango:9,
+  galangal:5, basil:4, pandan:3, kaffir:4, morning:3,
+  durian:36, mangosteen:17, rambutan:13, longan:12, jackfruit:19,
+  egg:6, duckEgg:8, milk:15, manure:3, bran:2,
+  flower:4, leaf:3, bamboo:5, clay:4, seed:3,
+  // a kitchen is worth more than the sum of its basket
+  somtam:34, stickyMango:46, tomyum:42, friedBanana:30, khanomkrok:36,
+  padkaphrao:44, greenCurry:54, durianRice:76, sangkhaya:48, ruamMit:56,
+  garland:28, krathong:24, basket:30, lantern:34, shrine:40,
+};
+const sellPrice = id => PRICE[id] || 2;
+const canSell   = id => !!ITEMS[id] && !!PRICE[id];
+function earn(n){ GS.baht = clamp((GS.baht|0)+n, 0, 99999); saveGame(); }
+function pay(n){
+  if((GS.baht|0) < n) return false;
+  GS.baht -= n; saveGame(); return true;
+}
+function tooPoor(n){
+  toast(L('you need')+' '+(n-(GS.baht|0))+L('฿ more'), '#c8888a'); AU.blip();
+}
+
+/* ============================================================
+   THE COUNTER — one list screen, used by the stall and by the
+   landlord's board, because a second layout is a second thing to
+   learn and there is nothing here worth learning twice.
+   ============================================================ */
+let CNT = null;
+function openCounter(o){
+  CNT = { title:o.title, sub:o.sub||'', rowsFn:o.rows, note:o.note||'', i:0, at:o.at||P.x, flash:0 };
+  GS.state='shop'; clearPress(); AU.sel();
+}
+function cntRows(){ const r = CNT.rowsFn(); CNT.i = clamp(CNT.i, 0, Math.max(0,r.length-1)); return r; }
+function stepShop(dt){
+  const C=CNT;
+  C.flash = Math.max(0, C.flash-dt);
+  if(press('back')||press('tree')){ GS.state='play'; CNT=null; clearPress(); return; }
+  hitTap();
+  if(GS.state!=='shop') return;
+  const rows=cntRows();
+  if(press('up')||press('left'))   { C.i=(C.i+rows.length-1)%Math.max(1,rows.length); AU.blip(); }
+  if(press('down')||press('right')){ C.i=(C.i+1)%Math.max(1,rows.length); AU.blip(); }
+  if(press('act')){
+    const r=rows[C.i];
+    if(r && r.fn && r.ok!==false){ r.fn(); C.flash=0.25; }
+    else { AU.blip(); C.flash=0.3; C.bad=1; }
+  }
+  clearPress();
+}
+function drawShop(g){
+  const C=CNT; if(!C) return;
+  hitClear();
+  g.fillStyle='rgba(14,11,26,0.82)'; g.fillRect(0,0,W,H);
+  cloud(g,10,8,W-20,22,{seed:210});
+  pTxt(g,C.title,20,25,'#8f6a1e',12);
+  purseTag(g,W-24,24,'right');
+  pTxt(g,'back',W-24,H-8,CL.ink3,6,'right');
+  if(C.sub) pTxt(g,C.sub,20,40,'#cfc4ae',6);
+
+  const rows=cntRows();
+  const lx=12, lw=W-24, ly=46, rh=26, per=Math.floor((H-ly-26)/rh);
+  const from=clamp(C.i-Math.floor(per/2), 0, Math.max(0,rows.length-per));
+  cloud(g,lx,ly,lw,Math.min(rows.length,per)*rh+8,{seed:211});
+  for(let k=0;k<Math.min(rows.length,per);k++){
+    const i=from+k, r=rows[i], y=ly+4+k*rh, sel=i===C.i;
+    if(sel){ pR(g,lx+3,y,lw-6,rh-2,'#f2e2b4'); pR(g,lx+3,y,lw-6,1,'#fff8e0');
+      pR(g,lx+3,y+rh-3,lw-6,1,'#d8c48c'); pR(g,lx+3,y,2,rh-2,CL.gold); }
+    else pR(g,lx+8,y+rh-3,lw-16,1,'rgba(120,100,70,0.16)');
+    if(r.icon) drawIcon(g,r.icon,lx+20,y+12,0.62);
+    else if(r.badge) r.badge(g,lx+20,y+12);
+    pTxt(g,r.n,lx+36,y+11, r.ok===false? CL.ink3 : CL.ink, 8);
+    if(r.sub) pTxt(g,r.sub,lx+36,y+21, r.ok===false? '#a8927a' : CL.ink2, 6);
+    if(r.cost!==undefined){
+      const afford=(GS.baht|0)>=r.cost;
+      pTxt(g,r.cost+'฿',lx+lw-14,y+15, r.ok===false? '#a8927a' : afford? '#3f6a2c':'#a8392c', 8,'right');
+    } else if(r.gain!==undefined){
+      pTxt(g,'+'+r.gain+'฿',lx+lw-14,y+15,'#3f6a2c',8,'right');
+    } else if(r.mark){
+      icoTick(g,lx+lw-18,y+15,1.2,'#4a7a2c');   // drawn, not a font character
+    } else if(r.tag){
+      pTxt(g,r.tag,lx+lw-14,y+15,CL.ink2,6,'right');
+    }
+    hitAdd(lx,y,lw,rh,()=>{ const same=C.i===i; C.i=i; if(same) PRESS.act=true; else AU.blip(); });
+  }
+  if(!rows.length) pTxt(g,L('nothing here just now'),W/2,ly+30,CL.ink3,7,'center');
+  if(C.note){ cloud(g,12,H-26,W-24,20,{seed:212});
+    g.globalAlpha=C.flash>0&&C.bad?0.5:1;
+    pTxt(g,C.note,W/2,H-12,CL.ink2,6,'center'); g.globalAlpha=1; }
+  C.bad=0;
+}
+/* the purse, drawn wherever it is needed */
+function purseTag(g,x,y,align){
+  pTxt(g,(GS.baht|0)+'฿',x,y,'#8f6a1e',10,align||'left');
+}
+
+/* ============================================================
+   P'NOK'S STALL — she buys produce and sells you seed and bran
+   ============================================================ */
+const STALL_X = 2340;
+function sellables(){
+  return Object.keys(GS.bag).filter(id=>GS.bag[id]>0 && canSell(id));
+}
+function openStall(){
+  openCounter({
+    title:'THE STALL',
+    sub:"P'Nok buys anything, and sells what a farm runs out of",
+    note:'tap a row to sell one  ·  tap the sacks to buy',
+    rows(){
+      const out=[];
+      out.push({ n:L('a handful of seed'), sub:L('for the beds and the paddies'), icon:'seed', cost:9,
+        ok:true, fn(){ if(!pay(9)) return tooPoor(9); bagAdd('seed',3,true); AU.ranat(720,0,0.05); toast('+3 '+L('a handful of seed'),'#c9a86a'); } });
+      out.push({ n:L('rice bran'), sub:L('what the animals eat'), icon:'bran', cost:8,
+        ok:true, fn(){ if(!pay(8)) return tooPoor(8); bagAdd('bran',4,true); AU.ranat(660,0,0.05); toast('+4 '+L('rice bran'),'#d3b478'); } });
+      const s=sellables();
+      if(s.length){
+        const all=s.reduce((a,id)=>a+sellPrice(id)*GS.bag[id],0);
+        out.push({ n:L('sell the whole basket'), sub:s.length+' '+L('kinds'), badge:(g,x,y)=>icoStar(g,x,y,0.9,'#c9992f'),
+          gain:all, ok:true, fn(){
+            let got=0; for(const id of s.slice()){ got+=sellPrice(id)*GS.bag[id]; delete GS.bag[id]; }
+            earn(got); AU.ranat(880,0,0.05); AU.ranat(1180,0.09,0.04);
+            toast('+'+got+'฿', '#c9992f'); GS.q.sold=(GS.q.sold||0)+1;
+            if(GS.q.sold===1) vignette('firstSale');
+          } });
+      }
+      for(const id of s) out.push({ n:L(ITEMS[id].n), sub:'x'+GS.bag[id], icon:id, gain:sellPrice(id), ok:true,
+        fn(){ if(!bagTake(id,1)) return; earn(sellPrice(id)); AU.ranat(820,0,0.05); toast('+'+sellPrice(id)+'฿','#c9992f');
+              GS.q.sold=(GS.q.sold||0)+1; if(GS.q.sold===1) vignette('firstSale'); } });
+      return out;
+    },
+  });
+}
+
+/* ============================================================
+   THE LANDLORD'S BOARD — everything the farm itself costs
+   ============================================================ */
+function openBoard(){
+  if(!FARM.rented){
+    openCounter({
+      title:'FOR RENT',
+      sub:'nobody has worked this place in years',
+      note:'the beds, the paddies and the pen come with it',
+      rows(){ return [
+        { n:L('rent the farm'), sub:L('one payment, and the land is yours to work'),
+          badge:(g,x,y)=>icoBook(g,x,y,1.4,'#8f6a1e'), cost:RENT, ok:true,
+          fn(){ if(!pay(RENT)) return tooPoor(RENT);
+            FARM.rented=true; FARM.beds=1; FARM.house=0;
+            bagAdd('seed',3,true);
+            GS.state='play'; CNT=null;
+            AU.bigDing(); saveGame();
+            vignette('rented');
+          } },
+      ]; },
+    });
+    return;
+  }
+  openCounter({
+    title:'THE FARM',
+    sub:'what it still needs',
+    note:'everything you add here stays added',
+    rows(){
+      const out=[];
+      if(FARM.house<0.5) out.push({ n:L('mend the roof'), sub:L('somebody could live here again'),
+        badge:(g,x,y)=>icoTick(g,x,y,1.1,'#8f6a1e'), cost:60, ok:true,
+        fn(){ if(!pay(60)) return tooPoor(60); FARM.house=1; AU.fix();
+          toast(L('the roof is mended'),PAL.jadeL); saveGame(); } });
+      if(FARM.beds<BED_XS.length) out.push({ n:L('clear another bed'), sub:(FARM.beds)+'/'+BED_XS.length,
+        icon:BED_CROPS[FARM.beds], cost:BED_COST, ok:true,
+        fn(){ if(!pay(BED_COST)) return tooPoor(BED_COST); FARM.beds++; AU.ranat(700,0,0.05);
+          toast(L('a new bed, turned over'),PAL.jadeL); saveGame(); } });
+      if(FARM.paddies<PADDY_XS.length) out.push({ n:L('open up a rice field'), sub:(FARM.paddies)+'/'+PADDY_XS.length+' '+L('rice fields'),
+        icon:'rice', cost:PADDY_COST, ok:true,
+        fn(){ if(!pay(PADDY_COST)) return tooPoor(PADDY_COST); FARM.paddies++; AU.ranat(620,0,0.05);
+          toast(L('the dike is built'),'#8fc4e8'); saveGame(); } });
+      if(FARM.trees<TREE_XS.length) out.push({ n:L('dig an orchard hole'), sub:(FARM.trees)+'/'+TREE_XS.length,
+        badge:(g,x,y)=>icoFlower(g,x,y,1,'#6fa85c'), cost:20, ok:true,
+        fn(){ if(!pay(20)) return tooPoor(20); FARM.trees++; AU.step();
+          toast(L('a hole, waiting for a tree'),'#8a6f52'); saveGame(); } });
+      // saplings, for any hole that is still empty
+      const hole = TREES.find(t=>treeOpen(t) && !t.crop);
+      if(hole) for(const k in SAPLINGS){ const s=SAPLINGS[k];
+        out.push({ n:L('plant a')+' '+L(ITEMS[k].n), sub:L('bears for ever, once it is grown'), icon:k, cost:s.cost, ok:true,
+          fn(){ if(!pay(s.cost)) return tooPoor(s.cost);
+            hole.crop=k; hole.grow=0; hole.fruit=0; hole.pop=1;
+            AU.ranat(560,0,0.05); toast(L('planted'),PAL.jadeL);
+            if(!GS.seen.sapling){ GS.seen.sapling=true;
+              khwanSay('It will take a while to come up. Fruit trees are a promise, not a crop.',8); }
+            saveGame(); } });
+      }
+      for(const k in STOCK_COST){
+        const have=FARM.pen[k], cap = k==='buffalo'? 1 : 3;
+        if(have>=cap) continue;
+        out.push({ n:L('buy a')+' '+L(k), sub:have+'/'+cap+' '+L('in the pen'),
+          badge:(g,x,y)=>penBadge(g,k,x,y), cost:STOCK_COST[k], ok:true,
+          fn(){ if(!pay(STOCK_COST[k])) return tooPoor(STOCK_COST[k]);
+            FARM.pen[k]++; FARM.pen.feed=Math.max(FARM.pen.feed,20);
+            AU.ranat(760,0,0.05); toast(L('welcome to the pen'),PAL.jadeL);
+            if(!GS.seen.stock){ GS.seen.stock=true;
+              khwanSay('Keep bran in the trough and they will leave you something every little while.',8); }
+            saveGame(); } });
+      }
+      /* your hands are listed here too, so a ghost standing on a bed is never
+         somewhere you cannot reach to give it different orders */
+      for(const s of SPIRITS){
+        const j=handOf(s.id); if(!j) continue;
+        out.push({ n:L(s.name), sub:L(JOBS[j].n), badge:(g,x,y)=>jobBadge(g,j,x,y), tag:L('send back'), ok:true,
+          fn(){ dismissHand(s); } });
+      }
+      if(!out.length) out.push({ n:L('the farm wants for nothing'), sub:L('go and work it'), tag:'·', ok:false });
+      return out;
+    },
+  });
+}
+function penBadge(g,k,x,y){
+  if(k==='chicken'){ pEll(g,x,y+1,4,3,'#f2ece0'); pEll(g,x-3,y-2,2.4,2.4,'#f2ece0'); pR(g,x-4,y-4,2,1,'#c0392f'); }
+  else if(k==='duck'){ pEll(g,x,y+1,4.4,3,'#e2ecd8'); pEll(g,x-3,y-2,2.4,2.2,'#e2ecd8'); pR(g,x-6,y-2,3,1.4,'#e8b13c'); }
+  else { pEll(g,x,y,6,4,'#5a5560'); pEll(g,x-5,y-2,3,2.6,'#5a5560');
+         pTaper(g,x-5,y-4,x-8,y-6,2,1,'#c9c0a8'); pTaper(g,x-5,y-4,x-2,y-6,2,1,'#b8ae96'); }
+}
+
+/* ============================================================
+   ORDERS — the village asks for cooked food by name, and pays.
+   Three at a time, no more, so the screen never fills up.
+   ============================================================ */
+const ORDERS = [];
+const ORDER_MAX = 3;
+let orderCool = 10;
+const DISH_IDS = ()=> Object.keys(RECIPES);      // people order supper, not baskets
+function orderOf(id){ return ORDERS.find(o=>o.who===id) || null; }
+function reqWho(){ return ORDERS.length? NPCS.find(n=>n.id===ORDERS[0].who) : null; }
+function newOrder(){
+  if(ORDERS.length >= ORDER_MAX) return;
+  const free = NPCS.filter(n=>!orderOf(n.id));
+  if(!free.length) return;
+  const n = pick(free);
+  /* weight it toward what you already know how to cook, so an order is
+     usually something you can start on now */
+  const all=DISH_IDS(), known=all.filter(d=>GS.learned[d]!==undefined);
+  const dish = (known.length && Math.random()<0.65)? pick(known) : pick(all);
+  const cnt = 1 + ((Math.random()*2)|0);
+  const bk = RECIPES[dish]||CRAFTS[dish];
+  ORDERS.push({ who:n.id, dish, n:cnt, got:0,
+                pay: Math.round(sellPrice(dish)*cnt*1.45),
+                merit: 3*cnt });
+  n.mark={k:'star',t:4}; npcReact(n,'wave',1.6);
+  if(Math.abs(n.x-P.x)<200) AU.blip();
+  vignette('firstOrder');
   saveGame();
 }
-function stepRequests(dt){
+function stepOrders(dt){
   if(!GS.q.metPhra) return;
-  if(!REQ.who){ REQ.cool-=dt; if(REQ.cool<=0) newRequest(); return; }
-  const n=reqWho(); if(n && Math.random()<dt*0.5) n.mark={k:'star',t:1.2};
+  if(ORDERS.length < ORDER_MAX){
+    orderCool -= dt;
+    if(orderCool<=0){ orderCool = rnd(18,34); newOrder(); }
+  }
+  for(const o of ORDERS){
+    const n=NPCS.find(v=>v.id===o.who);
+    if(n && Math.random()<dt*0.4) n.mark={k:'star',t:1.2};
+  }
 }
-/* giving the requested thing counts toward it */
+/* handing over a dish settles an order before it counts as a plain gift */
 function reqGive(target,id){
-  if(!REQ.who || target.id!==REQ.who || id!==REQ.item) return false;
-  REQ.got++;
-  if(REQ.got>=REQ.n){
-    const m=6+REQ.n*2;
-    addMerit(m); toast('+'+m+' '+L('merit'), PAL.goldL);
+  const o = ORDERS.find(x=>x.who===target.id && x.dish===id);
+  if(!o) return false;
+  o.got++;
+  if(o.got>=o.n){
+    earn(o.pay); addMerit(o.merit);
+    toast('+'+o.pay+'฿  +'+o.merit+' '+L('merit'), PAL.goldL);
     for(let i=0;i<8;i++) pOrb(target.x+rnd(-8,8), target.y-30+rnd(-6,6), i*0.12);
-    REQ.who=null; REQ.item=null; REQ.cool=rnd(16,30);
-    GS.q.reqs=(GS.q.reqs||0)+1;
-    if(!vignette('reqDone', target)) npcReact(target,'wai',2.4);
-    saveGame();
+    ORDERS.splice(ORDERS.indexOf(o),1);
+    GS.q.orders=(GS.q.orders||0)+1;
+    if(!vignette('orderDone', target)) npcReact(target,'wai',2.4);
   } else {
     npcReact(target,'clap',1.2);
-    toast(REQ.got+'/'+REQ.n, PAL.jadeL);
+    toast(o.got+'/'+o.n, PAL.jadeL);
   }
+  saveGame();
   return true;
 }
+/* what an order sounds like out loud, so nobody has to guess */
+function reqAsk(v){
+  const o = v && orderOf(v.id);
+  if(!o) return null;
+  const bk = RECIPES[o.dish]||CRAFTS[o.dish];
+  const left = o.n - o.got;
+  return L('Could you make me')+' '+left+' '+L(bk.n)+'? '+o.pay+L('฿ for it')+'.';
+}
 function reqLine(){
-  if(!REQ.who) return null;
-  const n=reqWho(); if(!n) return null;
-  const who=L(n.name), what=L(ITEMS[REQ.item].n);
-  const tail = REQ.got? '  ('+REQ.got+'/'+REQ.n+')' : '';
-  return LANG==='th'
-    ? who+' '+L('needs')+' '+what+' '+REQ.n+tail
-    : who+' '+L('needs')+' '+REQ.n+' '+what+tail;
+  if(!ORDERS.length) return null;
+  const o=ORDERS[0], n=NPCS.find(v=>v.id===o.who);
+  if(!n) return null;
+  const bk = RECIPES[o.dish]||CRAFTS[o.dish];
+  const tail = o.got? '  ('+o.got+'/'+o.n+')' : '';
+  return L(n.name)+' '+L('wants')+' '+o.n+' '+L(bk.n)+' · '+o.pay+'฿'+tail;
+}
+const stepRequests = stepOrders;
+
+/* the board outside the stall, so you can see all three at once */
+function openOrderBoard(){
+  openCounter({
+    title:'ORDERS',
+    sub:'what the village would like cooked',
+    note:'cook it, then hand it to them yourself',
+    rows(){
+      if(!ORDERS.length) return [{ n:L('nobody is hungry yet'), sub:L('give it a little while'), tag:'·', ok:false }];
+      return ORDERS.map(o=>{
+        const n=NPCS.find(v=>v.id===o.who), bk=RECIPES[o.dish]||CRAFTS[o.dish];
+        const know = GS.learned[o.dish]!==undefined;
+        const need = Object.keys(bk.need).map(k=>L(ITEMS[k].n)+' x'+bk.need[k]).join(', ');
+        return { n:(n?L(n.name):'?')+' — '+o.n+' x '+L(bk.n), sub:need, icon:o.dish,
+                 tag:o.pay+'฿ / '+o.merit+' '+L('merit'), ok:true,
+                 fn(){ khwanSay(know? L('You know that one. The kitchen is by the cart.')
+                                    : L('You have not cooked that yet. The kitchen lists it anyway.'), 7); } };
+      });
+    },
+  });
+}
+
+/* ============================================================
+   THE GHOSTS WHO WORK FOR YOU
+
+   A spirit you have fed is a spirit who will help. Take one on
+   and it stops haunting its patch of road and comes to the farm
+   instead, and does the one job it is shaped for.
+   ============================================================ */
+const JOBS = {
+  water:  {n:'water the beds',    d:'walks the row with a bucket',        at:()=>BED_XS[2],   every:9 },
+  pick:   {n:'pick what is ripe', d:'takes the ripe beds off your hands', at:()=>BED_XS[1],   every:11 },
+  paddy:  {n:'keep the water up', d:'minds the dikes and the rice',       at:()=>PADDY_XS[0], every:12 },
+  orchard:{n:'mind the orchard',  d:'brings the fruit down',              at:()=>TREE_XS[1],  every:13 },
+  feed:   {n:'feed the animals',  d:'keeps bran in the trough',           at:()=>PEN_X+22,    every:14 },
+};
+const JOB_IDS = Object.keys(JOBS);
+function handOf(sid){ return FARM.hands[sid]||null; }
+function handCount(){ return Object.keys(FARM.hands).length; }
+function jobTaken(j){ for(const k in FARM.hands) if(FARM.hands[k]===j) return k; return null; }
+function hireHand(s, job){
+  if(!FARM.rented){ khwanSay('You have nothing for them to work yet.'); return; }
+  const other=jobTaken(job);
+  if(other && other!==s.id) delete FARM.hands[other];
+  FARM.hands[s.id]=job;
+  s.hand={ job, t:rnd(0,4), x:JOBS[job].at()+rnd(-14,14), busy:0 };
+  AU.metta(); pSpark(s.x,s.y-30,12,PAL.goldL);
+  toast(L(s.name)+' '+L('comes to the farm'), PAL.jadeL);
+  if(!GS.seen.hand){ GS.seen.hand=true;
+    khwanSay('Dead hands are still hands. They will keep at it whether you are watching or not.',8); }
+  saveGame();
+}
+function dismissHand(s){
+  delete FARM.hands[s.id]; s.hand=null;
+  s.x=s.home!==undefined? s.home : s.x;
+  toast(L(s.name)+' '+L('goes back to the road'),'#cfc4ae');
+  saveGame();
+}
+function openHands(s){
+  openCounter({
+    title:'A PAIR OF HANDS',
+    sub:L(s.name)+' — '+L('what should they do?'),
+    note:'one job each, and they keep at it while you are away',
+    rows(){
+      const out=JOB_IDS.map(j=>{
+        const on=handOf(s.id)===j, by=jobTaken(j);
+        return { n:L(JOBS[j].n), sub: on? L('doing this now') : by? L('taken by')+' '+L((SPIRIT_BY_ID[by]||{}).name||'') : L(JOBS[j].d),
+                 badge:(g,x,y)=>jobBadge(g,j,x,y), mark: on, ok:true,
+                 fn(){ if(on) return; hireHand(s,j); GS.state='play'; CNT=null; } };
+      });
+      if(handOf(s.id)) out.push({ n:L('nothing, thank you'), sub:L('they go back to their patch of road'),
+        badge:(g,x,y)=>icoDown(g,x,y,1.2,CL.ink2), ok:true,
+        fn(){ dismissHand(s); GS.state='play'; CNT=null; } });
+      return out;
+    },
+  });
+}
+function jobBadge(g,j,x,y){
+  if(j==='water'){ pR(g,x-3,y-2,7,6,'#7a8088'); pR(g,x-3,y-2,7,1,'#a0a8b0');
+    for(let i=0;i<3;i++) pR(g,x-2+i*2,y+4,1,2,'#8fc4e8'); }
+  else if(j==='pick'){ pEll(g,x,y+1,5,3,'#d3b478'); pEll(g,x,y-1,4,2,'#e0c184'); pR(g,x-1,y-4,2,3,'#6fbf62'); }
+  else if(j==='paddy'){ pR(g,x-5,y+1,11,3,PAL.water); pR(g,x-5,y+1,11,1,PAL.waterL);
+    for(let i=0;i<4;i++) pTaper(g,x-4+i*3,y+1,x-4+i*3,y-4,1.4,0.8,'#4f9256'); }
+  else if(j==='orchard'){ pTaper(g,x,y+4,x,y-2,2.4,1.4,'#5a4436'); pEll(g,x,y-4,5,3.4,'#2e5d3a'); }
+  else { pEll(g,x,y+2,5,3,'#c9a86a'); pEll(g,x-2,y-2,2.2,2,'#f2ece0'); pR(g,x-4,y-3,2,1,'#c0392f'); }
+}
+/* the work itself: it happens whether or not you are on screen */
+function stepHands(dt){
+  if(!FARM.rented) return;
+  for(const s of SPIRITS){
+    const job = handOf(s.id);
+    if(!job){ if(s.hand) s.hand=null; continue; }
+    if(!s.hand) s.hand={ job, t:rnd(0,4), x:JOBS[job].at()+rnd(-14,14), busy:0 };
+    const h=s.hand;
+    h.job=job;
+    // they drift to their station and stay near it
+    const want = JOBS[job].at();
+    h.x = lerp(h.x, want + Math.sin(GS.t*0.5+s.anim)*16, 1-Math.pow(0.2,dt));
+    s.x = h.x; s.y = groundY(s.x);
+    if(h.busy>0){ h.busy-=dt; continue; }
+    h.t += dt;
+    if(h.t < JOBS[job].every) continue;
+    h.t = 0;
+    if(doJob(job,s)) { h.busy=0.7; }
+  }
+}
+function doJob(job,s){
+  const px=s.x, py=groundY(s.x);
+  const spark=(c)=>{ for(let k=0;k<6;k++) pSpark(px+rnd(-8,8),py-24,1,c); };
+  if(job==='water'){
+    const pl = PLOTS.find(p=>bedOpen(p) && p.stage>0 && p.stage<3 && p.wet<=0);
+    if(!pl) return false;
+    pl.wet=9; pl.pop=0.5;
+    for(let k=0;k<8;k++) part({k:'water',x:pl.x+rnd(-6,6),y:groundY(pl.x)-18,vx:rnd(-6,6),vy:rnd(20,44),life:.5});
+    return true;
+  }
+  if(job==='pick'){
+    const pl = PLOTS.find(p=>bedOpen(p) && p.stage===3);
+    if(!pl) return false;
+    bagAdd(pl.crop,2,true); bagAdd('seed',1,true);
+    pl.stage=0; pl.t=0; pl.wet=0; pl.pop=1;
+    for(let k=0;k<7;k++) part({k:'pop',x:pl.x,y:groundY(pl.x)-16,vx:rnd(-22,22),vy:rnd(-42,-12),life:.6,c:ITEMS[pl.crop].c});
+    spark(PAL.jadeL); saveGame(); return true;
+  }
+  if(job==='paddy'){
+    const pd = PADDIES.find(p=>padOpen(p) && p.stage>0 && p.stage<3 && p.flood<=6);
+    if(pd){ pd.flood=40; pd.pop=0.5;
+      for(let k=0;k<10;k++) part({k:'water',x:pd.x+rnd(-22,22),y:groundY(pd.x)-14,vx:0,vy:rnd(16,36),life:.5});
+      return true; }
+    const ripe = PADDIES.find(p=>padOpen(p) && p.stage===3);
+    if(ripe){ bagAdd('rice',3,true); bagAdd('bran',1,true); bagAdd('seed',1,true);
+      ripe.stage=0; ripe.t=0; ripe.flood=0; ripe.pop=1;
+      spark('#e8d06a'); saveGame(); return true; }
+    return false;
+  }
+  if(job==='orchard'){
+    const tr = TREES.find(t=>treeOpen(t) && t.crop && t.grow>=1 && t.fruit>0);
+    if(!tr) return false;
+    bagAdd(tr.crop,tr.fruit,true); tr.fruit=0; tr.pop=1;
+    spark(ITEMS[tr.crop].c); saveGame(); return true;
+  }
+  if(job==='feed'){
+    if(!penHas()) return false;
+    if(FARM.pen.feed>12) return false;
+    if(!bagTake('bran',1)) return false;
+    FARM.pen.feed=Math.min(60,FARM.pen.feed+30);
+    spark('#d3b478'); saveGame(); return true;
+  }
+  return false;
+}
+/* a small badge over a working ghost, so you can see the farm running */
+function drawHandTag(g,s){
+  const job=handOf(s.id); if(!job) return;
+  const y = s.y - (s.id==='krasue'? 74 : 58) - 8 + Math.sin(GS.t*2+s.anim)*1.5;
+  cloud(g,s.x-11,y-10,22,15,{seed:301,drop:1});
+  jobBadge(g,job,s.x,y-2);
 }
 /* ============================================================
    LITTLE SCENES
@@ -3749,6 +4889,24 @@ const VIGS = {
   firstFriend: { once:true, at:()=>P.x, hold:0.8,
     lines:['A dead thing was kind to you, and you were kind back.',
            'Nobody wrote it down. It counted anyway.'] },
+  rented: { once:true, at:()=>FARM_GATE+90, hold:0.9,
+    lines:['Nobody has worked this place in years, and now it is yours.',
+           'Beds, two rice fields, an empty pen, and a roof with a hole in it.'] },
+  firstRice: { once:true, at:()=>P.x, hold:0.9,
+    lines:['Rice. The whole village eats because somebody waited this long.',
+           'You cannot eat a grain of it. You grew it anyway.'] },
+  firstSale: { once:true, at:()=>P.x, hold:0.85,
+    lines:['Coins, in a hand the size of a palm leaf.',
+           'Merit is what the ledger counts. This is what the landlord counts.'] },
+  firstOrder: { once:true, at:()=>P.x, hold:0.85,
+    lines:['Somebody has asked you to cook for them. By name.',
+           'They are not afraid of you. They are hungry, which is different.'] },
+  orderDone: { at:()=>VIG.who? (P.x+VIG.who.x)/2 : P.x, hold:0.7,
+    lines:['They eat standing up, the way everybody here does.',
+           'You watch somebody enjoy a thing you can never taste.'],
+    start(v){ if(v.who){ npcReact(v.who,'wai',3.2); v.who.face = P.x>v.who.x? 1:-1; }
+              P.face = v.who && v.who.x<P.x ? -1 : 1; },
+    step(v){ if(v.t>0.55 && !v.did){ v.did=true; preteAct('wai',2.4); AU.metta&&AU.metta(); } } },
 };
 
 function vignette(id, who){
@@ -3858,6 +5016,71 @@ function drawIcon(g,id,x,y,s=1){
     case 'bamboo': for(let i=0;i<2;i++){ pR(g,x-S2(3)+S2(i*4),y-S2(6),S2(3),S2(12),i%2?'#c2b46a':'#a89a52');
       pR(g,x-S2(3)+S2(i*4),y-S2(2),S2(3),S2(1),'#7d7038'); pR(g,x-S2(3)+S2(i*4),y+S2(3),S2(3),S2(1),'#7d7038'); } break;
     case 'clay': pEll(g,x,y+S2(2),S2(6),S2(4),'#9a6b4a'); pEll(g,x,y,S2(5),S2(4),'#b0805c'); pEll(g,x-S2(1),y-S2(1),S2(2),S2(1),'#c9a07c'); break;
+    // --- the garden ---
+    case 'galangal': for(let i=0;i<3;i++){ pEll(g,x-S2(3)+S2(i*3),y+S2(1)-S2(i),S2(3),S2(4),'#e8d9b0');
+      pR(g,x-S2(3)+S2(i*3),y-S2(2)-S2(i),S2(3),S2(1),'#c2ae82'); }
+      pTaper(g,x,y-S2(4),x+S2(2),y-S2(8),S2(2),S2(1),'#7fa86a'); break;
+    case 'basil': for(let i=0;i<3;i++){ const a=-1.2+i*1.2;
+        pTaper(g,x,y+S2(6),x+Math.cos(a)*S2(5),y+S2(1)+Math.sin(a)*S2(3),S2(1.6),S2(1),'#4a6b34');
+        pEll(g,x+Math.cos(a)*S2(6),y+Math.sin(a)*S2(3),S2(3),S2(2.2),i%2?'#3f7a3c':'#4f9040'); }
+      pEll(g,x,y-S2(5),S2(2),S2(2.4),'#7a4a6a'); break;
+    case 'pandan': for(let i=0;i<4;i++) pTaper(g,x,y+S2(6),x-S2(6)+S2(i*4),y-S2(7),S2(2.4),S2(0.8),i%2?'#2f7a4c':'#3f9058');
+      pEll(g,x,y+S2(6),S2(3),S2(1.6),'#1e5c38'); break;
+    case 'kaffir': pEll(g,x-S2(1),y,S2(4.4),S2(4.6),'#5f9a3c');
+      for(let i=0;i<7;i++){ const a=i/7*TAU; pR(g,x-S2(1)+Math.cos(a)*S2(4),y+Math.sin(a)*S2(4),S2(1),S2(1),'#3f7a2c'); }
+      pEll(g,x+S2(4),y-S2(3),S2(3),S2(2),'#4f9040'); pR(g,x+S2(1),y-S2(4),S2(3),S2(1),'#3f7a2c'); break;
+    case 'morning': for(let i=0;i<3;i++){ pTaper(g,x-S2(4)+S2(i*4),y+S2(6),x-S2(5)+S2(i*5),y-S2(5),S2(1.8),S2(1),'#6fae5c');
+        pEll(g,x-S2(5)+S2(i*5),y-S2(6),S2(2.4),S2(3),'#8fc48a'); }
+      pEll(g,x+S2(3),y-S2(2),S2(2.4),S2(2.4),'#c4a0e0'); break;
+    // --- the orchard ---
+    case 'durian': pEll(g,x,y,S2(6),S2(7),'#8a7a2c'); pEll(g,x,y-S2(1),S2(5),S2(6),'#c2a44a');
+      for(let i=0;i<12;i++){ const a=i/12*TAU; pTri(g,x+Math.cos(a)*S2(7),y+Math.sin(a)*S2(8),
+        x+Math.cos(a-0.28)*S2(4),y+Math.sin(a-0.28)*S2(5), x+Math.cos(a+0.28)*S2(4),y+Math.sin(a+0.28)*S2(5),'#a89040'); }
+      pR(g,x,y-S2(9),S2(1),S2(3),'#6b5a2a'); break;
+    case 'mangosteen': pEll(g,x,y+S2(1),S2(5.4),S2(5),'#4a1a2e'); pEll(g,x,y,S2(5),S2(4.6),'#7a2a4a');
+      pEll(g,x-S2(1),y-S2(1),S2(2),S2(1.6),'#a04a68');
+      for(let i=0;i<4;i++){ const a=i/4*TAU; pEll(g,x+Math.cos(a)*S2(3),y-S2(4)+Math.sin(a)*S2(1),S2(2.4),S2(1.4),'#3f7a3c'); }
+      pR(g,x,y-S2(6),S2(1),S2(2),'#5a4a2a'); break;
+    case 'rambutan': pEll(g,x,y,S2(4.4),S2(4),'#d8433a'); pEll(g,x-S2(1),y-S2(1),S2(2),S2(1.4),'#f06a58');
+      for(let i=0;i<12;i++){ const a=i/12*TAU;
+        pTaper(g,x+Math.cos(a)*S2(3),y+Math.sin(a)*S2(3),x+Math.cos(a)*S2(8),y+Math.sin(a)*S2(7),S2(1.4),S2(0.6), i%2?'#3f8f3c':'#c03a30'); }
+      break;
+    case 'longan': for(let i=0;i<3;i++) pEll(g,x-S2(4)+S2(i*4),y+((i%2)?S2(2):0),S2(3),S2(3),'#b08a5e');
+      for(let i=0;i<3;i++) pEll(g,x-S2(5)+S2(i*4),y-S2(1)+((i%2)?S2(2):0),S2(1.2),S2(1),'#d3b478');
+      pTaper(g,x,y-S2(4),x+S2(2),y-S2(7),S2(1.4),S2(0.8),'#5a4a2a'); break;
+    case 'jackfruit': pEll(g,x,y,S2(5.4),S2(7),'#c9b03c');
+      for(let i=0;i<16;i++){ const a=(i*2.399)%TAU; pR(g,x+Math.cos(a)*S2(3.4),y+Math.sin(a)*S2(4.6),S2(1),S2(1),'#8f7c22'); }
+      pR(g,x,y-S2(8),S2(1),S2(3),'#6b5a2a'); break;
+    // --- the pen ---
+    case 'egg': pEll(g,x,y,S2(4),S2(5),'#f2e4c8'); pEll(g,x-S2(1),y-S2(1),S2(1.6),S2(2),'#fffaf0'); break;
+    case 'duckEgg': pEll(g,x,y,S2(4.2),S2(5.2),'#e2ecd8'); pEll(g,x-S2(1),y-S2(1),S2(1.6),S2(2),'#f6fbf0'); break;
+    case 'milk': pR(g,x-S2(4),y-S2(4),S2(8),S2(10),'#c9c4b8'); pR(g,x-S2(3),y-S2(3),S2(6),S2(8),'#f6f2e6');
+      pR(g,x-S2(3),y-S2(3),S2(6),S2(2),'#fffdf6'); pR(g,x-S2(5),y-S2(5),S2(10),S2(2),'#9aa0aa'); break;
+    case 'manure': pEll(g,x,y+S2(2),S2(6),S2(3.4),'#4e3a24'); pEll(g,x-S2(1),y,S2(4),S2(2.6),'#6b4e33');
+      pEll(g,x+S2(1),y-S2(2),S2(2.6),S2(2),'#7d5c3e');
+      for(let i=0;i<3;i++) pR(g,x-S2(3)+S2(i*3),y-S2(4),S2(1),S2(1),'#8f7a52'); break;
+    case 'bran': pEll(g,x,y+S2(2),S2(7),S2(4),'#a8863f'); pEll(g,x,y,S2(6),S2(4),'#d3b478');
+      for(let i=0;i<7;i++) pR(g,x-S2(4)+S2(i*1.4),y-S2(2)+((i%3)*S2(1)),S2(1),S2(1),'#f2e2b4'); break;
+    // --- the new dishes ---
+    case 'padkaphrao': pEll(g,x,y+S2(3),S2(8),S2(3.4),'#f6f0dc'); pEll(g,x-S2(2),y,S2(5),S2(3),'#f2ecd8');
+      pEll(g,x+S2(3),y,S2(4),S2(3),'#4f7a3c');
+      for(let i=0;i<3;i++) pR(g,x+S2(1)+S2(i*2),y-S2(2),S2(1),S2(2),'#d8483a');
+      pEll(g,x+S2(2),y-S2(4),S2(3.4),S2(2),'#fffaf0'); pEll(g,x+S2(2),y-S2(4),S2(1.4),S2(1),'#f0b83c'); break;
+    case 'greenCurry': pEll(g,x,y+S2(2),S2(8),S2(4.6),'#c9c4b8'); pEll(g,x,y+S2(1),S2(7),S2(4),'#6fa85c');
+      pEll(g,x-S2(2),y,S2(3),S2(1.6),'#8fc48a');
+      for(let i=0;i<3;i++) pEll(g,x-S2(3)+S2(i*3),y-S2(1),S2(1.6),S2(1.2),'#3f7a3c');
+      pR(g,x+S2(2),y-S2(1),S2(2),S2(1),'#d8483a'); break;
+    case 'durianRice': pR(g,x-S2(6),y,S2(6),S2(5),'#f2ecd8'); pEll(g,x-S2(3),y+S2(4),S2(7),S2(2.4),'#f6f0dc');
+      pEll(g,x+S2(3),y-S2(1),S2(3.4),S2(4),'#c2a44a');
+      for(let i=0;i<6;i++){ const a=i/6*TAU; pTri(g,x+S2(3)+Math.cos(a)*S2(4.4),y-S2(1)+Math.sin(a)*S2(5),
+        x+S2(3)+Math.cos(a-0.3)*S2(2.4),y-S2(1)+Math.sin(a-0.3)*S2(3), x+S2(3)+Math.cos(a+0.3)*S2(2.4),y-S2(1)+Math.sin(a+0.3)*S2(3),'#a89040'); } break;
+    case 'sangkhaya': pR(g,x-S2(6),y-S2(3),S2(12),S2(8),'#c9c4b8'); pR(g,x-S2(5),y-S2(2),S2(10),S2(6),'#8fc48a');
+      pR(g,x-S2(5),y-S2(2),S2(10),S2(1.4),'#b0dca8');
+      for(let i=0;i<3;i++) pR(g,x-S2(3)+S2(i*3),y+S2(1),S2(1),S2(1),'#5f9a58'); break;
+    case 'ruamMit': pEll(g,x,y+S2(2),S2(8),S2(4.6),'#c9c4b8'); pEll(g,x,y+S2(1),S2(7),S2(4),'#f6f2e6');
+      pEll(g,x-S2(3),y-S2(1),S2(2.4),S2(2),'#7a2a4a'); pEll(g,x,y-S2(2),S2(2.4),S2(2),'#d8433a');
+      pEll(g,x+S2(3),y-S2(1),S2(2.4),S2(2),'#b08a5e');
+      for(let i=0;i<4;i++) pR(g,x-S2(4)+S2(i*3),y+S2(2),S2(1.4),S2(1.4),'#e8f0f8'); break;
     case 'somtam': pEll(g,x,y+S2(2),S2(8),S2(4),'#e8dfc8'); pEll(g,x,y,S2(7),S2(4),'#c9d84a');
       pR(g,x-S2(3),y-S2(2),S2(2),S2(1),'#d8483a'); pR(g,x+S2(2),y-S2(1),S2(2),S2(1),'#d8483a');
       for(let i=0;i<4;i++) pR(g,x-S2(4)+S2(i*2.4),y-S2(1),S2(1),S2(3),'#8fbf4a'); break;
@@ -4174,6 +5397,22 @@ function drawSky(g){
    LIGHT
    ============================================================ */
 const lightCv=mkCv(W,H), lightG=G2(lightCv);
+/* one soft black disc per radius, cut out of the night with destination-out */
+const _punchSpr=new Map();
+function punchSprite(r){
+  let c=_punchSpr.get(r);
+  if(!c){
+    if(_punchSpr.size>48) _punchSpr.clear();
+    const d=r*2;
+    c=mkCv(d,d);
+    const g2=c.getContext('2d');
+    const gr=g2.createRadialGradient(r,r,1,r,r,r);
+    gr.addColorStop(0,'rgba(0,0,0,1)'); gr.addColorStop(0.5,'rgba(0,0,0,0.62)'); gr.addColorStop(1,'rgba(0,0,0,0)');
+    g2.fillStyle=gr; g2.fillRect(0,0,d,d);
+    _punchSpr.set(r,c);
+  }
+  return c;
+}
 function drawLighting(g,cx,cy){
   const night=1-GS.dawn;
   lightG.globalCompositeOperation='source-over';
@@ -4184,9 +5423,12 @@ function drawLighting(g,cx,cy){
   const punch=(x,y,r,a)=>{
     const sx=x-cx, sy=y-cy;
     if(sx<-r||sx>W+r||sy<-r||sy>H+r) return;
-    const gr=lightG.createRadialGradient(sx,sy,1,sx,sy,r);
-    gr.addColorStop(0,`rgba(0,0,0,${a})`); gr.addColorStop(0.5,`rgba(0,0,0,${a*0.62})`); gr.addColorStop(1,'rgba(0,0,0,0)');
-    lightG.fillStyle=gr; lightG.fillRect(sx-r,sy-r,r*2,r*2);
+    /* the hole is always the same shape, so cut it from a baked stencil rather
+       than building a fresh gradient twenty-odd times a frame */
+    const q=Math.max(2,Math.round(r/2)*2);
+    lightG.globalAlpha=clamp(a,0,1);
+    lightG.drawImage(punchSprite(q), R(sx-q), R(sy-q));
+    lightG.globalAlpha=1;
   };
   for(const l of LIGHTS){ if(!l.on) continue;
     const fl=l.flick?1-Math.random()*l.flick:1; punch(l.x,l.y,l.r*fl,l.a); }
@@ -4283,7 +5525,7 @@ function render(){
   }
 
   drawSigns(ctx);
-  drawFarm(ctx); drawSeedBox(ctx);
+  drawFarm(ctx);
   if(GS.state==='play') drawNavMark(ctx);
   // gatherable plants
   for(const nd of NODES){
@@ -4319,6 +5561,7 @@ function render(){
             : s.id==='krahang'? s.y-38+Math.sin(s.anim*2)*5 : s.y;
     GHOST_ART[s.art](ctx,{x:s.x,y:y,face:s.face,anim:s.anim,hurtT:0,attackT:0,hop:s.hop,h:s.id==='taihong'?46:44,friendly:1});
     if(s.wave>0) icoCall(ctx,s.x+10*s.face,y-32,0.9,PAL.goldL);
+    drawHandTag(ctx,s);
     if(s.friend) icoHeart(ctx,s.x-11,y-33,1,'#ff8fae');
     if(s.bub) bubble(ctx,s.x,y-36,s.bub.txt);
     wishBubble(ctx,s,y-38);
@@ -4356,6 +5599,7 @@ function render(){
   if(GS.state==='tree') drawLedger(ctx);
   if(GS.state==='act')  drawAct(ctx);
   if(GS.state==='give') drawGive(ctx);
+  if(GS.state==='shop') drawShop(ctx);
   if(GS.state==='ceremony') drawCeremonyUI(ctx);
   if(GS.state==='end') drawEnd(ctx);
   if(TOUCH.on && uiShowsPads()) drawPads(ctx);
@@ -4924,26 +6168,52 @@ function checkInteract(){
   PROMPT=null;
   if(DLG) return;
   const set=(x,y,txt,fn,sub)=>{ PROMPT={x,y,txt,fn,sub}; };
-  // friends first
+  /* ---- the farm first: it is fixed furniture, and a ghost drifting across
+     a bed must never stop you working it ---- */
+  if(!PROMPT && near(FARM_GATE,22))
+    set(FARM_GATE, groundY(FARM_GATE)-56, FARM.rented? 'read the farm board' : 'read the notice', openBoard);
+  if(!PROMPT && FARM.rented && near(PEN_X,30)){
+    const p=FARM.pen;
+    if(!penHas()) set(PEN_X, groundY(PEN_X)-38, 'the pen is empty', ()=>khwanSay('The board at the gate sells chickens, ducks, and one very large buffalo.'));
+    else if(penFull()) set(PEN_X, groundY(PEN_X)-40, 'take what they left you', penCollect, 'feed');
+    else set(PEN_X, groundY(PEN_X)-38, p.feed>0? 'the animals are settled' : 'the animals want feeding', penFeed);
+  }
+  if(!PROMPT){
+    const pl=plotAt(P.x);
+    if(pl && near(pl.x,15)){
+      const t=plotPrompt(pl);
+      if(t==='the bed is empty')
+        set(pl.x, groundY(pl.x)-30, t, ()=>khwanSay('Seed is in the crate by the gate, or three for nine baht at the stall.'));
+      else set(pl.x, groundY(pl.x)-30, t, ()=>usePlot(pl));
+    }
+  }
+  if(!PROMPT){
+    const pd=paddyAt(P.x);
+    if(pd) set(pd.x, groundY(pd.x)-28, paddyPrompt(pd), ()=>{
+      if(pd.stage===0 && !bagHas('seed')) khwanSay('Rice starts as seed too. The crate is by the gate.');
+      else usePaddy(pd);
+    });
+  }
+  if(!PROMPT){
+    const tr=treeAt(P.x);
+    if(tr) set(tr.x, groundY(tr.x)-72, treePrompt(tr), ()=>useTree(tr));
+  }
+  // then people
   for(const s of SPIRITS){
     if(near(s.x,40)){
       const y = s.id==='krasue'? s.y-76 : s.y-56;
-      set(s.x,y, s.met? L('talk to')+' '+L(s.name) : 'say hello', ()=>talkSpirit(s), 'give');
+      if(s.friend && FARM.rented)
+        set(s.x,y, handOf(s.id)? L('talk to')+' '+L(s.name) : 'ask them to help', ()=>openHands(s), 'give');
+      else
+        set(s.x,y, s.met? L('talk to')+' '+L(s.name) : 'say hello', ()=>talkSpirit(s), 'give');
     }
   }
   if(!PROMPT && !GS.q.garland && GS.q.metPhra && near(SHRINE_X-16,30))
     set(SHRINE_X-16, groundY(SHRINE_X)-100,'hang the fallen garland', ()=>startTask('garland',SHRINE_X));
   if(!PROMPT && near(PHRA.x,40) && PHRA.shown) set(PHRA.x,PHRA.y-30,'speak to Phra Phum', talkPhra);
   if(!PROMPT && near(PHRA.x,40) && !PHRA.shown) set(SHRINE_X,groundY(SHRINE_X)-96,'pay respects', talkPhra);
-  if(!PROMPT){
-    const pl=plotAt(P.x);
-    if(pl && near(pl.x,15)){
-      const t=plotPrompt(pl);
-      if(t==='the bed is empty')
-        set(pl.x, groundY(pl.x)-30, t, ()=>khwanSay('Seed is in the crate at the end of the row.'));
-      else set(pl.x, groundY(pl.x)-30, t, ()=>usePlot(pl));
-    }
-  }
+  if(!PROMPT && near(STALL_X+34,20)) set(STALL_X+34, groundY(STALL_X+34)-44,'read the orders', openOrderBoard);
+  if(!PROMPT && near(STALL_X-30,22)) set(STALL_X-30, groundY(STALL_X-30)-52,'buy and sell', openStall);
   if(!PROMPT && near(KITCHEN_X,34)) set(KITCHEN_X, groundY(KITCHEN_X)-64,'cook something', ()=>startActivity('cook'));
   if(!PROMPT && near(CRAFT_X,34))   set(CRAFT_X,   groundY(CRAFT_X)-52,'sit and make something', ()=>startActivity('craft'));
   if(!PROMPT && near(TANI.x,36)) set(TANI.x,TANI.y-40,L('talk to')+' '+L('Tani'), talkTani);
@@ -4974,8 +6244,8 @@ function checkInteract(){
     else toast('the bell hums','#cfc4ae');
   });
   // the seed crate and the plants come last, so people always win the prompt
-  if(!PROMPT && near(SEED_BOX_X,16))
-    set(SEED_BOX_X, groundY(SEED_BOX_X)-24, 'take seed', takeSeed);
+  if(!PROMPT && near(SEED_CRATE_X,16))
+    set(SEED_CRATE_X, groundY(SEED_CRATE_X)-24, 'take seed', takeSeed);
   if(!PROMPT) for(const nd of NODES){
     if(nd.ready && near(nd.x,22)){ const it=ITEMS[nd.item];
       set(nd.x, nd.y-30, L('pick')+' '+L(it.n), ()=>gather(nd)); break; }
@@ -5068,6 +6338,9 @@ function talkPhra(){
     if(!GS.q.garland) tips.push('My garland fell. I would hang it myself, but I am eight inches tall and made of light.');
     const un=SPIRITS.filter(s=>!s.friend);
     if(un.length) tips.push('There are '+un.length+' lonely things on my land tonight. Not dangerous. Lonely. The nearest is '+un[0].name+'.');
+    if(!FARM.rented) tips.push('There is a place out west nobody has worked in years. The notice is still on the gate.');
+    else if(!FARM.paddies) tips.push('A farm with no rice field is a garden. Build a dike when you can afford one.');
+    else if(!handCount() && SPIRITS.some(s=>s.friend)) tips.push('Your dead friends have hands and nothing to do with them. Ask.');
     tips.push('Merit given to wandering souls means you. Stand here when somebody prays.');
     say([{w:'Phra Phum',t:pick(tips)},{w:'Phra Phum',t:'You have '+GS.merit+' merit of the hundred and eight. Keep going.'}]);
   }
@@ -6188,7 +7461,9 @@ function drawMap(g,x0,y0,w,h){
   pEll(g,yx,ry-2+bob,3.6,3.6,'#e05a48'); pEll(g,yx-1,ry-3+bob,1.4,1.4,'#ffb0a0');
   pTxt(g,'you are here',yx,ry+16+bob,'#8f2a20',6,'center');
   icoHeart(g,x0+17,y0+h-12,0.7,CL.ink3); pTxt(g,'friends   ? still waiting',x0+24,y0+h-10,CL.ink3,6);
-  let obj = reqLine()? reqLine()
+  let obj = !GS.q.metPhra? 'go east to the spirit house'
+    : !FARM.rented? 'rent the farm, west in the rice fields'
+    : reqLine()? reqLine()
     : !GS.q.metPhra? 'go east to the spirit house'
     : GS.q.done? 'wander as long as you like'
     : GS.ready? 'return to the spirit house'
@@ -6283,7 +7558,8 @@ function drawHUD(){
      bottom, the way a farming game does it. neither one covers the village. */
   const bw=80;
   const mtxt = GS.merit+'/'+GOAL;
-  cloud(g,6,6,40+bw+4+txtW(mtxt,7)+6-6,18,{seed:1});
+  const mw = 40+bw+4+txtW(mtxt,7)+7;
+  cloud(g,6,6,mw-6,18,{seed:1});
   pTxt(g,'merit',11,18,'#8f6a1e',7);
   pR(g,40,11,bw,7,'#c2ab84'); pR(g,40,11,bw,1,'#a8906a');
   const pr=clamp(GS.merit/GOAL,0,1);
@@ -6291,6 +7567,11 @@ function drawHUD(){
   pR(g,40,11,bw*pr,1,'#fffdf6');
   for(let i=1;i<4;i++) pR(g,40+bw*i/4,11,1,7,'rgba(90,60,28,0.35)');
   pTxt(g,mtxt,40+bw+4,18,CL.ink,7);
+  /* the purse: the other number, and the one the landlord counts */
+  { const btxt=(GS.baht|0)+'฿', bwid=txtW(btxt,8)+20;
+    cloud(g,mw+6,6,bwid,18,{seed:9,top:'#fff4d4',body:'#f0dca8',under:'#d4b878',edge:'#3b2412'});
+    icoStar(g,mw+13,15,0.7,'#c9992f');
+    pTxt(g,btxt,mw+bwid-1,18,'#7a5a18',8,'right'); }
 
   /* the toolbar: eight slots, always there, so you can see what you carry */
   const ids=DLG? [] : Object.keys(GS.bag).filter(k=>GS.bag[k]>0).slice(0,8);
@@ -6801,7 +8082,8 @@ function update(dt){
       stepPlayer(dt);
       stepNpcs(dt);
       stepFarm(dt);
-      stepRequests(dt);
+      stepOrders(dt);
+      stepHands(dt);
       stepKhwan(dt);
       /* the past does not wait to be asked */
       { const mi=memReady(); if(mi>=0){ startMem(mi); break; } }
@@ -6820,6 +8102,7 @@ function update(dt){
     case 'task':     PROMPT=null; stepTask(dt); break;
     case 'act':      PROMPT=null; stepKhwan(dt); stepAct(dt); break;
     case 'give':     PROMPT=null; stepGive(dt); break;
+    case 'shop':     PROMPT=null; stepShop(dt); break;
     case 'tree':     PROMPT=null; stepTree(dt); break;
     case 'ascend':   PROMPT=null; stepAscend(dt); break;
     case 'ceremony': stepCeremony(dt); break;
@@ -6845,11 +8128,16 @@ function update(dt){
 function saveGame(){
   try{
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v:2, merit:GS.merit, spent:GS.spent, mute:AU.muted,
+      v:2, merit:GS.merit, spent:GS.spent, baht:GS.baht|0, mute:AU.muted,
       skills:GS.skills, cos:GS.cos, q:GS.q, seen:GS.seen,
       bag:GS.bag, friends:GS.friends, learned:GS.learned, tut:GS.tut, mem:GS.mem,
-      farm:PLOTS.map(p=>({s:p.stage,t:p.t,w:p.wet})),
-      req:REQ.who?{w:REQ.who,i:REQ.item,n:REQ.n,g:REQ.got}:null,
+      /* the whole farm: what you have rented, what is in the ground, what is in the pen */
+      fm:{ r:FARM.rented, h:FARM.house, b:FARM.beds, p:FARM.paddies, tr:FARM.trees,
+           pen:FARM.pen, hands:FARM.hands },
+      beds:  PLOTS.map(p=>({s:p.stage,t:p.t,w:p.wet,f:p.fert})),
+      pads:  PADDIES.map(p=>({s:p.stage,t:p.t,f:p.flood})),
+      trees: TREES.map(t=>({c:t.crop,g:t.grow,f:t.fruit,t:t.t})),
+      ord:   ORDERS.map(o=>({w:o.who,d:o.dish,n:o.n,g:o.got,p:o.pay,m:o.merit})),
       met: SPIRITS.filter(s=>s.met).map(s=>s.id),
       pals: SPIRITS.filter(s=>s.friend).map(s=>s.id),
       x: (typeof P!=='undefined'&&P)?P.x:300,
@@ -6861,7 +8149,7 @@ function saveGame(){
    NEW / CONTINUE
    ============================================================ */
 function resetWorld(){
-  for(const s of SPIRITS){ s.met=false; s.friend=false; }
+  for(const s of SPIRITS){ s.met=false; s.friend=false; s.hand=null; if(s.home!==undefined){ s.x=s.home; s.y=groundY(s.x); } }
   const bl=LIGHTS.find(l=>l.broken); if(bl) bl.on=false;
   CAT.state='tree'; CAT.x=TAMARIND_X+16; CAT.y=groundY(TAMARIND_X)-104;
   PHRA.shown=false; offering=null; DLG=null; ACT=null; GIVE=null; HT=null;
@@ -6869,6 +8157,16 @@ function resetWorld(){
   for(const nd of NODES){ nd.ready=true; nd.t=0; }
   for(const l of LIGHTS) if(l.id==='kitchen') l.on=true;
   seedAtmosphere();
+}
+/* the farm back to the state the landlord leaves it in */
+function resetFarm(){
+  FARM.rented=false; FARM.house=0; FARM.beds=0; FARM.paddies=0; FARM.trees=0;
+  FARM.pen={ chicken:0, duck:0, buffalo:0, feed:0, egg:0, degg:0, milk:0, dung:0, t:0 };
+  FARM.hands={};
+  for(const pl of PLOTS){ pl.stage=0; pl.t=0; pl.wet=0; pl.fert=0; pl.pop=0; }
+  for(const pd of PADDIES){ pd.stage=0; pd.t=0; pd.flood=0; pd.pop=0; }
+  for(const tr of TREES){ tr.crop=null; tr.grow=0; tr.fruit=0; tr.t=0; tr.pop=0; }
+  for(const s of SPIRITS) s.hand=null;
 }
 function seedAtmosphere(){
   // moths around the lamps, petals under the blossom trees
@@ -6878,10 +8176,9 @@ function newGame(){
   GS.merit=0; GS.spent=0; GS.skills={}; GS.cos={skirt:'ash'};
   GS.q={prayers:0,offerings:0,pets:0,gifts:0}; GS.seen={}; GS.bag={}; GS.friends={};
   GS.learned={}; GS.tut=0; GS.dawn=0; GS.ready=false; GS.mem={};
-  for(const pl of PLOTS){ pl.stage=0; pl.t=0; pl.wet=0; pl.pop=0; }
-  PLOTS[2].stage=3;                    // one bed ready, so the loop shows itself
-  GS.bag.seed=3;
-  REQ.who=null; REQ.item=null; REQ.got=0; REQ.cool=8;
+  GS.baht=0;
+  resetFarm();
+  ORDERS.length=0; orderCool=14;
   P.x=300; P.y=groundY(300); P.vx=0; P.vy=0; P.rise=0; P.act=null; VIG=null;
   KHWAN.x=300; KHWAN.y=groundY(300)-50;
   resetWorld();
@@ -6897,8 +8194,24 @@ function continueGame(sv){
   GS.q=Object.assign({prayers:0,offerings:0,pets:0,gifts:0},sv.q||{});
   GS.seen=sv.seen||{}; GS.bag=sv.bag||{}; GS.friends=sv.friends||{};
   GS.learned=sv.learned||{}; GS.tut=sv.tut||0; GS.mem=sv.mem||{};
-  if(sv.farm) sv.farm.forEach((f,i)=>{ const pl=PLOTS[i]; if(pl){ pl.stage=f.s|0; pl.t=+f.t||0; pl.wet=+f.w||0; } });
-  if(sv.req && ITEMS[sv.req.i]){ REQ.who=sv.req.w; REQ.item=sv.req.i; REQ.n=sv.req.n|0; REQ.got=sv.req.g|0; }
+  GS.baht=sv.baht|0;
+  resetFarm();
+  if(sv.fm){
+    FARM.rented=!!sv.fm.r; FARM.house=+sv.fm.h||0;
+    FARM.beds=sv.fm.b|0; FARM.paddies=sv.fm.p|0; FARM.trees=sv.fm.tr|0;
+    if(sv.fm.pen) Object.assign(FARM.pen, sv.fm.pen);
+    if(sv.fm.hands) for(const k in sv.fm.hands) if(JOBS[sv.fm.hands[k]]) FARM.hands[k]=sv.fm.hands[k];
+  }
+  const oldBeds = sv.beds||sv.farm;
+  if(oldBeds) oldBeds.forEach((f,i)=>{ const pl=PLOTS[i]; if(pl){ pl.stage=f.s|0; pl.t=+f.t||0; pl.wet=+f.w||0; pl.fert=f.f|0; } });
+  if(sv.pads)  sv.pads.forEach((f,i)=>{ const pd=PADDIES[i]; if(pd){ pd.stage=f.s|0; pd.t=+f.t||0; pd.flood=+f.f||0; } });
+  if(sv.trees) sv.trees.forEach((f,i)=>{ const tr=TREES[i]; if(tr && (!f.c||ITEMS[f.c])){ tr.crop=f.c||null; tr.grow=+f.g||0; tr.fruit=f.f|0; tr.t=+f.t||0; } });
+  ORDERS.length=0;
+  if(sv.ord) for(const o of sv.ord){
+    if(!(RECIPES[o.d]||CRAFTS[o.d])) continue;
+    if(!NPCS.some(n=>n.id===o.w)) continue;
+    ORDERS.push({who:o.w,dish:o.d,n:o.n|0||1,got:o.g|0,pay:o.p|0,merit:o.m|0});
+  }
   resetWorld();
   if(sv.met)  for(const id of sv.met){ const s=SPIRIT_BY_ID[id]; if(s) s.met=true; }
   if(sv.pals) for(const id of sv.pals){ const s=SPIRIT_BY_ID[id]; if(s){ s.friend=true; s.met=true; } }
