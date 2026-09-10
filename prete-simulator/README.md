@@ -14,14 +14,15 @@ nose, six hairs left, and two enormous ringed eyes that have not closed properly
 since. You cannot eat anything you cook. You're going to cook a great deal
 anyway.
 
-Nobody will tell you what you did. Not Khwan, who was there for all of it. Not
-Phra Phum, who keeps the ledger in his hands. **It comes back on its own, one
+Nobody will tell you what you did. Not Mae Posop, who has watched the field
+since before you were buried in sight of it. Not Phra Phum, who keeps the
+ledger in his hands. **It comes back on its own, one
 page at a time, as you earn the right to it** — and by the last page you will
 wish it hadn't.
 
 **Nothing in this game fights.** There are no enemies, no health bar and no way
 to lose. There is one rice field, a village further up the road, a derelict farm
-nobody has worked in years, a stove, a weaving mat, and twelve people — six of
+nobody has worked in years, a stove, a weaving mat, and eleven people — five of
 them dead — who each quietly want one small thing.
 
 **It starts with one field and nothing else.** The village is east and the mist
@@ -114,18 +115,25 @@ page, and until the last one turns the ending will not start.
 ## You wake up in somebody else's rice field
 
 The game opens face down in standing water in an abandoned paddy — no title
-crawl, no scene to sit through, just mud, the smell of it, and somebody already
-talking to you.
+crawl, no scene to sit through, and **nobody explaining anything**. Five lines
+of second person, no speaker, no portrait:
 
-> **Khwan:** *And no — do not ask me. A ledger is read by whoever wrote it.*
+> *You are nine feet tall. Your ribs are on the outside. You have been under a
+> long time.*
+>
+> *You reach for your name, the way you would reach for a coin in a pocket.
+> There is nothing where it should be.*
 
-That's **Khwan** — the life-spirit Thai belief says everybody carries and almost
-nobody hears. She was with you for every bit of the life you can't remember, and
-she will not tell you a word of it. What she will do is follow you, float at your
-shoulder, and teach you one nudge at a time. After each page of your past comes
-back she says one short thing and then leaves you alone with it.
+There used to be a small glowing life-spirit at your shoulder who talked you
+through all of this and then followed you about for the rest of the game. She
+is gone. With Mae Posop standing in the field doing the same job, the two of
+them talked over each other — two speech bubbles on screen at once, both
+telling you what to do next.
 
-**And there is somebody standing out in the water.**
+**There is one guide now, and she is standing out in the water.** Everything
+the game wants to tell you comes out of her mouth if you are near her, and off
+a single line under the plaques if you have walked two zones away — because a
+hint you cannot see is not a hint.
 
 ![you wake in the field](screenshots/waking.png)
 
@@ -454,12 +462,43 @@ and every thing a bed can be told to do turns over into Thai.
 
 Thai is genuinely hard to draw at this size: forty-four consonants, vowels that
 sit above, below, in front of and behind the consonant they belong to, and four
-tone marks that stack on top of the ones already up there. Rather than
-hand-draw glyphs that might be subtly wrong, the game **rasterises the reader's
-own Thai face once per string and thresholds it to one bit**, so it lands on the
-same pixel grid as the rest of the type, with the vowels and tone marks exactly
-where the device says they go. Thai has no spaces between words, so the
-line-wrapper breaks Thai per character, which is what Thai typesetting does.
+tone marks that stack on top of the ones already up there.
+
+I did try hand-drawing it, the way the Latin face is hand-drawn — all 56 glyphs
+the game actually uses, with the mark-stacking engine to go with them. At a
+6×8 cell it was not legible: Thai letters are told apart by the position of a
+small head-loop, and a loop two pixels across is a blob. Half the consonants
+came out as the same shape. So that got thrown away.
+
+What ships instead **rasterises the reader's own Thai face and downsamples it
+to one bit properly** — drawn four times oversized, then each real pixel is
+turned on if the glyph actually covers a third of it. Thresholding an
+anti-aliased render, which is what it used to do, ate exactly the strokes Thai
+cannot spare: the head-loops and the tone marks. It also draws Thai a third
+smaller than before, because the layouts are measured for a 5×7 Latin cell and
+Thai has to sit in the same box — at the old size every label in the ledger ran
+into the column beside it.
+
+The art for the face that did not work is kept in [`th/glyphs.py`](th/glyphs.py)
+with a note on why, in case somebody wants to try it at a bigger cell.
+
+Two more things had to be true before it counted as working:
+
+- **A line that is half Thai and half not** — `+2 ข้าว`, `ต้องใช้ 6 แผ่นไม้`, a
+  price with a number in front of it — is split into runs and each run goes to
+  the face that owns it. The whole string used to go to the Thai face, so a
+  number inside a Thai sentence looked nothing like the same number on the
+  plaque beside it.
+- **A device with no Thai font at all** renders every Thai codepoint as the same
+  rectangle. The game checks for that once, by rasterising a real Thai letter
+  and a private-use codepoint and comparing them, and if they come out
+  identical the language switch declines and says why. A language of identical
+  boxes is worse than no translation.
+
+Thai has no spaces inside a word, so a long Thai run is broken by character —
+but the Thai here uses spaces between *phrases*, and breaking by character
+regardless split those in half. It breaks on the spaces first now, and only
+chops a phrase when that one phrase is wider than the line.
 
 The story prose — the memories, the villagers' lives, what Phra Phum will not
 tell you — stays in English. Everything you need in order to *play* is
@@ -472,9 +511,9 @@ and the English would be worse: **นาข้าว** for a bunded flooded rice
 **ยุ้งข้าว** for the granary up on its posts, and **แม่โพสพ** for the woman
 standing in your paddy.
 
-| | |
-|---|---|
-| ![the village in Thai](screenshots/thai-village.png) | ![the ledger in Thai](screenshots/thai-ledger.png) |
+| | | |
+|---|---|---|
+| ![the village in Thai](screenshots/thai-village.png) | ![the ledger in Thai](screenshots/thai-ledger.png) | ![the guide in Thai](screenshots/thai-guide.png) |
 
 ## Everyone talks to you differently depending on how well they know you
 
@@ -524,8 +563,8 @@ find the lanterns still burning over the beds and wonder who left them on.
   who in the Thai telling comes down himself when somebody's merit is worth the
   trip.
 - **Nang Tani** genuinely lives in wild banana groves and is genuinely benevolent.
-  **Khwan** is the Thai life-spirit; losing yours is what you say when somebody
-  has had a fright.
+  **Mae Posop** is carried out of the last field of the harvest wrapped in
+  cloth, like a bride, and you apologise to her out loud for a dropped grain.
 - The red Fanta on the shrine ledge is not a joke.
 
 Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
@@ -541,7 +580,7 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~460 KB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~476 KB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Parses and initialises in about a tenth of a second, has the whole
 road built inside half a second behind a loading screen, and holds 60 fps.
 
@@ -622,11 +661,18 @@ road built inside half a second behind a loading screen, and holds 60 fps.
   in a different typeface from the number beside it. It has its own 5x7 bitmap
   now, and the Thai matcher steps around it.
 - **The type has a second alphabet.** The bitmap faces cover Latin; Thai is
-  rasterised from the platform face and thresholded to 1-bit at draw time, then
-  cached like every other string. Translation happens at the drawing boundary —
-  `pTxt` and `wrap` look every string up on the way to the screen — so no call
-  site had to be touched and an untranslated string simply comes through in
-  English rather than going missing.
+  supersampled four times from the platform face and downsampled to 1-bit by
+  coverage, then cached like every other string, and a line that mixes the two
+  is split into runs so each goes to its own face. Translation happens at the
+  drawing boundary — `pTxt` and `wrap` look every string up on the way to the
+  screen — so no call site had to be touched and an untranslated string simply
+  comes through in English rather than going missing.
+- **One guide, not two.** The tutorial nudges, every "you need seed" and "the
+  jar is by the house", all funnel through one call. If Mae Posop is within
+  earshot it comes out of her mouth; if you are two zones away it comes up on a
+  line under the plaques, which drops below whatever the HUD has already put in
+  that band. Before this there was a second spirit at your shoulder saying the
+  same kind of thing at the same time, in a bubble of her own.
 - **Sprite-baked static art.** The rice, the tree crowns, the farmhouse, the pen
   and the barn are hundreds of tapers and ellipses each, and they are the same
   hundreds every frame — so each is painted once into a small canvas and blitted

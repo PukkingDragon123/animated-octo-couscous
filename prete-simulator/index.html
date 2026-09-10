@@ -827,13 +827,38 @@ function glyph(F,ch){
   if(F===F3){ const u=F3[ch.toUpperCase()]; if(u) return u; }
   return F['?']||F[' '];
 }
+/* Split a string into runs of Thai and runs of everything else.
+   Half the strings in the game are both at once — "+2 ข้าว", "ต้องใช้ 6
+   แผ่นไม้", a price with a number in front of it — and handing the whole
+   line to the Thai face drew the DIGITS in the Thai face too, so a number
+   in a Thai sentence looked nothing like the same number on the plaque
+   beside it. Each run now goes to the face that owns it. */
+function txtRuns(s){
+  const out=[];
+  let cur='', curThai=null;
+  for(const ch of s){
+    const t = THAI_RE.test(ch);
+    if(curThai===null){ curThai=t; cur=ch; }
+    else if(t===curThai) cur+=ch;
+    else { out.push({th:curThai, s:cur}); curThai=t; cur=ch; }
+  }
+  if(cur) out.push({th:curThai, s:cur});
+  return out;
+}
+function latinW(s,size){
+  const P=fontPick(size);
+  return s.length? s.length*(P.w*P.s+P.gap)-P.gap : 0;
+}
 /* width in pixels of a string at a given size */
 function txtW(s,size=7){
   s=String(s);
   if(!s.length) return 0;
-  if(THAI_RE.test(s)) return thaiMeasure(s,size);
-  const P=fontPick(size);
-  return s.length*(P.w*P.s+P.gap)-P.gap;
+  if(!THAI_RE.test(s)) return latinW(s,size);
+  const runs=txtRuns(s);
+  if(runs.length===1) return thaiMeasure(s,size);
+  let w=0;
+  for(const r of runs) w += r.th? thaiMeasure(r.s,size) : latinW(r.s,size)+1;
+  return w;
 }
 function txtH(size=7){ const P=fontPick(size); return P.h*P.s; }
 
@@ -893,9 +918,36 @@ function isLight(col){
    grid as everything else. No network, no webfont, no combining logic
    of our own to get wrong.
    ============================================================ */
-/* the pixel height the Thai face is drawn at, per requested size. Thai needs
-   more headroom than latin: the vowel stack is two rows above the letter. */
-function thaiPx(size){ return size<=6?11 : size<=7?12 : size<=9?14 : size<=13?18 : Math.round(size*1.5); }
+/* The pixel height Thai is drawn at, per requested size. It used to be a
+   third taller than this, which is why every Thai label in the ledger ran
+   into the column beside it: the layouts are measured for a 5x7 Latin cell
+   and Thai has to sit in the same box. */
+function thaiPx(size){ return size<=6?10 : size<=7?11 : size<=9?13 : size<=13?16 : Math.round(size*1.35); }
+
+/* Does this device have Thai at all? A machine with no Thai face renders
+   every Thai codepoint as the same tofu box, and switching the game into a
+   language of identical rectangles is worse than not offering it. So compare
+   a real Thai letter against a private-use codepoint nothing maps: if they
+   come out pixel-identical, we are looking at tofu. */
+let _thaiOK = null;
+function thaiOK(){
+  if(_thaiOK!==null) return _thaiOK;
+  try{
+    const ink=(ch)=>{
+      const c=mkCv(24,24), g=c.getContext('2d');
+      g.font='16px '+_thaiFace; g.textBaseline='alphabetic'; g.fillStyle='#fff';
+      g.fillText(ch,2,18);
+      const d=g.getImageData(0,0,24,24).data;
+      let n=0, sig=0;
+      for(let k=3;k<d.length;k+=4) if(d[k]>80){ n++; sig=(sig*31 + (k>>2))|0; }
+      return n? n+'|'+sig : '0';
+    };
+    const thai=ink('ก'), tofu=ink('\uE000'), blank=ink('\u200B');
+    _thaiOK = thai!=='0' && thai!==tofu && thai!==blank;
+  }catch(e){ _thaiOK=true; }   // if we cannot tell, assume it is there
+  return _thaiOK;
+}
+
 const _thai=new Map();
 let _thMeasure=null;
 function thaiMeasure(s,size){
@@ -903,27 +955,55 @@ function thaiMeasure(s,size){
   _thMeasure.font=thaiPx(size)+'px '+_thaiFace;
   return Math.ceil(_thMeasure.measureText(s).width);
 }
+/* ---------- Thai, rasterised to one bit properly ----------
+   The old pass drew Thai at the target size and kept any pixel over an
+   alpha of 110, which is thresholding an anti-aliased image: thin strokes
+   and tone marks came out broken and everything looked soft next to the
+   hand-drawn Latin.
+
+   This draws it three times oversized and then asks, for each real pixel,
+   how much of it the glyph actually covers — supersampled 1-bit
+   downsampling. Same pixel grid as the rest of the type, and the tone marks
+   survive.  */
+/* Four samples per pixel and a low coverage bar: Thai is full of one-stroke
+   detail — the little head-loops, the tone marks — and at a 0.40 bar those
+   were the first things to disappear, which is what made it look broken. */
+const THAI_SS = 4, THAI_COV = 0.31;
 function thaiSprite(s,size,col,shadow){
   const key='T|'+s+'|'+size+'|'+col+'|'+(shadow||'');
   let c=_thai.get(key);
-  if(c) return c;
-  if(_thai.size>300) _thai.clear();
-  const px=thaiPx(size);
-  const w=Math.max(1,thaiMeasure(s,size)), h=px+px; // room for the stack above and the tail below
-  const src=mkCv(w+2,h), sg=src.getContext('2d');
-  sg.font=px+'px '+_thaiFace; sg.textBaseline='alphabetic'; sg.fillStyle='#fff';
-  sg.fillText(s,1,Math.round(px*1.35));
-  // threshold to 1-bit, so it is pixel art and not a blurry smear
-  const d=sg.getImageData(0,0,src.width,src.height).data;
-  c=mkCv(src.width+(shadow?1:0), src.height+(shadow?1:0));
+  if(c){ _thai.delete(key); _thai.set(key,c); return c; }
+  const px=thaiPx(size), SS=THAI_SS;
+  const w=Math.max(1,thaiMeasure(s,size)), h=px+px;
+  const bw=(w+2)*SS, bh=h*SS;
+  const src=mkCv(bw,bh), sg=src.getContext('2d');
+  sg.font=(px*SS)+'px '+_thaiFace; sg.textBaseline='alphabetic'; sg.fillStyle='#fff';
+  sg.fillText(s, SS, Math.round(px*1.32)*SS);
+  const d=sg.getImageData(0,0,bw,bh).data;
+  const need=THAI_COV*SS*SS;
+  c=mkCv(w+2+(shadow?1:0), h+(shadow?1:0));
   const g=G2(c);
+  /* one pass over the big bitmap into a coverage count per output pixel,
+     then two stamps of the same mask for the shadow and the ink */
+  const on=new Uint8Array((w+2)*h);
+  for(let y=0;y<h;y++) for(let x=0;x<w+2;x++){
+    let cov=0;
+    for(let sy=0;sy<SS;sy++){
+      const row=(y*SS+sy)*bw;
+      for(let sx=0;sx<SS;sx++){
+        const px2=x*SS+sx;
+        if(px2<bw && d[(row+px2)*4+3]>90) cov++;
+      }
+    }
+    if(cov>=need) on[y*(w+2)+x]=1;
+  }
   const stamp=(cc,ox,oy)=>{ g.fillStyle=cc;
-    for(let y=0;y<src.height;y++) for(let x=0;x<src.width;x++){
-      if(d[(y*src.width+x)*4+3]>110) g.fillRect(x+ox,y+oy,1,1); } };
+    for(let y=0;y<h;y++) for(let x=0;x<w+2;x++) if(on[y*(w+2)+x]) g.fillRect(x+ox,y+oy,1,1); };
   if(shadow) stamp(shadow,1,1);
   stamp(col,0,0);
-  c._base=Math.round(px*1.35);            // where the baseline sat inside the sprite
+  c._base=Math.round(px*1.32);            // where the baseline sits inside the sprite
   _thai.set(key,c);
+  while(_thai.size>320) _thai.delete(_thai.keys().next().value);
   return c;
 }
 /* x,y is the LEFT BASELINE, as it always was */
@@ -933,28 +1013,56 @@ function pTxt(g,s,x,y,col,size=7,align='left',bold){
   const w=txtW(s,size);
   let dx = align==='center'? -w/2 : align==='right'? -w : 0;
   const sh = isLight(col)?'rgba(8,6,18,0.8)':null;
-  if(isThai(s)){
+  const P=fontPick(size);
+  if(!THAI_RE.test(s)){
+    // baseline sits one pixel-row above the bottom of the cell
+    g.drawImage(txtSprite(s,size,col,sh), R(x+dx), R(y-P.h*P.s));
+    return;
+  }
+  const runs=txtRuns(s);
+  if(runs.length===1){
     const c=thaiSprite(s,size,col,sh);
     g.drawImage(c, R(x+dx), R(y-c._base));
     return;
   }
-  const P=fontPick(size);
-  const c=txtSprite(s,size,col,sh);
-  // baseline sits one pixel-row above the bottom of the cell
-  g.drawImage(c, R(x+dx), R(y-P.h*P.s));
+  // mixed: each run to the face that owns it, all on the one baseline
+  let cx=x+dx;
+  for(const r of runs){
+    if(r.th){
+      const c=thaiSprite(r.s,size,col,sh);
+      g.drawImage(c, R(cx), R(y-c._base));
+      cx += thaiMeasure(r.s,size);
+    } else {
+      g.drawImage(txtSprite(r.s,size,col,sh), R(cx), R(y-P.h*P.s));
+      cx += latinW(r.s,size)+1;
+    }
+  }
 }
 function wrap(g,s,maxW,size){
   s=L(String(s));
-  /* Thai is written without spaces between words. Breaking on spaces alone
-     would hand back one line the width of a paragraph, so Thai wraps by
-     character instead — which is what Thai typesetting does at this size. */
+  /* Thai is written without spaces inside a word, so a long Thai run has to
+     be broken by character. But the Thai in this game uses spaces between
+     PHRASES, and breaking by character regardless split those phrases in
+     half — "และคำขอบคุณ ต / ามลำดับนี้". So: break on the spaces first, and
+     only chop a chunk by character when that one chunk is itself too wide. */
   if(isThai(s) && txtW(s,size)>maxW){
     const out=[]; let cur='';
-    for(const ch of s){
-      const t=cur+ch;
-      if(txtW(t,size)>maxW && cur){ out.push(cur); cur=ch; } else cur=t;
+    const flush=()=>{ if(cur){ out.push(cur); cur=''; } };
+    for(const chunk of s.split(' ')){
+      if(!chunk) continue;
+      const withChunk = cur? cur+' '+chunk : chunk;
+      if(txtW(withChunk,size)<=maxW){ cur=withChunk; continue; }
+      flush();
+      if(txtW(chunk,size)<=maxW){ cur=chunk; continue; }
+      // one phrase wider than the line: now character breaking is the only way
+      let part='';
+      for(const ch of chunk){
+        const t=part+ch;
+        if(txtW(t,size)>maxW && part){ out.push(part); part=ch; } else part=t;
+      }
+      cur=part;
     }
-    if(cur) out.push(cur);
+    flush();
     return out;
   }
   const words=s.split(' '), out=[]; let cur='';
@@ -977,11 +1085,11 @@ let LANG = 'en';
 const TH = {
   // --- the interface ---
   'merit':'บุญ', 'THE LEDGER':'สมุดบุญ', 'back':'กลับ', 'skip':'ข้าม',
-  'SKILLS':'ทักษะ', 'LOOKS':'เครื่องแต่งกาย', 'FRIENDS':'เพื่อน', 'MAP':'แผนที่', 'PAST':'อดีต',
+  'SKILLS':'ทักษะ', 'LOOKS':'เครื่องแต่ง', 'FRIENDS':'เพื่อน', 'MAP':'แผนที่', 'PAST':'อดีต',
   'BODY':'กาย', 'HANDS':'มือ', 'HEART':'ใจ',
-  'the body you woke up in':'ร่างที่ตื่นขึ้นมา',
-  'what your hands learn':'สิ่งที่มือได้เรียนรู้',
-  'the part that got you here':'ส่วนที่พาเจ้ามาถึงตรงนี้',
+  'the body you woke up in':'ร่างที่ตื่นมา',
+  'what your hands learn':'สิ่งที่มือเรียนรู้',
+  'the part that got you here':'ส่วนที่พาเจ้ามา',
   'learned':'เรียนแล้ว', 'worn':'สวมอยู่', 'wear':'สวม',
   'friends':'เพื่อน', 'not yet':'ยังไม่ถึงเวลา',
   'tap the ground to walk':'แตะพื้นเพื่อเดิน',
@@ -1113,7 +1221,7 @@ const TH = {
   // --- the people ---
   'Mali':'มาลี', 'Lung Somchai':'ลุงสมชาย', 'Luang Pi':'หลวงพี่',
   'Yai Pen':'ยายเพ็ญ', "P'Nok":'พี่นก', 'Loong Dam':'ลุงดำ',
-  'Phra Phum':'พระภูมิ', 'Khwan':'ขวัญ', 'Tani':'นางตานี', 'You':'เจ้า',
+  'Phra Phum':'พระภูมิ', 'Tani':'นางตานี', 'You':'เจ้า',
   // --- the little scenes ---
   'A seed does not care what you used to be.':'เมล็ดไม่สนใจว่าเจ้าเคยเป็นอะไร',
   'It wants earth, and water, and to be let alone a while.':'มันขอแค่ดิน น้ำ และเวลาสักหน่อย',
@@ -1129,6 +1237,130 @@ const TH = {
   'Now water it. Wet earth grows twice as fast.':'ทีนี้ก็รดน้ำ ดินชื้นโตเร็วเป็นสองเท่า',
   'That is the whole of farming. Sow, water, wait, pick.':'การทำไร่มีแค่นี้ หยอด รดน้ำ รอ เก็บ',
   'No seed left. Pick a ripe bed and one comes back.':'เมล็ดหมดแล้ว เก็บแปลงที่สุกแล้วจะได้เมล็ดคืน',
+  /* ============ THE OPENING ============ */
+  'Water, warm as blood, up to the ankle. Mud under the nails of a hand you do not recognise.':
+    'น้ำอุ่นเหมือนเลือด ท่วมถึงข้อเท้า โคลนใต้เล็บของมือที่เจ้าไม่รู้จัก',
+  '(You try to say something. It comes out as a thin whistle, from a mouth the size of a needle\'s eye.)':
+    '(เจ้าพยายามพูด แต่ออกมาเป็นเสียงหวีดบาง ๆ จากปากเท่ารูเข็ม)',
+  'You are nine feet tall. Your ribs are on the outside. There is a word for this and it is prete — a hungry ghost.':
+    'เจ้าสูงสามเมตร ซี่โครงอยู่นอกตัว มีคำเรียกสิ่งนี้ว่าเปรต ผีที่หิวไม่รู้จบ',
+  'You reach for your name, the way you would reach for a coin in a pocket. There is nothing where it should be.':
+    'เจ้าคลำหาชื่อของตัวเอง เหมือนคลำหาเหรียญในกระเป๋า แต่ที่นั่นว่างเปล่า',
+  'A rice field, then. Long abandoned, and standing in water, and somebody is out in the middle of it, waiting.':
+    'เป็นนาข้าว ทิ้งร้างมานาน มีน้ำขัง และมีคนยืนรออยู่กลางนา',
+
+  /* ============ WHAT THE GUIDE SAYS ============
+     With the life-spirit gone, every one of these comes out of Mae Posop's
+     mouth if you are near her and off the hint line if you are not — so they
+     are the lines most often on screen, and they are the ones that most
+     needed to stop being English. */
+  'Somebody is standing out in the water. Go and see — tap the ground to walk.':
+    'มีคนยืนอยู่กลางน้ำ ไปดูสิ แตะพื้นเพื่อเดิน',
+  'Seed, water, mud, waiting, thanks. In that order, and no hurrying any of it.':
+    'เมล็ด น้ำ ดิน การรอ และคำขอบคุณ ตามลำดับนี้ และห้ามรีบ',
+  'The mist has lifted. The village is east, and the village eats rice.':
+    'หมอกจางแล้ว หมู่บ้านอยู่ทางตะวันออก และหมู่บ้านกินข้าว',
+  'Lung Somchai leaves his stove burning all night. Tap it.':
+    'ลุงสมชายติดเตาไว้ทั้งคืน แตะที่เตา',
+  'Now give something away. Merit is the ledger. Coins are the landlord.':
+    'ทีนี้ก็แบ่งให้คนอื่น บุญคือสมุด เงินคือค่าเช่า',
+  'There is a TOOLS column in your ledger now, and it is the cheapest one. Start with the sickle.':
+    'สมุดของเจ้ามีช่องเครื่องมือแล้ว และถูกที่สุด เริ่มที่เคียว',
+  'The rest of that farm has a notice still nailed to the gate. One hundred and twenty baht.':
+    'ที่ดินที่เหลือยังมีป้ายติดอยู่ที่ประตู หนึ่งร้อยยี่สิบบาท',
+  'Things come out over the water at dusk. With a net they are worth more than a papaya.':
+    'พอค่ำจะมีตัวบินขึ้นเหนือน้ำ ถ้ามีสวิงจะได้ราคาดีกว่ามะละกอ',
+  'Somebody has ordered food by name. Cook it, carry it to them, and they pay in both.':
+    'มีคนสั่งอาหารมาแล้ว ทำแล้วเอาไปให้ เขาจ่ายทั้งเงินและบุญ',
+  'That log by the gate is a roof, if you had an axe.':
+    'ท่อนไม้ข้างประตูเป็นหลังคาได้ ถ้ามีขวาน',
+  'Your ledger is the book, bottom left. Spent merit still counts.':
+    'สมุดของเจ้าคือหนังสือมุมล่างซ้าย บุญที่ใช้ไปแล้วก็ยังนับ',
+  'There is somebody standing in the water. She has been there longer than the farm has.':
+    'มีคนยืนอยู่ในน้ำ เธออยู่ที่นั่นนานกว่าไร่นี้',
+  'West along the bund, then. Whoever it is has not moved.':
+    'เดินไปทางตะวันตกตามคันนา คนนั้นยังไม่ไปไหน',
+  'The jar is never empty — it is the walk that costs you. A proper can would hold more.':
+    'โอ่งไม่เคยแห้ง ที่เสียคือระยะเดิน บัวรดน้ำจะใส่ได้มากกว่า',
+  'No water left. The โอ่ง is the big jar by the house.':
+    'น้ำหมดแล้ว โอ่งใบใหญ่อยู่ข้างบ้าน',
+  'You are carrying all you can.':'ถือได้เท่านี้แล้ว',
+  'You have seed. Put it in the ground.':'มีเมล็ดอยู่แล้ว เอาลงดินเถอะ',
+  'No seed left. The sack is in the barn, just inside the gate.':
+    'เมล็ดหมดแล้ว กระสอบอยู่ในยุ้งข้าว เลยประตูเข้าไป',
+  'Rice starts as seed too. There is a sack of it in the barn.':
+    'ข้าวก็เริ่มจากเมล็ด มีกระสอบอยู่ในยุ้งข้าว',
+  'Whatever you cut, some of it goes back in the sack. That is how a field keeps itself.':
+    'เกี่ยวได้เท่าไร ส่วนหนึ่งกลับเข้ากระสอบ นาเลี้ยงตัวเองอย่างนี้',
+  'Now water it. Wet earth grows twice as fast.':'ทีนี้ก็รดน้ำ ดินชื้นโตเร็วเป็นสองเท่า',
+  'Rice is slow and it wants the water kept up. Everything here waits on the rice.':
+    'ข้าวช้าและต้องคอยเติมน้ำ ทุกอย่างที่นี่รอข้าว',
+  'Bare hands, on that? Ascend for a net. The TOOLS column, in your ledger.':
+    'จะใช้มือเปล่าจับหรือ ขึ้นไปขอสวิงก่อน ช่องเครื่องมือในสมุด',
+  'You could pull it apart with your hands and ruin it. Ascend for an axe instead.':
+    'ใช้มือฉีกก็ได้ แต่ไม้จะเสีย ขึ้นไปขอขวานดีกว่า',
+  'Planks. The board at the gate will take those for the roof.':
+    'ได้แผ่นไม้แล้ว ป้ายที่ประตูรับไม้ไปทำหลังคา',
+  'Gone. They come back — they always come back.':'หลุดไปแล้ว เดี๋ยวมันก็กลับมา มันกลับมาทุกที',
+  'All six. You have been paying attention to a thing that does not pay you back. Good.':
+    'ครบหกตัว เจ้าใส่ใจสิ่งที่ไม่ให้อะไรตอบ ดีแล้ว',
+  'The board at the gate sells chickens, ducks, and one very large buffalo.':
+    'ป้ายที่ประตูขายไก่ เป็ด และควายตัวใหญ่หนึ่งตัว',
+  'Keep bran in the trough and they will leave you something every little while.':
+    'ใส่รำไว้ในราง เดี๋ยวมันก็ทิ้งของไว้ให้เรื่อย ๆ',
+  'Dead hands are still hands. They will keep at it whether you are watching or not.':
+    'มือผีก็ยังเป็นมือ มันทำต่อไม่ว่าเจ้าจะดูอยู่หรือไม่',
+  'Not yet. The mist does not lift off a field that has nothing in it.':
+    'ยังไม่ได้ หมอกไม่จางจากนาที่ไม่มีอะไรอยู่',
+  'The village is that way, and it will still be there. The field first.':
+    'หมู่บ้านอยู่ทางนั้น และจะยังอยู่ นาก่อน',
+  'She is watching you think about leaving. Go and get the seed.':
+    'เธอเห็นเจ้าคิดจะไปแล้ว ไปเอาเมล็ดมาก่อน',
+  'They heard that. A prete\'s whistle is just a hello with the volume stuck on.':
+    'เขาได้ยินแล้ว เสียงหวีดของเปรตก็แค่คำทักทายที่ปิดเสียงไม่ได้',
+  'You made something. Somebody is going to be very glad about that.':
+    'ทำเสร็จแล้ว จะมีคนดีใจกับสิ่งนี้มาก',
+  'Good. Things regrow here — take what you need and come back later.':
+    'ดี ของที่นี่งอกใหม่ เอาไปเท่าที่ต้องใช้แล้วค่อยกลับมา',
+  'Look at that. A friend. Worth more than the merit, whatever the ledger says.':
+    'ดูสิ ได้เพื่อนแล้ว มีค่ามากกว่าบุญ ไม่ว่าสมุดจะเขียนว่าอย่างไร',
+  'The house is finished. It is a better house than the one you had.':
+    'บ้านเสร็จแล้ว ดีกว่าหลังที่เจ้าเคยมี',
+
+  /* ============ WHAT THE TOOLS AND SKILLS DO ============ */
+  'You cover ground like a slow storm cloud. +35% walking speed.':
+    'เจ้าเคลื่อนที่เหมือนเมฆฝนเคลื่อนช้า เดินเร็วขึ้น 35%',
+  'Your arms find what ladders cannot. Longer reach in every helping job.':
+    'แขนของเจ้าถึงที่บันไดไม่ถึง เอื้อมได้ไกลขึ้นในทุกงานช่วยเหลือ',
+  'A bigger basket. Twenty-four things instead of fourteen.':
+    'ตะกร้าใบใหญ่ขึ้น ใส่ได้ยี่สิบสี่อย่างแทนสิบสี่',
+  'Hunger made you hollow, and hollow things jump twice.':
+    'ความหิวทำให้เจ้ากลวง และของกลวงกระโดดได้สองที',
+  'Helping jobs forgive a wobble. Everything goes slower and kinder.':
+    'งานช่วยเหลือยอมให้มือสั่นได้ ทุกอย่างช้าลงและใจดีขึ้น',
+  'You cannot eat, but you know. Cooking windows get wider.':
+    'เจ้ากินไม่ได้ แต่เจ้ารู้ จังหวะทำอาหารกว้างขึ้น',
+  'Over, under, over, under. Crafting gets easier.':
+    'ขัดขึ้น ขัดลง ขัดขึ้น ขัดลง งานจักสานง่ายขึ้น',
+  'Palm-leaf hands are big enough to make two of a thing at once.':
+    'มือใบลานใหญ่พอจะทำทีเดียวได้สองชิ้น',
+  'Merit finds you from three times as far.':'บุญหาเจ้าเจอจากไกลขึ้นสามเท่า',
+  'You see what a person is quietly hoping for.':'เจ้าเห็นสิ่งที่คนคนหนึ่งเงียบ ๆ หวังอยู่',
+  'Cats, children and shy spirits stop being startled by you.':
+    'แมว เด็ก และผีขี้อาย เลิกสะดุ้งกับเจ้า',
+  'The only one that matters: sit with a lonely spirit until it is not lonely.':
+    'ข้อเดียวที่สำคัญ นั่งอยู่กับผีที่เหงาจนมันไม่เหงา',
+  'Curved, and older than the village. The barn gives three seed instead of two, and cut rice comes in heavier.':
+    'โค้ง และเก่ากว่าหมู่บ้าน ยุ้งให้เมล็ดสามแทนสอง และข้าวที่เกี่ยวได้หนักขึ้น',
+  'The jar was never the problem. Carrying was. Five waterings instead of two.':
+    'โอ่งไม่ใช่ปัญหา การถือคือปัญหา รดได้ห้าครั้งแทนสองครั้ง',
+  'Bamboo hoop, mosquito gauze. Everything that flies at dusk is suddenly worth something.':
+    'ห่วงไม้ไผ่ ผ้ามุ้ง ทุกตัวที่บินตอนค่ำมีราคาขึ้นมาทันที',
+  'The house needs planks, and planks come out of the log by the gate. A wider swing, and one plank more.':
+    'บ้านต้องใช้แผ่นไม้ และแผ่นไม้มาจากท่อนไม้ข้างประตู เหวี่ยงกว้างขึ้น และได้อีกหนึ่งแผ่น',
+  'merit to spend':'บุญที่ใช้ได้', 'earned':'ที่ได้มา', 'spent':'ที่ใช้ไป',
+  'E to ascend':'กด E เพื่อขึ้นไป', 'requires':'ต้องมี',
+
   /* ============ THE FIRST FIELD ============ */
   // the rice mother, and her lesson
   'Mae Posop':'แม่โพสพ', 'speak to her':'เข้าไปหาเธอ', 'the rice mother':'แม่โพสพ',
@@ -1136,7 +1368,6 @@ const TH = {
   'the water jar by the house':'โอ่งน้ำข้างบ้าน',
   'the paddy':'นาข้าว',
   'wait — and keep the water up':'รอ และคอยเติมน้ำ',
-  'cut the rice':'เกี่ยวข้าว',
   'the rice is in':'ข้าวขึ้นยุ้งแล้ว',
   // the barn, the jar, the log
   'take seed from the barn':'เอาเมล็ดจากยุ้งข้าว',
@@ -1162,7 +1393,7 @@ const TH = {
   'it got away':'มันหลุดไปแล้ว', 'you got nowhere':'ยังไม่ได้อะไรเลย',
   'swings':'ครั้งที่เหวี่ยง', 'every one of them':'ครบทุกตัว',
   // the tools column
-  'TOOLS':'เครื่องมือ', 'what your hands hold':'สิ่งที่มือถืออยู่',
+  'TOOLS':'เครื่องมือ', 'what your hands hold':'สิ่งที่มือถือ',
   'Sickle':'เคียว', 'Watering Can':'บัวรดน้ำ', 'Bug Net':'สวิงจับแมลง', 'Axe':'ขวาน',
   // --- and the tone of the thing ---
   'a memory':'ความทรงจำ',
@@ -1174,11 +1405,18 @@ function L(s){
   return t===undefined? s : t;
 }
 function setLang(l){
-  LANG=l;
-  try{ localStorage.setItem('prete-lang',l); }catch(e){}
+  /* A device with no Thai face renders every Thai codepoint as the same
+     rectangle, and a language of identical rectangles is worse than no
+     translation. So the switch simply refuses on such a device and says why. */
+  if(l==='th' && typeof thaiOK==='function' && !thaiOK()){
+    if(typeof toast==='function') toast('this device has no Thai font','#c8888a');
+    LANG='en';
+  } else LANG=l;
+  try{ localStorage.setItem('prete-lang',LANG); }catch(e){}
   if(typeof _txt!=='undefined') _txt.clear();
 }
 function toggleLang(){ setLang(LANG==='en'?'th':'en'); }
+const thaiAvailable = ()=> typeof thaiOK!=='function' || thaiOK();
 { try{ const l=localStorage.getItem('prete-lang'); if(l==='th'||l==='en') LANG=l; }catch(e){} }
 /* ============================================================
    MORE OF THE VILLAGE — the cozy half
@@ -3242,8 +3480,6 @@ const TANI = {x:TANI_X, y:groundY(TANI_X)-4, anim:0, face:-1, waveT:0};
 const PHRA = {x:SHRINE_X+2, y:groundY(SHRINE_X)-64, anim:0, shown:false};
 const CAT  = {x:TAMARIND_X+16, y:groundY(TAMARIND_X)-104, state:'tree', anim:0, phase:0, face:-1, tx:0};
 
-/* the guide: a Khwan, the small life-spirit that lives in everyone */
-const KHWAN = {x:300, y:groundY(300)-60, tx:0, ty:0, anim:0, mood:'happy', blink:2, bub:null, bubT:0, bubMax:0};
 
 /* ---------- the neighbours who happen to be dead ---------- */
 const SPIRITS = [
@@ -3399,11 +3635,11 @@ function stepDlg(dt){
 }
 
 /* ============================================================
-   THE GUIDE — Khwan follows you and explains the world
+   THE GUIDE — Mae Posop, and the hint line for when she is out of earshot
    ============================================================ */
 const TUT = [
   {id:'meet',  test:()=>POSOP.met,               say:'Somebody is standing out in the water. Go and see — tap the ground to walk.'},
-  {id:'rice',  test:()=>riceDone(),              say:'Do what she tells you, in the order she tells you. It is her field more than it is yours.'},
+  {id:'rice',  test:()=>riceDone(),              say:'Seed, water, mud, waiting, thanks. In that order, and no hurrying any of it.'},
   {id:'east',  test:()=>P.x>MIST_X+240,          say:'The mist has lifted. The village is east, and the village eats rice.'},
   {id:'sell',  test:()=>(GS.q.sold||0)>0,        say:"P'Nok keeps the stall and buys anything. Sell her something and see what a coin feels like."},
   {id:'cook',  test:()=>Object.keys(GS.learned).length>0, say:'Lung Somchai leaves his stove burning all night. Tap it.'},
@@ -3418,28 +3654,45 @@ const TUT = [
   {id:'ledger',test:()=>!!GS.seen.ledger,        say:'Your ledger is the book, bottom left. Spent merit still counts.'},
   {id:'past',  test:()=>!!GS.mem.take,           say:'That was a piece of you. The PAST tab keeps every one it gives back.'},
 ];
-function stepKhwan(dt){
-  const K2=KHWAN;
-  K2.anim+=dt; K2.blink-=dt; if(K2.blink<-0.14) K2.blink=rnd(2.5,6);
-  // float along behind your shoulder
-  const side = -P.face;
-  const tx = P.x + side*24, ty = P.y - 60 + Math.sin(K2.anim*1.5)*3;
-  K2.x = lerp(K2.x, tx, 1-Math.pow(0.004,dt));
-  K2.y = lerp(K2.y, ty, 1-Math.pow(0.006,dt));
-  if(K2.bubT>0){ K2.bubT-=dt; if(K2.bubT<=0) K2.bub=null; }
-  // tutorial, one gentle nudge at a time
-  if(GS.tut < TUT.length && !DLG && GS.state==='play'){
+/* ============================================================
+   THE GUIDE
+
+   There used to be a second one of these: a little glowing life-spirit at
+   your shoulder who explained things. With Mae Posop standing in the field
+   doing the same job, the two of them talked over each other — two bubbles
+   on screen at once, both saying what to do next. She is the only guide
+   now.
+
+   Anything the game wants to tell you goes through guideSay. If she is
+   within earshot it comes out of her mouth. If you are two zones away it
+   comes up as a line under the plaques instead, because a hint you cannot
+   see is not a hint.
+   ============================================================ */
+let HINT = null;
+function guideSay(txt, t=6){
+  if(typeof POSOP!=='undefined' && POSOP.met && Math.abs(P.x-POSOP.x) < 210){
+    posopSay(txt, t); return;
+  }
+  HINT = {txt, t, max:t};
+  AU.blip();
+}
+const guideTalking = ()=>
+  (HINT && HINT.t > HINT.max-1.8) ||
+  (typeof POSOP!=='undefined' && POSOP.bub && POSOP.bubT > (POSOP.bubMax||6)-1.8);
+
+function stepHint(dt){
+  if(HINT){ HINT.t -= dt; if(HINT.t<=0) HINT=null; }
+  // the tutorial, one gentle nudge at a time, in her voice or on the line
+  if(GS.tut < TUT.length && !DLG && GS.state==='play' && !VIG){
     const step=TUT[GS.tut];
     if(step.test()){ GS.tut++; saveGame();
       const nxt=TUT[GS.tut];
-      if(nxt){ K2.bub=nxt.say; K2.bubT=K2.bubMax=7.5; AU.blip(); }
-    } else if(!K2.bub && !GS.seen['tut'+step.id]){
-      GS.seen['tut'+step.id]=true; K2.bub=step.say; K2.bubT=K2.bubMax=8;
+      if(nxt) guideSay(nxt.say, 7.5);
+    } else if(!HINT && !GS.seen['tut'+step.id]){
+      GS.seen['tut'+step.id]=true; guideSay(step.say, 8);
     }
   }
-  if(Math.random()<dt*1.4) part({k:'sp',x:K2.x+rnd(-5,5),y:K2.y+rnd(-5,5),vx:rnd(-6,6),vy:rnd(-10,-2),life:rnd(.5,1),c:'#bfe8ff'});
 }
-function khwanSay(txt,t=6){ KHWAN.bub=txt; KHWAN.bubT=t; KHWAN.bubMax=t; AU.blip(); }
 
 /* ============================================================
    PLAYER
@@ -3497,7 +3750,7 @@ function stepPlayer(dt){
     for(const n of NPCS) if(Math.abs(n.x-P.x)<110){ n.mark={k:'call',t:1.6}; greeted++; }
     for(const s of SPIRITS) if(Math.abs(s.x-P.x)<130 && s.met){ s.wave=1.4; greeted++; }
     if(Math.abs(CAT.x-P.x)<110 && CAT.state==='wander'){ CAT.tx=P.x; AU.meow(); }
-    if(greeted && !GS.seen.greet){ GS.seen.greet=true; khwanSay('They heard that. A prete\'s whistle is just a hello with the volume stuck on.'); }
+    if(greeted && !GS.seen.greet){ GS.seen.greet=true; guideSay('They heard that. A prete\'s whistle is just a hello with the volume stuck on.'); }
   }
   if(P.wailT>0){ P.wailT-=dt; P.state='wail'; }
   else if(HT) P.state='reach';
@@ -3874,9 +4127,9 @@ function stepPen(dt){
 function penFull(){ const p=FARM.pen; return p.egg+p.degg+p.milk+p.dung; }
 function penCollect(){
   const p=FARM.pen;
-  if(!penHas()){ khwanSay('There is nothing in the pen yet. The stall sells chickens.'); AU.blip(); return; }
+  if(!penHas()){ guideSay('There is nothing in the pen yet. The stall sells chickens.'); AU.blip(); return; }
   if(!penFull()){
-    khwanSay(p.feed>0? 'Nothing yet. Give them an hour.' : 'They are hungry. Rice bran, from the stall.');
+    guideSay(p.feed>0? 'Nothing yet. Give them an hour.' : 'They are hungry. Rice bran, from the stall.');
     AU.blip(); return;
   }
   preteAct('pick', 1.0, ()=>{
@@ -3891,15 +4144,15 @@ function penCollect(){
 }
 function penFeed(){
   const p=FARM.pen;
-  if(!penHas()){ khwanSay('Buy an animal first.'); AU.blip(); return; }
-  if(!bagHas('bran')){ khwanSay('You have no bran. Mill rice, or buy a sack at the stall.'); AU.blip(); return; }
+  if(!penHas()){ guideSay('Buy an animal first.'); AU.blip(); return; }
+  if(!bagHas('bran')){ guideSay('You have no bran. Mill rice, or buy a sack at the stall.'); AU.blip(); return; }
   preteAct('give', 0.9, ()=>{
     bagTake('bran',1);
     p.feed = Math.min(60, p.feed + 30);
     AU.step();
     for(let k=0;k<10;k++) part({k:'pop',x:PEN_X+rnd(-20,20),y:groundY(PEN_X)-8,vx:rnd(-14,14),vy:rnd(-24,-6),life:.6,c:'#d3b478'});
     toast(L('fed'),'#d3b478');
-    if(!GS.seen.fed){ GS.seen.fed=true; khwanSay('A fed animal gives you something back every little while. Come and look in the pen.',7); }
+    if(!GS.seen.fed){ GS.seen.fed=true; guideSay('A fed animal gives you something back every little while. Come and look in the pen.',7); }
     saveGame();
   });
 }
@@ -3915,7 +4168,7 @@ function plotPrompt(pl){
 function usePlot(pl){
   P.face = pl.x < P.x ? -1 : 1;
   if(pl.stage===0){
-    if(!bagHas('seed')){ khwanSay('No seed left. The sack is in the barn, just inside the gate.'); AU.blip(); return; }
+    if(!bagHas('seed')){ guideSay('No seed left. The sack is in the barn, just inside the gate.'); AU.blip(); return; }
     preteAct('plant', 1.05, ()=>{
       if(!bagTake('seed',1)) return;
       pl.stage=1; pl.t=0; pl.wet=0; pl.pop=1;
@@ -3925,7 +4178,7 @@ function usePlot(pl){
       for(let k=0;k<4;k++) part({k:'sp',x:pl.x+rnd(-4,4),y:groundY(pl.x)-6,vx:rnd(-8,8),vy:rnd(-14,-4),life:.6,c:'#c9a86a'});
       if(!GS.seen.sown){ GS.seen.sown=true;
         vignette('firstSeed');
-        khwanSay('Now water it. Wet earth grows twice as fast.',7); }
+        guideSay('Now water it. Wet earth grows twice as fast.',7); }
       saveGame();
     });
     return;
@@ -3966,7 +4219,7 @@ function paddyPrompt(pd){
 function usePaddy(pd){
   P.face = pd.x < P.x ? -1 : 1;
   if(pd.stage===0){
-    if(!bagHas('seed')){ khwanSay('Rice starts as seed too. There is a sack of it in the barn.'); AU.blip(); return; }
+    if(!bagHas('seed')){ guideSay('Rice starts as seed too. There is a sack of it in the barn.'); AU.blip(); return; }
     if(!waterTake(1)) return noWater();
     preteAct('plant', 1.2, ()=>{
       if(!bagTake('seed',1)) return;
@@ -3975,7 +4228,7 @@ function usePaddy(pd){
       for(let k=0;k<18;k++) part({k:'water',x:pd.x+rnd(-26,26),y:groundY(pd.x)-14,vx:rnd(-10,10),vy:rnd(10,40),life:.6});
       toast(L('flooded and sown'),'#8fc4e8');
       if(!GS.seen.paddy){ GS.seen.paddy=true;
-        khwanSay('Rice is slow and it wants the water kept up. Everything here waits on the rice.',8); }
+        guideSay('Rice is slow and it wants the water kept up. Everything here waits on the rice.',8); }
       posopCheck();
       saveGame();
     });
@@ -4018,7 +4271,7 @@ function treePrompt(tr){
   return tr.fruit>0? 'pick the fruit' : 'nothing ripe yet';
 }
 function useTree(tr){
-  if(!tr.crop || tr.grow<1 || tr.fruit<=0){ khwanSay(L(treePrompt(tr))); AU.blip(); return; }
+  if(!tr.crop || tr.grow<1 || tr.fruit<=0){ guideSay(L(treePrompt(tr))); AU.blip(); return; }
   P.face = tr.x < P.x ? -1 : 1;
   preteAct('pick', 1.1, ()=>{
     const n=tr.fruit; tr.fruit=0; tr.pop=1;
@@ -4533,7 +4786,7 @@ const farmActive = ()=> FARM.rented || FARM.rice;
 /* ---------- water you carry ---------- */
 const waterCap = ()=> has('can') ? 5 : 2;
 function waterFill(){
-  if(GS.water >= waterCap()){ khwanSay('You are carrying all you can.'); AU.blip(); return; }
+  if(GS.water >= waterCap()){ guideSay('You are carrying all you can.'); AU.blip(); return; }
   P.face = JAR_X < P.x ? -1 : 1;
   preteAct('water', 1.0, ()=>{
     GS.water = waterCap();
@@ -4541,7 +4794,7 @@ function waterFill(){
     for(let k=0;k<16;k++) part({k:'water',x:JAR_X+rnd(-5,5),y:groundY(JAR_X)-20,vx:rnd(-10,10),vy:rnd(14,44),life:.5});
     toast(L('water')+' '+GS.water+'/'+waterCap(),'#8fc4e8');
     if(!GS.seen.filled){ GS.seen.filled=true;
-      khwanSay('The jar is never empty — it is the walk that costs you. A proper can would hold more.',8); }
+      guideSay('The jar is never empty — it is the walk that costs you. A proper can would hold more.',8); }
     posopCheck(); saveGame();
   });
 }
@@ -4550,7 +4803,7 @@ function waterTake(n){
   GS.water -= n; return true;
 }
 function noWater(){
-  khwanSay('No water left. The โอ่ง is the big jar by the house.');
+  guideSay('No water left. The โอ่ง is the big jar by the house.');
   AU.blip();
 }
 
@@ -4561,7 +4814,7 @@ function barnPrompt(){
   return (GS.bag.seed||0) > 0 ? 'the seed sack is full enough' : 'take seed from the barn';
 }
 function useBarn(){
-  if((GS.bag.seed||0) > 0){ khwanSay('You have seed. Put it in the ground.'); AU.blip(); return; }
+  if((GS.bag.seed||0) > 0){ guideSay('You have seed. Put it in the ground.'); AU.blip(); return; }
   P.face = BARN_X < P.x ? -1 : 1;
   preteAct('pick', 0.9, ()=>{
     bagAdd('seed', has('sickle')?3:2, true);
@@ -4569,7 +4822,7 @@ function useBarn(){
     pPop(BARN_X, groundY(BARN_X)-22, '#c9a86a');
     toast('+'+(has('sickle')?3:2)+' '+L('a handful of seed'),'#c9a86a');
     if(!GS.seen.barn){ GS.seen.barn=true;
-      khwanSay('Whatever you cut, some of it goes back in the sack. That is how a field keeps itself.',8); }
+      guideSay('Whatever you cut, some of it goes back in the sack. That is how a field keeps itself.',8); }
     posopCheck(); saveGame();
   });
 }
@@ -4583,7 +4836,7 @@ const HOUSE_STAGES = [
 const houseStage = ()=> Math.max(0, Math.min(3, Math.round(FARM.house)));
 function buildHouse(){
   const st = houseStage();
-  if(st >= 3){ khwanSay('The house is finished. It is a better house than the one you had.'); return; }
+  if(st >= 3){ guideSay('The house is finished. It is a better house than the one you had.'); return; }
   const s = HOUSE_STAGES[st];
   if(!bagHas('wood', s.wood)){ toast(L('you need')+' '+s.wood+' '+L('planks'),'#a8392c'); AU.blip(); return; }
   if((GS.baht|0) < s.cost) return tooPoor(s.cost);
@@ -4671,7 +4924,7 @@ function talkPosop(){
          {w:'Mae Posop',t:'I am Mae Posop. Rice is mine. This paddy has stood empty two years and it has been an insult.'},
          {w:'Mae Posop',t:'You cannot eat. Good. Then you will not be tempted to keep any of it.'},
          {w:'Mae Posop',t:'Work my field and I will teach you the whole of it. Seed, water, mud, waiting, and thanks.'},
-         {w:'Khwan',    t:'Say yes. You have nothing else in the world and she is offering you a season.'}],
+         {w:'',          t:'You have nothing else in the world, and she is offering you a season of work in it.'}],
       ()=>{ addMerit(3); toast(L('+3 merit')+' · '+L('the rice mother'), PAL.goldL);
             vignette('metPosop');
             posopSay(riceStep().say, 9); });
@@ -4693,8 +4946,14 @@ function talkPosop(){
 function stepPosop(dt){
   POSOP.anim += dt;
   // while she is still teaching, she comes to meet you along the bund
+  /* She stops forty-two pixels short, on whichever side of you she is
+     already standing. The offset used to be worked out from her HOME side
+     rather than her current one, so when she had come round to your east she
+     walked straight past you and ended up fourteen pixels away — close
+     enough to take over the prompt you were standing on. */
+  const side = POSOP.x > P.x ? 1 : -1;
   const tx = (POSOP.met && !riceDone() && Math.abs(P.x-POSOP_X)<150)
-           ? clamp(P.x - 42*(P.x>POSOP_X?-1:1), POSOP_A, POSOP_B)
+           ? clamp(P.x + side*42, POSOP_A, POSOP_B)
            : POSOP_X;
   POSOP.x = lerp(POSOP.x, tx, 1-Math.pow(0.22,dt));
   POSOP.y = groundY(POSOP.x) - 10 + Math.sin(POSOP.anim*0.9)*2.2;
@@ -4704,7 +4963,7 @@ function stepPosop(dt){
   POSOP.face = P.x < POSOP.x ? -1 : 1;
   if(!POSOP.met && Math.abs(P.x-POSOP.x)<190 && !DLG && !VIG && GS.state==='play'){
     if(!GS.seen.posopSpotted){ GS.seen.posopSpotted=true;
-      khwanSay('There is somebody standing in the water. She has been there longer than the farm has.',8); }
+      guideSay('There is somebody standing in the water. She has been there longer than the farm has.',8); }
   }
   if(Math.random() < dt*2.2){
     part({k:'sp', x:POSOP.x+rnd(-16,16), y:POSOP.y+rnd(-18,10),
@@ -5136,7 +5395,7 @@ function bugPrompt(b){
 }
 function useBug(b){
   if(!has('net')){
-    khwanSay('Bare hands, on that? Ascend for a net. The TOOLS column, in your ledger.',8);
+    guideSay('Bare hands, on that? Ascend for a net. The TOOLS column, in your ledger.',8);
     AU.blip(); return;
   }
   startTask('bug', b.x, b);
@@ -5155,7 +5414,7 @@ function bugCaught(b){
   else if(BUG_IDS.every(k=>GS.seen['bug_'+k]) && !GS.seen.allBugs){
     GS.seen.allBugs=true; addMerit(6);
     toast(L('+6 merit')+' · '+L('every one of them'), PAL.goldL);
-    khwanSay('All six. You have been paying attention to a thing that does not pay you back. Good.',8);
+    guideSay('All six. You have been paying attention to a thing that does not pay you back. Good.',8);
   }
   saveGame();
 }
@@ -5279,7 +5538,7 @@ function taskNewSetup(t, x, arg){
 function stepTaskNew(t, dt, dx, dy, grip, speed){
   t.left -= dt;
   if(t.left<=0){
-    if(t.kind==='bug'){ bugEscaped(t.bug); khwanSay('Gone. They come back — they always come back.'); }
+    if(t.kind==='bug'){ bugEscaped(t.bug); guideSay('Gone. They come back — they always come back.'); }
     else if(t.planks>0){ chopDone(t); return; }
     else toast(L('you got nowhere'),'#a8927a');
     GS.state='play'; HT=null; return;
@@ -5340,7 +5599,7 @@ function chopDone(t){
   toast('+'+n+' '+L('planks'), '#cfa878');
   AU.fix();
   GS.state='play'; HT=null;
-  if(GS.q.chopped===1) khwanSay('Planks. The board at the gate will take those for the roof.',8);
+  if(GS.q.chopped===1) guideSay('Planks. The board at the gate will take those for the roof.',8);
   saveGame();
 }
 /* the net and the axe, drawn in the world, held by the big pale hand */
@@ -5397,14 +5656,14 @@ function drawTaskNew(g,t){
    Until the rice is in there is nothing east of the field for
    you, and a new player let loose on five thousand pixels of
    road learns nothing except that they are lost. So the mist off
-   the paddies does not lift, and Khwan says why.
+   the paddies does not lift, and the guide says why.
    ============================================================ */
 const eastLimit = ()=> riceDone()? WORLD_W-16 : MIST_X;
 function mistNudge(){
   if(riceDone()) return;
   if(GS.seen.mistT && GS.t - GS.seen.mistT < 7) return;
   GS.seen.mistT = GS.t;
-  khwanSay(pick([
+  guideSay(pick([
     'Not yet. The mist does not lift off a field that has nothing in it.',
     'The village is that way, and it will still be there. The field first.',
     'She is watching you think about leaving. Go and get the seed.']), 7);
@@ -5448,7 +5707,7 @@ function checkNewFixed(set, taken){
     set(LOG_X+22, groundY(LOG_X)-30,
         has('axe')? 'chop some planks' : 'you would need an axe',
         ()=>{ if(has('axe')) startTask('chop', LOG_X);
-              else { khwanSay('You could pull it apart with your hands and ruin it. Ascend for an axe instead.',8); AU.blip(); } });
+              else { guideSay('You could pull it apart with your hands and ruin it. Ascend for an axe instead.',8); AU.blip(); } });
   if(!taken() && farmActive() && near(POSOP.x,20))
     set(POSOP.x, POSOP.y-42, POSOP.met? L('talk to')+' '+L('Mae Posop') : 'speak to her', talkPosop, 'give');
 }
@@ -5506,7 +5765,7 @@ function riceBanner(g, y){
 }
 
 /* ---------- what she is saying ----------
-   Drawn in screen space beside Khwan's, so a whole sentence wraps instead of
+   Drawn in screen space, so a whole sentence wraps instead of
    running off both edges of a one-line bar the way a spirit's short aside does. */
 function drawPosopBubble(g){
   if(!POSOP.bub || GS.state!=='play' || DLG || PROMPT) return;
@@ -5516,7 +5775,7 @@ function drawPosopBubble(g){
   const w2=Math.max(...lines.map(l=>txtW(l,7)))+18;
   const bh=lines.length*10+12;
   const bx=clamp(x-w2/2, 6, W-w2-6);
-  // she keeps low, under the HUD and under Khwan, who has the upper band
+  // she keeps low, clear of the plaques and of the hint line above
   const by=clamp(y-34-bh, 118, H-70);
   cloudBubble(g,bx+w2/2,by,w2,bh,x-3,y-26,
               {seed:41,top:'#fff6dc',body:'#f2e6bc',under:'#dcc890',edge:'#7a6a3c'});
@@ -5723,7 +5982,7 @@ function openBoard(){
             hole.crop=k; hole.grow=0; hole.fruit=0; hole.pop=1;
             AU.ranat(560,0,0.05); toast(L('planted'),PAL.jadeL);
             if(!GS.seen.sapling){ GS.seen.sapling=true;
-              khwanSay('It will take a while to come up. Fruit trees are a promise, not a crop.',8); }
+              guideSay('It will take a while to come up. Fruit trees are a promise, not a crop.',8); }
             saveGame(); } });
       }
       for(const k in STOCK_COST){
@@ -5735,7 +5994,7 @@ function openBoard(){
             FARM.pen[k]++; FARM.pen.feed=Math.max(FARM.pen.feed,20);
             AU.ranat(760,0,0.05); toast(L('welcome to the pen'),PAL.jadeL);
             if(!GS.seen.stock){ GS.seen.stock=true;
-              khwanSay('Keep bran in the trough and they will leave you something every little while.',8); }
+              guideSay('Keep bran in the trough and they will leave you something every little while.',8); }
             saveGame(); } });
       }
       /* your hands are listed here too, so a ghost standing on a bed is never
@@ -5848,7 +6107,7 @@ function openOrderBoard(){
         const need = Object.keys(bk.need).map(k=>L(ITEMS[k].n)+' x'+bk.need[k]).join(', ');
         return { n:(n?L(n.name):'?')+' — '+o.n+' x '+L(bk.n), sub:need, icon:o.dish,
                  tag:o.pay+'฿ / '+o.merit+' '+L('merit'), ok:true,
-                 fn(){ khwanSay(know? L('You know that one. The kitchen is by the cart.')
+                 fn(){ guideSay(know? L('You know that one. The kitchen is by the cart.')
                                     : L('You have not cooked that yet. The kitchen lists it anyway.'), 7); } };
       });
     },
@@ -5874,7 +6133,7 @@ function handOf(sid){ return FARM.hands[sid]||null; }
 function handCount(){ return Object.keys(FARM.hands).length; }
 function jobTaken(j){ for(const k in FARM.hands) if(FARM.hands[k]===j) return k; return null; }
 function hireHand(s, job){
-  if(!FARM.rented){ khwanSay('You have nothing for them to work yet.'); return; }
+  if(!FARM.rented){ guideSay('You have nothing for them to work yet.'); return; }
   const other=jobTaken(job);
   if(other && other!==s.id) delete FARM.hands[other];
   FARM.hands[s.id]=job;
@@ -5882,7 +6141,7 @@ function hireHand(s, job){
   AU.metta(); pSpark(s.x,s.y-30,12,PAL.goldL);
   toast(L(s.name)+' '+L('comes to the farm'), PAL.jadeL);
   if(!GS.seen.hand){ GS.seen.hand=true;
-    khwanSay('Dead hands are still hands. They will keep at it whether you are watching or not.',8); }
+    guideSay('Dead hands are still hands. They will keep at it whether you are watching or not.',8); }
   saveGame();
 }
 function dismissHand(s){
@@ -6447,7 +6706,7 @@ function finishActivity(){
   const q=A.quality;
   const word = q>0.85? 'perfect' : q>0.55? 'good' : 'edible';
   toast((A.first?'+3 merit · learned ':'made ')+r.n+' — '+word, q>0.85?PAL.goldL:PAL.gold);
-  if(A.first) khwanSay('You made something. Somebody is going to be very glad about that.');
+  if(A.first) guideSay('You made something. Somebody is going to be very glad about that.');
 }
 
 /* ============================================================
@@ -6461,12 +6720,12 @@ function gather(nd){
   for(let i=0;i<n;i++) part({k:'pop',x:nd.x,y:nd.y-16,vx:rnd(-24,24),vy:rnd(-50,-20),life:.7,c:ITEMS[nd.item].c});
   toast('+'+n+' '+ITEMS[nd.item].n, PAL.jadeL);
   if(!GS.seen.firstPick){ GS.seen.firstPick=true;
-    khwanSay('Good. Things regrow here — take what you need and come back later.'); }
+    guideSay('Good. Things regrow here — take what you need and come back later.'); }
 }
 let GIVE=null;
 function openGive(target){
   const list=Object.keys(GS.bag).filter(id=>ITEMS[id] && (ITEMS[id].k==='dish'||ITEMS[id].k==='craft') && GS.bag[id]>0);
-  if(!list.length){ khwanSay('Your basket has nothing made in it yet. Cook something, or weave something.'); return; }
+  if(!list.length){ guideSay('Your basket has nothing made in it yet. Cook something, or weave something.'); return; }
   GIVE={target, list, i:0};
   GS.state='give'; AU.sel();
 }
@@ -6510,7 +6769,7 @@ function doGive(t,id){
       toast('+'+merit+' '+L('merit'), PAL.goldL);
       if(!already && isSpirit && t.gift) bagAdd(t.gift,3,true);
       if(!already && isSpirit && !vignette('firstFriend'))
-        khwanSay('Look at that. A friend. Worth more than the merit, whatever the ledger says.');
+        guideSay('Look at that. A friend. Worth more than the merit, whatever the ledger says.');
       for(let i=0;i<6;i++) pOrb(t.x+rnd(-8,8), t.y-30+rnd(-6,6), i*0.15);
       saveGame();
     });
@@ -6619,7 +6878,6 @@ function drawLighting(g,cx,cy){
   const broken=LIGHTS.find(l=>l.broken);
   if(broken && !broken.on && Math.random()<0.05) punch(broken.x,broken.y,26,0.35);
   punch(P.x,P.y-42, GS.cos.halo?58:44, 0.42);
-  punch(KHWAN.x,KHWAN.y,26,0.5);
   for(const p of PT) if(p.k==='orb'&&p.t>=0) punch(p.x,p.y,10,0.55);
   for(const s of SPIRITS) punch(s.x, s.y-24, s.id==='krasue'?34:26, 0.34);
   punch(TANI.x,TANI.y-18,34,0.4);
@@ -6756,7 +7014,6 @@ function render(){
   drawPrete(ctx,P,{dt:1/60, wind:GS.wind, mouth:P.state==='wail'?1:0,
     armTarget: HT? {x:HT.hx,y:HT.hy} : null, gold: GS.cos.halo?1:0, rise:P.rise||0});
   if(HT) drawTaskWorld(ctx);
-  drawKhwan(ctx);
   drawNewFore(ctx);    // things in the air, and the mist over the road east
   drawParts(ctx);
   ctx.restore();
@@ -6778,7 +7035,7 @@ function render(){
   vg.addColorStop(0,'rgba(8,6,20,0)'); vg.addColorStop(1,'rgba(8,6,20,0.4)');
   ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
-  if(GS.state==='play' && !VIG){ drawPosopBubble(ctx); drawKhwanBubble(ctx); drawHUD(); }
+  if(GS.state==='play' && !VIG){ drawPosopBubble(ctx); drawHintLine(ctx); drawHUD(); }
   else if(GS.state==='task') drawTaskHUD(ctx);
   drawVig(ctx);
   drawDialog(ctx);
@@ -6846,39 +7103,6 @@ function drawNode(g,nd){
   pR(g,x-10,y-16-bl,1,1,rgba(PAL.goldL,0.3+0.3*bl));
 }
 /* the guide */
-function drawKhwan(g){
-  const k=KHWAN, x=k.x, y=k.y;
-  const gl=g.createRadialGradient(x,y,1,x,y,20);
-  gl.addColorStop(0,'rgba(150,220,255,0.26)'); gl.addColorStop(1,'rgba(150,220,255,0)');
-  g.fillStyle=gl; g.fillRect(x-20,y-20,40,40);
-  // trailing wisp
-  for(let i=0;i<5;i++){ g.globalAlpha=0.3-i*0.05;
-    pEll(g,x-Math.sin(k.anim*2+i*0.6)*2, y+5+i*2.4, 3.4-i*0.5, 2-i*0.25, '#8fd8f0'); }
-  g.globalAlpha=1;
-  oEll(g,x,y,6.4,6,'#dff4ff','#5a86a8');
-  pEll(g,x-2,y-2,2.6,2,'#ffffff');
-  // little topknot — a child spirit
-  pTaper(g,x,y-6,x+Math.sin(k.anim*2)*1.5,y-11,3,1.4,'#3a3350');
-  pEll(g,x+Math.sin(k.anim*2)*1.5,y-11,2,2,'#3a3350');
-  const blink=k.blink<0;
-  if(blink){ pR(g,x-3,y,3,1,'#3a4c60'); pR(g,x+1,y,3,1,'#3a4c60'); }
-  else { pEll(g,x-2,y,1.5,1.8,'#2a3648'); pEll(g,x+2.4,y,1.5,1.8,'#2a3648');
-    pR(g,x-2.4,y-0.8,1,1,'#fff'); pR(g,x+2,y-0.8,1,1,'#fff'); }
-  pEll(g,x,y+3,1.6,1,'#e08a9a');
-  pEll(g,x-4.6,y+1.6,1.4,1,'#ffb0be'); pEll(g,x+4.6,y+1.6,1.4,1,'#ffb0be');
-  // tiny arms
-  pTaper(g,x-5,y+1,x-8+Math.sin(k.anim*3)*1.4,y+3,2,1,'#dff4ff');
-  pTaper(g,x+5,y+1,x+8-Math.sin(k.anim*3)*1.4,y+3,2,1,'#dff4ff');
-  if(k.bub && GS.state==='play'){
-    const lines=wrap(g,k.bub,150,6).slice(0,3);
-    const w2=Math.max(...lines.map(l=>txtW(l,6)))+12;
-    const bh=lines.length*8+8;
-    const bx=x-w2/2, by=y-16-bh;
-    panel(g,bx,by,w2,bh,'#8fd8f0');
-    lines.forEach((l,i)=>pTxt(g,l,x,by+11+i*8,'#dff4ff',6,'center'));
-    pR(g,x-1,by+bh,3,3,'rgba(18,13,30,0.93)');
-  }
-}
 function padIcon(g,ic,x,y,c){
   if(ic==='heart') icoHeart(g,x,y-2,2.2,c);
   else if(ic==='call') icoCall(g,x+2,y,1.7,c);
@@ -7363,7 +7587,7 @@ function checkInteract(){
     set(FARM_GATE, groundY(FARM_GATE)-56, FARM.rented? 'read the farm board' : 'read the notice', openBoard);
   if(!PROMPT && FARM.rented && near(PEN_X,30)){
     const p=FARM.pen;
-    if(!penHas()) set(PEN_X, groundY(PEN_X)-38, 'the pen is empty', ()=>khwanSay('The board at the gate sells chickens, ducks, and one very large buffalo.'));
+    if(!penHas()) set(PEN_X, groundY(PEN_X)-38, 'the pen is empty', ()=>guideSay('The board at the gate sells chickens, ducks, and one very large buffalo.'));
     else if(penFull()) set(PEN_X, groundY(PEN_X)-40, 'take what they left you', penCollect, 'feed');
     else set(PEN_X, groundY(PEN_X)-38, p.feed>0? 'the animals are settled' : 'the animals want feeding', penFeed);
   }
@@ -7372,14 +7596,14 @@ function checkInteract(){
     if(pl && near(pl.x,15)){
       const t=plotPrompt(pl);
       if(t==='the bed is empty')
-        set(pl.x, groundY(pl.x)-30, t, ()=>khwanSay('The seed sack is in the barn, or three for nine baht at the stall.'));
+        set(pl.x, groundY(pl.x)-30, t, ()=>guideSay('The seed sack is in the barn, or three for nine baht at the stall.'));
       else set(pl.x, groundY(pl.x)-30, t, ()=>usePlot(pl));
     }
   }
   if(!PROMPT){
     const pd=paddyAt(P.x);
     if(pd) set(pd.x, groundY(pd.x)-28, paddyPrompt(pd), ()=>{
-      if(pd.stage===0 && !bagHas('seed')) khwanSay('Rice starts as seed too. The sack is in the barn.');
+      if(pd.stage===0 && !bagHas('seed')) guideSay('Rice starts as seed too. The sack is in the barn.');
       else usePaddy(pd);
     });
   }
@@ -7449,7 +7673,7 @@ function checkInteract(){
     let best=null,bd=44;
     for(const t of GIFTEES()){ const d=Math.abs(t.x-P.x); if(d<bd){ bd=d; best=t; } }
     if(best) openGive(best);
-    else khwanSay('Stand next to somebody first. Handing things to nobody is how rumours start.');
+    else guideSay('Stand next to somebody first. Handing things to nobody is how rumours start.');
   }
 }
 /* ---------- conversations ---------- */
@@ -7458,7 +7682,7 @@ function talkSpirit(s){
     s.met=true; saveGame();
     const lines=s.hi.map(t=>({w:s.name,t}));
     lines.push({w:'',t:s.about});
-    lines.push({w:'Khwan',t:'Nobody here will hurt you. Ask what they need, then give it.'});
+    lines.push({w:'',t:'It wants one thing, and it has wanted it a long time. Ask, and then go and get it.'});
     say(lines, ()=>{ addMerit(3); toast('+3 merit · a new neighbour'); });
     return;
   }
@@ -7576,7 +7800,7 @@ function talkUncle(){
          {w:'Lung Somchai',t:'Grandmother always said: feed the spirits you cannot see. Extra bowl is on the end, friend. Mind the chili.'},
          {w:'Lung Somchai',t:'Use my stove whenever you like. It is lit all night anyway and I am too old to be precious about it.'}],
       ()=>{ if(!offering) offering={x:CART_X+40,y:groundY(CART_X+40),t:0};
-        khwanSay('That is his stove, just there. Tap it.'); });
+        guideSay('That is his stove, just there. Tap it.'); });
   } else talkVillager(UNCLE);
 }
 
@@ -7590,7 +7814,7 @@ const CER_LINES=[
   {w:'Phra Phum',t:'The ledger is read, and it is level. Earned by a prete who could simply have eaten.'},
   {w:'Luang Pi',t:'May this merit reach you. May hunger loosen its hands. May the road home be short, and lit the whole way.'},
   {w:'Tani',t:'See you around, tall one. …Somewhere better, I mean.'},
-  {w:'Khwan',t:'I was your Khwan. I only had to shout louder for you. Go on. I will find you again.'},
+  {w:'Mae Posop',t:'You grew a thing you could not eat, and gave it to people who could, every season. I will keep the field. Go on.'},
   {w:'Luang Pi',t:'Go gently. Go home.'},
 ];
 function startCeremony(){
@@ -7625,7 +7849,7 @@ function stepCeremony(dt){
   for(const n of NPCS){ n.anim+=dt; n.y=groundY(n.x); }
   for(const s of SPIRITS) s.anim+=dt;
   TANI.anim+=dt; PHRA.anim+=dt; CAT.anim+=dt;
-  stepPrete(P,dt); stepKhwan(dt);
+  stepPrete(P,dt); stepHint(dt);
   if(c.i>=CER_LINES.length){
     c.rise+=dt; P.rise=Math.min(60,c.rise*10);
     if(c.rise>6.5){ c.flash+=dt;
@@ -7641,7 +7865,7 @@ function drawCeremonyUI(g){
     const L=CER_LINES[c.i];
     const bx=16,bw=W-32,bh=46,by=H-bh-10;
     panel(g,bx,by,bw,bh,PAL.gold);
-    pTxt(g,L.w,bx+10,by+15, L.w==='Tani'?PAL.jadeL:L.w==='Mali'?'#ffb0a0':L.w==='Khwan'?'#8fd8f0':PAL.goldL,8);
+    pTxt(g,L.w,bx+10,by+15, L.w==='Tani'?PAL.jadeL:L.w==='Mali'?'#ffb0a0':L.w==='Mae Posop'?'#e8cf62':PAL.goldL,8);
     let ty=by+26;
     for(const l of wrap(g,L.t.slice(0,c.ch|0),bw-22,7).slice(0,2)){ pTxt(g,l,bx+10,ty,'#efe6d8',7); ty+=10; }
   }
@@ -7715,10 +7939,6 @@ function drawTitle(){
   TP.anim+=1/60; TP.blink-=1/60; if(TP.blink<-0.12) TP.blink=rnd(2,6);
   TP.x=W*0.30+Math.sin(GS.t*0.6)*3;
   drawPrete(g,TP,{dt:1/60,wind:Math.sin(GS.t*0.4)*0.25,cos:{skirt:'ash'}});
-  // the guide hovers beside him on the title too
-  drawKhwan.call(null,g);
-  KHWAN.x=lerp(KHWAN.x, TP.x-26,0.04); KHWAN.y=lerp(KHWAN.y,168+Math.sin(GS.t*1.5)*3,0.04); KHWAN.anim+=1/60;
-  KHWAN.blink-=1/60; if(KHWAN.blink<-0.14) KHWAN.blink=rnd(2.5,6);
   for(let i=0;i<16;i++){
     const fx=W/2+Math.sin(GS.t*0.4+i*2.1)*150+Math.sin(GS.t*0.2+i)*40;
     const fy=110+Math.cos(GS.t*0.33+i*1.7)*44;
@@ -7785,9 +8005,9 @@ function startMem(i){
   AU.wail && AU.wail();
 }
 function memReady(){
-  // do not cut Khwan off mid-sentence, but do not wait out the whole line either
+  // do not cut the guide off mid-sentence, but do not wait out the whole line
   if(GS.state!=='play' || DLG) return -1;
-  if(KHWAN.bub && KHWAN.bubT > (KHWAN.bubMax||6)-1.8) return -1;
+  if(guideTalking()) return -1;
   for(let i=0;i<MEMS.length;i++){
     if(GS.mem[MEMS[i].id]) continue;
     if(MEMS[i].when && MEMS[i].when()) return i;
@@ -7802,7 +8022,7 @@ function finishMem(){
   MEMFADE=1;
   GS.seen.newmem=true;
   toast('a page came back — it is in your ledger','#b9a8d8');
-  khwanSay(m.k||'', 7);
+  guideSay(m.k||'', 7);
 }
 function stepMem(dt){
   if(!IN) IN=memScene(memI);
@@ -8312,18 +8532,17 @@ function drawVignette(g,amt){
   g.globalAlpha=amt; g.drawImage(_VIG,0,0); g.globalAlpha=1;
 }
 
-/* You used to wake in the graveyard with a village to work out. You wake
-   in a paddy now, with one field, and somebody standing in it. */
+/* The opening used to be a conversation with a life-spirit who then followed
+   you about explaining things. She is gone, and nobody replaces her here:
+   the game opens on nobody talking. Second person, no portrait, five lines,
+   and then you are standing in the mud on your own — which leaves the walk
+   out to Mae Posop as the first thing you actually do. */
 const WAKE=[
-  {w:'???',  t:'Easy. Stay down a moment. You have been under a long time.'},
-  {w:'You',  t:'(You try to ask where you are. It comes out as a thin whistle.)'},
-  {w:'Khwan',t:'Standing water and mud to the ankle. A rice field, west of the village.'},
-  {w:'You',  t:'(You reach for your name. There is nothing where it should be.)'},
-  {w:'Khwan',t:'I am your Khwan. Your life-spirit. I was there for all of it.'},
-  {w:'Khwan',t:'And no — do not ask me. A ledger is read by whoever wrote it.'},
-  {w:'Khwan',t:'You came back a prete. Hungry for ever, and unable to eat a thing.'},
-  {w:'Khwan',t:'Which leaves growing it for other people. Tap the ground to walk.'},
-  {w:'Khwan',t:'And there is somebody out in the water who has been waiting two years for you.'},
+  {w:'', t:'Water, warm as blood, up to the ankle. Mud under the nails of a hand you do not recognise.'},
+  {w:'You', t:'(You try to say something. It comes out as a thin whistle, from a mouth the size of a needle\'s eye.)'},
+  {w:'', t:'You are nine feet tall. Your ribs are on the outside. There is a word for this and it is prete — a hungry ghost.'},
+  {w:'', t:'You reach for your name, the way you would reach for a coin in a pocket. There is nothing where it should be.'},
+  {w:'', t:'A rice field, then. Long abandoned, and standing in water, and somebody is out in the middle of it, waiting.'},
 ];
 /* ============================================================
    PORTRAITS — pre-rendered once, so dialogue has a face
@@ -8341,8 +8560,6 @@ function buildPortrait(key){
     const q=makePrete(); q.x=0; q.y=0; q.face=1; q.blink=3;
     for(let k=0;k<30;k++){ stepPrete(q,1/60); stepCloth(q.cloth,0,-44,12,1/60,0,0); }
     place(()=>drawPrete(g,q,{dt:1/60,cos:GS.cos||{skirt:"ash"}}), 2.0, 0, -84);
-  } else if(key==='khwan'){
-    place(()=>drawKhwan(g,{x:0,y:0,anim:1.2,blink:3,bub:null}), 3.2, 0, -1);
   } else if(key==='phra'){
     place(()=>drawPhraPhum(g,0,0,1.2), 2.1, 0, -19);
   } else if(key==='tani'){
@@ -8374,7 +8591,7 @@ function portrait(key){
   return PORTRAIT_CACHE[key];
 }
 const SPEAKER_KEY = {
-  'You':'you', 'Khwan':'khwan', '???':'khwan', 'Phra Phum':'phra', 'Tani':'tani',
+  'You':'you', 'Phra Phum':'phra', 'Tani':'tani',
   'Luang Pi':'monk', 'Mali':'mali', 'Lung Somchai':'uncle', 'Yai Pen':'yai',
   "P'Nok":'nok', 'Loong Dam':'dam',
   'Mae Posop':'posop',
@@ -8713,39 +8930,24 @@ function wishBubble(g,t,y){
   cloudBubble(g,t.x,by,26,20,t.x-3,by+27,{seed:9});
   drawIcon(g,t.wants,t.x,by+10,0.72);
 }
-function drawKhwan(g,ent){
-  const k=ent||KHWAN, x=k.x, y=k.y;
-  drawGlow(g,x,y,20,'#96dcff',0.26);
-  for(let i=0;i<5;i++){ g.globalAlpha=0.3-i*0.05;
-    pEll(g,x-Math.sin(k.anim*2+i*0.6)*2, y+5+i*2.4, 3.4-i*0.5, 2-i*0.25, '#8fd8f0'); }
-  g.globalAlpha=1;
-  oEll(g,x,y,6.4,6,'#dff4ff','#5a86a8');
-  pEll(g,x-2,y-2,2.6,2,'#ffffff');
-  pTaper(g,x,y-6,x+Math.sin(k.anim*2)*1.5,y-11,3,1.4,'#3a3350');
-  pEll(g,x+Math.sin(k.anim*2)*1.5,y-11,2,2,'#3a3350');
-  const blink=k.blink<0;
-  if(blink){ pR(g,x-3,y,3,1,'#3a4c60'); pR(g,x+1,y,3,1,'#3a4c60'); }
-  else { pEll(g,x-2,y,1.5,1.8,'#2a3648'); pEll(g,x+2.4,y,1.5,1.8,'#2a3648');
-    pR(g,x-2.4,y-0.8,1,1,'#fff'); pR(g,x+2,y-0.8,1,1,'#fff'); }
-  pEll(g,x,y+3,1.6,1,'#e08a9a');
-  pEll(g,x-4.6,y+1.6,1.4,1,'#ffb0be'); pEll(g,x+4.6,y+1.6,1.4,1,'#ffb0be');
-  pTaper(g,x-5,y+1,x-8+Math.sin(k.anim*3)*1.4,y+3,2,1,'#dff4ff');
-  pTaper(g,x+5,y+1,x+8-Math.sin(k.anim*3)*1.4,y+3,2,1,'#dff4ff');
-}
-function drawKhwanBubble(g){
-  const k=KHWAN;
-  // one voice at a time: the guide waits her turn while somebody else is talking
-  if(!k.bub || GS.state!=='play' || DLG || PROMPT) return;
-  const x=k.x-GS.camX, y=k.y-GS.camY;
-  const lines=wrap(g,k.bub,190,7).slice(0,3);
-  const w2=Math.max(...lines.map(l=>txtW(l,7)))+18;
+/* ---------- the hint line ----------
+   Where her speech bubble used to hang. A guide who is standing in a paddy
+   two zones west cannot tell you anything, so whatever she would have said
+   comes up here instead: one cloud under the plaques, and it fades. */
+function drawHintLine(g){
+  if(!HINT || GS.state!=='play' || DLG || PROMPT) return;
+  const lines=wrap(g,HINT.txt,W-56,7).slice(0,3);
+  const w2=Math.max(...lines.map(l=>txtW(l,7)))+22;
   const bh=lines.length*10+12;
-  const bx=clamp(x-w2/2, 6, W-w2-6);
-  // she keeps to the upper band, clear of the HUD above — and clear of the top of
-  // his head, which is a hundred pixels off the ground and gets in the way
-  const by=clamp(Math.min(y-26-bh, P.y-GS.camY-114-bh), 58, 110);
-  cloudBubble(g,bx+w2/2,by,w2,bh,x-4,y-9,{seed:5});
-  lines.forEach((l,i)=>pTxt(g,l,bx+w2/2,by+14+i*10,CL.ink,7,'center'));
+  /* under whatever the HUD already put in that band — the rice lesson and
+     the village's orders both live up there, and the hint used to draw
+     straight through them */
+  const y = (GS._hudRow || 30) + 2;
+  const a=clamp(HINT.t/0.6,0,1);           // it goes quietly
+  g.globalAlpha=a;
+  cloud(g,W/2-w2/2,y,w2,bh,{seed:53,body:'#f0e6c8'});
+  lines.forEach((l,i)=>pTxt(g,l,W/2,y+14+i*10,CL.ink,7,'center'));
+  g.globalAlpha=1;
 }
 
 /* ---------------- HUD ---------------- */
@@ -8799,7 +9001,9 @@ function drawHUD(){
     cloud(g,6,row,tw,16,{seed:3,body:'#f0e2b4'});
     icoStar(g,15,row+8,0.8,'#c9992f');
     pTxt(g,task,23,row+11,CL.ink,7);
+    row += 18;
   }
+  GS._hudRow = row;        // where the hint line may start
 
   const z=zoneAt(P.x);
   if(GS._zone!==z.id){ GS._zone=z.id; GS.zoneName=3.2; GS._zoneZ=z; }
@@ -9137,8 +9341,8 @@ function drawLedger(g){
   pTxt(g,'THE LEDGER',16,22,'#8f6a1e',13);
   /* right-aligned clear of the language key at W-84, which it used to run
      straight underneath */
-  pTxt(g,avail()+' merit to spend',W-90,17,'#8f6a1e',8,'right');
-  pTxt(g,GS.merit+' earned · '+GS.spent+' spent',W-90,25,CL.ink3,6,'right');
+  pTxt(g,avail()+' '+L('merit to spend'),W-90,17,'#8f6a1e',8,'right');
+  pTxt(g,GS.merit+' '+L('earned')+' · '+GS.spent+' '+L('spent'),W-90,25,CL.ink3,6,'right');
   /* a close chevron in the corner of the header */
   icoDown(g,W-26,17,1.5,CL.ink2);
   hitAdd(W-42,4,38,26,()=>{ GS.state='play'; AU.sel(); });
@@ -9192,7 +9396,9 @@ function drawLedger(g){
       cloud(g,12,H-50,W-24,42,{seed:130});
       pTxt(g,s.n,22,H-34,BRANCHES[s.br].c,9);
       const owned=GS.skills[selId];
-      pTxt(g, owned?'learned':(s.need&&!GS.skills[s.need])?('needs '+SKILLS[s.need].n):(s.cost+' merit · E to ascend'),
+      pTxt(g, owned? L('learned')
+                   : (s.need&&!GS.skills[s.need])? L('requires')+' '+L(SKILLS[s.need].n)
+                   : s.cost+' '+L('merit')+' · '+L('E to ascend'),
         W-22,H-34,owned?'#4a7a2c':'#8f6a1e',7,'right');
       let y=H-22;
       for(const l of wrap(g,s.d,W-46,7).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,7); y+=10; }
@@ -9322,7 +9528,7 @@ function update(dt){
       stepNew(dt);
       stepOrders(dt);
       stepHands(dt);
-      stepKhwan(dt);
+      stepHint(dt);
       /* the past does not wait to be asked */
       { const mi=memReady(); if(mi>=0){ startMem(mi); break; } }
       if(!DLG && !VIG){
@@ -9338,7 +9544,7 @@ function update(dt){
       GS.camY = lerp(GS.camY, ty, 1-Math.pow(0.004,dt));
       break; }
     case 'task':     PROMPT=null; stepTask(dt); break;
-    case 'act':      PROMPT=null; stepKhwan(dt); stepAct(dt); break;
+    case 'act':      PROMPT=null; stepHint(dt); stepAct(dt); break;
     case 'give':     PROMPT=null; stepGive(dt); break;
     case 'shop':     PROMPT=null; stepShop(dt); break;
     case 'tree':     PROMPT=null; stepTree(dt); break;
@@ -9417,7 +9623,7 @@ function newGame(){
   GS.merit=0; GS.spent=0; GS.skills={}; GS.cos={skirt:'ash'};
   GS.q={prayers:0,offerings:0,pets:0,gifts:0}; GS.seen={}; GS.bag={}; GS.friends={};
   GS.learned={}; GS.tut=0; GS.dawn=0; GS.ready=false; GS.mem={};
-  GS.baht=0; GS.water=0; GS.rice0=0; GS.chops=0;
+  GS.baht=0; GS.water=0; GS.rice0=0; GS.chops=0; HINT=null;
   resetFarm();
   /* Mae Posop lends you the first paddy before any landlord is involved, so
      the game has something to do in it from the first second. The rest of the
@@ -9428,12 +9634,10 @@ function newGame(){
   ORDERS.length=0; orderCool=14;
   const start = PADDY_XS[0] + 46;
   P.x=start; P.y=groundY(start); P.vx=0; P.vy=0; P.rise=0; P.act=null; VIG=null;
-  KHWAN.x=start; KHWAN.y=groundY(start)-50;
   resetWorld();
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
   GS.t=0; GS.state='play'; IN=null; MEMFADE=1;
-  KHWAN.x=P.x+26; KHWAN.y=P.y-60;
-  say(WAKE, ()=>{ khwanSay('West, along the bund. I will be right behind your shoulder.',7); });
+  say(WAKE, ()=>{ guideSay('West along the bund, then. Whoever it is has not moved.',7); });
   saveGame();
 }
 function continueGame(sv){
@@ -9485,7 +9689,6 @@ function continueGame(sv){
   if(GS.q.done){ GS.dawn=1; GS.cos.halo=1; }
   if(GS.merit>=GOAL && GS.q.metPhra && GS.mem.bowl && !GS.q.done) GS.ready=true;
   P.x=clamp(sv.x||300,20,WORLD_W-20); P.y=groundY(P.x); P.vx=0; P.vy=0; P.rise=0; P.act=null; VIG=null;
-  KHWAN.x=P.x+26; KHWAN.y=P.y-60;
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
   GS.state='play';
 }
