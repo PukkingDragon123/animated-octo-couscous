@@ -1,35 +1,42 @@
 # Prete Simulator
 
-A quiet side-scrolling game about waking up in a flooded rice field with no
-memory at all, being handed one season's work by the goddess who owns the
-field, and having to earn the story of your own life back.
+A quiet side-scrolling game about climbing out of the ground with no memory at
+all, being fed by an old man who is not afraid of you, and paying him back with
+one morning's work in a field.
 
 > karma is a ledger, and you are not allowed to read your own.
 
-You come to face down in standing water, in an abandoned paddy west of the
-village, with a small glowing thing already mid-sentence at your shoulder. You
-do not know your name. You do not know what you did. You are a **prete** — a hungry ghost, tall as the palm trees and thin as
-a pole, ash-grey, with hands like palm leaves, a pot belly under a visible ribcage, a mouth the size of a needle's eye, one small orange
-nose, six hairs left, and two enormous ringed eyes that have not closed properly
-since. You cannot eat anything you cook. You're going to cook a great deal
-anyway.
+You come up out of a burial field at three in the morning, one handful of
+somebody else's earth at a time. You do not know your name. You do not know
+what you did. You are a **prete** — a hungry ghost, tall as the palm trees and
+thin as a pole, ash-grey, with hands like palm leaves, a pot belly under a
+visible ribcage, a mouth the size of a needle's eye, one small orange nose, six
+hairs left, and two enormous ringed eyes that have not closed properly since.
+You cannot eat anything you cook. You're going to cook a great deal anyway.
 
-Nobody will tell you what you did. Not Mae Posop, who has watched the field
-since before you were buried in sight of it. Not Phra Phum, who keeps the
-ledger in his hands. **It comes back on its own, one
-page at a time, as you earn the right to it** — and by the last page you will
-wish it hadn't.
+Far down the road there is one light on: a noodle cart with an old man behind
+it, open since four in the afternoon, selling to nobody. **He looks you up, and
+up, and up, and puts down the ladle, and tells you to sit before you frighten
+the moths.** Then he walks you home past the sleeping houses and the dogs, puts
+rice out on the step, and tells you to come back at first light because there
+is a field to turn and he is seventy-one.
+
+Nobody will tell you what you did. Not Lung Somchai. Not Mae Posop, who has
+watched the paddies since before you were buried in sight of them. Not Phra
+Phum, who keeps the ledger in his hands. **It comes back on its own, one page
+at a time, as you earn the right to it** — and by the last page you will wish
+it hadn't.
 
 **Nothing in this game fights.** There are no enemies, no health bar and no way
-to lose. There is one rice field, a village further up the road, a derelict farm
-nobody has worked in years, a stove, a weaving mat, and eleven people — five of
-them dead — who each quietly want one small thing.
+to lose. There is a burial field, a road, a village, a derelict farm nobody has
+worked in years, a stove, a weaving mat, seven miles of country, and eleven
+people — five of them dead — who each quietly want one small thing.
 
-**It starts with one field and nothing else.** The village is east and the mist
-does not lift off that road until the rice is in, so the first ten minutes are a
-barn, a water jar, a paddy, and a rice goddess standing in the mud telling you
-what to do with them, in order. Seed. Water. Mud. Waiting. Thanks. Nothing else
-in the game is explained until you need it.
+**It starts with one night and one old man.** The first twenty minutes are a
+walk home in the dark, a meal you cannot eat, a few hours under somebody's
+floorboards, and then a plough put into your hands at sunrise. Break the
+ground, carry the water, put the seed in. Nothing else in the game is explained
+until you need it.
 
 **Then it is a livelihood.** Forage, cook, sell it at the stall for baht; rent
 the rest of that farm off the notice on the gate; turn beds, flood the second
@@ -43,7 +50,7 @@ hungry ghost once and it will come and water your beds while you are away.
 
 ![the title screen](screenshots/title.png)
 
-**Playtime:** an hour and a bit · built for phones, fine on desktop · sound on if you can
+**Playtime:** an hour and a half or so · built for phones, fine on desktop · sound on if you can
 
 ## Play
 
@@ -59,23 +66,39 @@ uses whatever is standing on the spot — tap the stove and he walks over and st
 cooking, tap a plant and he picks it, tap a ghost and he says hello. A gold mark
 pulses on the ground where you're headed. Drag to change your mind.
 
-There are three buttons, bottom corners, and each one is a drawn picture rather
+There are four buttons, bottom corners, and each one is a drawn picture rather
 than a letter:
 
 | Button | What it does |
 |---|---|
 | the open book, bottom left | your ledger — skills, looks, friends, and the map |
-| the sound, bottom right | the prete's whistle, which is just a hello |
+| the sound, bottom left | the prete's whistle, which is just a hello |
 | the heart, bottom right | give somebody something you made |
+| the chevron, bottom right | jump |
+
+**And you can jump.** He always could; there was simply nothing to land on.
+Now there is: the low wall out of the graveyard, the crates by the noodle cart,
+the chopping log, fence rails, the water jars along the road, the roof of the
+field hut, his own floor beams, the fallen trees and the stepping stones out in
+the deep country. Every one of them is a one-way plank — you go up through it
+and land on top — and holding **down** while you jump steps you back off it.
+
+The jump has the small mercies that make one feel good: a tenth of a second of
+coyote time off a ledge, a jump buffered just before you land, a short hop if
+you let go early, a beat of float at the top of the arc, more steering in the
+air than on the ground, and a grab for the lip of a plank you nearly cleared.
+On a touch screen a **flick upward anywhere** jumps too, so the button is a
+convenience rather than the only way up.
 
 Everywhere else a tap means *go on*: it advances dialogue, chooses a recipe, and
 holds still to hold a gauge. Where a screen needs two sides — the rhythm steps,
 the pans of the karma scale — the left and right thirds of the display stand in
 for left and right.
 
-A keyboard still works if you have one: arrows walk, **E** confirms, **G** gives,
-**C** whistles, **Tab** opens the ledger, **Q** jumps to the map, **V** switches
-between English and Thai, **M** mutes, **Esc** goes back. Turn a phone sideways. Progress saves in the browser.
+A keyboard still works if you have one: arrows walk, **space** jumps, **shift**
+runs, **E** confirms, **G** gives, **C** whistles, **Tab** opens the ledger,
+**Q** jumps to the map, **V** switches between English and Thai, **M** mutes,
+**Esc** goes back. Turn a phone sideways. Progress saves in the browser.
 
 ![tap to walk, three buttons](screenshots/on-a-phone.png)
 
@@ -112,30 +135,111 @@ page, and until the last one turns the ending will not start.
 | ![the shelf](screenshots/memory-the-shelf.png) | ![the gate](screenshots/memory-the-gate.png) | ![the scale](screenshots/memory-the-scale.png) |
 | ![four bowls](screenshots/memory-four-bowls.png) | ![the ledger's past tab](screenshots/the-past.png) | ![the village field](screenshots/the-field.png) |
 
-## You wake up in somebody else's rice field
+## The first night
 
-The game opens face down in standing water in an abandoned paddy — no title
-crawl, no scene to sit through, and **nobody explaining anything**. Five lines
-of second person, no speaker, no portrait:
+The game opens with you under the ground, and the only control that does
+anything is *pull*.
 
-> *You are nine feet tall. Your ribs are on the outside. You have been under a
-> long time.*
+**Tap, and a hand comes up through the soil.** Seven of them and you are out,
+kneeling in a burial field at three in the morning with your hands full of
+somebody else's earth. A line of narration a tap, no speaker, no portrait:
+
+> *The earth does not want to let go. The earth is outvoted.*
 >
-> *You reach for your name, the way you would reach for a coin in a pocket.
-> There is nothing where it should be.*
+> *There is a word for this, and you find you already know it. Prete. A hungry
+> ghost. Somebody is paying for something.*
 
-There used to be a small glowing life-spirit at your shoulder who talked you
-through all of this and then followed you about for the rest of the game. She
-is gone. With Mae Posop standing in the field doing the same job, the two of
-them talked over each other — two speech bubbles on screen at once, both
-telling you what to do next.
+Then five more lines, and the last one is the whole of the tutorial: **far down
+the road, one light is on.**
 
-**There is one guide now, and she is standing out in the water.** Everything
-the game wants to tell you comes out of her mouth if you are near her, and off
-a single line under the plaques if you have walked two zones away — because a
-hint you cannot see is not a hint.
+| | |
+|---|---|
+| ![coming up out of the ground](screenshots/out-of-the-ground.png) | ![the night stall](screenshots/the-night-stall.png) |
 
-![you wake in the field](screenshots/waking.png)
+### Lung Somchai, who is not afraid of you
+
+He has had that cart on that corner for thirty years. Drunks, monks, a
+policeman who never paid, two elephants once in the same week. He looks at your
+knees, then further up, and further up again, and puts the ladle down.
+
+> **Lung Somchai:** *Ah. One of the hungry ones. My grandmother fed one on the
+> back step every Wan Phra of her life.*
+>
+> **Lung Somchai:** *Well, I am closing. Nobody comes at three. Walk with me —
+> the house is not far and there is rice in the pot.*
+
+**Then you follow him home, and that is the whole scene.** He wheels off east
+at an old man's pace and waits, with commentary, whenever you fall behind. On
+the way: a dog called Daeng who barks at him too, and every other dog in the
+village answering; his own field, dark and untouched for two seasons; a window
+going out overhead as you pass under it; a hundred yards of sleeping houses.
+
+At the house he puts a banana leaf of rice down on the step and steps back —
+the way you put food out for a dog you have decided to like. **You get it as
+far as your mouth.** The mouth is the width of a needle's eye and the rice is
+rice. What comes through is the steam.
+
+> *It is the first kind thing anybody has done for you and you cannot even do
+> it properly.*
+
+He tells you to sleep somewhere that is not the road. There is space under his
+floor, between the stilts. The night passes in five lines and a gecko saying
+its own name seven times directly above your head, and the sky over the paddy
+goes the colour of the inside of a shell.
+
+| | |
+|---|---|
+| ![he is not afraid of you](screenshots/he-is-not-afraid.png) | ![walking him home](screenshots/walking-him-home.png) |
+| ![rice on the step](screenshots/rice-on-the-step.png) | ![the night passes](screenshots/the-night-passes.png) |
+
+## The plough, the jars, and the seed
+
+In the morning he is up before you, holding something, and he walks you west
+past the hut to five beds that have gone to brick.
+
+**The plough is the one mini-game in the first hour and the whole of it is one
+idea: the ground pulls the blade, and you drive on the pull.** A marker swings
+across a band under the furrow and the share dips with it. Land it in the green
+and a slab of earth turns over with a noise like a door closing, the note goes
+up a step, and the furrow gets a little longer; land it in the middle of the
+green and it is a clean one, and the note goes up two. Miss and the blade skips
+out of the ground, the combo dies and the swing slows down.
+
+It gets faster every time you connect, so a bed always ends harder than it
+started, and a bed turned without a single skip is worth two merit on its own.
+Six bites a bed, five beds. Birds come down for the worms.
+
+Then the ground wants water before it wants seed, and **the โอ่ง are things you
+actually pick up**. Lift one, carry it — you walk slower, and you are visibly
+carrying it — and either tip it over a bed or put it down wherever you want it
+to live from now on. It holds three pours. Refill at the big jar by the hut.
+
+He sows from the near end. You take the far one, a seed pressed in at a time,
+and he will finish the field alone if you let him, at about a bed a minute,
+saying *slowly, slowly, it all goes in the same ground.*
+
+| | |
+|---|---|
+| ![the plough](screenshots/the-plough.png) | ![carrying the jar](screenshots/carrying-the-jar.png) |
+
+![the field is in](screenshots/the-field-is-in.png)
+
+## What a ghost can do that a farmer cannot
+
+The ledger has a fifth column now, **FIELD**, and every one of them makes *his*
+work quicker rather than yours easier:
+
+| Skill | What it does |
+|---|---|
+| **Water Yoke** · คานหาบน้ำ | a jar on each end, and no slower for it — two at a time, at walking pace |
+| **Ploughman** · มือไถ | you know the pull now; the window to drive the blade is half again as wide |
+| **Seed Shot** · พ่นเมล็ด | hold a seed behind that needle of a mouth and put it in a bed from clear across the field |
+| **Long Draught** · อึกใหญ่ | drink the jar — all of it — then stand at the end of a row and give it back |
+
+Seed Shot arcs a grain across the field and thumps it into the soil from ninety
+pixels away. Long Draught waters every turned bed within eighty pixels at once,
+in one sweep, and looks completely ridiculous. Both of them are the same joke:
+the body that is a punishment turns out to be extremely good at farming.
 
 ## Mae Posop, who owns the field
 
@@ -161,9 +265,11 @@ can't reach:
 | **Waiting** | keep the water up and let it alone. Rice has never once been hurried |
 | **Thanks** | it is bowing. That is it asking. Cut it, and say thank you out loud |
 
-Finish that and the mist lifts off the road east, and the village — which eats
-what you just cut — is open. She stays in the field afterwards, and she still
-has opinions.
+She used to be the first thing in the game and the reason the road east was
+shut. She is not any more: the old man's morning is the opening now, and there
+is no wall of mist across the one route the story takes. **She is a thing you
+find**, standing in a paddy nobody has worked, once the first field is in — and
+the rice crop she teaches is the whole second act of the farm.
 
 | | | |
 |---|---|---|
@@ -278,6 +384,57 @@ which is exactly why children in this village spend the whole of dusk in the
 long grass. Catch all six and the ledger notices.
 
 ![catching a firefly](screenshots/the-net.png)
+
+## And everything else that lives here
+
+A village at night is not empty and a village in the morning is extremely not
+empty. None of this does anything for you. That is the point of it.
+
+**Birds** sit on the wires between the streetlamps, on the fence rails and up in
+the trees, hopping about and turning round. They will not stay while a nine-foot
+ghost goes past: get within forty pixels and they go up in a clatter, wheel
+about for a few seconds, and come back to *near enough* the twig they left,
+which is the whole charm of a bird. Whistle and you clear a hundred and fifty
+pixels of them at once. Turn a bed over and they come down for the worms.
+
+**Dogs** — three of them, and they have opinions about you at two in the morning.
+One barks, the others answer, and the rest of the road stays asleep through it.
+Hold out a hand and it will smell it for a long moment, the way a dog does when
+it is making a decision about you; then it leans on your shin, which is as high
+as it can reach, and after that it is your dog and you can scratch its ear.
+
+**Chickens** peck and scratch under the houses and scatter when you get close,
+and roost when it is dark. **Frogs** sit at the pond and out in the flooded
+paddy and hop away from you in exactly the wrong direction. **Geckos** live on
+the walls and are mostly a noise — ตุ๊กแกกกก, seven times, at the worst possible
+moment. **Squirrels** work the banana grove. **Butterflies and dragonflies** are
+out all day; **fireflies** replace them at dusk.
+
+**And the grass parts.** Every tuft within a couple of hundred pixels is a
+little spring with a rest position set by the wind. Walk through and they lie
+down and come back up behind you; so do the chickens, and so does the old man.
+Push through enough of it and something comes out — a butterfly, a dragonfly, a
+grasshopper, a bird, or at night a firefly that was sitting in there the whole
+time.
+
+## Seven thousand pixels of country
+
+Nine named zones, west to east: the burial ground, the roadside where his cart
+is parked, the rice fields and the derelict farm, the village road, the spirit
+house, the banana grove, the temple, the old forest, and — new, and worth the
+walk — **the deep country**, where the road runs out into palms and bananas, a
+stream with three stones across it, and fallen trees thick enough to stand on.
+Nothing lives out there but birds and the noise of them.
+
+The same road at two in the morning and at nine is not the same road. At night
+it is lamps and lit windows and a hard dark between them; by morning the far
+ridge has gone half to haze, the windows are open with washing hung in them, and
+you can see how much of the village is actually chickens.
+
+| | |
+|---|---|
+| ![the village by day](screenshots/the-village-by-day.png) | ![the deep country](screenshots/the-deep-country.png) |
+| ![under a house](screenshots/under-the-house.png) | ![the burial ground](screenshots/the-graveyard.png) |
 
 ## Planks, and a roof that keeps the rain out
 
@@ -406,7 +563,7 @@ descend, and the ledger is waiting where you left it.
 Five wooden tabs over a drifting sky: **skills**, **looks**, **friends**, the
 **past** — your recovered memories, one flat page each, blank and question-marked
 until they come back, with a red dot on the tab when there's one you haven't read
-— and the whole 5,600-pixel road drawn as a **map**: seven named zones along the top, every
+— and the whole 7,200-pixel road drawn as a **map**: nine named zones along the top, every
 stove, shrine, workbench, pond and grove pinned on four tiers so nothing collides,
 your five ghost friends on their own row, a marker where you're standing, and one
 line at the bottom telling you what to do next.
@@ -580,9 +737,10 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~476 KB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~635 KB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Parses and initialises in about a tenth of a second, has the whole
-road built inside half a second behind a loading screen, and holds 60 fps.
+road built inside half a second behind a loading screen, and holds 50–60 fps
+with a fully stocked farm on screen.
 
 - **Nothing is a sprite sheet, and nothing is a font glyph.** Every character is a
   procedural puppet posed fresh each frame — two-bone IK limbs, a walk cycle
@@ -611,6 +769,42 @@ road built inside half a second behind a loading screen, and holds 60 fps.
   trees and animals all advance on the same fixed step as everything else, and
   so do the ghosts you hired — the harvester really does walk the row and put
   things in your basket while you are two zones away buying seed.
+- **The first night is one list.** Ten beats — climb, meet, follow, supper,
+  hide, field, plough, water, plant, free — each with an optional enter, step,
+  prompt and overlay, stepped one at a time off a single integer in the save
+  file. Nothing in it reaches into the rest of the game except through that
+  integer, so the moment the last beat lands the village behaves exactly as it
+  always did, and a save from before the first night existed is simply treated
+  as having finished it.
+- **One number is the time of day.** Nought is the blackest part of the night
+  and one is full morning; the sky's four gradient bands, the sun, the moon,
+  the stars, the clouds, the ambient darkness, the lamp glows, the aerial haze
+  on each parallax layer, and whether the ambience is crickets or birds all
+  read off it and nothing else. The sleep under his floorboards is that number
+  moving from 0 to 0.92 over nine seconds.
+- **Daylight is subtraction, not a second copy.** The 7,200-pixel play layer is
+  painted once, for a village at two in the morning. Morning takes the darkness
+  overlay off, puts one additive warm pass on, and coats each parallax layer in
+  the horizon's own colour in proportion to its distance — which is aerial
+  perspective, and which is very much cheaper than keeping a second copy of a
+  two-megapixel canvas.
+- **The plough is a pendulum you can see.** The marker you are timing and the
+  share that dips into the soil ride the same number, so what you watch and what
+  you hit are the same object rather than a bar pretending to be a plough. Every
+  connection speeds the swing up and adds a step to a pentatonic run; a miss
+  slows it and resets the combo. The sod that turns over is a physical particle
+  with its own spin, bounce and settle.
+- **The grass lies down, and there is a cache behind it.** Every tuft in camera
+  range is a spring with a rest position set by the wind; walking through pushes
+  them over and occasionally flushes whatever was sitting in them. They are
+  blitted from baked sprites keyed on kind, height, bend and colour — and the
+  key has fewer possible values than the cache has slots, which is the whole
+  difference between a cache and a bakery.
+- **Platforms are one-way and forgiving.** The feet are tested against the slice
+  of air they fell through this frame rather than against a position, so a fast
+  drop cannot tunnel through a plank; a rising jump that clips the lip of one
+  gets pulled up onto it; and down-and-jump steps off the top of one instead of
+  jumping off it.
 - **The tutorial cannot get stuck behind itself.** Mae Posop's rice lesson does
   not step forward one beat at a time; it scans backwards from the last step for
   the furthest thing that has demonstrably happened, because harvesting a paddy
@@ -639,9 +833,10 @@ road built inside half a second behind a loading screen, and holds 60 fps.
   rasterised in the page; each drawn string is cached to its own small canvas, so
   a line of text costs one blit rather than a few hundred rectangles. There is no
   webfont, so nothing loads late and nothing reflows.
-- **A 5,600-pixel road** through seven named zones over six parallax layers,
+- **A 7,200-pixel road** through nine named zones over six parallax layers,
   pre-rendered once into cached canvases and built across frames behind a loading
-  screen.
+  screen. The east end is new country: deep forest, a stream with stones across
+  it, and fallen trees long enough to walk along.
 - **Every panel is drawn, then cached.** Frames, bubbles, keycaps and sky clouds
   are filled once into offscreen canvases and reused; so are the radial glows on
   every lantern, lamp, firefly and floating head. One function draws every box in
@@ -654,6 +849,17 @@ road built inside half a second behind a loading screen, and holds 60 fps.
   paddies, candles on the graves, spirit-motes, fireflies, moths around the lamps,
   and a real-time lighting pass so fixing the streetlight visibly warms that
   stretch.
+- **A life under every house.** Water jars, a leaning bicycle with a basket on
+  the front, stacked firewood, a tray of chillies drying, a broom, a hammock
+  nobody is in, a dog's bowl, a pair of sandals, a sack of rice and the ladder
+  up — baked once per house and blitted, with the window lit and somebody
+  turning over in it at night and standing open with a shirt hung in it by day.
+- **Thirty-odd things that answer.** A jar you can look into, a bicycle bell you
+  can ring at two in the morning and regret, a stone with a whole town under it,
+  a pot to smell, a stool far too small for you to sit on, a stream, a
+  scarecrow, chillies, washing. Each says one thing the first time and something
+  shorter afterwards, and a few of them change the world a little — the bell
+  starts every dog in the village, the stone empties in five directions.
 - **All audio synthesized live** — crickets, frogs, a ranat-ek pentatonic figure,
   temple gongs, and one long prete whistle.
 - **The baht sign is a drawn glyph.** It lives in the Thai Unicode block, so

@@ -138,8 +138,12 @@ function cvPos(ev){
 }
 /* in play the world takes taps as walk orders; everywhere else a tap is "go on" */
 function tapIsWalk(){
+  /* While the first beat has hold of you there is nowhere to walk to and the
+     tap means "pull" — routing it to a walk order left the opening with no
+     working control at all on a touch screen. */
   return typeof GS!=='undefined' && GS.state==='play' && !DLG
-      && typeof VIG!=='undefined' && !VIG && !(typeof P!=='undefined' && P && P.act);
+      && typeof VIG!=='undefined' && !VIG && !(typeof P!=='undefined' && P && P.act)
+      && !CH.lock;
 }
 /* screens where the two halves of the display mean left and right */
 function tapSides(){
@@ -922,7 +926,16 @@ function isLight(col){
    third taller than this, which is why every Thai label in the ledger ran
    into the column beside it: the layouts are measured for a 5x7 Latin cell
    and Thai has to sit in the same box. */
+/* Thai needs more pixels than Latin for the same apparent size. These are
+   the numbers a sweep at the real in-game scale picked, and they are also
+   the largest the panels can take: a pixel more everywhere reads slightly
+   better in isolation and overflows half the UI, which is worse. */
 function thaiPx(size){ return size<=6?10 : size<=7?11 : size<=9?13 : size<=13?16 : Math.round(size*1.35); }
+/* How far apart to set two wrapped lines. Latin at seven wants ten; Thai at
+   seven is eleven pixels tall before the tone marks go on top of it, so ten
+   makes the vowels of one line sit inside the consonants of the next. Every
+   multi-line block in the game asks this rather than assuming. */
+function lineStep(size){ return LANG==='th'? thaiPx(size)+2 : size+3; }
 
 /* Does this device have Thai at all? A machine with no Thai face renders
    every Thai codepoint as the same tofu box, and switching the game into a
@@ -1395,6 +1408,246 @@ const TH = {
   // the tools column
   'TOOLS':'เครื่องมือ', 'what your hands hold':'สิ่งที่มือถือ',
   'Sickle':'เคียว', 'Watering Can':'บัวรดน้ำ', 'Bug Net':'สวิงจับแมลง', 'Axe':'ขวาน',
+  /* ============================================================
+     THE FIRST NIGHT
+
+     The whole opening is a conversation with one old man, so this
+     is the largest single block in the dictionary. He speaks the
+     way a seventy-one-year-old noodle seller speaks: short, dry,
+     and using เอ็ง and ข้า, which is how people that age talk to
+     somebody they have decided to be kind to.
+     ============================================================ */
+  // --- the cards over the top of the screen ---
+  'Follow him home':'ตามแกกลับบ้าน',
+  'Find somewhere to sleep':'หาที่นอน',
+  'Plough the five beds':'ไถแปลงทั้งห้า',
+  'Water the beds from the โอ่ง':'ตักน้ำจากโอ่งมารดแปลง',
+  'Sow the beds with him':'หยอดเมล็ดไปกับแก',
+  'tap to pull yourself out':'แตะเพื่อดึงตัวเองขึ้นมา',
+  'tap to wake':'แตะเพื่อตื่น',
+  'the field is waiting':'ไร่รออยู่',
+  // --- coming up out of the ground ---
+  'Something is pulling. It takes you a moment to work out that it is you.':
+    'มีบางอย่างกำลังดึง กว่าจะรู้ว่าเป็นตัวเจ้าเองก็อีกครู่',
+  'A hand comes up through the soil. You watch it happen before you understand it is yours.':
+    'มือโผล่ขึ้นมาจากดิน เจ้ามองมันก่อนจะเข้าใจว่าเป็นมือของตัวเอง',
+  'The earth does not want to let go. The earth is outvoted.':
+    'ดินไม่อยากปล่อย แต่ดินแพ้เสียง',
+  'Somebody buried this. Somebody said words over it.':
+    'มีคนฝังสิ่งนี้ไว้ มีคนสวดให้',
+  'Your shoulders come free. You are much, much taller than you remember being.':
+    'ไหล่หลุดขึ้นมาแล้ว เจ้าสูงกว่าที่จำได้มาก',
+  'One more.':'อีกครั้งเดียว',
+  'You are out. You are kneeling in a burial field with your hands full of somebody else\'s earth.':
+    'เจ้าขึ้นมาแล้ว คุกเข่าอยู่กลางป่าช้า มือเต็มไปด้วยดินของคนอื่น',
+  'Nine feet of you. Ribs on the outside like the frame of a boat. A mouth the width of a needle\'s eye and a stomach with no bottom to it.':
+    'ตัวสูงสามเมตร ซี่โครงอยู่นอกตัวเหมือนโครงเรือ ปากเท่ารูเข็ม และท้องที่ไม่มีก้น',
+  'There is a word for this, and you find you already know it. Prete. A hungry ghost. Somebody is paying for something.':
+    'มีคำเรียกสิ่งนี้ และเจ้ารู้อยู่แล้ว เปรต ผีที่หิวไม่รู้จบ มีใครสักคนกำลังชดใช้อะไรอยู่',
+  'You reach for your name the way you would reach for a coin in a pocket. Nothing where it should be.':
+    'เจ้าคลำหาชื่อตัวเองเหมือนคลำหาเหรียญในกระเป๋า แต่ตรงนั้นว่างเปล่า',
+  'Far down the road, one light is on.':'สุดถนนลงไป มีไฟดวงหนึ่งยังเปิดอยู่',
+  // --- the light down the road ---
+  'East, along the road. Somebody down there is still awake.':
+    'ไปทางตะวันออกตามถนน ข้างล่างนั่นยังมีคนไม่นอน',
+  'Star anise. Charcoal. Somebody\'s stock has been on since four in the afternoon.':
+    'กลิ่นโป๊ยกั๊ก กลิ่นถ่าน น้ำซุปของใครสักคนเคี่ยวมาตั้งแต่บ่ายสี่',
+  'One bulb, one pot, one old man, and nobody to sell to.':
+    'หลอดไฟดวงเดียว หม้อใบเดียว ลุงคนเดียว และไม่มีลูกค้าสักคน',
+  'say something':'ทักแก',
+  'He looks up. He looks at your knees, then further up, and further up again, and puts down the ladle.':
+    'แกเงยหน้าขึ้น มองที่เข่าเจ้า แล้วมองสูงขึ้น แล้วสูงขึ้นอีก ก่อนจะวางทัพพีลง',
+  'Hm.':'อืม',
+  'Thirty years I have had this cart on this corner. Drunks. Monks. A policeman who never paid. Two elephants, once, in the same week.':
+    'สามสิบปีที่ข้าตั้งรถเข็นอยู่หัวมุมนี้ ทั้งคนเมา ทั้งพระ ทั้งตำรวจที่ไม่เคยจ่าย แล้วก็ช้างสองเชือกในอาทิตย์เดียวกัน',
+  'You are new. Sit down before you frighten the moths.':
+    'เอ็งนี่ใหม่ นั่งลงก่อน เดี๋ยวแมลงเม่าตกใจ',
+  'You try to answer. What comes out of a mouth that size is a thin whistle, like wind in a bottle.':
+    'เจ้าพยายามตอบ แต่จากปากเท่านั้นออกมาได้แค่เสียงหวีดบาง ๆ เหมือนลมในขวด',
+  'Ah. One of the hungry ones. My grandmother fed one on the back step every Wan Phra of her life.':
+    'อ๋อ พวกที่หิวนั่นเอง ยายข้าเคยตั้งข้าวให้ตนหนึ่งที่บันไดหลังบ้านทุกวันพระจนวันตาย',
+  'Well, I am closing. Nobody comes at three. Walk with me — the house is not far and there is rice in the pot.':
+    'เอาละ ข้าจะเก็บร้านแล้ว ตีสามไม่มีใครมาหรอก เดินไปด้วยกัน บ้านไม่ไกล ในหม้อยังมีข้าว',
+  'somebody spoke to you':'มีคนพูดกับเจ้า',
+  // --- the walk home ---
+  'Follow him.':'ตามแกไป',
+  'That is Daeng. He barks at me too. Thirty years.':'นั่นไอ้แดง มันเห่าข้าเหมือนกัน สามสิบปีแล้ว',
+  'That is my field. Was my field. Nobody has turned it in two seasons.':
+    'นั่นไร่ข้า เคยเป็นไร่ข้า ไม่มีใครไถมาสองฤดูแล้ว',
+  'A window goes dark as you pass under it. Somebody was watching the road and has decided not to.':
+    'หน้าต่างดับลงตอนเจ้าเดินผ่าน มีคนมองถนนอยู่ แล้วตัดสินใจว่าไม่มองดีกว่า',
+  'Everybody is asleep. Do not be insulted. They sleep through the temple drum as well.':
+    'หลับกันหมดแล้ว อย่าคิดมาก กลองวัดดังกว่านี้ยังหลับเลย',
+  'Here. Mind the step, it is not a step, it is a rock.':
+    'ถึงแล้ว ระวังขั้นบันได มันไม่ใช่บันได มันคือก้อนหิน',
+  'Take your time. The road is not going anywhere.':'ค่อย ๆ มา ถนนไม่หนีไปไหนหรอก',
+  'I walk slowly. You have no excuse.':'ข้าเดินช้าจะตาย เอ็งไม่มีข้ออ้างนะ',
+  'Still there? Good. Keep up.':'ยังอยู่ไหม ดี ตามให้ทัน',
+  // --- the leaf of rice on the step ---
+  'Sit. Or — do not sit, you would go through the floor. Stand there, then.':
+    'นั่งสิ หรือ — อย่านั่งดีกว่า เดี๋ยวพื้นทะลุ ยืนตรงนั้นแหละ',
+  'Rice, and what is left in the pot. It is not much. It has been that sort of month.':
+    'ข้าว กับที่เหลือในหม้อ ไม่มากหรอก เดือนนี้มันเป็นแบบนี้',
+  'He puts a banana leaf down on the step and steps back, the way you put food out for a dog you have decided to like.':
+    'แกวางใบตองลงบนขั้นบันไดแล้วถอยออกมา แบบที่คนวางอาหารให้หมาที่ตัวเองตัดสินใจแล้วว่าชอบ',
+  'There is food on the step. Whether you can take it is another matter.':
+    'มีอาหารวางอยู่บนขั้นบันได ส่วนจะรับได้ไหมเป็นอีกเรื่อง',
+  'the food on the step':'อาหารบนขั้นบันได',
+  'You get it as far as your mouth. The mouth is the width of a needle\'s eye and the rice is rice.':
+    'เจ้ายกมันขึ้นถึงปาก ปากเท่ารูเข็ม ส่วนข้าวก็คือข้าว',
+  'What comes through is the steam. Warm, and sweet, and gone.':
+    'สิ่งที่ผ่านเข้าไปได้คือไอ อุ่น หอม แล้วก็หายไป',
+  'It is the first kind thing anybody has done for you and you cannot even do it properly.':
+    'นี่คือความเมตตาแรกที่มีคนทำให้ และเจ้ายังรับมันได้ไม่เต็มที่ด้วยซ้ำ',
+  'Ah. So that is how it is with you. Well — the smell is the half of it anyway. My wife said that and she was a better cook than me.':
+    'อ้อ เป็นแบบนี้นี่เอง เอาเถอะ กลิ่นก็เป็นครึ่งหนึ่งของอาหารอยู่แล้ว เมียข้าเคยพูดไว้ แล้วแกทำกับข้าวเก่งกว่าข้า',
+  'Listen. First light I am in the field. It has to be turned before the rain, and I am seventy-one, and I am not going to manage it.':
+    'ฟังนะ พอฟ้าสางข้าจะลงไร่ ต้องไถให้เสร็จก่อนฝนมา ข้าอายุเจ็ดสิบเอ็ดแล้ว ทำคนเดียวไม่ไหวหรอก',
+  'You are very large and you are clearly not busy. Come and hold the other end of things.':
+    'เอ็งตัวใหญ่ แล้วก็ดูไม่ได้มีธุระอะไร มาช่วยจับอีกข้างหนึ่งหน่อย',
+  'Sleep somewhere. Not in the road. People here are superstitious, and in your case correct.':
+    'ไปนอนที่ไหนสักที่ อย่านอนกลางถนน คนแถวนี้เชื่อผี แล้วในกรณีเอ็งก็เชื่อถูก',
+  'Goodnight, tall one.':'ราตรีสวัสดิ์ ไอ้ตัวสูง',
+  'he was not afraid of you':'แกไม่กลัวเจ้า',
+  // --- under the house ---
+  'Under the house, out of the road. There is space between the stilts.':
+    'ใต้ถุนบ้าน พ้นถนน มีที่ว่างระหว่างเสา',
+  'Get out of the road and sleep.':'ออกจากถนนแล้วไปนอน',
+  'crawl under the house and sleep':'มุดใต้ถุนบ้านแล้วนอน',
+  'You do not sleep. Things like you do not sleep. You lie under a stranger\'s floorboards and wait.':
+    'เจ้าไม่ได้หลับ สิ่งอย่างเจ้าไม่หลับ เจ้าแค่นอนอยู่ใต้พื้นบ้านคนแปลกหน้า แล้วรอ',
+  'A gecko says its own name seven times, directly above your head.':
+    'ตุ๊กแกร้องชื่อตัวเองเจ็ดครั้ง อยู่เหนือหัวเจ้าพอดี',
+  'Somewhere behind your eyes there is a scale, and a hand putting something on it, and you cannot see whose hand.':
+    'ลึกเข้าไปหลังดวงตามีตาชั่งอยู่อันหนึ่ง กับมือที่วางอะไรบางอย่างลงไป แต่เจ้ามองไม่เห็นว่ามือใคร',
+  'The dogs give up around four. The frogs keep going.':
+    'หมาเลิกเห่าราวตีสี่ กบยังร้องต่อ',
+  'The sky over the paddy goes the colour of the inside of a shell.':
+    'ฟ้าเหนือทุ่งนาเปลี่ยนเป็นสีข้างในเปลือกหอย',
+  // --- the morning, and the plough ---
+  'Morning. He is up, and he is holding something.':'เช้าแล้ว แกตื่นแล้ว แล้วก็ถืออะไรอยู่',
+  'good morning':'อรุณสวัสดิ์',
+  'You stayed. I put money on you not staying — with myself, so I have also won.':
+    'เอ็งอยู่จริง ๆ ด้วย ข้าพนันไว้ว่าเอ็งจะไม่อยู่ — พนันกับตัวเอง ก็เลยชนะด้วย',
+  'Come on. West, past the hut. Bring your shoulders.':
+    'มาเถอะ ไปทางตะวันตก เลยกระท่อมไป เอาไหล่มาด้วย',
+  'Follow him out to the beds.':'ตามแกไปที่แปลง',
+  'There. Five beds, and the ground on top has gone to brick. It wants breaking before it wants anything else.':
+    'นั่นไง ห้าแปลง ดินข้างบนแข็งเป็นอิฐ ต้องทุบให้แตกก่อนอย่างอื่น',
+  'This is a plough. It is older than me. Do not put your weight on it all at once — wait for the pull, then drive.':
+    'นี่คือคันไถ มันแก่กว่าข้าอีก อย่าทิ้งน้ำหนักลงทีเดียว รอให้มันดึงก่อน แล้วค่อยดัน',
+  'Rhythm. Not strength. You have plenty of the second one.':
+    'เอาจังหวะ ไม่ใช่แรง แรงน่ะเอ็งมีเหลือเฟือ',
+  'Stand at a bed and drive the blade in on the beat.':
+    'ยืนที่แปลงแล้วกดผาลลงให้ตรงจังหวะ',
+  'plough this bed':'ไถแปลงนี้',
+  'drive on the beat':'กดให้ตรงจังหวะ',
+  'bed turned':'ไถเสร็จแล้ว',
+  'skipped':'ผาลลอย',
+  'dead on':'เป๊ะ',
+  'clean line!':'สวยไม่มีสะดุด!',
+  'not one skip':'ไม่พลาดสักครั้ง',
+  'the ground is open':'ดินเปิดแล้ว',
+  'Hah! Look at that. Straight, too. I have seen buffalo make a worse line than that.':
+    'ฮ่า ดูสิ ตรงด้วย ควายบางตัวยังไถได้ไม่ตรงเท่านี้',
+  'Now the hard part. It is dust down there. It wants water before it wants seed.':
+    'ทีนี้ส่วนที่ยาก ข้างล่างเป็นฝุ่น มันต้องการน้ำก่อนต้องการเมล็ด',
+  'The โอ่ง are by the hut — the big jars. Do not try to carry all of them. Actually, you might.':
+    'โอ่งอยู่ข้างกระท่อม ใบใหญ่ ๆ นั่นแหละ อย่าขนทีเดียวหมด — เอ๊ะ หรือเอ็งอาจจะขนไหว',
+  // --- the jars ---
+  'The jars stand by the hut. Lift one, carry it over, tip it out.':
+    'โอ่งตั้งอยู่ข้างกระท่อม ยกไปสักใบ แล้วเทลง',
+  'lift the โอ่ง':'ยกโอ่ง',
+  'set it down':'วางลง',
+  'tip it over the bed':'เทลงแปลง',
+  'fill from the big jar':'เติมจากโอ่งใหญ่',
+  'carrying a โอ่ง':'กำลังแบกโอ่ง',
+  'Your arms are full.':'แขนเต็มแล้ว',
+  'They are already full.':'มันเต็มอยู่แล้ว',
+  'Empty. Fill it at the big โอ่ง by the hut.':'หมดแล้ว ไปเติมที่โอ่งใหญ่ข้างกระท่อม',
+  'Heavy, even for you. Walk it over and tip it out, or set it down where you want it.':
+    'หนักอยู่ ถึงจะเป็นเอ็งก็เถอะ ยกไปเทลง หรือจะวางตรงไหนก็ได้',
+  'the beds are wet through':'แปลงชุ่มทั่วแล้ว',
+  'Good. Feel it — it gives now. Yesterday you could have built a wall out of that.':
+    'ดี ลองกดดู มันยุบแล้ว เมื่อวานเอาไปก่อกำแพงยังได้',
+  'Seed next. I will start at this end. You have hands like banana leaves; take the far end.':
+    'ต่อไปหยอดเมล็ด ข้าเริ่มจากหัวนี้ มือเอ็งเท่าใบตอง ไปเอาหัวโน้น',
+  // --- sowing ---
+  'He sows from the near end. Take the far one.':'แกหยอดจากหัวนี้ เอ็งไปหัวโน้น',
+  'press a seed in':'กดเมล็ดลงดิน',
+  'spit a seed into it':'พ่นเมล็ดใส่',
+  'drink the jar dry':'ดื่มโอ่งให้เกลี้ยง',
+  'spray the row':'พ่นทั้งแถว',
+  'you are full of water':'ท้องเต็มไปด้วยน้ำ',
+  'the whole row, at once':'ทั้งแถวในทีเดียว',
+  'Stand at the end of a row and let it go.':'ไปยืนหัวแถวแล้วปล่อยออกมา',
+  'One.':'หนึ่ง',
+  'That is another.':'อีกแปลงหนึ่ง',
+  'Slowly, slowly. It all goes in the same ground.':'ช้า ๆ ช้า ๆ ลงดินเดียวกันทั้งนั้น',
+  'That is the field in. Two days, that would have taken me. Two days and my back for a week after.':
+    'ไร่เสร็จแล้ว ถ้าข้าทำเองต้องสองวัน สองวันแล้วปวดหลังอีกอาทิตย์',
+  'Here. Forty baht. No, take it — a man who works gets paid, and I am not going to argue about what you are.':
+    'เอ้า สี่สิบบาท เอาไปเถอะ คนทำงานก็ต้องได้ค่าแรง ส่วนเอ็งเป็นอะไรนั้น ข้าไม่เถียงด้วย',
+  'Come back when it is up. And go and see the village — they are awake now, and half of them want something carried.':
+    'กลับมาตอนมันงอกแล้วกัน แล้วไปดูหมู่บ้านด้วย ตอนนี้ตื่นกันหมดแล้ว ครึ่งหมู่บ้านอยากให้ช่วยยกของ',
+  'The road east is open. The village is awake and the stall wants stock.':
+    'ถนนตะวันออกเปิดแล้ว หมู่บ้านตื่นแล้ว ร้านก็อยากได้ของ',
+  'Later. There is a field to get in.':'ไว้ก่อน ยังมีไร่ต้องทำให้เสร็จ',
+
+  'And after that there is cooking. There is always cooking. A stall does not feed itself and neither does a village.':
+    'แล้วหลังจากนั้นก็ต้องทำกับข้าว ต้องทำเสมอแหละ ร้านมันไม่เลี้ยงตัวเอง หมู่บ้านก็เหมือนกัน',
+  'The stove by the shop is anybody\'s. Cook what you grow. Sell it to P\'Nok or give it away — that part is between you and whoever is keeping your accounts.':
+    'เตาข้างร้านใครใช้ก็ได้ ปลูกอะไรก็เอามาทำ จะขายให้พี่นกหรือจะแจกก็เรื่องของเอ็งกับคนที่จดบัญชีของเอ็งอยู่',
+
+  'your grave':'หลุมของเจ้า', 'the cart':'รถเข็น', 'his house':'บ้านลุง', 'the stream':'ลำธาร',
+
+  /* ============ THE FIELD COLUMN ============ */
+  'FIELD':'ไร่นา',
+  'what woke up':'สิ่งที่ตื่นมา',
+  'what hands learn':'สิ่งที่มือเรียนรู้',
+  'what put you here':'สิ่งที่พาเจ้ามา',
+  'what you carry':'สิ่งที่เจ้าถือ',
+  'what only you can':'สิ่งที่มีแต่เจ้าทำได้',
+  'Water Yoke':'คานหาบน้ำ',
+  'Ploughman':'มือไถ',
+  'Seed Shot':'พ่นเมล็ด',
+  'Long Draught':'อึกใหญ่',
+  'A water jar on each end and no slower for it. Two at a time, at walking pace.':
+    'โอ่งข้างละใบ แล้วก็ไม่ช้าลงเลย สองใบพร้อมกัน เดินได้ปกติ',
+  'You know the pull now. The window to drive the blade is half again as wide.':
+    'ทีนี้เจ้ารู้จังหวะดึงแล้ว ช่วงที่กดผาลได้กว้างขึ้นอีกครึ่งหนึ่ง',
+  'A seed behind that needle of a mouth, and a bed sown from clear across the field.':
+    'เมล็ดหนึ่งเม็ดหลังปากเท่ารูเข็ม แล้วหยอดแปลงได้จากอีกฟากของไร่',
+  'Drink the jar. All of it. Then stand at the end of a row and give it back.':
+    'ดื่มทั้งโอ่ง หมดใบ แล้วไปยืนหัวแถว คืนมันกลับลงดิน',
+
+  /* ============ NEW COUNTRY ============ */
+  'the deep country':'ดงลึก', 'deep forest':'ป่าลึก', 'the roadside':'ริมถนน',
+
+  /* ============ THINGS THAT ANSWER ============ */
+  'put a hand in the water':'จุ่มมือลงน้ำ',
+  'look into the water jar':'มองลงไปในโอ่ง',
+  'ring the bicycle bell':'กดกระดิ่งจักรยาน',
+  'the chillies on the tray':'พริกบนกระด้ง',
+  'the washing on the line':'ผ้าบนราว',
+  'smell the pot':'ดมกลิ่นหม้อ',
+  'sit on the stool':'นั่งบนม้านั่ง',
+  'the woodpile':'กองฟืน',
+  'read the old stone':'อ่านศิลาเก่า',
+  'the scarecrow':'หุ่นไล่กา',
+  'turn the stone over':'พลิกก้อนหิน',
+  'the stream':'ลำธาร',
+  'the fallen tree':'ต้นไม้ล้ม',
+  'count the chickens':'นับไก่',
+  'scratch its ear':'เกาหูให้มัน',
+  'hold out a hand':'ยื่นมือออกไป',
+  'the tail goes':'หางกระดิก',
+  'it decided about you':'มันตัดสินใจเรื่องเจ้าแล้ว',
+  'It smells the hand for a long moment, the way a dog does when it is making a decision about you.':
+    'มันดมมืออยู่นาน แบบที่หมาทำตอนกำลังตัดสินใจเรื่องเจ้า',
+  'Then it leans on your shin, which is as high as it can reach, and that is that.':
+    'แล้วมันก็เอนตัวพิงหน้าแข้งเจ้า สูงเท่าที่มันเอื้อมถึง แค่นั้นแหละ',
+
   // --- and the tone of the thing ---
   'a memory':'ความทรงจำ',
   'may you go to a good place':'ขอให้ไปสู่สุคติ',
@@ -2098,17 +2351,22 @@ function hitTap(){
 /* ============================================================
    THE WORLD — one long road through a village at 2am
    ============================================================ */
-const WORLD_W = 5600;
+/* The map got another sixteen hundred pixels of country on the east end:
+   proper forest, a stream with stones across it, and logs to walk along.
+   Nothing lives out there but birds and the noise of them. */
+const WORLD_W = 7200;
 const GBASE = 216;
 
 const ZONES = [
-  {id:'charnel', a:0,    b:760,  name:'the graveyard', s:'graveyard'},
+  {id:'charnel', a:0,    b:470,  name:'the graveyard', s:'graveyard'},
+  {id:'roadside',a:470,  b:760,  name:'the roadside', s:'the roadside'},
   {id:'paddy',   a:760,  b:1480, name:'the rice fields', s:'the farm'},
   {id:'villageW',a:1480, b:2320, name:'the village road', s:'village'},
   {id:'centre',  a:2320, b:3000, name:'the spirit house', s:'shrine'},
   {id:'grove',   a:3000, b:3800, name:'the banana grove', el:1, s:'grove'},
   {id:'wat',     a:3800, b:4600, name:'the temple', s:'temple'},
-  {id:'forest',  a:4600, b:WORLD_W, name:'the old forest', s:'old forest'},
+  {id:'forest',  a:4600, b:5600, name:'the old forest', s:'old forest'},
+  {id:'deep',    a:5600, b:WORLD_W, name:'the deep country', s:'deep forest'},
 ];
 function zoneAt(x){ for(const z of ZONES) if(x>=z.a && x<z.b) return z; return ZONES[ZONES.length-1]; }
 function band(x,a,b,f){ return clamp((x-a)/f,0,1) * clamp((b-x)/f,0,1); }
@@ -2127,6 +2385,10 @@ function groundY(x){
   // the wat stands on its terrace
   const hi = band(x,3860,4560,170);
   y = lerp(y, GBASE-11, hi*0.9);
+  // out east the country rolls, and dips into the stream bed
+  const deep = clamp((x-5600)/260,0,1);
+  y = lerp(y, y + Math.sin(x*0.0026)*11 - 6, deep);
+  y = lerp(y, GBASE+14, band(x,6250,6410,90)*0.85);
   return y;
 }
 const isRoad = x => x>1380 && x<3120;
@@ -2146,6 +2408,7 @@ const SIGNS = [
   {x:3040, l:'the banana grove',  r:'the spirit house'},
   {x:3820, l:'the temple',            r:'the banana grove'},
   {x:4620, l:'the old forest',     r:'the temple'},
+  {x:5610, l:'the deep country',   r:'the old forest'},
 ];
 const LIGHTS = [];   // {x,y,r,c,a,flick,on}
 function addLight(x,y,r,c,a,o={}){ const l={x,y,r,c,a,on:true,flick:o.flick||0,id:o.id}; LIGHTS.push(l); return l; }
@@ -2242,7 +2505,7 @@ function paintBg(){
     let c2=null, a=0.65, s2=0.75;
     if(z.id==='charnel'){ c2=apick(ART.dead,i); a=0.55; s2=0.8; }
     else if(z.id==='grove'){ c2=apick(ART.banana,i); a=0.7; s2=0.78; }
-    else if(z.id==='forest'){ c2 = r()<0.5? apick(ART.bamboo,i) : apick(ART.tam,i); a=0.6; s2=0.7; }
+    else if(z.id==='forest'||z.id==='deep'){ c2 = r()<0.5? apick(ART.bamboo,i) : apick(ART.tam,i); a=0.6; s2=0.7; }
     else if(r()<0.5){ c2=apick(ART.palm,i); a=0.68; s2=0.72; }
     if(c2){ g.globalAlpha=a;
       g.drawImage(c2, R(x-c2.width*s2/2), R(base-c2.height*s2), R(c2.width*s2), R(c2.height*s2));
@@ -2271,12 +2534,39 @@ function paintPlay(){
     if(z.id==='paddy'){ top='#2b5140'; mid2='#1d3a2e'; deep='#122019'; }
     if(z.id==='wat'){ top='#4a6a4c'; mid2='#2e4a34'; deep='#16261a'; }
     if(z.id==='forest'){ top='#274a34'; mid2='#182f22'; deep='#0e1a13'; }
+    if(z.id==='deep'){ top='#2b5238'; mid2='#1a3324'; deep='#0c1710'; }
     if(isRoad(x)){ top=PAL.dirt; mid2=PAL.dirtD; deep='#2a2118'; }
     g.fillStyle=top;   g.fillRect(x,gy,1,4);
     g.fillStyle=mid2;  g.fillRect(x,gy+4,1,10);
     g.fillStyle=deep;  g.fillRect(x,gy+14,1,H-gy-14);
     // the rim of light along the top edge
     if(x%3!==0){ g.fillStyle=shade(top,0.14); g.fillRect(x,gy,1,1); }
+    /* Under the turf it used to be one flat colour all the way down, which at
+       night reads as shadow and in daylight reads as a painted wall. Three
+       bands of subsoil, dithered into each other, and it reads as ground. */
+    const subA=shade(deep,0.13), subB=shade(deep,0.06), subC=shade(deep,-0.05);
+    const d1=gy+14+4+Math.sin(x*0.031)*2, d2=gy+32+Math.sin(x*0.017+2)*4;
+    g.fillStyle=subA; g.fillRect(x,gy+14,1,Math.max(0,d1-(gy+14)));
+    g.fillStyle=subB; g.fillRect(x,d1,1,Math.max(0,d2-d1));
+    g.fillStyle=subC; g.fillRect(x,d2,1,H-d2);
+    if((x+((gy*3)|0))%5===0){ g.fillStyle=shade(deep,0.2); g.fillRect(x,R(d1)-1,1,1); }
+    if((x*7)%13===0){ g.fillStyle=shade(deep,-0.14); g.fillRect(x,R(d2)+2+((x%3)|0),1,2); }
+  }
+  /* stones, roots and old pot-shards in the subsoil */
+  for(let i=0;i<900;i++){
+    const x=r()*WORLD_W, gy=groundY(x), y=gy+18+r()*(H-gy-24);
+    const c = r()<0.62? '#3a3a40' : r()<0.8? '#4a3f32' : '#55483a';
+    pEll(g,x,y,1+r()*3,1+r()*2,c);
+    if(r()<0.22) pR(g,R(x),R(y)-1,1,1,shade(c,0.22));
+  }
+  for(let i=0;i<220;i++){
+    const x=r()*WORLD_W, gy=groundY(x);
+    let px=x, py=gy+13;
+    for(let k=0;k<5+((r()*6)|0);k++){
+      const nx=px+r()*7-3.5, ny=py+2+r()*4;
+      pTaper(g,px,py,nx,ny,1.6-k*0.2,1.2-k*0.18,'#3d3226');
+      px=nx; py=ny; if(py>H-2) break;
+    }
   }
   // ---- road surface: ruts, gravel, a painted centre line long since faded ----
   for(let x=1380;x<3120;x++){
@@ -2313,7 +2603,7 @@ function paintPlay(){
   for(let i=0;i<3600;i++){
     const x=r()*WORLD_W, gy=groundY(x), z=zoneAt(x);
     if(isRoad(x) && r()<0.85) continue;
-    const c1 = z.id==='charnel' ? '#5c6358' : z.id==='forest' ? '#356b46' : PAL.grassL;
+    const c1 = z.id==='charnel' ? '#5c6358' : (z.id==='forest'||z.id==='deep') ? '#356b46' : PAL.grassL;
     const h2=2+r()*4;
     g.fillStyle=c1; g.fillRect(R(x),R(gy-h2),1,h2+1);
     if(r()<0.4) g.fillRect(R(x+1),R(gy-h2*0.6),1,R(h2*0.6)+1);
@@ -2338,15 +2628,19 @@ function paintPlay(){
     stamp(apick(ART.dead,i),x,groundY(x)+3, 0.7+r()*0.5);
   }
   {   // an old ruined chedi, half-swallowed
-    const x=560, ch=ART.chedi;
+    const x=112, ch=ART.chedi;
     playG.save(); playG.globalAlpha=0.85;
     playG.drawImage(ch, R(x-ch.width*0.34), R(groundY(x)-ch.height*0.68), R(ch.width*0.68), R(ch.height*0.68));
     playG.restore();
     pR(g,x-40,groundY(x)-8,80,9,'#3f463c');
     for(let i=0;i<24;i++) pEll(g, x+r()*90-45, groundY(x)-r()*6, 2+r()*3, 1+r()*2, r()<0.5?'#6a7060':'#535a4e');
   }
-  for(let i=0;i<9;i++){    // grave markers, and somebody still lights them
-    const x=150+i*62+r()*20, gy=groundY(x);
+  /* The markers are packed into the west end now. The road out of the
+     graveyard, and the mound you come up out of at 250, both need clear
+     ground, and the old spacing put a headstone through the noodle cart. */
+  for(let i=0;i<11;i++){    // grave markers, and somebody still lights them
+    const x=52+i*34+r()*9, gy=groundY(x);
+    if(x>214 && x<296) continue;              // the mound stands here
     pR(g,x,gy-13,4,14,'#8d8f80'); pEll(g,x+2,gy-13,3,3,'#a4a695'); pR(g,x,gy-8,4,1,'#6f7164');
     pR(g,x-1,gy-14,6,1,'#b4b6a5');
     if(i%2===0){
@@ -2466,6 +2760,8 @@ const BUILD_STEPS=[
   ['setting the rooftops', paintMid],
   ['planting the grove', paintBg],
   ['building the village', paintPlay],
+  ['parking the cart', ()=>{ paintStory(); placePlats(); }],
+  ['letting the grass grow', ()=>{ seedGrass(); seedCritters(); seedFlies(); seedThings(); }],
 ];
 function buildStep(){
   if(BUILD_I>=BUILD_STEPS.length){ WORLD_READY=true; return true; }
@@ -2481,11 +2777,14 @@ for(let i=0;i<54;i++){
   const zone = i<20? rnd(0,760) : i<36? rnd(760,1480) : rnd(4600,WORLD_W);
   MIST.push({x:zone, y:groundY(zone)-rnd(2,16), w:rnd(40,120), h:rnd(5,13), sp:rnd(1.5,5), ph:rnd(TAU), a:rnd(0.05,0.14)});
 }
-function drawMist(g){
+/* Weather, not a gate. It used to be called drawMist, which is also what the
+   retired wall across the road east was called, and the wall's stub — loaded
+   later — quietly took the name and the village lost its fog. */
+function drawWeatherMist(g){
   for(const m of MIST){
     const x = m.x + Math.sin(GS.t*0.12+m.ph)*m.sp*3;
     if(x-GS.camX<-140||x-GS.camX>W+140) continue;
-    const a=m.a*(0.6+0.4*Math.sin(GS.t*0.4+m.ph))*(1-GS.dawn*0.5);
+    const a=m.a*(0.6+0.4*Math.sin(GS.t*0.4+m.ph))*(1-TOD.v*0.55);
     const y=m.y+Math.sin(GS.t*0.3+m.ph)*2;
     g.fillStyle=`rgba(168,196,224,${a})`;
     pEll(g,x,y,m.w/2,m.h/2,`rgba(168,196,224,${a})`);
@@ -3258,6 +3557,7 @@ const GS = {
   farm:null, req:null,
   camX:0, camY:0, wind:0, toasts:[], zoneName:0, tut:0,
   water:0, rice0:0, chops:0,
+  ch:0,                       // which beat of the first night we are on
 };
 const has = s => !!GS.skills[s];
 const avail = ()=> GS.merit - GS.spent;
@@ -3380,12 +3680,22 @@ const SKILLS = {
   can:   {br:3,i:1,cost:3, n:'Watering Can',  d:'The jar was never the problem. Carrying was. Five waterings instead of two.', need:'sickle'},
   net:   {br:3,i:2,cost:4, n:'Bug Net',       d:'Bamboo hoop, mosquito gauze. Everything that flies at dusk is suddenly worth something.', need:'can'},
   axe:   {br:3,i:3,cost:5, n:'Axe',           d:'The house needs planks, and planks come out of the log by the gate. A wider swing, and one plank more.', need:'net'},
+  /* FIELD — the things a body like yours can do that a farmer's cannot.
+     All four are learned on the old man's land in the first morning, and
+     all four make his work quicker rather than yours easier. */
+  haul:   {br:4,i:0,cost:5, n:'Water Yoke',    d:'A water jar on each end and no slower for it. Two at a time, at walking pace.'},
+  plowman:{br:4,i:1,cost:5, n:'Ploughman',     d:'You know the pull now. The window to drive the blade is half again as wide.', need:'haul'},
+  spit:   {br:4,i:2,cost:6, n:'Seed Shot',     d:'A seed behind that needle of a mouth, and a bed sown from clear across the field.', need:'plowman'},
+  gulp:   {br:4,i:3,cost:6, n:'Long Draught',  d:'Drink the jar. All of it. Then stand at the end of a row and give it back.', need:'spit'},
 };
+/* The strap lines are short because there are five columns now and each one
+   is ninety pixels wide. Anything longer wanders into its neighbour. */
 const BRANCHES = [
-  {n:'BODY',  d:'the body you woke up in',     c:'#e07a5f'},
-  {n:'HANDS', d:'what your hands learn',       c:PAL.gold},
-  {n:'HEART', d:'the part that got you here',  c:PAL.jadeL},
-  {n:'TOOLS', d:'what your hands hold',         c:'#8fc4e8'},
+  {n:'BODY',  d:'what woke up',      c:'#e07a5f'},
+  {n:'HANDS', d:'what hands learn',  c:PAL.gold},
+  {n:'HEART', d:'what put you here', c:PAL.jadeL},
+  {n:'TOOLS', d:'what you carry',    c:'#8fc4e8'},
+  {n:'FIELD', d:'what only you can', c:'#c8a8e8'},
 ];
 const COSMETICS = {
   skirt_ash:   {slot:'skirt', v:'ash',    cost:0,  n:'Old Rag',       d:'What you woke in.'},
@@ -3411,15 +3721,19 @@ const NPCS = [];
 function addNpc(o){ const v=makeVillager(o); v.y=groundY(v.x); v.home=v.x; NPCS.push(v); return v; }
 const MALI  = addNpc({id:'mali', x:TAMARIND_X+52, skin:'#e8bc92',skinD:'#c99a6e',shirt:'#e06a58',shirtD:'#b34a3c',legs:'#3f5878',hair:'tails',kid:1,name:'Mali',
                       wants:'friedBanana', line:'Mali (7) has been promised fried banana by three different adults and received none.'});
-const UNCLE = addNpc({id:'uncle',x:CART_X-26, skin:'#c9986f',skinD:'#a87c58',shirt:'#f0e8d2',shirtD:'#c4b89e',legs:'#5d4735',hair:'short',hairC:'#6a6058',name:'Lung Somchai',
+const UNCLE = addNpc({id:'uncle',x:CART_X-26, skin:'#c9986f',skinD:'#a87c58',shirt:'#f0e8d2',shirtD:'#c4b89e',legs:'#5d4735',hair:'crop',hairC:'#8a8078',
+                      moust:1, pakama:'#b4443c', hat:'ngob', brow:0, name:'Lung Somchai',
                       wants:'somtam', line:'He has fed this village for thirty years and never once eaten sitting down.'});
 const MONK  = addNpc({id:'monk', x:SALA_X+62, skin:'#d8a878',skinD:'#bf8f60',shirt:'#f09a42',shirtD:'#b56a28',legs:'#f09a42',hair:'bald',monk:1,name:'Luang Pi',
                       wants:'krathong', line:'He is not supposed to want anything. He would still like a krathong.'});
-const YAI   = addNpc({id:'yai',  x:1880, skin:'#dcae7e',skinD:'#bf8f60',shirt:'#b47ba8',shirtD:'#8a5580',legs:'#4a3550',skirt:1,skirtPat:'plaid',hair:'bun',hairC:'#c9c4be',name:'Yai Pen',
+const YAI   = addNpc({id:'yai',  x:1880, skin:'#dcae7e',skinD:'#bf8f60',shirt:'#b47ba8',shirtD:'#8a5580',legs:'#4a3550',skirt:1,skirtPat:'plaid',hair:'bun',hairC:'#c9c4be',
+                      glasses:1, earring:1, name:'Yai Pen',
                       wants:'garland', line:'Yai Pen is 81 and can still climb a ladder, which is exactly the problem.'});
-const NOK   = addNpc({id:'nok',  x:2380, skin:'#e8bc92',skinD:'#c69670',shirt:'#e8bc52',shirtD:'#b08c32',legs:'#7a3b50',skirt:1,skirtPat:'mudmee',hair:'short',name:"P'Nok",
+const NOK   = addNpc({id:'nok',  x:2380, skin:'#e8bc92',skinD:'#c69670',shirt:'#e8bc52',shirtD:'#b08c32',legs:'#7a3b50',skirt:1,skirtPat:'mudmee',hair:'short',
+                      earring:1, name:"P'Nok",
                       wants:'khanomkrok', line:'Runs the stall, knows everything, tells you most of it.'});
-const DAM   = addNpc({id:'dam',  x:2900, skin:'#c9986f',skinD:'#a87c58',shirt:'#5288ad',shirtD:'#35607e',legs:'#3a3a44',hair:'short',name:'Loong Dam',
+const DAM   = addNpc({id:'dam',  x:2900, skin:'#c9986f',skinD:'#a87c58',shirt:'#5288ad',shirtD:'#35607e',legs:'#3a3a44',hair:'crop',hairC:'#3a342e',
+                      pakama:'#d8c47a', hat:'ngob', name:'Loong Dam',
                       wants:'tomyum', line:'Drove the rice truck for forty years. Misses it loudly.'});
 const VILLAGERS = [YAI,NOK,DAM];
 
@@ -3577,6 +3891,11 @@ function stepParts(dt){
         p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=(p.k==='water'?300:120)*dt;
         if(p.k==='dust') p.vx*=Math.pow(0.1,dt);
         break;
+      case 'clod': {
+        p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=470*dt; p.sw+=dt*7*sign(p.vx||1);
+        const gy=groundY(p.x);
+        if(p.y>gy){ p.y=gy; p.vy*=-0.22; p.vx*=0.42; if(Math.abs(p.vy)<20){ p.vy=0; p.vx=0; } }
+        break; }
       case 'heart': p.y+=p.vy*dt; break;
       case 'petal': p.y+=p.vy*dt; p.x+=p.vx*dt+Math.sin(p.t*3+p.sw)*0.5; break;
       case 'ember': p.x+=p.vx*dt+Math.sin(p.t*3)*0.3; p.y+=p.vy*dt; break;
@@ -3597,6 +3916,12 @@ function drawParts(g){
       case 'smoke': g.globalAlpha=0.3*a; pEll(g,p.x,p.y,2-lt,2-lt,'#c8c0d8'); g.globalAlpha=1; break;
       case 'sp': g.globalAlpha=a; pR(g,p.x,p.y,1,1,p.c); if(lt<0.4){pR(g,p.x-1,p.y,1,1,p.c);pR(g,p.x+1,p.y,1,1,p.c);} g.globalAlpha=1; break;
       case 'dust': g.globalAlpha=a*0.6; pEll(g,p.x,p.y,1+lt*2,1+lt,'#9a8f7a'); g.globalAlpha=1; break;
+      case 'clod': { const z=p.sz||2, c=(p.sz|0)%2? '#4e3a26':'#5f4830';
+        g.globalAlpha=clamp(a*2,0,1);
+        const w=z+1+Math.abs(Math.cos(p.sw))*z;
+        pR(g,p.x-w/2,p.y-z,w,z+1,c);
+        pR(g,p.x-w/2,p.y-z,w,1,shade(c,0.18));
+        g.globalAlpha=1; break; }
       case 'pop': g.globalAlpha=a; pEll(g,p.x,p.y,1.6-lt,1.6-lt,p.c); g.globalAlpha=1; break;
       case 'heart': g.globalAlpha=a; pR(g,p.x-1,p.y-1,1,1,'#ff8fae'); pR(g,p.x+1,p.y-1,1,1,'#ff8fae'); pR(g,p.x-1,p.y,3,1,'#ff8fae'); pR(g,p.x,p.y+1,1,1,'#ff8fae'); g.globalAlpha=1; break;
       case 'ring': g.globalAlpha=a*0.7; g.strokeStyle=p.c; g.lineWidth=1; g.beginPath(); g.arc(R(p.x),R(p.y),4+lt*p.r,0,TAU); g.stroke(); g.globalAlpha=1; break;
@@ -3622,13 +3947,17 @@ function addMerit(n, quiet){
 function toast(text, c=PAL.gold){ GS.toasts.push({text,c,t:0}); if(GS.toasts.length>4) GS.toasts.shift(); }
 let DLG=null;
 function say(lines, done){ DLG={lines,i:0,ch:0,done:done||null}; }
+/* The line you read is the translated one, and the typewriter has to count
+   its letters rather than the English original's — otherwise Thai dialogue
+   either stops half way or finishes before it has been drawn. */
+const dlgText = ln => L(String(ln.t));
 function stepDlg(dt){
   if(!DLG) return;
-  const L=DLG.lines[DLG.i];
+  const ln=DLG.lines[DLG.i], txt=dlgText(ln);
   DLG.ch += dt*52;
   if(press('act')||press('tap')){
     AU.blip();
-    if(DLG.ch < L.t.length) DLG.ch = L.t.length;
+    if(DLG.ch < txt.length) DLG.ch = txt.length;
     else { DLG.i++; DLG.ch=0;
       if(DLG.i>=DLG.lines.length){ const d=DLG.done; DLG=null; if(d) d(); } }
   }
@@ -3673,7 +4002,9 @@ function guideSay(txt, t=6){
   if(typeof POSOP!=='undefined' && POSOP.met && Math.abs(P.x-POSOP.x) < 210){
     posopSay(txt, t); return;
   }
-  HINT = {txt, t, max:t};
+  /* translated where it is stored rather than where it is drawn, because the
+     same line goes out through two different mouths */
+  HINT = {txt:L(txt), t, max:t};
   AU.blip();
 }
 const guideTalking = ()=>
@@ -3683,7 +4014,7 @@ const guideTalking = ()=>
 function stepHint(dt){
   if(HINT){ HINT.t -= dt; if(HINT.t<=0) HINT=null; }
   // the tutorial, one gentle nudge at a time, in her voice or on the line
-  if(GS.tut < TUT.length && !DLG && GS.state==='play' && !VIG){
+  if(GS.tut < TUT.length && !DLG && GS.state==='play' && !VIG && !storyBusy()){
     const step=TUT[GS.tut];
     if(step.test()){ GS.tut++; saveGame();
       const nxt=TUT[GS.tut];
@@ -3697,7 +4028,7 @@ function stepHint(dt){
 /* ============================================================
    PLAYER
    ============================================================ */
-const SPD = ()=> has('stride')? 98 : 72;
+/* SPD and stepPlayer now live in pplat.js, with the platforms. */
 function stepPlayer(dt){
   const busy = !!DLG || GS.state!=='play' || !!P.act || !!VIG;
   let ax=0, ease=1;
@@ -4016,7 +4347,10 @@ for(let i=0;i<TREE_XS.length;i++)
    92x175 canvas) were thrown away and re-baked. It did not show up in the
    farm's own framerate so much as in everything measured after it. */
 const _farmSpr = new Map();
-const FARM_SPR_MAX = 96;   // the working set is about forty; the rest is dead weight
+/* The working set grew: six houses' worth of under-stilt life, the night
+   stall and his own house all key sprites here too, and at ninety-six the
+   cache started evicting things it was about to need again. */
+const FARM_SPR_MAX = 160;
 function farmSprite(key, w, h, paint){
   let c=_farmSpr.get(key);
   if(c){ _farmSpr.delete(key); _farmSpr.set(key,c); return c; }
@@ -4513,6 +4847,9 @@ function drawBed(g,pl){
   const gy=groundY(pl.x);
   if(pl.x-GS.camX<-40||pl.x-GS.camX>W+40) return;
   if(!bedOpen(pl)){
+    /* the first morning draws these itself, as hardpan or as turned earth —
+       two sets of bed art on the same patch of ground is one too many */
+    if(pl.plowed || storyBusy()) return;
     // not yours yet: rough ground and a stake where the bed would be
     pEll(g,pl.x,gy,12,4,'#4a4436');
     for(let i=0;i<5;i++) pTaper(g,pl.x-8+i*4,gy,pl.x-9+i*4,gy-5-((i*5)%5),2,0.6,'#4f6a44');
@@ -4914,7 +5251,7 @@ function posopCheck(){
   posopSay(n.say, 8);
   AU.ranat(720,0,0.05);
 }
-function posopSay(t, d=7){ POSOP.bub=t; POSOP.bubT=d; POSOP.bubMax=d; AU.blip(); }
+function posopSay(t, d=7){ POSOP.bub=L(t); POSOP.bubT=d; POSOP.bubMax=d; AU.blip(); }
 function talkPosop(){
   if(!POSOP.met){
     POSOP.met=true; GS.rice0=0; saveGame();
@@ -5264,25 +5601,11 @@ function paintLog(g,x,gy,n){
 /* the road east, before the rice is in: a wall of morning mist off the
    paddies with fireflies still in it. Not a fence — you are not being
    punished, there is simply nothing over there for you yet. */
-function drawMist(g){
-  if(riceDone()) return;
-  const x=MIST_X;
-  if(x-GS.camX<-90||x-GS.camX>W+90) return;
-  const gy=groundY(x);
-  for(let i=0;i<9;i++){
-    const t=i/8, yy=gy-6-i*13, a=0.30-t*0.2;
-    const sw=Math.sin(GS.t*0.5+i*0.9)*7;
-    pEll(g, x+sw, yy, 34-i*1.4, 9, rgba('#d8e4f0', a));
-    pEll(g, x+sw*0.6+8, yy-4, 22-i, 6, rgba('#eef4fa', a*0.7));
-  }
-  for(let i=0;i<7;i++){
-    const a=GS.t*0.4+i*0.9, bl=0.5+0.5*Math.sin(GS.t*2+i*1.7);
-    if(bl<0.35) continue;
-    const bx=x+Math.cos(a)*26, by=gy-30+Math.sin(a*0.7)*22;
-    pR(g,bx,by,1,1,rgba('#c6ff9a',0.7*bl));
-    drawGlow(g,bx,by,7,'#96ff78',0.22*bl);
-  }
-}
+/* Retired. The road east is no longer gated: the first night walks you
+   straight down it, and a wall of mist across the one route the story takes
+   is a wall across the story. The mist that remains is the MIST array in
+   p3, which is weather and nothing else. */
+
 
 /* ============================================================
    THINGS THAT FLY AT DUSK
@@ -5658,7 +5981,7 @@ function drawTaskNew(g,t){
    road learns nothing except that they are lost. So the mist off
    the paddies does not lift, and the guide says why.
    ============================================================ */
-const eastLimit = ()=> riceDone()? WORLD_W-16 : MIST_X;
+const eastLimit = ()=> WORLD_W-16;
 function mistNudge(){
   if(riceDone()) return;
   if(GS.seen.mistT && GS.t - GS.seen.mistT < 7) return;
@@ -5673,22 +5996,20 @@ function mistNudge(){
    STEP AND DRAW HOOKS
    ============================================================ */
 function stepNew(dt){
-  stepPosop(dt);
+  if(!storyBusy()) stepPosop(dt);
   stepBugs(dt);
-  if(P.x > eastLimit()){ P.x = eastLimit(); P.vx = 0; navStop(); mistNudge(); }
-  if(!riceDone() && NAV.on && NAV.tx > eastLimit()){ NAV.tx = eastLimit(); }
+  if(P.x > eastLimit()){ P.x = eastLimit(); P.vx = 0; navStop(); }
 }
 /* behind the prete: the buildings and the standing water */
 function drawNew(g){
   drawBarn(g);
   drawJar(g);
   drawLog(g);
-  if(farmActive()) drawPosop(g);
+  if(farmActive() && !storyBusy()) drawPosop(g);
 }
-/* in front: the things in the air, and the wall of mist */
+/* in front: the things in the air */
 function drawNewFore(g){
   drawBugs(g);
-  drawMist(g);
 }
 /* ---------- the prompts ----------
    Split in two on purpose. The barn, the jar, the log and Mae Posop are
@@ -6309,6 +6630,13 @@ const VIGS = {
   houseDone: { once:true, at:()=>FARMHOUSE_X, hold:0.95,
     lines:['A floor, four walls and a roof that keeps the rain where rain goes.',
            'A prete has no use for a house. You built one anyway, and you will sit in the doorway.'] },
+  planted: { once:true, at:()=>BED_XS[2], hold:1.0,
+    lines:['Five beds, turned and wet and sown, on a morning you were not expected to see.',
+           'Nobody asked what you did before. He asked whether you could lift the other end.'],
+    step(v){ if(v.t>0.7 && !v.did){ v.did=true; AU.metta&&AU.metta(); pSpark(BED_XS[2],groundY(BED_XS[2])-24,18,'#ffe89a'); } } },
+  firstJarDrop: { once:true, at:()=>P.x, hold:0.8,
+    lines:['You put the jar down exactly where you meant to put it.',
+           'Small. It is the first thing you have done on purpose since the ground.'] },
   orderDone: { at:()=>VIG.who? (P.x+VIG.who.x)/2 : P.x, hold:0.7,
     lines:['They eat standing up, the way everybody here does.',
            'You watch somebody enjoy a thing you can never taste.'],
@@ -6950,13 +7278,22 @@ function render(){
   const cx=R(GS.camX+ox), cy=R(GS.camY+oy);
 
   drawSky(ctx);
+  /* aerial perspective: each layer of distance gets a coat of the horizon's
+     own colour, and the further off it is the more of it there is. At night
+     the haze is nothing; by morning the far ridge is half sky. */
+  const haze=hazeAmt(), hc=haze>0.01? hazeColour() : null;
+  /* a coat too faint to see is still a full-screen fill, so do not */
+  const coat=a=>{ if(!hc || a*haze<0.035) return; ctx.fillStyle=rgba(hc,a*haze); ctx.fillRect(0,0,W,H); };
   ctx.drawImage(farCv, -R(cx*PX.far), R(-cy*0.1));
+  coat(0.30);
   ctx.drawImage(midCv, -R(cx*PX.mid), R(-cy*0.25));
+  coat(0.13);
   ctx.drawImage(bgCv,  -R(cx*PX.bg),  R(-cy*0.55));
+  coat(0.05);
 
   ctx.save(); ctx.translate(-cx,-cy);
   ctx.drawImage(playCv, cx, 0, W, H, cx, 0, W, H);
-  drawMist(ctx);
+  drawWeatherMist(ctx);
   drawLanternString(ctx);
 
   // pond shimmer
@@ -6967,6 +7304,8 @@ function render(){
   }
 
   drawSigns(ctx);
+  drawCrittersBack(ctx);
+  drawStoryBack(ctx);  // the stall, his house, the furrows
   drawFarm(ctx);
   drawNew(ctx);        // the barn, the jar, the log, and her
   if(GS.state==='play') drawNavMark(ctx);
@@ -6999,6 +7338,7 @@ function render(){
   drawTani(ctx,TANI,{wave:TANI.waveT>0});
 
   for(const s of SPIRITS){
+    if(storyBusy()) break;        // the first night is about a person, not a ghost
     if(s.x-cx<-70||s.x-cx>W+70) continue;
     const y = s.id==='krasue'? s.y-52+Math.sin(s.anim*1.5)*6
             : s.id==='krahang'? s.y-38+Math.sin(s.anim*2)*5 : s.y;
@@ -7012,8 +7352,12 @@ function render(){
 
   pEll(ctx,P.x,P.y+1,9,2.6,'rgba(10,8,24,0.4)');
   drawPrete(ctx,P,{dt:1/60, wind:GS.wind, mouth:P.state==='wail'?1:0,
-    armTarget: HT? {x:HT.hx,y:HT.hy} : null, gold: GS.cos.halo?1:0, rise:P.rise||0});
+    armTarget: HT? {x:HT.hx,y:HT.hy}
+              : PLOW? {x:PLOW.x-19, y:groundY(PLOW.x)-41} : null,
+    gold: GS.cos.halo?1:0, rise:P.rise||0});
   if(HT) drawTaskWorld(ctx);
+  drawStoryFore(ctx);  // whoever is walking you home, and what you are holding
+  drawCrittersFore(ctx);
   drawNewFore(ctx);    // things in the air, and the mist over the road east
   drawParts(ctx);
   ctx.restore();
@@ -7030,12 +7374,13 @@ function render(){
   }
   ctx.restore();
 
-  if(GS.dawn>0){ ctx.fillStyle=`rgba(255,166,110,${0.13*GS.dawn})`; ctx.fillRect(0,0,W,H); }
   const vg=ctx.createRadialGradient(W/2,H/2,H*0.44,W/2,H/2,H*1.0);
-  vg.addColorStop(0,'rgba(8,6,20,0)'); vg.addColorStop(1,'rgba(8,6,20,0.4)');
+  vg.addColorStop(0,'rgba(8,6,20,0)');
+  vg.addColorStop(1,`rgba(8,6,20,${0.4-0.28*TOD.v})`);
   ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
   if(GS.state==='play' && !VIG){ drawPosopBubble(ctx); drawHintLine(ctx); drawHUD(); }
+  if(GS.state==='plow') drawPlowUI(ctx);
   else if(GS.state==='task') drawTaskHUD(ctx);
   drawVig(ctx);
   drawDialog(ctx);
@@ -7045,6 +7390,7 @@ function render(){
   if(GS.state==='shop') drawShop(ctx);
   if(GS.state==='ceremony') drawCeremonyUI(ctx);
   if(GS.state==='end') drawEnd(ctx);
+  drawStoryUI(ctx);    // the chapter card, and the fade through the night
   if(TOUCH.on && uiShowsPads()) drawPads(ctx);
 }
 function uiShowsPads(){ return (GS.state==='play'&&!DLG&&!VIG)||GS.state==='task'; }
@@ -7579,6 +7925,11 @@ function checkInteract(){
   PROMPT=null;
   if(DLG) return;
   const set=(x,y,txt,fn,sub)=>{ PROMPT={x,y,txt,fn,sub}; };
+  /* ---- the first night owns every prompt while it is running. Until the
+     old man's field is sown there is no shop, no order board and no ghost
+     wanting a chat: there is one thing to do and the game says what it is. ---- */
+  storyInteract(set, ()=>!!PROMPT);
+  if(storyBusy()){ endInteract(); return; }
   /* ---- the farm first: it is fixed furniture, and a ghost drifting across
      a bed must never stop you working it ---- */
   checkNewFixed(set, ()=>!!PROMPT);      // the barn, the jar, the log, and her
@@ -7665,11 +8016,19 @@ function checkInteract(){
     if(nd.ready && near(nd.x,22)){ const it=ITEMS[nd.item];
       set(nd.x, nd.y-30, L('pick')+' '+L(it.n), ()=>gather(nd)); break; }
   }
+  /* and last of all the things that only ever answer: a jar, a bell, a stone
+     with something under it. They must never take a prompt off a person. */
+  thingInteract(set, ()=>!!PROMPT);
+  dogInteract(set, ()=>!!PROMPT);
+  endInteract();
+}
+function endInteract(){
   // arriving on a tapped spot interacts with whatever is standing there
   if(PROMPT && (press('act') || navTake())){ const f=PROMPT.fn; PROMPT=null; f(); }
   else navTake();
   // G gives to whoever is nearest
   if(press('give')){
+    if(storyBusy()){ guideSay('Later. There is a field to get in.'); return; }
     let best=null,bd=44;
     for(const t of GIFTEES()){ const d=Math.abs(t.x-P.x); if(d<bd){ bd=d; best=t; } }
     if(best) openGive(best);
@@ -7833,7 +8192,10 @@ function startCeremony(){
   AU.bigDing();
 }
 function stepCeremony(dt){
-  const c=CER; c.t+=dt; GS.dawn=clamp(c.t/16,0,1);
+  /* The sunrise at the end is the same sunrise as every other one now, so it
+     goes through the clock. Setting GS.dawn directly stopped working the
+     moment stepTOD started writing that field every frame. */
+  const c=CER; c.t+=dt; setTOD(clamp(c.t/16,0,1), true);
   c.lt-=dt;
   if(c.i>=0&&c.i<CER_LINES.length) c.ch+=dt*44;
   if(c.lt<=0){
@@ -7853,7 +8215,7 @@ function stepCeremony(dt){
   if(c.i>=CER_LINES.length){
     c.rise+=dt; P.rise=Math.min(60,c.rise*10);
     if(c.rise>6.5){ c.flash+=dt;
-      if(c.flash>1.5){ GS.q.done=true; GS.cos.halo=1; GS.seen.own_halo=true; P.rise=0; GS.dawn=1; GS.state='end'; GS.t2=0; saveGame(); } }
+      if(c.flash>1.5){ GS.q.done=true; GS.cos.halo=1; GS.seen.own_halo=true; P.rise=0; setTOD(1,true); GS.state='end'; GS.t2=0; saveGame(); } }
   }
   GS.camX=lerp(GS.camX,clamp(SHRINE_X-W/2+10,0,WORLD_W-W),1-Math.pow(0.02,dt));
   GS.camY=lerp(GS.camY,6,1-Math.pow(0.02,dt));
@@ -7912,7 +8274,7 @@ function drawEnd(g){
 const TP=makePrete(); TP.x=W*0.30; TP.y=214; TP.face=1;
 function drawTitle(){
   const g=ctx;
-  GS.dawn=0;
+  setTOD(TOD.v,true);
   drawSky(g);
   g.fillStyle='#0a0918';
   for(let i=0;i<8;i++){
@@ -8007,6 +8369,7 @@ function startMem(i){
 function memReady(){
   // do not cut the guide off mid-sentence, but do not wait out the whole line
   if(GS.state!=='play' || DLG) return -1;
+  if(storyBusy()) return -1;          // the past can wait until the field is in
   if(guideTalking()) return -1;
   for(let i=0;i<MEMS.length;i++){
     if(GS.mem[MEMS[i].id]) continue;
@@ -8574,7 +8937,10 @@ function buildPortrait(key){
     const n=NPCS.find(v=>v.id===key);
     if(n){ const m=makeVillager(Object.assign({},n,{x:0,y:0,vx:0,phase:0,face:1,cloth:makeCloth(4,9)}));
       for(let k=0;k<16;k++) stepCloth(m.cloth,0,-10,9,1/60,0,0);
-      place(()=>drawVillager(g,m,{}), 3.4, 0, -20); }
+      /* Framed on the head rather than on a number that used to work: the
+         head centre is LEG + torso + neck above the feet, which is twenty-six
+         and a half pixels up, and at three times that fills the medallion. */
+      place(()=>drawVillager(g,m,{}), 2.2, 0, -26); }
   }
   g.restore();
   // circular mask + rim
@@ -8818,7 +9184,10 @@ function devaPlate(g,d){
    THE MAP — a cloud-and-ink map of the one long road
    ============================================================ */
 const MAP_PINS = [
-  {x:()=>560,        n:'ruined stupa', ic:'chedi'},
+  {x:()=>112,        n:'ruined stupa', ic:'chedi'},
+  {x:()=>GRAVE_X,    n:'your grave',   ic:'chedi'},
+  {x:()=>STALL2_X,   n:'the cart',     ic:'wok'},
+  {x:()=>HOME_X,     n:'his house',    ic:'shrine'},
   {x:()=>POND_X,     n:'clay pond',    ic:'water'},
   {x:()=>FALLEN_TREE_X, n:'fallen tree', ic:'log', done:()=>GS.q.tree},
   {x:()=>LAMP_XS[BROKEN_LAMP], n:'dark lamp', ic:'lamp', done:()=>GS.q.lamp},
@@ -8828,6 +9197,7 @@ const MAP_PINS = [
   {x:()=>KITCHEN_X,  n:'kitchen',      ic:'wok'},
   {x:()=>TANI_X,     n:'Tani',         ic:'tani'},
   {x:()=>SALA_X,     n:'the temple',   ic:'bell'},
+  {x:()=>6330,       n:'the stream',   ic:'water'},
 ];
 function drawMap(g,x0,y0,w,h){
   cloud(g,x0,y0,w,h,{seed:97,top:'#fdf6e2',body:'#f1e5c8',under:'#d9c9a2',edge:'#b09a72'});
@@ -8936,9 +9306,9 @@ function wishBubble(g,t,y){
    comes up here instead: one cloud under the plaques, and it fades. */
 function drawHintLine(g){
   if(!HINT || GS.state!=='play' || DLG || PROMPT) return;
-  const lines=wrap(g,HINT.txt,W-56,7).slice(0,3);
+  const lines=wrap(g,HINT.txt,W-56,7).slice(0,3), lh=lineStep(7);
   const w2=Math.max(...lines.map(l=>txtW(l,7)))+22;
-  const bh=lines.length*10+12;
+  const bh=lines.length*lh+12;
   /* under whatever the HUD already put in that band — the rice lesson and
      the village's orders both live up there, and the hint used to draw
      straight through them */
@@ -8946,12 +9316,13 @@ function drawHintLine(g){
   const a=clamp(HINT.t/0.6,0,1);           // it goes quietly
   g.globalAlpha=a;
   cloud(g,W/2-w2/2,y,w2,bh,{seed:53,body:'#f0e6c8'});
-  lines.forEach((l,i)=>pTxt(g,l,W/2,y+14+i*10,CL.ink,7,'center'));
+  lines.forEach((l,i)=>pTxt(g,l,W/2,y+14+i*lh,CL.ink,7,'center'));
   g.globalAlpha=1;
 }
 
 /* ---------------- HUD ---------------- */
 function drawHUD(){
+  if(chIs('climb')) return;            // nothing to count yet, and no room for it
   const g=ctx;
   /* a small merit plaque in the corner, and the basket on a toolbar along the
      bottom, the way a farming game does it. neither one covers the village. */
@@ -9043,7 +9414,7 @@ function drawHUD(){
   }
   /* the hint has to clear the toolbar, and it has to stop once you have
      plainly understood it — a permanent instruction is just clutter */
-  if(!PROMPT && !DLG && !GS.q.gifts){
+  if(!PROMPT && !DLG && !GS.q.gifts && !GS.seen.walked){
     g.globalAlpha=0.8;
     pTxt(g,'tap the ground to walk',W/2,GS._bar? H-36 : H-8,'#e8e0d0',6,'center');
     g.globalAlpha=1;
@@ -9052,8 +9423,8 @@ function drawHUD(){
 /* ---------------- dialogue, with a face ---------------- */
 function drawDialog(g){
   if(!DLG) return;
-  const L=DLG.lines[DLG.i];
-  const key=speakerKey(L.w);
+  const ln=DLG.lines[DLG.i];
+  const key=speakerKey(ln.w);
   const bh=58, by=H-bh-10, bx=key?70:20, bw=W-bx-20;
   cloud(g,bx,by,bw,bh,{seed:77});
   if(key){
@@ -9066,10 +9437,12 @@ function drawDialog(g){
     g.globalAlpha=0.18; g.drawImage(pr, R(px2), R(py+bob-1)); g.globalAlpha=1;
   }
   let ty=by+16;
-  if(L.w){ pTxt(g,L.w,bx+12,ty, '#8f4a2a', 8); ty+=11; }
-  const shown=L.t.slice(0,DLG.ch|0);
-  for(const line of wrap(g,shown,bw-26,7).slice(0,3)){ pTxt(g,line,bx+12,ty,CL.ink,7); ty+=10; }
-  if((DLG.ch|0)>=L.t.length){ g.globalAlpha=0.5+0.5*Math.sin(GS.t*6); icoDown(g,bx+bw-15,by+bh-11,1.3,CL.gold); g.globalAlpha=1; }
+  if(ln.w){ pTxt(g,L(ln.w),bx+12,ty, '#8f4a2a', 8); ty+=11; }
+  const full=dlgText(ln);
+  const shown=full.slice(0,DLG.ch|0);
+  const lh=lineStep(7);
+  for(const line of wrap(g,shown,bw-26,7).slice(0,3)){ pTxt(g,line,bx+12,ty,CL.ink,7); ty+=lh; }
+  if((DLG.ch|0)>=full.length){ g.globalAlpha=0.5+0.5*Math.sin(GS.t*6); icoDown(g,bx+bw-15,by+bh-11,1.3,CL.gold); g.globalAlpha=1; }
 }
 function drawTaskHUD(g){
   const t=HT;
@@ -9294,8 +9667,9 @@ function stepTree(dt){
   if(press('heavy')||press('whistle')||press('give')){ TREE.tab=(TREE.tab+1)%5; TREE.row=0; AU.sel(); }
   if(TREE.tab===0){
     const keys=Object.keys(SKILLS);
-    if(press('left')){ TREE.col=(TREE.col+3)%4; AU.blip(); }
-    if(press('right')){ TREE.col=(TREE.col+1)%4; AU.blip(); }
+    const nb=BRANCHES.length;
+    if(press('left')){ TREE.col=(TREE.col+nb-1)%nb; AU.blip(); }
+    if(press('right')){ TREE.col=(TREE.col+1)%nb; AU.blip(); }
     const col=keys.filter(k=>SKILLS[k].br===TREE.col);
     if(press('up')) { TREE.row=clamp(TREE.row-1,0,col.length-1); AU.blip(); }
     if(press('down')){ TREE.row=clamp(TREE.row+1,0,col.length-1); AU.blip(); }
@@ -9341,8 +9715,17 @@ function drawLedger(g){
   pTxt(g,'THE LEDGER',16,22,'#8f6a1e',13);
   /* right-aligned clear of the language key at W-84, which it used to run
      straight underneath */
-  pTxt(g,avail()+' '+L('merit to spend'),W-90,17,'#8f6a1e',8,'right');
-  pTxt(g,GS.merit+' '+L('earned')+' · '+GS.spent+' '+L('spent'),W-90,25,CL.ink3,6,'right');
+  /* Thai is taller and wider than Latin at the same nominal size. Two
+     stacked lines at eight and six fit in English and collide in Thai, and
+     both of them ran under the language key, so Thai gets the same three
+     numbers on one line instead of two. */
+  if(LANG==='th'){
+    pTxt(g, L('merit to spend')+' '+avail()+' · '+L('earned')+' '+GS.merit+' · '+L('spent')+' '+GS.spent,
+         W-118, 21, '#8f6a1e', 6, 'right');
+  } else {
+    pTxt(g,avail()+' '+L('merit to spend'),W-90,17,'#8f6a1e',8,'right');
+    pTxt(g,GS.merit+' '+L('earned')+' · '+GS.spent+' '+L('spent'),W-90,25,CL.ink3,6,'right');
+  }
   /* a close chevron in the corner of the header */
   icoDown(g,W-26,17,1.5,CL.ink2);
   hitAdd(W-42,4,38,26,()=>{ GS.state='play'; AU.sel(); });
@@ -9356,11 +9739,16 @@ function drawLedger(g){
   if(TREE.tab===0){
     const keys=Object.keys(SKILLS);
     let selId=null;
-    for(let b=0;b<4;b++){
+    /* Five columns now that the field skills have a home of their own, so
+       each one is about ninety pixels wide and the strap line under the
+       heading has to wrap rather than run into its neighbour. */
+    const nb=BRANCHES.length, colW=(W-96)/(nb-1);
+    for(let b=0;b<nb;b++){
       const col=keys.filter(k=>SKILLS[k].br===b);
-      const cx=58+b*(W-116)/3;
-      pTxt(g,BRANCHES[b].n,cx,68,BRANCHES[b].c,10,'center');
-      pTxt(g,BRANCHES[b].d,cx,78,'#b8b0c8',6,'center');
+      const cx=48+b*colW;
+      pTxt(g,BRANCHES[b].n,cx,66,BRANCHES[b].c,9,'center');
+      { let yy=75;
+        for(const l of wrap(g,BRANCHES[b].d,colW-6,6).slice(0,2)){ pTxt(g,l,cx,yy,'#b8b0c8',6,'center'); yy+=7; } }
       /* every connector first, then every node: drawn in one pass the next
          row's connector came down through this row's name and read as a
          stray vertical bar in the middle of the word */
@@ -9386,8 +9774,8 @@ function drawLedger(g){
         if(owned) icoTick(g,cx,y+1,1.1,'#26221c');
         else if(locked) pTxt(g,'·',cx,y+3,'#6a6478',8,'center');
         else pTxt(g,''+s.cost,cx,y+3,canBuy?'#8f6a1e':'#3b3128',7,'center');
-        pTxt(g,s.n,cx,y+16,owned?'#fff6dc':locked?'#6a6478':'#e8e0d0',7,'center');
-        hitAdd(cx-20,y-12,40,30,()=>{ const same=TREE.col===b&&TREE.row===i;
+        pTxt(g,s.n,cx,y+16,owned?'#fff6dc':locked?'#6a6478':'#e8e0d0',6,'center');
+        hitAdd(cx-colW/2+2,y-12,colW-4,30,()=>{ const same=TREE.col===b&&TREE.row===i;
           TREE.col=b; TREE.row=i; if(same) PRESS.act=true; else AU.blip(); });
       });
     }
@@ -9401,7 +9789,7 @@ function drawLedger(g){
                    : s.cost+' '+L('merit')+' · '+L('E to ascend'),
         W-22,H-34,owned?'#4a7a2c':'#8f6a1e',7,'right');
       let y=H-22;
-      for(const l of wrap(g,s.d,W-46,7).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,7); y+=10; }
+      for(const l of wrap(g,s.d,W-46,7).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,7); y+=lineStep(7); }
     }
   } else if(TREE.tab===1){
     const ids=Object.keys(COSMETICS).filter(c=>!COSMETICS[c].locked||GS.seen['own_'+c]);
@@ -9491,10 +9879,2631 @@ function drawPast(g){
 }
 
 /* ============================================================
+   THE CLOCK
+
+   The game used to be permanently two in the morning. It is a
+   story about a night that ends now, so there has to be a
+   morning to end it into.
+
+   One number does all of it: TOD.v, nought at the blackest part
+   of the night and one at full morning. The sky, the lamps, the
+   colour of the air, what the light does to the ground and even
+   what the crickets are doing all read off it. Nothing else in
+   the game needs to know what time it is.
+
+   GS.dawn is kept in step with it, because half the older code
+   asks that question and there is no reason to make it ask a
+   new one.
+   ============================================================ */
+const TOD = { v:0, to:0, rate:0.5, held:false };
+function setTOD(v, instant){
+  TOD.to = clamp(v,0,1);
+  if(instant) TOD.v = TOD.to;
+  GS.dawn = TOD.v;
+}
+function stepTOD(dt){
+  const d = TOD.to - TOD.v;
+  if(Math.abs(d) > 0.0008) TOD.v += clamp(d, -TOD.rate*dt, TOD.rate*dt);
+  else TOD.v = TOD.to;
+  GS.dawn = TOD.v;
+}
+const isNight = ()=> TOD.v < 0.34;
+const isDay   = ()=> TOD.v > 0.70;
+/* the hour, in the only form the game ever shows it: a word */
+function todWord(){
+  const v=TOD.v;
+  return v<0.16? 'deep night' : v<0.36? 'small hours' : v<0.56? 'first light'
+       : v<0.74? 'sunrise'    : v<0.9 ? 'early morning' : 'morning';
+}
+
+/* ---------- the sky, keyframed ---------- */
+/* Four bands from the top of the screen down, plus how much sun, moon and
+   star there is. Everything between two keys is straight interpolation, so
+   the sky can be parked anywhere and still looks like a sky. */
+const SKY_KEYS = [
+  {v:0.00, c:['#070a1e','#111836','#1d264e','#2c3864'], sun:0,    moon:1,    star:1   },
+  {v:0.34, c:['#13163a','#2b2450','#573a60','#82505e'], sun:0,    moon:0.85, star:0.62},
+  {v:0.54, c:['#262a5e','#6a3c64','#c66c54','#eea766'], sun:0.22, moon:0.32, star:0.12},
+  {v:0.72, c:['#3d61a0','#7c80ac','#dfa87c','#f7daa6'], sun:0.62, moon:0,    star:0   },
+  {v:1.00, c:['#2d6ec2','#5d9ad6','#a4cae8','#e6efdf'], sun:1,    moon:0,    star:0   },
+];
+function skyNow(){
+  const v=TOD.v;
+  let a=SKY_KEYS[0], b=SKY_KEYS[SKY_KEYS.length-1];
+  for(let i=0;i<SKY_KEYS.length-1;i++){
+    if(v>=SKY_KEYS[i].v && v<=SKY_KEYS[i+1].v){ a=SKY_KEYS[i]; b=SKY_KEYS[i+1]; break; }
+  }
+  const t = b.v===a.v? 0 : (v-a.v)/(b.v-a.v);
+  return { c:[0,1,2,3].map(i=>mix(a.c[i],b.c[i],t)),
+           sun:lerp(a.sun,b.sun,t), moon:lerp(a.moon,b.moon,t), star:lerp(a.star,b.star,t) };
+}
+/* how much the far distance is eaten by daylight haze */
+const hazeAmt = ()=> clamp((TOD.v-0.44)/0.5,0,1);
+function hazeColour(){ return skyNow().c[3]; }
+
+function drawSky(g){
+  const S = skyNow();
+  pVGrad(g,0,0,W,76,S.c[0],S.c[1],8);
+  pVGrad(g,0,76,W,66,S.c[1],S.c[2],8);
+  pVGrad(g,0,142,W,H-142,S.c[2],S.c[3],7);
+
+  if(S.star>0.02){
+    for(const s of STARS){
+      const tw=0.45+0.55*Math.sin(GS.t*1.4+s[2]);
+      const x=(s[0]*W - GS.camX*0.03 + W*4)%W;
+      g.fillStyle=`rgba(255,246,224,${0.75*tw*S.star*(0.35+s[3]*0.65)})`;
+      g.fillRect(R(x),R(s[1]*H),1,1);
+      if(s[3]>0.93 && tw>0.8){ g.fillRect(R(x-1),R(s[1]*H),1,1); g.fillRect(R(x+1),R(s[1]*H),1,1); }
+    }
+  }
+  /* the moon goes down in the west as the sun comes up in the east, which is
+     the one piece of astronomy this game is prepared to commit to */
+  if(S.moon>0.02){
+    const mx=(W*0.30 - GS.camX*0.02), my=30+ (1-S.moon)*54;
+    g.globalAlpha=S.moon;
+    for(let i=3;i>0;i--){
+      const gl=g.createRadialGradient(mx,my,10,mx,my,20+i*18);
+      gl.addColorStop(0,`rgba(246,240,220,${0.08*i})`); gl.addColorStop(1,'rgba(246,240,220,0)');
+      g.fillStyle=gl; g.fillRect(mx-70,my-70,140,140);
+    }
+    pCirc(g,mx,my,16,mix(PAL.moon,'#ffd9a8',1-S.moon));
+    pCirc(g,mx-5,my-5,4,PAL.moonD); pCirc(g,mx+6,my+5,3,PAL.moonD);
+    pCirc(g,mx+3,my-8,2,PAL.moonD); pCirc(g,mx-8,my+6,2,PAL.moonD);
+    g.globalAlpha=1;
+  }
+  if(S.sun>0.01){
+    const rise=clamp((TOD.v-0.46)/0.54,0,1);
+    const sx=(W*0.80 - GS.camX*0.015), sy=lerp(168,26,rise);
+    const col=mix('#ff9a4a','#fff3c8',rise);
+    g.globalAlpha=clamp(S.sun,0,1);
+    for(let i=4;i>0;i--){
+      const gl=g.createRadialGradient(sx,sy,6,sx,sy,16+i*22);
+      gl.addColorStop(0,`rgba(255,214,140,${0.09*i})`); gl.addColorStop(1,'rgba(255,214,140,0)');
+      g.fillStyle=gl; g.fillRect(sx-100,sy-100,200,200);
+    }
+    pCirc(g,sx,sy,lerp(15,11,rise),col);
+    pCirc(g,sx,sy,lerp(11,8,rise),'#fffbe8');
+    g.globalAlpha=1;
+  }
+  for(const c of CLOUDS){
+    const x=((c.x*W*1.5 + GS.t*c.sp*3 - GS.camX*0.05)%(W*1.6))-W*0.3;
+    /* at night they are a hole in the stars; at dawn they catch the fire; by
+       morning they are just clouds */
+    const lit = TOD.v<0.5? TOD.v*2 : 1;
+    const base = TOD.v<0.6 ? mix('#3f4a80','#ffb98a',lit) : mix('#ffb98a','#f4f7fb',(TOD.v-0.6)/0.4);
+    g.globalAlpha=c.o*(1+TOD.v*2.4);
+    pEll(g,x,c.y*H,c.w/2,c.h/2, base);
+    pEll(g,x+c.w*0.24,c.y*H-c.h*0.22,c.w/3,c.h/2.3, shade(base,0.10));
+    pEll(g,x-c.w*0.2,c.y*H+c.h*0.1,c.w/4,c.h/2.8, shade(base,-0.10));
+    g.globalAlpha=1;
+  }
+}
+
+/* ---------- light on the ground ---------- */
+/* The play layer is painted once, for a village at two in the morning. In
+   daylight the darkness overlay comes off and a warm wash goes on instead,
+   which is cheaper than keeping a second copy of a 5600-pixel canvas and
+   reads, at this size, as morning. */
+function drawLighting(g,cx,cy){
+  const night=1-TOD.v;
+  lightG.globalCompositeOperation='source-over';
+  lightG.clearRect(0,0,W,H);
+  lightG.fillStyle=`rgba(12,14,44,${0.03+0.51*night*night})`;
+  lightG.fillRect(0,0,W,H);
+  lightG.globalCompositeOperation='destination-out';
+  const punch=(x,y,r,a)=>{
+    const sx=x-cx, sy=y-cy;
+    if(sx<-r||sx>W+r||sy<-r||sy>H+r) return;
+    const q=Math.max(2,Math.round(r/2)*2);
+    lightG.globalAlpha=clamp(a,0,1);
+    lightG.drawImage(punchSprite(q), R(sx-q), R(sy-q));
+    lightG.globalAlpha=1;
+  };
+  if(night>0.06){
+    for(const l of LIGHTS){ if(!l.on) continue;
+      const fl=l.flick?1-Math.random()*l.flick:1; punch(l.x,l.y,l.r*fl,l.a*night); }
+    const broken=LIGHTS.find(l=>l.broken);
+    if(broken && !broken.on && Math.random()<0.05) punch(broken.x,broken.y,26,0.35*night);
+    punch(P.x,P.y-42, GS.cos.halo?58:44, 0.42*night);
+    for(const p of PT) if(p.k==='orb'&&p.t>=0) punch(p.x,p.y,10,0.55*night);
+    for(const s of SPIRITS) punch(s.x, s.y-24, s.id==='krasue'?34:26, 0.34*night);
+    punch(TANI.x,TANI.y-18,34,0.4*night);
+    punch(KITCHEN_X-10, groundY(KITCHEN_X)-38, 40, 0.5*night);
+  }
+  g.drawImage(lightCv,0,0);
+  const day=TOD.v;
+  if(day>0.04){
+    /* Morning lifts the black end of a night palette and puts a warm cast on
+       it. That was two full-screen fills; at the device scale this canvas
+       runs at, one is worth about three frames a second. */
+    g.globalCompositeOperation='lighter';
+    g.fillStyle=`rgba(126,114,78,${0.19*day})`;
+    g.fillRect(0,0,W,H);
+    g.globalCompositeOperation='source-over';
+  }
+}
+function drawGlows(g){
+  g.globalCompositeOperation='lighter';
+  const night=1-TOD.v;
+  if(night>0.05){
+    for(const l of LIGHTS){
+      if(!l.on) continue;
+      if(l.x-GS.camX<-90||l.x-GS.camX>W+90) continue;
+      const fl=l.flick?1-Math.random()*l.flick:1;
+      drawGlow(g,l.x,l.y,l.r*0.85*fl,l.c,(0.15*night+0.03)*night);
+    }
+    for(const f of FIREFLIES){
+      if(f.x-GS.camX<-20||f.x-GS.camX>W+20) continue;
+      const bl=0.5+0.5*Math.sin(f.t*2.2);
+      if(bl<0.3) continue;
+      drawGlow(g,f.x,f.y,9,'#c6ff9a',0.22*bl*night);
+    }
+  }
+  g.globalCompositeOperation='source-over';
+}
+
+/* ---------- the night noise, and the morning one ---------- */
+/* Crickets and frogs belong to the dark. Birds belong to the light. The
+   ranat drifts across both because somebody in this village is always
+   practising. */
+AU.nextBird = 1.5;
+AU.bird = function(){
+  const f=rnd(1800,2600);
+  this.tone(f,0.06,'sine',0.016,f*1.5);
+  this.tone(f*1.4,0.05,'sine',0.010,f*0.9,0.07);
+  if(Math.random()<0.5) this.tone(f*1.2,0.05,'sine',0.011,f*1.6,0.15);
+};
+AU.rooster = function(){
+  this.tone(620,0.18,'sawtooth',0.020,780);
+  this.tone(700,0.34,'sawtooth',0.018,520,0.18);
+  this.tone(520,0.30,'sawtooth',0.012,380,0.5);
+};
+AU.bark = function(far){
+  const p = far?0.020:0.05;
+  this.tone(far?230:300,0.09,'square',p,far?150:190);
+  this.noise(0.07,p*0.7,far?200:120,far?1600:2600);
+};
+AU.tick = function(dt){
+  if(!this.ctx||this.muted) return;
+  const night = 1-(typeof TOD!=='undefined'? TOD.v : 0);
+  if(night>0.3){
+    if((this.nextCricket-=dt)<=0){
+      const f=rnd(4000,4800);
+      for(let i=0;i<3;i++) this.tone(f,0.05,'triangle',0.008*night,null,i*0.085);
+      this.nextCricket = rnd(0.8,2.4);
+    }
+    if((this.nextFrog-=dt)<=0){ this.tone(rnd(150,230),0.16,'sawtooth',0.012*night,null,0); this.nextFrog=rnd(4,11); }
+  }
+  if(night<0.8){
+    if((this.nextBird-=dt)<=0){ this.bird(); this.nextBird = rnd(1.4,4.2)/(1.05-night); }
+  }
+  if((this.nextPluck-=dt)<=0){
+    const sc=[220,261.6,293.7,349.2,392,440,523.3];
+    this.ranat(pick(sc),0,0.028);
+    if(Math.random()<0.3) this.ranat(pick(sc),0.28,0.018);
+    this.nextPluck = rnd(4,9);
+  }
+};
+/* ============================================================
+   THINGS THAT LIVE HERE
+
+   A village at night is not empty and a village in the morning
+   is extremely not empty. This is the layer of the game that
+   nothing depends on and everything is better for: grass that
+   lies down when you walk through it, birds that will not stay
+   on a wire while a nine-foot ghost goes past, frogs at the
+   pond, chickens under the house, a gecko on a wall, and dogs
+   that have opinions about you at two in the morning.
+
+   Everything in here is cheap on purpose. Grass is blitted from
+   a handful of baked tufts rather than drawn blade by blade,
+   and every list is bucketed by where it stands so that a frame
+   only ever touches the couple of dozen things on screen.
+   ============================================================ */
+
+/* ---------- baked tufts ----------
+   The cache key has to have FEWER possible values than the cache has slots,
+   or it is not a cache, it is a bakery. Height rounds to one of five, the
+   bend to one of seven, and 5*7*3*4 = 420 tufts fit comfortably under the
+   cap. Keyed on the raw height and a thirteen-step bend it was 2184
+   combinations against 240 slots, and the working set — every blade of
+   grass on screen, bending continuously — missed nearly every frame. */
+const _gSpr = new Map();
+const GRASS_C = ['#4a8259','#3f7550','#568c5c','#6b9a55'];
+const G_BEND = 3;                      // buckets either side of upright
+const gq = h => clamp(Math.round(h/3)*3, 6, 18);
+function grassSprite(kind, h, bendI, cI){
+  const key = kind+'|'+h+'|'+bendI+'|'+cI;
+  let c=_gSpr.get(key);
+  if(c) return c;
+  const bend=(bendI-G_BEND)/G_BEND;          // -1 .. 1
+  const w=Math.max(6, 10+Math.abs(bend)*h), cx=w/2;
+  c=mkCv(w, h+3);
+  const g=G2(c), base=GRASS_C[cI];
+  const blades = kind===0? 3 : kind===1? 4 : 5;
+  for(let i=0;i<blades;i++){
+    const t=(i/(blades-1||1)-0.5);
+    const bh=h*(0.62+0.38*Math.cos(t*2.1));
+    const tipx = cx + t*3.4 + bend*bh*0.85;
+    const col = i%2? shade(base,-0.13) : base;
+    pTaper(g, cx+t*2.6, h+2, tipx, h+2-bh, 1.7, 0.7, col);
+  }
+  if(kind===2){   // one with a seed head on it
+    const tipx=cx+bend*h*0.9;
+    pEll(g, tipx, h+2-h*0.98, 1.4, 2.6, '#c8bb7a');
+  }
+  _gSpr.set(key,c);
+  if(_gSpr.size>520) _gSpr.delete(_gSpr.keys().next().value);
+  return c;
+}
+
+/* ---------- the grass itself ---------- */
+const GRASS=[], GBUCK=[], GBW=192;
+function gbucket(x){ return GBUCK[(x/GBW)|0] || (GBUCK[(x/GBW)|0]=[]); }
+function seedGrass(){
+  GRASS.length=0; GBUCK.length=0;
+  const r=mulberry(70707);
+  for(let x=24; x<WORLD_W-24; x+= 4+r()*9){
+    const z=zoneAt(x);
+    if(isRoad(x) && r()<0.88) continue;
+    if(x>780 && x<1460 && Math.sin(x*0.021)>-0.25 && r()<0.8) continue;   // standing water
+    if(x>BED_XS[0]-24 && x<BED_XS[BED_XS.length-1]+24) continue;          // the beds are bare
+    const lush = z.id==='forest'||z.id==='grove'? 1 : z.id==='charnel'? 0.45 : 0.8;
+    if(r()>lush) continue;
+    const t={ x:R(x), h:gq(5+r()*(z.id==='forest'||z.id==='deep'?13:9)), k:(r()*3)|0,
+              c:z.id==='charnel'? 0 : (r()*4)|0, ph:r()*TAU, b:0, bv:0 };
+    if(z.id==='charnel') t.c=0;
+    GRASS.push(t); gbucket(x).push(t);
+  }
+}
+/* push whatever is standing in a stretch of grass over, and see what comes
+   out of it */
+function brushGrass(x, r, force){
+  const i0=((x-r)/GBW)|0, i1=((x+r)/GBW)|0;
+  for(let i=i0;i<=i1;i++){
+    const b=GBUCK[i]; if(!b) continue;
+    for(const t of b){
+      const d=t.x-x;
+      if(Math.abs(d)>r) continue;
+      const k=(1-Math.abs(d)/r);
+      t.bv += sign(d||1)*k*(force||5.5);
+      if(t.h>9 && Math.random()<0.0025*k) flush(t.x, groundY(t.x)-t.h);
+    }
+  }
+}
+/* something was sitting in that grass */
+function flush(x,y){
+  if(isNight()){ if(Math.random()<0.5) spawnFly('firefly',x,y); return; }
+  const k=Math.random();
+  if(k<0.42) spawnFly('butterfly',x,y);
+  else if(k<0.72) spawnFly('dragonfly',x,y);
+  else if(k<0.9){ CRIT.push({k:'hopper',x,y,vx:rnd(-40,40),vy:-rnd(60,110),t:0}); AU.tone(2200,0.03,'square',0.008); }
+  else scatterBirds(x,40);
+}
+
+/* ---------- small flying things ---------- */
+const FLY=[];
+function spawnFly(kind,x,y){
+  if(FLY.length>60) return;
+  FLY.push({k:kind,x,y,hx:x,hy:y,t:rnd(TAU),sp:rnd(0.7,1.5),life:rnd(14,40),
+            ph:rnd(TAU), r:rnd(10,30), up:rnd(-6,-22)});
+}
+function seedFlies(){
+  FLY.length=0;
+  const r=mulberry(313);
+  for(let i=0;i<44;i++){
+    const x=200+r()*(WORLD_W-400), y=groundY(x)-8-r()*26;
+    spawnFly(r()<0.5?'butterfly':'dragonfly', x, y);
+    FLY[FLY.length-1].life=1e9;
+  }
+}
+
+/* ---------- birds ---------- */
+/* Perched ones sit on wires, fences, roof ridges and branches. They watch
+   you coming and they do not like it. */
+const BIRDS=[];
+function addBird(x,y,o){
+  BIRDS.push(Object.assign({x,y,hx:x,hy:y,st:'perch',vx:0,vy:0,t:rnd(TAU),
+    face:Math.random()<0.5?-1:1, kind:(Math.random()*3)|0, hop:0, back:0},o||{}));
+}
+function scatterBirds(x, r){
+  let n=0;
+  for(const b of BIRDS){
+    if(b.st!=='perch') continue;
+    if(Math.abs(b.x-x)>r) continue;
+    b.st='fly'; b.vx=sign(b.x-x||1)*rnd(38,72); b.vy=-rnd(52,96); b.back=rnd(3.5,9); n++;
+  }
+  if(n) AU.noise(0.16,0.018,900,4200);
+  return n;
+}
+function stepBirds(dt){
+  const day=TOD.v;
+  for(const b of BIRDS){
+    b.t+=dt;
+    if(b.st==='perch'){
+      b.hop=Math.max(0,b.hop-dt);
+      if(Math.random()<dt*0.35){ b.face=-b.face; }
+      if(Math.random()<dt*0.25*(0.3+day)){ b.hop=0.22; b.x+=rnd(-3,3); }
+      if(Math.abs(b.x-P.x)<44 && Math.abs(b.y-P.y)<70 && Math.random()<dt*4){
+        b.st='fly'; b.vx=sign(b.x-P.x||1)*rnd(40,80); b.vy=-rnd(60,100); b.back=rnd(4,10);
+        AU.noise(0.12,0.014,1000,4600);
+      }
+    } else if(b.back>0){
+      /* up and away, in a panic, for a few seconds */
+      b.back-=dt;
+      b.x+=b.vx*dt; b.y+=b.vy*dt;
+      b.vy += 26*dt + Math.sin(b.t*7)*40*dt;
+      b.vx *= Math.pow(0.55,dt);
+      b.face=sign(b.vx||b.face);
+      if(b.y < 26){ b.y=26; b.vy=Math.abs(b.vy)*0.3; }
+    } else {
+      /* then home. The velocity has to be let go of first: leaving gravity
+         running underneath the homing made the bird fall past its own perch
+         for ever, which is funny exactly once. */
+      b.vx=0; b.vy=0;
+      b.x=lerp(b.x,b.hx,1-Math.pow(0.05,dt));
+      b.y=lerp(b.y,b.hy,1-Math.pow(0.05,dt));
+      b.face=sign(b.hx-b.x||b.face);
+      if(dist(b.x,b.y,b.hx,b.hy)<2.5){ b.st='perch'; b.x=b.hx+rnd(-5,5); b.y=b.hy; }
+    }
+  }
+}
+
+/* ---------- ground critters ---------- */
+const CRIT=[];
+function seedCritters(){
+  CRIT.length=0; BIRDS.length=0;
+  /* chickens keep to the houses they are fed at */
+  for(const x of [FARMHOUSE_X+30, FARMHOUSE_X+52, 1596, 1626, 1808, 2178, 2740])
+    CRIT.push({k:'hen',x:x,y:groundY(x),hx:x,vx:0,t:rnd(TAU),face:1,st:'peck',tt:rnd(1,4),
+               c:pick(['#c8c2b4','#8a6a4a','#3a3630','#d8b46a'])});
+  /* frogs at the pond and out in the flooded paddy */
+  for(const x of [POND_X-40,POND_X-12,POND_X+22,POND_X+54, 1240, 1302])
+    CRIT.push({k:'frog',x:x,y:groundY(x)+3,hx:x,vx:0,vy:0,t:rnd(TAU),face:1,tt:rnd(1,5)});
+  /* dogs: one asleep at the shop, two in the village who will take an
+     interest in a nine-foot stranger at two in the morning */
+  for(const [x,name] of [[1700,'dog1'],[2280,'dog2'],[2905,'dog3']])
+    CRIT.push({k:'dog',x:x,y:groundY(x),hx:x,vx:0,t:rnd(TAU),face:-1,st:'sleep',
+               bark:0,barks:0,tt:rnd(2,7),id:name});
+  /* geckos live on walls and are mostly a noise */
+  for(const x of [1566,1796,2166,2726,FARMHOUSE_X+8])
+    CRIT.push({k:'gecko',x:x,y:groundY(x)-34,hx:x,t:rnd(TAU),face:1,tt:rnd(3,9),run:0});
+  /* squirrels in the grove */
+  for(const x of [3180,3320,3480,4720,4980])
+    CRIT.push({k:'squirrel',x:x,y:groundY(x)-2,hx:x,vx:0,t:rnd(TAU),face:1,tt:rnd(2,6),st:'sit'});
+
+  /* birds: on the wires over the road, along the fences, and up the trees */
+  for(let i=0;i<LAMP_XS.length-1;i++){
+    const x0=LAMP_XS[i], x1=LAMP_XS[i+1];
+    for(let k=0;k<3;k++){
+      const f=(k+1)/4, x=lerp(x0,x1,f);
+      const sag=Math.sin(f*Math.PI)*10;
+      addBird(x, groundY(x)-112+sag);
+    }
+  }
+  for(const x of [1982,2046,2110,2902,2966]) addBird(x+rnd(-6,6), groundY(x)-16);
+  for(const x of [640,760,1180,1470,2560,3160,3900,4480,5020,5600,6100,6600])
+    addBird(x+rnd(-20,20), groundY(x)-rnd(46,86));
+  for(const b of BIRDS){ b.hx=b.x; b.hy=b.y; }
+}
+function stepCrit(dt){
+  const night = isNight();
+  for(const c of CRIT){
+    c.t+=dt; c.tt-=dt;
+    const far = Math.abs(c.x-GS.camX-W/2) > W;
+    if(c.k==='hen'){
+      if(far){ continue; }
+      if(night){ c.st='roost'; c.vx=0; }
+      else if(c.tt<=0){
+        c.tt=rnd(1.2,4);
+        c.st = Math.random()<0.45? 'walk':'peck';
+        if(c.st==='walk'){ c.face = (c.hx+rnd(-34,34))>c.x?1:-1; }
+      }
+      if(Math.abs(P.x-c.x)<30 && !night){ c.st='run'; c.face=sign(c.x-P.x||1); c.tt=rnd(0.5,1.1);
+        if(Math.random()<dt*2) AU.tone(rnd(700,900),0.07,'square',0.012,rnd(400,600)); }
+      const sp = c.st==='run'? 52 : c.st==='walk'? 15 : 0;
+      c.x += c.face*sp*dt;
+      if(Math.abs(c.x-c.hx)>60) c.face=sign(c.hx-c.x);
+      c.y=groundY(c.x);
+      if(sp>20 && Math.random()<dt*8) brushGrass(c.x,10,2);
+    }
+    else if(c.k==='frog'){
+      if(far) continue;
+      c.y += c.vy*dt; c.vy += 520*dt;
+      const gy=groundY(c.x)+3;
+      if(c.y>gy){ c.y=gy; c.vy=0; c.vx=0; }
+      c.x += c.vx*dt;
+      if(c.tt<=0 && c.y>=gy){
+        c.tt=rnd(2,7);
+        if(Math.abs(P.x-c.x)<70 || Math.random()<0.4){
+          c.face = Math.abs(P.x-c.x)<70 ? sign(c.x-P.x||1) : (Math.random()<0.5?-1:1);
+          c.vx=c.face*rnd(30,62); c.vy=-rnd(70,120);
+          if(night) AU.tone(rnd(150,210),0.13,'sawtooth',0.011);
+        }
+      }
+      if(Math.abs(c.x-c.hx)>70) c.x=lerp(c.x,c.hx,1-Math.pow(0.3,dt));
+    }
+    else if(c.k==='dog'){
+      c.bark=Math.max(0,c.bark-dt);
+      const seen = Math.abs(P.x-c.x)<120;
+      if(seen && c.tt<=0){
+        c.st='bark'; c.bark=0.32; c.barks++; c.tt=rnd(0.45,1.1);
+        c.face=sign(P.x-c.x||1);
+        AU.bark(false);
+        /* the others answer, the way they do */
+        for(const o of CRIT) if(o!==c && o.k==='dog' && Math.random()<0.6){ o.st='bark'; o.tt=rnd(0.8,1.8); }
+        if(Math.random()<0.4) AU.bark(true);
+      } else if(!seen && c.tt<=0){
+        c.st = night? 'sit' : (Math.random()<0.5?'sleep':'sit'); c.tt=rnd(3,9); c.barks=0;
+      }
+      c.y=groundY(c.x);
+    }
+    else if(c.k==='gecko'){
+      c.run=Math.max(0,c.run-dt);
+      if(c.tt<=0){ c.tt=rnd(4,11);
+        if(night && Math.random()<0.5){
+          /* ตุ๊กแก. It says its own name, seven times, at the worst moment */
+          for(let i=0;i<3;i++){ AU.tone(520,0.1,'square',0.014,300,i*0.42); AU.noise(0.05,0.01,400,2000,i*0.42+0.02); }
+        }
+        c.run=rnd(0.4,0.9); c.face=Math.random()<0.5?-1:1;
+      }
+      if(c.run>0) c.x += c.face*34*dt;
+      if(Math.abs(c.x-c.hx)>22) c.face=sign(c.hx-c.x);
+    }
+    else if(c.k==='squirrel'){
+      if(far) continue;
+      if(c.tt<=0){ c.tt=rnd(1.5,5); c.st=pick(['sit','run','sit','eat']); c.face=Math.random()<0.5?-1:1; }
+      if(Math.abs(P.x-c.x)<50){ c.st='run'; c.face=sign(c.x-P.x||1); }
+      if(c.st==='run'){ c.x+=c.face*74*dt; if(Math.abs(c.x-c.hx)>90) c.face=sign(c.hx-c.x); }
+      c.y=groundY(c.x)-2;
+    }
+    else if(c.k==='hopper'){
+      c.t+=dt; c.x+=c.vx*dt; c.y+=c.vy*dt; c.vy+=460*dt;
+      if(c.y>groundY(c.x)){ c.y=groundY(c.x); c.vy=0; c.vx=0; }
+    }
+  }
+  for(let i=CRIT.length-1;i>=0;i--) if(CRIT[i].k==='hopper' && CRIT[i].t>3) CRIT.splice(i,1);
+}
+
+function stepCritters(dt){
+  /* grass springs back, and leans on the wind */
+  const wind=GS.wind;
+  const i0=Math.max(0,((GS.camX-40)/GBW)|0), i1=((GS.camX+W+40)/GBW)|0;
+  for(let i=i0;i<=i1;i++){
+    const b=GBUCK[i]; if(!b) continue;
+    for(const t of b){
+      const rest = wind*0.22 + Math.sin(GS.t*1.7+t.ph)*0.05;
+      t.bv += (rest-t.b)*26*dt;
+      t.bv *= Math.pow(0.02,dt);
+      t.b = clamp(t.b + t.bv*dt, -1, 1);
+    }
+  }
+  if(Math.abs(P.vx)>14) brushGrass(P.x, 20, 3.4);
+  stepBirds(dt);
+  stepCrit(dt);
+  for(let i=FLY.length-1;i>=0;i--){
+    const f=FLY[i];
+    f.t+=dt*f.sp; f.life-=dt;
+    if(f.k==='butterfly'){
+      f.x = f.hx + Math.sin(f.t*0.7)*f.r + Math.sin(f.t*1.9)*4;
+      f.y = f.hy + Math.sin(f.t*2.3)*5 + Math.cos(f.t*0.5)*7 + f.up*0.2;
+    } else if(f.k==='dragonfly'){
+      f.x = f.hx + Math.sin(f.t*0.9)*f.r*1.4;
+      f.y = f.hy + Math.sin(f.t*1.6)*4 + Math.sin(f.t*0.31)*3;
+    } else {
+      f.x = f.hx + Math.sin(f.t*0.85)*16 + Math.sin(f.t*0.37)*9;
+      f.y = f.hy + Math.cos(f.t*0.7)*10 + Math.sin(f.t*0.53)*5;
+    }
+    if(f.life<=0) FLY.splice(i,1);
+  }
+}
+/* ============================================================
+   DRAWING
+   ============================================================ */
+function drawCrittersBack(g){
+  const cx=GS.camX;
+  /* the short grass, behind everything that stands in it */
+  const i0=Math.max(0,((cx-24)/GBW)|0), i1=((cx+W+24)/GBW)|0;
+  for(let i=i0;i<=i1;i++){
+    const b=GBUCK[i]; if(!b) continue;
+    for(const t of b){
+      if(t.h>8) continue;
+      const bi=clamp(R(t.b*G_BEND)+G_BEND,0,G_BEND*2);
+      const sp=grassSprite(t.k,t.h,bi,t.c);
+      g.drawImage(sp, R(t.x-sp.width/2), R(groundY(t.x)-t.h-1));
+    }
+  }
+  for(const c of CRIT){
+    if(c.x-cx<-30||c.x-cx>W+30) continue;
+    drawCritter(g,c);
+  }
+  for(const b of BIRDS){
+    if(b.st!=='perch') continue;
+    if(b.x-cx<-20||b.x-cx>W+20) continue;
+    drawBird(g,b);
+  }
+}
+function drawCrittersFore(g){
+  const cx=GS.camX;
+  const i0=Math.max(0,((cx-24)/GBW)|0), i1=((cx+W+24)/GBW)|0;
+  for(let i=i0;i<=i1;i++){
+    const b=GBUCK[i]; if(!b) continue;
+    for(const t of b){
+      if(t.h<=8) continue;
+      const bi=clamp(R(t.b*G_BEND)+G_BEND,0,G_BEND*2);
+      const sp=grassSprite(t.k,t.h,bi,t.c);
+      g.drawImage(sp, R(t.x-sp.width/2), R(groundY(t.x)-t.h-1));
+    }
+  }
+  for(const b of BIRDS){
+    if(b.st==='perch') continue;
+    if(b.x-cx<-24||b.x-cx>W+24) continue;
+    drawBird(g,b);
+  }
+  for(const f of FLY){
+    if(f.x-cx<-16||f.x-cx>W+16) continue;
+    drawFly(g,f);
+  }
+}
+function drawFly(g,f){
+  const x=R(f.x), y=R(f.y);
+  if(f.k==='butterfly'){
+    const w=0.5+0.5*Math.sin(f.t*13);
+    const c1='#f2d05c', c2='#e8a13c';
+    for(const s of [-1,1]){
+      pEll(g,x+s*(1+w*2.4),y-1,1+w*2,2.6,s<0?c1:c2);
+      pEll(g,x+s*(1+w*2),y+1.4,1+w*1.4,1.6,shade(s<0?c1:c2,-0.15));
+    }
+    pR(g,x,y-2,1,4,'#4a3524');
+  } else if(f.k==='dragonfly'){
+    const w=Math.sin(f.t*22)>0?1:-1;
+    pTaper(g,x-3,y,x+5,y+1,1.6,0.7,'#4fb0c8');
+    pEll(g,x-3,y,1.8,1.6,'#7fd8e8');
+    for(const s of [-1,1]) pTaper(g,x-1,y,x-1+s*4,y-1.6*w,1.2,0.5,'rgba(206,240,248,0.55)');
+  } else {
+    const bl=0.5+0.5*Math.sin(f.t*2.2);
+    if(bl>0.25){ pEll(g,x,y,1.6,1.6,rgba('#c6ff9a',0.35+bl*0.6)); pR(g,x,y,1,1,'#eaffd0'); }
+    else pR(g,x,y,1,1,'#4a5a3a');
+  }
+}
+function drawBird(g,b){
+  const x=R(b.x), y=R(b.y);
+  const body = ['#3a3630','#6b5442','#2e4a58'][b.kind];
+  const belly= ['#9a9084','#c0a888','#8fb0be'][b.kind];
+  if(b.st==='perch'){
+    const hop=b.hop>0? -2:0;
+    pEll(g,x,y-3+hop,3,2.6,body);
+    pEll(g,x-b.face*1,y-4.6+hop,2,1.8,body);
+    pR(g,x-b.face*3,y-4.6+hop,2,1,'#e8a13c');                 // beak
+    pR(g,x-b.face*2,y-5+hop,1,1,'#efe6d2');                   // eye white
+    pR(g,x-b.face*2,y-5+hop,1,1,'#120e18');
+    pEll(g,x+b.face*0.6,y-2.4+hop,2,1.4,belly);
+    pTaper(g,x+b.face*2,y-3.4+hop,x+b.face*6,y-4.4+hop,1.8,0.8,body);  // tail
+    pR(g,x-1,y-1+hop,1,1+(hop?0:1),'#c8a05c'); pR(g,x+1,y-1+hop,1,1+(hop?0:1),'#c8a05c');
+  } else {
+    const f=Math.sin(b.t*22);
+    pEll(g,x,y,3,2.2,body);
+    pEll(g,x-b.face*2.6,y-1,1.8,1.6,body);
+    pR(g,x-b.face*4.4,y-1,2,1,'#e8a13c');
+    pTaper(g,x+b.face*2,y-0.4,x+b.face*6,y-1.4,1.6,0.7,body);
+    for(const s of [-1,1]){
+      const ty=y-1+s*f*5;
+      pTaper(g,x,y-1,x-b.face*2+s*0.5,ty,2.2,1,shade(body,s>0?0.12:-0.08));
+    }
+  }
+}
+function drawCritter(g,c){
+  const x=R(c.x), y=R(c.y);
+  switch(c.k){
+    case 'hen': {
+      const bob=c.st==='peck'? Math.max(0,Math.sin(c.t*4))*3 : 0;
+      const wob=c.st==='run'||c.st==='walk'? Math.sin(c.t*14)*1.4 : 0;
+      const roost=c.st==='roost';
+      pEll(g,x,y-(roost?3:5),5,roost?3.6:4.2,c.c);
+      pEll(g,x-c.face*1,y-(roost?4:6),3.6,3,shade(c.c,0.08));
+      if(!roost){
+        pEll(g,x+c.face*4,y-9+bob,2.4,2.6,c.c);               // head
+        pR(g,x+c.face*6,y-9+bob,2,1,'#e8a13c');               // beak
+        pR(g,x+c.face*3.4,y-10+bob,1,1,'#120e18');
+        pEll(g,x+c.face*4,y-11.4+bob,1.6,1.4,'#c0392f');      // comb
+        pEll(g,x+c.face*5.2,y-7.6+bob,1,1.2,'#c0392f');       // wattle
+        pTaper(g,x-c.face*4,y-6,x-c.face*7,y-10,2.4,1,shade(c.c,-0.15));
+        pR(g,x-1+wob,y-1,1,2,'#d8a03c'); pR(g,x+1-wob,y-1,1,2,'#d8a03c');
+      } else {
+        pTaper(g,x-c.face*4,y-4,x-c.face*6,y-7,2,1,shade(c.c,-0.15));
+        pEll(g,x+c.face*3,y-5,2.2,2,c.c);
+      }
+      break; }
+    case 'frog': {
+      const jump=c.vy<-10;
+      pEll(g,x,y-2,3.6,jump?2:2.6,'#4f8f4a');
+      pEll(g,x,y-3.4,2.8,1.8,'#68a85c');
+      pEll(g,x+c.face*2.6,y-4,1.8,1.6,'#4f8f4a');
+      pR(g,x+c.face*2.6,y-5,1,1,'#f0e06a'); pR(g,x+c.face*2.6,y-5,1,1,'#181410');
+      pR(g,x-c.face*0.6,y-5,1,1,'#f0e06a');
+      if(jump){ pTaper(g,x-c.face*2,y-2,x-c.face*5,y-1,1.6,1,'#3f7a3c'); }
+      else { pEll(g,x-c.face*3,y-1.4,1.6,1.2,'#3f7a3c'); }
+      break; }
+    case 'dog': {
+      const sleep=c.st==='sleep';
+      const bk=c.bark>0? 1-c.bark/0.32 : 0;
+      const body='#8a6a44', dark='#6b5034';
+      if(sleep){
+        pEll(g,x,y-3,8,3.4,body);
+        pEll(g,x+c.face*6,y-4,3.4,2.8,body);
+        pR(g,x+c.face*8.4,y-4,2,1,'#3a2a1c');
+        pTaper(g,x-c.face*7,y-3.4,x-c.face*11,y-2,2,1,dark);
+        pR(g,x+c.face*5,y-6,2,2,dark);                      // ear
+        pEll(g,x-2,y-0.6,7,1.4,'rgba(10,8,24,0.25)');
+      } else {
+        const lift=bk>0? -2*Math.sin(bk*Math.PI):0;
+        pEll(g,x,y-7,6,3.6,body);
+        pR(g,x-3,y-4,2,4,dark); pR(g,x+2,y-4,2,4,dark);
+        pEll(g,x+c.face*6,y-11+lift,3,2.8,body);
+        pTaper(g,x+c.face*5,y-13.4+lift,x+c.face*4,y-16+lift,2,1,dark);   // ear
+        pR(g,x+c.face*8,y-11+lift,2,1,'#3a2a1c');
+        pR(g,x+c.face*5.4,y-12+lift,1,1,'#120e18');
+        pTaper(g,x-c.face*5,y-8,x-c.face*9,y-12-bk*3,2,1,dark);
+        if(bk>0){ pEll(g,x+c.face*9,y-10.4+lift,1.6,1.4,'#2a1a12');
+          for(let i=1;i<=3;i++){ const rr=i*4+bk*8;
+            g.globalAlpha=(1-bk)*0.34/i;
+            pEll(g,x+c.face*(10+rr*0.4),y-11+lift,rr*0.5,rr*0.34,'#ffffff'); g.globalAlpha=1; } }
+      }
+      break; }
+    case 'gecko': {
+      const run=c.run>0;
+      pTaper(g,x-c.face*5,y,x+c.face*4,y,2.4,1.8,'#b8a888');
+      pEll(g,x+c.face*4.6,y,2,1.6,'#c8b898');
+      pR(g,x+c.face*5.4,y-0.6,1,1,'#2a2018');
+      pTaper(g,x-c.face*5,y,x-c.face*10,y+(run?-2:1),1.8,0.6,'#a89878');
+      for(const s of [-1,1]){ pTaper(g,x+s*1.6,y,x+s*3.4,y+2.4,1,0.6,'#a89878'); }
+      for(let i=0;i<4;i++) pR(g,R(x-c.face*(3-i*2)),R(y-1),1,1,'#8f7f62');
+      break; }
+    case 'squirrel': {
+      const run=c.st==='run';
+      pEll(g,x,y-4,3.4,3,'#8a6040');
+      pEll(g,x+c.face*3,y-6.4,2.2,2,'#9a7050');
+      pR(g,x+c.face*4.6,y-6.4,1,1,'#2a1a12');
+      pR(g,x+c.face*2.4,y-7,1,1,'#120e18');
+      pTaper(g,x+c.face*2.4,y-8.6,x+c.face*1.8,y-10,1.4,0.8,'#7a5236');
+      pTaper(g,x-c.face*3,y-5,x-c.face*6,y-12+(run?3:0),3,1.4,'#a07a52');
+      pTaper(g,x-c.face*5.4,y-10,x-c.face*4,y-13,2,1,'#b88a60');
+      if(c.st==='eat'){ pEll(g,x+c.face*3.4,y-4.4,1.4,1.4,'#c8a05c'); }
+      break; }
+    case 'hopper': {
+      pEll(g,x,y-2,2.6,1.6,'#7aa83c');
+      pTaper(g,x-1,y-2.6,x-4,y-1,1.4,0.8,'#6b9430');
+      break; }
+  }
+}
+/* ============================================================
+   PLATFORMING
+
+   The prete could always jump. What it could not do was land on
+   anything, which makes a jump a decoration rather than a verb.
+   This file gives the world surfaces above the ground line, and
+   gives the jump itself the handful of small mercies that make
+   one feel good: a little hang at the top of the arc, a little
+   more control in the air than on the floor, a grab for the
+   ledge you nearly cleared, and a way down through a plank you
+   are standing on.
+
+   All of the platforms are one-way. You go up through them and
+   land on top, because a nine-foot ghost getting stuck under a
+   chicken coop is not the comedy anybody came for.
+   ============================================================ */
+const PLATS = [];
+function addPlat(x0,x1,y,o){
+  const p={x0:Math.min(x0,x1), x1:Math.max(x0,x1), y:R(y), tag:(o&&o.tag)||''};
+  PLATS.push(p); return p;
+}
+function clearPlats(){ PLATS.length=0; }
+
+/* the highest plank whose top lies in the slice of air the feet just fell
+   through — highest, so a stack of crates is climbed one crate at a time */
+function platCrossed(x, yFrom, yTo){
+  let best=null;
+  for(const p of PLATS){
+    if(x < p.x0-2 || x > p.x1+2) continue;
+    if(p.y >= yFrom-0.6 && p.y <= yTo+0.01){ if(!best || p.y < best.y) best=p; }
+  }
+  return best;
+}
+const onPlat = (p,x)=> p && x>=p.x0-4 && x<=p.x1+4;
+/* what is under the feet at x — a plank if one is being stood on, else earth */
+function surfaceY(x){ return onPlat(P.plat,x) ? P.plat.y : groundY(x); }
+/* the nearest standable top at x at or below y, for anything that wants to
+   put itself down sensibly (a jar you drop, a hand task, a walking NPC) */
+function standY(x, y){
+  let best=groundY(x);
+  for(const p of PLATS){
+    if(x < p.x0 || x > p.x1) continue;
+    if(p.y >= y-2 && p.y < best) best=p.y;
+  }
+  return best;
+}
+
+/* ---------- touch: a jump key, and a flick upward that means the same ---------- */
+function tLayout(){
+  TPADS.length = 0;
+  const bs = 34, m = 10;
+  TPADS.push({id:'tree',   x:m+bs*0.5,    y:H-m-bs*0.5, r:bs*0.58, key:'tree',   ic:'book'});
+  TPADS.push({id:'whistle',x:m+bs*1.75,   y:H-m-bs*0.5, r:bs*0.52, key:'whistle',ic:'call'});
+  TPADS.push({id:'give',   x:W-m-bs*1.85, y:H-m-bs*0.5, r:bs*0.56, key:'give',   ic:'heart'});
+  TPADS.push({id:'jump',   x:W-m-bs*0.55, y:H-m-bs*0.62,r:bs*0.72, key:'jump',   ic:'jump'});
+}
+tLayout();
+function padIcon(g,ic,x,y,c){
+  if(ic==='heart') icoHeart(g,x,y-2,2.2,c);
+  else if(ic==='call') icoCall(g,x+2,y,1.7,c);
+  else if(ic==='book') icoBook(g,x,y,1.8,c);
+  else if(ic==='jump'){
+    // a chevron with a little ground under it
+    for(let i=0;i<7;i++){ pR(g,x-6+i,y-2-Math.abs(3-i),2,2,c); }
+    pR(g,x-5,y+4,11,1,c); pR(g,x-3,y+6,7,1,rgba(c,0.5));
+  }
+}
+/* a flick upward anywhere in the world is a jump, so the button is a
+   convenience rather than the only way up */
+const SWIPE = new Map();
+cv.addEventListener('pointerdown', ev=>{
+  SWIPE.set(ev.pointerId, {y:cvPos(ev).y, t:performance.now(), used:false});
+}, true);
+cv.addEventListener('pointermove', ev=>{
+  const s=SWIPE.get(ev.pointerId); if(!s||s.used) return;
+  const p=cvPos(ev);
+  if(s.y-p.y > 16 && performance.now()-s.t < 340){
+    s.used=true;
+    if(GS.state==='play' && !DLG && !VIG && !P.act){ keyDown('jump'); setTimeout(()=>keyUp('jump'),110); }
+  }
+});
+cv.addEventListener('pointerup',     e=>SWIPE.delete(e.pointerId));
+cv.addEventListener('pointercancel', e=>SWIPE.delete(e.pointerId));
+
+/* ---------- the walk and the jump ---------- */
+const SPD = ()=> (has('stride')? 98 : 76) * (P.carry? (has('haul')?0.92:0.74) : 1) * (P.run?1.42:1);
+const JUMP_V = ()=> 252 * (P.carry? (has('haul')?0.94:0.8) : 1);
+function stepPlayer(dt){
+  const busy = !!DLG || GS.state!=='play' || !!P.act || !!VIG || CH.lock;
+  let ax=0, ease=1;
+  if(busy) navStop();
+  else {
+    if(K.left) ax-=1; if(K.right) ax+=1;
+    if(ax) navStop();
+    else if(NAV.on){
+      NAV.t+=dt;
+      const d=NAV.tx-P.x;
+      if(Math.abs(d)<7 || NAV.t>14){ NAV.on=false; NAV.fire=1; }
+      else { ax = d>0?1:-1; ease = clamp(Math.abs(d)/30,0.34,1); }
+    }
+  }
+  P.run = !busy && !!K.block && P.onGround && !P.carry;
+  const target = ax*SPD()*ease;
+  /* more authority in the air than on the ground, which is wrong and feels
+     right — a jump you cannot steer is a jump nobody takes twice */
+  const acc = ax!==0 ? (P.onGround?470:405) : (P.onGround?860:250);
+  P.vx += clamp(target-P.vx, -acc*dt, acc*dt);
+  if(ax!==0) P.face = ax;
+
+  P.coyote = P.onGround ? 0.11 : Math.max(0,P.coyote-dt);
+  if(!busy && (press('jump')||press('up'))) P.buf=0.14; else P.buf=Math.max(0,P.buf-dt);
+  const maxJumps = has('float')?2:1;
+  const wantDrop = K.down && onPlat(P.plat,P.x);
+  if(P.buf>0 && (P.coyote>0 || P.jumps<maxJumps)){
+    P.buf=0;
+    if(wantDrop){
+      /* down and jump together: step off the plank instead of off the top of it */
+      P.plat=null; P.onGround=false; P.coyote=0; P.y+=2; P.vy=40;
+      P.dropT=0.14; AU.step(false); pDust(P.x,P.y,3);
+    } else {
+      P.vy=-JUMP_V(); P.coyote=0; P.onGround=false; P.plat=null;
+      P.jumps = P.coyote>0?1:P.jumps+1;
+      P.squash=-0.5; AU.jump(); pDust(P.x,P.y,5);
+    }
+  }
+  P.dropT=Math.max(0,(P.dropT||0)-dt);
+  if(P.vy<0 && !(K.jump||K.up)) P.vy += 680*dt;           // let go and it cuts short
+  const hang = Math.abs(P.vy)<52 && !P.onGround ? 0.56 : 1;  // a beat of float at the apex
+  P.vy += 820*hang*dt; P.vy = Math.min(P.vy, 430);
+
+  const py = P.y;
+  P.x = clamp(P.x + P.vx*dt, 16, WORLD_W-16);
+  P.y += P.vy*dt;
+
+  /* planks first: catch the feet on the way down through one */
+  P.plat = onPlat(P.plat,P.x) ? P.plat : null;
+  if(P.plat){
+    if(P.vy>=0){ P.y=P.plat.y; P.vy=0; P.onGround=true; P.jumps=0; }
+    else P.plat=null;
+  } else if(P.vy>0 && !P.dropT){
+    const hitP = platCrossed(P.x, py, P.y);
+    if(hitP){
+      if(!P.onGround){ const f=clamp(P.vy/380,0,1);
+        P.squash=0.35+f*0.5; AU.land(); pDust(P.x,hitP.y,3+f*6); }
+      P.plat=hitP; P.y=hitP.y; P.vy=0; P.onGround=true; P.jumps=0;
+    }
+  }
+  /* a rising jump that clips the lip of a plank gets pulled up onto it —
+     the difference between "nearly" and "again" */
+  if(!P.plat && P.vy<0){
+    for(const p of PLATS){
+      if(P.x<p.x0-3||P.x>p.x1+3) continue;
+      if(P.y > p.y && P.y < p.y+7 && Math.abs(P.vx)>20){
+        P.y=p.y; P.vy=0; P.plat=p; P.onGround=true; P.jumps=0; AU.step(true); break;
+      }
+    }
+  }
+  if(!P.plat){
+    const gy = groundY(P.x);
+    if(P.y >= gy){
+      if(!P.onGround){ const f=clamp(P.vy/380,0,1);
+        P.squash=0.35+f*0.5; AU.land(); pDust(P.x,gy,4+f*8);
+        if(f>0.5) GS.shake=Math.max(GS.shake,2); }
+      P.y=gy; P.vy=0; P.onGround=true; P.jumps=0;
+    } else P.onGround=false;
+  }
+
+  if(!GS.seen.walked && Math.abs(P.x-GRAVE_X)>240) GS.seen.walked=true;
+  const nf = Math.floor(P.phase/Math.PI);
+  if(P.onGround && nf!==(P._sf||0) && Math.abs(P.vx)>18){
+    AU.step(Math.abs(P.vx)>100); pDust(P.x,P.y,2);
+    if(typeof brushGrass==='function') brushGrass(P.x, 26);
+  }
+  P._sf = nf;
+
+  P.wailCd=Math.max(0,P.wailCd-dt);
+  if(!busy && press('whistle') && P.wailCd<=0){
+    P.wailCd=1.2; P.wailT=0.5; AU.wail();
+    pRing(P.x,P.y-48,'#fff0c0',80);
+    let greeted=0;
+    for(const n of NPCS) if(Math.abs(n.x-P.x)<110){ n.mark={k:'call',t:1.6}; greeted++; }
+    for(const s of SPIRITS) if(Math.abs(s.x-P.x)<130 && s.met){ s.wave=1.4; greeted++; }
+    if(Math.abs(CAT.x-P.x)<110 && CAT.state==='wander'){ CAT.tx=P.x; AU.meow(); }
+    if(typeof scatterBirds==='function') scatterBirds(P.x, 150);
+    if(greeted && !GS.seen.greet){ GS.seen.greet=true; guideSay('They heard that. A prete\'s whistle is just a hello with the volume stuck on.'); }
+  }
+  if(P.wailT>0){ P.wailT-=dt; P.state='wail'; }
+  else if(HT) P.state='reach';
+  else if(!P.onGround) P.state='jump';
+  else if(Math.abs(P.vx)>10) P.state='walk';
+  else P.state='idle';
+  stepPrete(P,dt);
+}
+/* ============================================================
+   PEOPLE
+
+   The villagers used to be twenty-two pixels of coloured block
+   with two dots for eyes, which is fine for a silhouette on a
+   dark road and not fine for the person who feeds you.
+
+   This is the same skeleton — the same hips, the same two-bone
+   legs, the same cloth sim on the sarongs — with a face built
+   on it: a skull and a jaw, an ear, hair with a parting and a
+   shine, brows that move, eyes that blink and look where the
+   person is looking, a nose, a mouth. Then a shirt with a
+   collar, a pocket, a sleeve and a hem, hands with a thumb,
+   sandals, and whatever that particular person wears — a งอบ,
+   a ผ้าขาวม้า over the shoulder, glasses, a moustache.
+
+   Every extra is a one-pixel decision. At twenty-six pixels
+   tall that is the whole budget, and it is enough: a face reads
+   from four pixels if the four are in the right places.
+   ============================================================ */
+
+/* the little idle life that makes a standing person look alive */
+function stepFace(v, dt){
+  v.blinkT = (v.blinkT===undefined? rnd(1,5) : v.blinkT) - dt;
+  if(v.blinkT<=0){ v.blink=0.13; v.blinkT=rnd(2.2,6.5); }
+  if(v.blink>0) v.blink-=dt;
+  v.breath = (v.breath||0) + dt*1.6;
+  v.glanceT = (v.glanceT===undefined? rnd(2,6) : v.glanceT) - dt;
+  if(v.glanceT<=0){ v.glance = rnd(-1,1); v.glanceT=rnd(2.5,7); }
+}
+
+function drawVillager(g, v, o={}){
+  stepFace(v, o.dt||1/60);
+  const sk=v.skin||PAL.skin, skD=v.skinD||PAL.skinD;
+  const skL=shade(sk,0.16);
+  const sh=v.shirt||'#4a7a9e', shD=v.shirtD||shade(sh,-0.25), shL=shade(sh,0.16);
+  const face=v.face, sp=Math.abs(v.vx);
+  const LEG=10, TH=5.5, SN=5.5;
+  const stride=clamp(sp*0.2,0,4.6), lift=clamp(sp*0.1,0,2.4);
+  const bob = Math.abs(Math.sin(v.phase*2))*clamp(sp*0.03,0,1);
+  const breathe = sp<4 ? Math.sin(v.breath)*0.35 : 0;
+  const hipY=v.y-LEG-bob, hipX=v.x;
+  const rk  = v.react ? v.react.k : null;
+  const wai = v.state==='wai' || o.wai || rk==='wai';
+  const legC = v.legs||'#3a3a44';
+
+  /* ---------- legs and sandals ---------- */
+  for(let i=0;i<2;i++){
+    const ph=v.phase+i*Math.PI, c=Math.cos(ph), s=Math.sin(ph);
+    const fx=v.x+c*stride*face, fy=v.y+(s<0? -Math.abs(s)*lift : 0);
+    const knee=ik2(hipX+(i?1:-1),hipY,fx,fy-1,TH,SN,face>0?1:-1);
+    const col=i===0? shade(legC,-0.24) : legC;
+    if(!v.skirt){
+      pLimb(g,hipX+(i?1:-1),hipY,knee.x,knee.y,3.1,col);
+      pLimb(g,knee.x,knee.y,fx,fy-1,2.6,col);
+      pR(g,R(knee.x)-1,R(knee.y),2,1,shade(col,-0.2));        // the knee itself
+      // the shin below a rolled trouser leg
+      pLimb(g,knee.x,knee.y+1.5,fx,fy-1,2.2, i===0? skD:sk);
+    }
+    // a sandal: a sole, a toe strap, a foot
+    pEll(g,fx+face*0.6,fy-1.6,2.4,1.8, i===0? skD:sk);
+    pR(g,R(fx)-2,R(fy)-1,5,1,'#4a3a2c');
+    pR(g,R(fx)-2,R(fy),5,1,'#33281e');
+    pR(g,R(fx)+(face>0?1:1),R(fy)-2,1,1,'#5c4936');
+  }
+  if(v.skirt){
+    stepCloth(v.cloth,hipX,hipY-1,10,o.dt||0.016,o.wind||0,v.vx);
+    drawCloth(g,v.cloth,v.skirtPat||'plaid',face,{flare:4});
+  }
+
+  /* ---------- torso ---------- */
+  const chestY=hipY-9+breathe;
+  // the body under the shirt, so the neck and the arm holes have something in them
+  pR(g,hipX-3.4,chestY+1,7,9,skD);
+  // the shirt itself: shoulders a touch wider than the waist
+  for(let i=0;i<10;i++){
+    const t=i/9;
+    const w=4.3 - t*0.7;
+    pR(g, R(hipX-w), R(chestY+i), R(w*2), 1, i<1? shL : sh);
+  }
+  pR(g,R(hipX+(face>0?1.2:-4.2)),R(chestY+1),3,9,shD);          // the shaded side
+  pR(g,R(hipX-4.3),R(chestY),9,1,shL);                          // the shoulder line
+  pR(g,R(hipX-3.6),R(chestY+9),8,1,shade(sh,-0.35));            // the hem
+  // a collar, opened at the throat
+  pTri(g, hipX-0.4, chestY+3.6, hipX-2.6, chestY-0.4, hipX+1.8, chestY-0.4, skD);
+  pR(g,R(hipX)-3,R(chestY),2,2,shL); pR(g,R(hipX)+1,R(chestY),2,2,shL);
+  // a breast pocket on the lit side, and two fold lines
+  pR(g,R(hipX-3+(face>0?0:3)),R(chestY+3),3,3,shade(sh,-0.12));
+  pR(g,R(hipX-3+(face>0?0:3)),R(chestY+3),3,1,shL);
+  pR(g,R(hipX-2),R(chestY+6),1,3,shade(sh,-0.16));
+  pR(g,R(hipX+2),R(chestY+5),1,4,shade(sh,-0.16));
+  if(v.monk){
+    pTaper(g,hipX-4,chestY,hipX+4,chestY+9,3.4,7.4,'#e8923f');
+    pR(g,R(hipX-4),R(chestY+2),9,7,'#e8923f');
+    pR(g,R(hipX+2*face),R(chestY+2),3,7,'#b56a28');
+    pR(g,R(hipX-4),R(chestY+2),9,1,'#f4ac5e');
+  }
+  /* ผ้าขาวม้า — the checked cloth every farmer here has over one shoulder */
+  if(v.pakama){
+    const px=hipX-3.2*face;
+    for(let i=0;i<9;i++){
+      const c = (i%2)? v.pakama : shade(v.pakama,-0.3);
+      pR(g, R(px+face*i*0.35), R(chestY+i), 3, 1, c);
+    }
+    pR(g,R(px-1),R(chestY+9),4,4, v.pakama);
+    pR(g,R(px-1),R(chestY+11),4,1, shade(v.pakama,-0.3));
+  }
+
+  /* ---------- arms ---------- */
+  for(let i=0;i<2;i++){
+    const back=i===0;
+    let hx2,hy2;
+    if(wai){ hx2=hipX+1.5*face; hy2=chestY-4; }
+    else if(rk==='wave' && !back){ hx2=hipX+4.5*face; hy2=chestY-4+Math.sin(v.anim*13)*2.6; }
+    else if(rk==='clap'){ hx2=hipX+(back?1.2:3.2)*face; hy2=chestY+1-Math.abs(Math.sin(v.anim*11))*2.4; }
+    else if(v.carry && !back){ hx2=hipX+5*face; hy2=chestY+3; }
+    else { const ph=v.phase+(back?Math.PI:0); hx2=hipX+Math.cos(ph)*stride*0.7*face; hy2=chestY+10; }
+    const sx=hipX+(back?-3.2:3.2)*face, sy=chestY+1.4;
+    const el=ik2(sx,sy,hx2,hy2,5,5,back?(face>0?-1:1):(face>0?1:-1));
+    // a short sleeve to just above the elbow, then bare arm
+    pLimb(g,sx,sy,el.x,el.y,2.7, back?skD:sk);
+    const mx=lerp(sx,el.x,0.62), my=lerp(sy,el.y,0.62);
+    pLimb(g,sx,sy,mx,my,3.0, back?shD:sh);
+    pR(g,R(mx)-1,R(my),3,1, back?shade(shD,-0.2):shade(sh,-0.22));
+    pLimb(g,el.x,el.y,hx2,hy2,2.4,back?skD:sk);
+    // a hand, with a thumb
+    pEll(g,hx2,hy2,1.7,1.8,back?skD:sk);
+    pR(g,R(hx2)+(face>0?1:-1),R(hy2)-1,1,1,back?skD:skL);
+  }
+  if(wai){
+    pEll(g,hipX+1.6*face,chestY-5,2.3,3.1,sk);
+    pR(g,R(hipX+0.6*face),R(chestY-7),2,3,skD);
+    pR(g,R(hipX+0.6*face),R(chestY-7),2,1,skL);
+  }
+
+  /* ---------- head ---------- */
+  const hy3=chestY-7.5;
+  const look = clamp((v.glance||0)*0.7 + (o.lookAt? clamp((o.lookAt-v.x)/60,-1,1) : 0), -1, 1);
+  // neck, and the shadow the jaw throws on it
+  pR(g,R(hipX-1.4),R(hy3+3.5),3,4,skD);
+  pR(g,R(hipX-1.4),R(hy3+3.5),3,1,shade(skD,-0.24));
+  // skull, then jaw, then the shaded side
+  pEll(g,hipX+0.5*face,hy3,5.0,5.0,sk);
+  pEll(g,hipX+0.9*face,hy3+2.1,4.0,3.4,sk);
+  pEll(g,hipX+2.9*face,hy3+0.6,2.4,4.0,skD);
+  pEll(g,hipX-1.8*face,hy3-1.6,2.3,2.2,skL);          // the light on the temple
+  // ear on the back side of the head
+  pEll(g,hipX-3.4*face,hy3+0.6,1.3,1.7,skD);
+  pR(g,R(hipX-3.4*face),R(hy3+0.6),1,1,shade(skD,-0.2));
+  // brows
+  const browY = hy3-3 + (v.brow||0);
+  const browC = shade(v.hairC||'#241c18', 0.22);
+  pR(g,R(hipX+(1.8+look*0.5)*face),R(browY),3,1,browC);
+  pR(g,R(hipX+(-2.4+look*0.5)*face),R(browY),3,1,browC);
+  // eyes: white, pupil, and a lid that comes down when they blink
+  /* the two eyes have to sit far enough apart to read as two. At three
+     pixels wide and three and a half apart they merged into one dark band
+     and every villager looked like they were wearing a mask. */
+  const eyeY=hy3-0.6, blink=(v.blink||0)>0;
+  for(const ex of [2.6, -2.0]){
+    const x2=R(hipX+(ex+look*0.6)*face);
+    if(blink){ pR(g,x2-1,R(eyeY),3,1,shade(skD,-0.2)); continue; }
+    pR(g,x2-1,R(eyeY)-1,3,3,'#fbf4e6');
+    const pu=(look>0.25?1:look<-0.25?-1:0);
+    pR(g,x2+pu,R(eyeY)-1,1,2,'#1e1820');
+    pR(g,x2+pu,R(eyeY)-1,1,1,'#5a4a54');
+    pR(g,x2-1,R(eyeY)-2,3,1,shade(skD,-0.12));         // the lid above it
+  }
+  // nose and mouth
+  pR(g,R(hipX+2.4*face),R(hy3+1.2),1,2,skD);
+  pR(g,R(hipX+2.4*face),R(hy3+1.2),1,1,shade(skD,-0.14));
+  const smile = v.mood===undefined? 1 : v.mood;
+  if(smile>0){ pR(g,R(hipX+0.4*face),R(hy3+3),2,1,'#9a5048'); pR(g,R(hipX+2.2*face),R(hy3+2.4),1,1,'#9a5048'); }
+  else pR(g,R(hipX+0.2*face),R(hy3+3),3,1,'#9a5048');
+  if(v.moust){ pR(g,R(hipX-0.4*face),R(hy3+1.9),4,1,v.hairC||'#4a4038');
+               pR(g,R(hipX-0.4*face),R(hy3+2.4),4,1,shade(v.hairC||'#4a4038',-0.2)); }
+  if(v.glasses){
+    pR(g,R(hipX+1*face),R(eyeY)-2,4,4,'rgba(220,240,255,0.18)');
+    pR(g,R(hipX-2.4*face),R(eyeY)-2,4,4,'rgba(220,240,255,0.18)');
+    pR(g,R(hipX+1*face),R(eyeY)-2,4,1,'#3a3038'); pR(g,R(hipX+1*face),R(eyeY)+2,4,1,'#3a3038');
+    pR(g,R(hipX-2.4*face),R(eyeY)-2,4,1,'#3a3038'); pR(g,R(hipX-2.4*face),R(eyeY)+2,4,1,'#3a3038');
+    pR(g,R(hipX+0.4*face),R(eyeY),1,1,'#3a3038');
+  }
+
+  /* ---------- hair ---------- */
+  const hc=v.hairC||'#241c18', hcL=shade(hc,0.26);
+  if(v.hair==='bald'){
+    pEll(g,hipX+0.5*face,hy3-2.2,4.1,2.2,skD);
+    pEll(g,hipX-0.8*face,hy3-3.0,2.2,1.2,skL);
+  } else if(v.hair==='bun'){
+    pEll(g,hipX+0.5*face,hy3-2.6,4.5,2.9,hc);
+    pEll(g,hipX-0.6*face,hy3-3.4,2.4,1.2,hcL);
+    pEll(g,hipX-3.6*face,hy3-3.6,2.4,2.4,hc);
+    pEll(g,hipX-4.2*face,hy3-4.1,1.2,1.0,hcL);
+    pR(g,R(hipX-3.8*face),R(hy3-2.2),2,1,'#8a3a44');            // a red thread round it
+  } else if(v.hair==='tails'){
+    pEll(g,hipX+0.5*face,hy3-2.5,4.5,2.9,hc);
+    pEll(g,hipX-0.6*face,hy3-3.3,2.2,1.1,hcL);
+    pR(g,R(hipX+1.2*face),R(hy3-3.4),1,2,hcL);                  // a parting
+    for(const s of [-1,1]){
+      pEll(g,hipX+s*4.7*face,hy3+0.6,1.7,2.9,hc);
+      pR(g,R(hipX+s*4.7*face),R(hy3-1.2),1,1,'#d05a7a');
+    }
+  } else if(v.hair==='crop'){
+    pEll(g,hipX+0.5*face,hy3-2.3,4.3,2.5,hc);
+    pR(g,R(hipX-3.8*face),R(hy3-2),2,3,hc);
+    pEll(g,hipX-0.8*face,hy3-3.1,2.0,1.0,hcL);
+  } else {
+    pEll(g,hipX+0.5*face,hy3-2.4,4.5,2.9,hc);
+    pR(g,R(hipX-4*face),R(hy3-2),2,4,hc);
+    pEll(g,hipX-0.9*face,hy3-3.2,2.1,1.1,hcL);
+    pR(g,R(hipX+2.4*face),R(hy3-3.2),2,1,hc);                   // a fringe over the brow
+  }
+  /* งอบ — the conical farming hat, worn pushed back off the face */
+  if(v.hat==='ngob'){
+    const hx4=hipX+0.2*face, hy4=hy3-5.6;
+    pTri(g,hx4-0.5*face,hy4-6, hx4-6.8,hy4+1.4, hx4+6.8,hy4+1.4, '#d8bf7c');
+    pTri(g,hx4-0.5*face,hy4-6, hx4-6.8,hy4+1.4, hx4-1.5,hy4+1.4, '#bda264');
+    pEll(g,hx4,hy4+1.4,6.9,1.4,'#c8ad6c');
+    for(let i=-3;i<=3;i++) pR(g,R(hx4+i*2),R(hy4+0.2-Math.abs(i)*0.5),1,1,'#a98d54');
+    pR(g,R(hx4-1),R(hy4+2.4),3,1,'#7d6a3a');
+  } else if(v.hat){
+    pEll(g,hipX+0.5*face,hy3-4,7,1.6,v.hat);
+    pEll(g,hipX+0.5*face,hy3-5,3.4,2,v.hat);
+  }
+  if(v.earring){ pR(g,R(hipX-3.6*face),R(hy3+2),1,1,'#f2c14e'); }
+
+  if(v.carry) pEll(g,hipX+7*face,chestY+2,3.6,2.8,'#f5ead8');
+}
+/* ============================================================
+   THE THINGS IN A VILLAGE
+
+   Two jobs. First: put a life under every house. A Thai stilt
+   house is a room upstairs and a whole household downstairs —
+   the jars, the bicycle, the firewood, the chillies drying on a
+   tray, somebody's washing, a dog's bowl, a hammock nobody is
+   in. None of it is baked into the play layer because the light
+   in the window has to go out at night and come on at dawn.
+
+   Second: make things answer. There is a long, cheap list of
+   small objects here that do nothing except say something true
+   when a nine-foot ghost touches them, and a handful that do
+   something small — a bell rings, a chicken runs, a stone turns
+   over and whatever was under it leaves in a hurry. A village
+   you can only walk through is scenery. A village that answers
+   is a place.
+   ============================================================ */
+
+/* ---------- what lives under a house ---------- */
+function paintUnderHouse(g, gy, seed){
+  const r=mulberry(seed), x=60;
+  /* the dark under the floor */
+  pR(g,x-52,gy-40,104,40,'rgba(10,10,20,0.42)');
+  for(const sx of [-46,-22,2,26,46]){
+    pR(g,x+sx,gy-42,5,42,'#4a3726'); pR(g,x+sx,gy-42,2,42,'#5f4a33');
+    pR(g,x+sx-1,gy-2,7,3,'#38291c');                    // the stone footing
+  }
+  /* water jars, the household's whole supply */
+  for(let i=0;i<3;i++){
+    const jx=x-40+i*13, s=0.7+ (i===1?0.2:0);
+    pEll(g,jx,gy-6*s,8*s,7*s,'#5a3a2a');
+    pEll(g,jx,gy-10*s,7*s,6*s,'#6b4432');
+    pEll(g,jx,gy-13*s,4.6*s,2.8*s,'#3f2a1e');
+    pR(g,jx-5*s,gy-11*s,10*s,1,'#7d5240');
+  }
+  /* a bicycle, leaning */
+  { const bx=x-6;
+    pEll(g,bx-7,gy-5,5,5,'#1e1a20'); pEll(g,bx-7,gy-5,2.4,2.4,'#4a4048');
+    pEll(g,bx+7,gy-5,5,5,'#1e1a20'); pEll(g,bx+7,gy-5,2.4,2.4,'#4a4048');
+    pTaper(g,bx-7,gy-5,bx+3,gy-13,1.4,1.4,'#7a2f2c');
+    pTaper(g,bx+7,gy-5,bx+3,gy-13,1.4,1.4,'#7a2f2c');
+    pTaper(g,bx+3,gy-13,bx+8,gy-14,1.2,1.2,'#8a3a34');
+    pR(g,bx+6,gy-16,5,1,'#2a2228');                     // handlebars
+    pR(g,bx-2,gy-15,5,2,'#3a2c22');                     // saddle
+    pR(g,bx-9,gy-11,5,4,'#6b5a3c');                     // a basket on the front
+  }
+  /* firewood, stacked the way it is stacked everywhere */
+  for(let i=0;i<3;i++) for(let k=0;k<4-i;k++){
+    pEll(g, x+22+k*6-((4-i)*2), gy-3-i*5, 3,2.6,'#7d5a3c');
+    pEll(g, x+22+k*6-((4-i)*2), gy-3-i*5, 1.6,1.3,'#a8845a');
+  }
+  /* a flat tray of chillies drying, and a broom against the post */
+  pR(g,x+34,gy-14,15,2,'#b9a06a');
+  for(let i=0;i<7;i++) pR(g,R(x+35+i*2),R(gy-16),1,2, i%2?'#c0392f':'#a8302a');
+  pTaper(g,x+50,gy,x+48,gy-22,1.4,1.4,'#8a6a44');
+  pTaper(g,x+48,gy-22,x+47,gy-28,3.4,1.6,'#c8b47a');
+  /* a hammock with nobody in it */
+  pR(g,x-46,gy-30,1,1,'#3a2c22');
+  for(let i=0;i<18;i++){
+    const t=i/17, hx=lerp(x-46,x-6,t), hy=gy-30+Math.sin(t*Math.PI)*7;
+    pR(g,R(hx),R(hy),2,1,'#9a8f6a');
+  }
+  /* a dog bowl and a pair of sandals by the steps */
+  pEll(g,x+14,gy-1,4,2,'#4a6a7a'); pEll(g,x+14,gy-2,3,1.4,'#6b8a9a');
+  pR(g,x+19,gy-2,4,2,'#6b4f34'); pR(g,x+24,gy-2,4,2,'#6b4f34');
+  /* the ladder up */
+  pR(g,x-2,gy-40,2,40,'#7d5a3c'); pR(g,x+6,gy-40,2,40,'#7d5a3c');
+  for(let i=0;i<6;i++) pR(g,x-2,R(gy-6-i*6),10,2,'#9c7551');
+  /* a sack of rice and a woven basket */
+  pEll(g,x-20,gy-6,7,6,'#c9b48a'); pEll(g,x-20,gy-10,5,3,'#b8a077');
+  pR(g,x-24,gy-13,9,3,'#a8905e');
+  pEll(g,x+30,gy-5,6,5,'#b9a06a');
+  for(let i=0;i<4;i++) pR(g,R(x+25+i*3),R(gy-8),2,1,'#8f7a4e');
+}
+function drawHouseLife(g){
+  const cx=GS.camX;
+  for(let i=0;i<HOUSE_XS.length;i++){
+    const hx=HOUSE_XS[i];
+    if(hx-cx<-90||hx-cx>W+90) continue;
+    if(hx===HOME_X) continue;              // his house draws its own life
+    const gy=groundY(hx);
+    const sp=farmSprite('under'+i, 124, 46, gg=>paintUnderHouse(gg, 42, 909+i*37));
+    g.drawImage(sp, R(hx-60), R(gy-42));
+    /* the window: lit and still at night, open and empty by day */
+    const wx=hx+(i%2? 20:-20), wy=gy-64;
+    const night=1-TOD.v;
+    if(night>0.25){
+      const fl=0.85+0.15*Math.sin(GS.t*1.3+i*2);
+      pR(g,R(wx-8),R(wy-11),17,13,rgba('#ffc44d',0.22*night*fl));
+      pR(g,R(wx-6),R(wy-9),13,9, rgba('#ffd67f',0.34*night*fl));
+      /* somebody asleep, or somebody who cannot */
+      if(i%3===0){
+        const s=Math.sin(GS.t*0.7+i)*1.4;
+        pEll(g,wx+s,wy-2,5,3,'rgba(40,26,20,0.7)');
+        pEll(g,wx+s-3,wy-5,2.6,2.6,'rgba(40,26,20,0.7)');
+      }
+    } else {
+      pR(g,R(wx-8),R(wy-11),17,13,'rgba(24,20,30,0.55)');
+      pR(g,R(wx-7),R(wy-10),15,11,'rgba(40,34,44,0.5)');
+      /* a shirt hung in the open window */
+      if(i%2===0){ pR(g,R(wx-5),R(wy-10),7,8,'#b4443c'); pR(g,R(wx-5),R(wy-10),7,1,'#d0605a'); }
+    }
+    /* a gecko-sized lamp under the eaves, which is what the moths are for */
+    if(night>0.3) pEll(g,hx+(i%2?-26:26),gy-58,1.6,1.6,rgba('#ffe3a0',0.5*night));
+  }
+}
+
+/* ============================================================
+   THINGS THAT ANSWER
+   ============================================================ */
+/* Each one is a spot on the ground, a line of prompt, and what happens.
+   `once` gives a pip of merit the first time and a shorter line after. */
+const THINGS=[];
+function addThing(o){ THINGS.push(o); return o; }
+function seedThings(){
+  THINGS.length=0;
+  /* the pond */
+  addThing({x:POND_X, dy:14, txt:'put a hand in the water',
+    say:['Cold, and full of small things that leave in a hurry.',
+         'Your reflection does not look back. It looks at the sky behind you.'],
+    fx(){ for(let i=0;i<14;i++) part({k:'water',x:POND_X+rnd(-14,14),y:groundY(POND_X)+2,vx:rnd(-20,20),vy:-rnd(20,60),life:.5});
+          AU.pour(); for(const c of CRIT) if(c.k==='frog' && Math.abs(c.x-POND_X)<70){ c.tt=0; } } });
+  /* the household water jars under every house */
+  HOUSE_XS.forEach((hx,i)=>{
+    if(hx===HOME_X) return;
+    addThing({x:hx-40, dy:24, txt:'look into the water jar',
+      say:['Rainwater, a leaf, and a face that is not the one you expect.',
+           'Still rainwater. Still that face.'],
+      fx(){ AU.tone(240,0.2,'sine',0.02,180); } });
+    addThing({x:hx-6, dy:22, txt:'ring the bicycle bell',
+      say:['Ting. Somewhere upstairs a person turns over and does not wake.',
+           'Ting.'],
+      fx(){ AU.ranat(1480,0,0.045); AU.ranat(1760,0.07,0.03);
+            scatterBirds(hx,120);
+            for(const c of CRIT) if(c.k==='dog' && Math.abs(c.x-hx)<180) c.tt=0; } });
+    addThing({x:hx+41, dy:22, txt:'the chillies on the tray',
+      say:['Dried to a hard curl. The smell gets into the back of a throat you no longer have.',
+           'Chillies. Still hot, even like this.'],
+      fx(){ for(let i=0;i<6;i++) part({k:'sp',x:hx+38+rnd(-6,6),y:groundY(hx)-18,vx:rnd(-8,8),vy:-rnd(4,14),life:.7,c:'#c0392f'}); } });
+  });
+  /* the washing line at his house */
+  addThing({x:HOME_X-40, dy:36, txt:'the washing on the line',
+    say:['One shirt, mended twice at the same elbow.',
+         'Dry, now. He will bring it in and not remember doing it.'],
+    fx(){ AU.noise(0.2,0.01,400,2600); } });
+  /* the stall */
+  addThing({x:STALL2_X+22, dy:46, txt:'smell the pot',
+    say:['Star anise, pepper root, forty years of the same pot never being washed out.',
+         'It is the best thing that has happened to you since the ground.'],
+    merit:1,
+    fx(){ for(let i=0;i<10;i++) pSmoke(STALL2_X+20+rnd(-4,4), groundY(STALL2_X)-46, i*0.1); } });
+  addThing({x:STALL2_X-36, dy:14, txt:'sit on the stool',
+    say:['You are nine feet tall and the stool is nine inches high. You try anyway.',
+         'It holds. Nobody is more surprised than the stool.'],
+    fx(){ AU.step(true); pDust(STALL2_X-36,groundY(STALL2_X),4); } });
+  /* the chopping log and the woodpile */
+  addThing({x:LOG_X-30, dy:20, txt:'the woodpile',
+    say:['Split, stacked and left to season. Somebody was planning to be here in the cold season.',
+         'Good dry wood. It will burn for whoever comes.'] });
+  /* the temple */
+  addThing({x:CHEDI_X-52, dy:30, txt:'read the old stone',
+    say:['A name, and a year, and a line of Pali worn down to a groove.',
+         'You can read it. You have no idea how you can read it.'],
+    merit:2 });
+  /* the fields */
+  addThing({x:1180, dy:40, txt:'the scarecrow',
+    say:['Somebody dressed it in a shirt that was still good. That is this village all over.',
+         'It watches the field. You watch it. Neither of you blinks.'],
+    fx(){ scatterBirds(1180,140); } });
+  /* stones you can turn over, out in the open ground */
+  for(const sx of [352, 372, 390, 5980, 6640]){
+    addThing({x:sx, dy:16, txt:'turn the stone over',
+      say:['Everything under it leaves at once, in five directions.',
+           'The same stone. The same hurry.'],
+      fx(){ const y=groundY(sx)-6;
+            for(let i=0;i<3;i++) CRIT.push({k:'hopper',x:sx+rnd(-6,6),y,vx:rnd(-60,60),vy:-rnd(40,90),t:0});
+            spawnFly('butterfly',sx,y-6); AU.noise(0.14,0.02,300,1800); pDust(sx,groundY(sx),6); } });
+  }
+  /* the stream in the deep country */
+  addThing({x:6330, dy:12, txt:'the stream',
+    say:['Shallow, quick, and loud out of all proportion to its size.',
+         'It is going somewhere. It is the only thing out here that is.'],
+    fx(){ for(let i=0;i<16;i++) part({k:'water',x:6330+rnd(-20,20),y:groundY(6330)+2,vx:rnd(-24,24),vy:-rnd(20,50),life:.6}); AU.pour(); } });
+  /* the fallen logs */
+  for(const lx of [5860,6520,6900]){
+    addThing({x:lx, dy:26, txt:'the fallen tree',
+      say:['Moss on the north of it, mushrooms on the shade side, a whole town under the bark.',
+           'It will be soil in ten years. It is in no hurry either.'],
+      fx(){ for(let i=0;i<4;i++) spawnFly(Math.random()<0.5?'butterfly':'dragonfly', lx+rnd(-30,30), groundY(lx)-24); } });
+  }
+  /* the hens and the dogs answer too */
+  addThing({x:FARMHOUSE_X+40, dy:14, txt:'count the chickens',
+    say:['Seven. You count them twice and get seven both times, which feels like an achievement.',
+         'Still seven.'],
+    fx(){ for(const c of CRIT) if(c.k==='hen' && Math.abs(c.x-FARMHOUSE_X)<80){ c.st='run'; c.tt=1; c.face=sign(c.x-P.x||1); }
+          AU.tone(760,0.08,'square',0.014,520); } });
+}
+/* a dog will let you, eventually */
+function dogInteract(set, taken){
+  if(taken()) return;
+  for(const c of CRIT){
+    if(c.k!=='dog') continue;
+    if(Math.abs(c.x-P.x)>22) continue;
+    const known = GS.seen['dog_'+c.id];
+    set(c.x, groundY(c.x)-22, known? L('scratch its ear') : L('hold out a hand'), ()=>{
+      P.face = c.x<P.x? -1:1;
+      preteAct('reach',1.0,()=>{
+        if(!known){
+          GS.seen['dog_'+c.id]=true; saveGame();
+          addMerit(1); toast('+1 '+L('merit')+' · '+L('it decided about you'), PAL.jadeL);
+          say([{w:'',t:'It smells the hand for a long moment, the way a dog does when it is making a decision about you.'},
+               {w:'',t:'Then it leans on your shin, which is as high as it can reach, and that is that.'}]);
+        } else {
+          AU.purr(); pHeart(c.x,c.y-14);
+          toast(L('the tail goes'),'#ff9eb0');
+        }
+        c.st='sit'; c.tt=4;
+      });
+    });
+    return;
+  }
+}
+function thingInteract(set, taken){
+  if(taken()) return;
+  let best=null, bd=20;
+  for(const t of THINGS){
+    const d=Math.abs(t.x-P.x);
+    if(d<bd){ bd=d; best=t; }
+  }
+  if(!best) return;
+  const key='th_'+R(best.x);
+  set(best.x, groundY(best.x)-(best.dy||20), L(best.txt), ()=>{
+    const first=!GS.seen[key];
+    GS.seen[key]=true;
+    P.face = best.x<P.x? -1:1;
+    if(best.fx) best.fx();
+    if(first && best.merit){ addMerit(best.merit); toast('+'+best.merit+' '+L('merit')); }
+    const line = first? best.say[0] : (best.say[1]||best.say[0]);
+    if(first) say([{w:'',t:line}]);
+    else guideSay(line, 5.5);
+    saveGame();
+  });
+}
+/* ============================================================
+   THE FIRST NIGHT, AND THE MORNING AFTER
+
+   The game now has a beginning, and it is a person rather than
+   a lesson. You come up out of the ground in the burial field.
+   A long way down the road there is one light on: an old man
+   with a cart, selling to nobody at three in the morning. He is
+   not frightened of you, which is the first thing that has gone
+   right in a while. He walks you home past the sleeping houses,
+   puts food out, tells you to come back at first light, and in
+   the morning he hands you a plough.
+
+   Everything after that is farming, and farming is the game.
+
+   The whole thing is one list, STORY, stepped one beat at a
+   time. A beat can want you to stand somewhere, to say
+   something, to finish a job, or just to let a few seconds
+   pass. Nothing in here reaches into the rest of the game
+   except through GS.ch, so the moment the last beat is done the
+   village behaves exactly as it always did.
+   ============================================================ */
+
+/* ---------- where the first night happens ---------- */
+const GRAVE_X  = 250;                 // the soil you come up out of
+const STALL2_X = 566;                 // his cart, parked on the road at 3am
+const HOME_X   = HOUSE_XS[0];         // 1560 — his house, up on its stilts
+const HIDE_X   = HOME_X - 46;         // the dark under the floor, where you sleep
+const FIELD_X  = BED_XS[0] - 44;      // where he stops and hands you the plough
+
+const CH = {
+  lock:false, t:0, beat:0, sub:0,
+  climb:0, dug:0,
+  walk:false, wtx:0, said:{},
+  fade:0, fadeTo:0, card:0, cardTxt:'',
+  jarsSet:0,
+};
+const chapter = ()=> STORY[clamp(GS.ch|0,0,STORY.length-1)];
+const chIs = id => chapter().id===id;
+const chAt = id => STORY.findIndex(s=>s.id===id);
+const chPast = id => (GS.ch|0) > chAt(id);
+/* while the first night is running the village keeps its hands in its
+   pockets: no shops, no orders, no rice lesson, no ghosts wanting a chat */
+const storyBusy = ()=> (GS.ch|0) < chAt('free');
+
+function chGo(id){
+  const i = typeof id==='number'? id : chAt(id);
+  GS.ch = i; CH.t=0; CH.sub=0; CH.said={}; CH.card=0;
+  const c=STORY[i];
+  if(c && c.enter) c.enter();
+  saveGame();
+}
+function chNext(){ chGo((GS.ch|0)+1); }
+/* a line said once per beat, when you reach a place */
+function onceAt(key, x, r, fn){
+  if(CH.said[key]) return false;
+  if(Math.abs(P.x-x)>r) return false;
+  CH.said[key]=true; fn(); return true;
+}
+function chCard(txt, t=3.2){ CH.card=t; CH.cardMax=t; CH.cardTxt=L(txt); }
+
+/* ---------- Lung Somchai, walking ---------- */
+/* He is an ordinary NPC with one extra gear: a destination he will actually
+   walk to, at an old man's pace, waiting when you fall behind because the
+   whole point of the scene is that he is waiting for you. */
+const LUNG = UNCLE;
+function lungWalk(tx, speed){
+  CH.walk=true; CH.wtx=tx; CH.wspd=speed||54;
+}
+function stepLung(dt){
+  if(!CH.walk) return;
+  const d = CH.wtx - LUNG.x;
+  const behind = (P.x - LUNG.x) * sign(d||1) < -150;
+  if(Math.abs(d)<4){ CH.walk=false; LUNG.vx=0; LUNG.state='idle'; return; }
+  if(behind){
+    LUNG.vx=0; LUNG.state='idle'; LUNG.face=sign(P.x-LUNG.x||1);
+    CH.waitT=(CH.waitT||0)+dt;
+    if(CH.waitT>2.6){ CH.waitT=0; lungSay(pick([
+      'Take your time. The road is not going anywhere.',
+      'I walk slowly. You have no excuse.',
+      'Still there? Good. Keep up.']), 2.6); }
+    return;
+  }
+  CH.waitT=0;
+  LUNG.face=sign(d);
+  LUNG.vx=LUNG.face*CH.wspd;
+  LUNG.x += LUNG.vx*dt;
+  LUNG.phase += LUNG.vx*dt*0.22;
+  LUNG.state='walk';
+  LUNG.y = groundY(LUNG.x);
+  if(Math.random()<dt*6) brushGrass(LUNG.x,14,2);
+}
+function lungSay(txt,t=3.4){ LUNG.bub={t, txt:L(txt)}; }
+
+/* ============================================================
+   THE BEATS
+   ============================================================ */
+const STORY = [
+
+/* ---------- 0 · out of the ground ---------- */
+{ id:'climb',
+  enter(){
+    CH.lock=true; CH.climb=0; CH.dug=0;
+    P.x=GRAVE_X; P.y=groundY(GRAVE_X); P.vx=0; P.vy=0; P.face=1;
+    P.rise = -74;
+    setTOD(0, true);
+    GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
+    CH.fade=1; CH.fadeTo=0;
+  },
+  step(dt){
+    CH.lock=true;
+    P.rise = lerp(P.rise, -74 + CH.climb*74, 1-Math.pow(0.004,dt));
+    GS.camX = lerp(GS.camX, clamp(GRAVE_X-W/2+30,0,WORLD_W-W), 1-Math.pow(0.01,dt));
+    if(CH.t<1.4) return;                       // let the black lift first
+    if(CH.climb>=1){
+      if(CH.sub===0){
+        CH.sub=1;
+        P.rise=0; P.y=groundY(P.x); preteAct('wai',1.6);
+        say([
+          {w:'',t:'You are out. You are kneeling in a burial field with your hands full of somebody else\'s earth.'},
+          {w:'',t:'Nine feet of you. Ribs on the outside like the frame of a boat. A mouth the width of a needle\'s eye and a stomach with no bottom to it.'},
+          {w:'',t:'There is a word for this, and you find you already know it. Prete. A hungry ghost. Somebody is paying for something.'},
+          {w:'',t:'You reach for your name the way you would reach for a coin in a pocket. Nothing where it should be.'},
+          {w:'',t:'Far down the road, one light is on.'},
+        ], ()=>{ CH.lock=false; chNext(); });
+      }
+      return;
+    }
+    if(press('act')||press('tap')||press('jump')){
+      CH.dug++;
+      CH.climb = clamp(CH.dug/7,0,1);
+      AU.noise(0.16,0.05,60,700); AU.tone(70,0.16,'sine',0.04,40);
+      GS.shake=Math.max(GS.shake, 2.2);
+      for(let i=0;i<14;i++) part({k:'dust',x:GRAVE_X+rnd(-16,16),y:groundY(GRAVE_X)-rnd(0,8),
+                                  vx:rnd(-46,46),vy:-rnd(20,90),life:rnd(0.4,0.9)});
+      scatterBirds(GRAVE_X, 220);
+      const lines=[ 'Something is pulling. It takes you a moment to work out that it is you.',
+                    'A hand comes up through the soil. You watch it happen before you understand it is yours.',
+                    'The earth does not want to let go. The earth is outvoted.',
+                    'Somebody buried this. Somebody said words over it.',
+                    'Your shoulders come free. You are much, much taller than you remember being.',
+                    'One more.' ];
+      if(CH.dug<=lines.length) chCard(lines[CH.dug-1], 2.8);
+    }
+  },
+  ui(g){
+    if(CH.t<1.6 || CH.climb>=1) return;
+    const pu=0.5+0.5*Math.sin(GS.t*3.4);
+    const s=L('tap to pull yourself out');
+    const w2=txtW(s,7)+22;
+    g.globalAlpha=0.55+pu*0.45;
+    inkPanel(g, W/2-w2/2, H-40, w2, 16);
+    pTxt(g, s, W/2, H-29, '#e8e0f4', 7, 'center');
+    g.globalAlpha=1;
+    const bw=96;
+    pR(g,W/2-bw/2,H-18,bw,3,'rgba(20,16,30,0.7)');
+    pR(g,W/2-bw/2,H-18,bw*CH.climb,3,PAL.gold);
+  },
+  fore(g){
+    /* Everything below the grass line is redrawn on top of him, because he
+       is under it: he is lowered by up to seventy-four pixels and without
+       this you can watch a nine-foot ghost standing in a cellar. */
+    const cx=GS.camX, x0=Math.max(0,R(cx)-4), x1=R(cx)+W+4;
+    for(let x=x0;x<x1;x++){
+      const gy2=R(groundY(x));
+      pR(g,x,gy2,1,4,'#4a5148'); pR(g,x,gy2+4,1,10,'#333a34'); pR(g,x,gy2+14,1,H+40,'#1e231f');
+      if(x%3!==0) pR(g,x,gy2,1,1,'#5b6259');
+    }
+    const gy=groundY(GRAVE_X);
+    const open=CH.climb;
+    /* the heap of turned earth around the hole, and the hole in it */
+    const RW=44;
+    for(let i=-RW;i<=RW;i++){
+      const t=Math.abs(i)/RW;
+      const h=(1-t*t)*(9+open*9);
+      pR(g,GRAVE_X+i,gy-h,1,h+4, i%3? '#544936':'#473e30');
+      if(i%4===0) pR(g,GRAVE_X+i,gy-h,1,1,'#70614a');
+      if(i%7===0) pR(g,GRAVE_X+i,gy-h+2,1,2,'#3b3428');
+    }
+    /* clods sitting on the heap, so it looks thrown rather than moulded */
+    for(let i=0;i<20;i++){
+      const a=(i*2.399), rx=Math.cos(a)*RW*0.88, t=Math.abs(rx)/RW;
+      const hy=gy-(1-t*t)*(9+open*9);
+      pR(g, R(GRAVE_X+rx)-1, R(hy)-1, 2+((i*5)%3), 2, i%2?'#5f5240':'#4a4133');
+    }
+    const hw=6+open*17;
+    for(let i=-hw;i<=hw;i++){
+      const t=Math.abs(i)/hw;
+      pR(g,GRAVE_X+i,gy-3-(1-t*t)*2,1,7,'#1d1913');
+    }
+    pR(g,GRAVE_X-hw,gy-3,hw*2,1,'#332c22');
+    pR(g,GRAVE_X-3,gy-24,5,26,'#8d8f80');      // the marker at the head of it
+    pEll(g,GRAVE_X-1,gy-24,4,4,'#a4a695');
+    pR(g,GRAVE_X-4,gy-25,7,1,'#b4b6a5');
+  } },
+
+/* ---------- 1 · the light down the road ---------- */
+{ id:'meet',
+  enter(){
+    LUNG.x=STALL2_X+16; LUNG.y=groundY(LUNG.x); LUNG.face=-1; LUNG.state='idle'; LUNG.home=LUNG.x;
+    CH.walk=false;
+    guideSay('East, along the road. Somebody down there is still awake.', 7);
+  },
+  step(dt){
+    onceAt('smell', STALL2_X+150, 150, ()=>chCard('Star anise. Charcoal. Somebody\'s stock has been on since four in the afternoon.', 3.4));
+    onceAt('see', STALL2_X+90, 90, ()=>chCard('One bulb, one pot, one old man, and nobody to sell to.', 3.4));
+  },
+  interact(set){
+    if(Math.abs(P.x-LUNG.x)<40)
+      set(LUNG.x, LUNG.y-32, L('say something'), talkLungFirst);
+  } },
+
+/* ---------- 2 · the walk home ---------- */
+{ id:'follow',
+  enter(){
+    lungWalk(HOME_X-18, 56);
+    guideSay('Follow him.', 6);
+    chCard('Follow him home', 2.6);
+  },
+  step(dt){
+    stepLung(dt);
+    /* the night, in five things that happen on the way */
+    onceAt('dog', 1690, 130, ()=>{
+      for(const c of CRIT) if(c.k==='dog' && Math.abs(c.x-P.x)<220){ c.st='bark'; c.tt=0; }
+      lungSay('That is Daeng. He barks at me too. Thirty years.',3.6);
+    });
+    onceAt('field', 980, 120, ()=>lungSay('That is my field. Was my field. Nobody has turned it in two seasons.',4.2));
+    onceAt('window', 1420, 90, ()=>chCard('A window goes dark as you pass under it. Somebody was watching the road and has decided not to.', 3.6));
+    onceAt('houses', 1560-260, 90, ()=>lungSay('Everybody is asleep. Do not be insulted. They sleep through the temple drum as well.',4.2));
+    onceAt('gate', HOME_X-70, 60, ()=>lungSay('Here. Mind the step, it is not a step, it is a rock.',3.4));
+    if(!CH.walk && Math.abs(P.x-HOME_X)<110 && CH.t>2){ chNext(); }
+  } },
+
+/* ---------- 3 · the leaf of rice on the step ---------- */
+{ id:'supper',
+  enter(){
+    LUNG.x=HOME_X-14; LUNG.y=groundY(LUNG.x); LUNG.face=-1; LUNG.state='idle';
+    CH.food=0;
+    say([
+      {w:'Lung Somchai', t:'Sit. Or — do not sit, you would go through the floor. Stand there, then.'},
+      {w:'Lung Somchai', t:'Rice, and what is left in the pot. It is not much. It has been that sort of month.'},
+      {w:'', t:'He puts a banana leaf down on the step and steps back, the way you put food out for a dog you have decided to like.'},
+    ], ()=>{ CH.food=1; guideSay('There is food on the step. Whether you can take it is another matter.',7); });
+  },
+  step(dt){
+    if(CH.food===2 && CH.t>1.2 && !DLG && !CH.said.after){
+      CH.said.after=true;
+      say([
+        {w:'Lung Somchai', t:'Ah. So that is how it is with you. Well — the smell is the half of it anyway. My wife said that and she was a better cook than me.'},
+        {w:'Lung Somchai', t:'Listen. First light I am in the field. It has to be turned before the rain, and I am seventy-one, and I am not going to manage it.'},
+        {w:'Lung Somchai', t:'You are very large and you are clearly not busy. Come and hold the other end of things.'},
+        {w:'Lung Somchai', t:'And after that there is cooking. There is always cooking. A stall does not feed itself and neither does a village.'},
+        {w:'Lung Somchai', t:'Sleep somewhere. Not in the road. People here are superstitious, and in your case correct.'},
+      ], ()=>{
+        addMerit(4); toast('+4 '+L('merit')+' · '+L('he was not afraid of you'));
+        LUNG.face=1; lungSay('Goodnight, tall one.',3);
+        guideSay('Under the house, out of the road. There is space between the stilts.',8);
+        chNext();
+      });
+    }
+  },
+  interact(set){
+    if(CH.food===1 && Math.abs(P.x-(HOME_X-30))<28)
+      set(HOME_X-30, groundY(HOME_X)-16, L('the food on the step'), ()=>{
+        CH.food=2;
+        P.face = -1;
+        preteAct('reach',1.4);
+        say([
+          {w:'', t:'You get it as far as your mouth. The mouth is the width of a needle\'s eye and the rice is rice.'},
+          {w:'', t:'What comes through is the steam. Warm, and sweet, and gone.'},
+          {w:'', t:'It is the first kind thing anybody has done for you and you cannot even do it properly.'},
+        ]);
+        for(let i=0;i<10;i++) pSmoke(HOME_X-30+rnd(-4,4), groundY(HOME_X)-18, i*0.12);
+      });
+  } },
+
+/* ---------- 4 · under the house ---------- */
+{ id:'hide',
+  enter(){ guideSay('Get out of the road and sleep.',7); chCard('Find somewhere to sleep', 2.8); },
+  step(dt){},
+  interact(set){
+    if(Math.abs(P.x-HIDE_X)<30)
+      set(HIDE_X, groundY(HIDE_X)-30, L('crawl under the house and sleep'), startSleep);
+  } },
+
+/* ---------- 5 · he hands you the plough ---------- */
+{ id:'field',
+  enter(){
+    LUNG.x=HOME_X-26; LUNG.y=groundY(LUNG.x); LUNG.face=-1; LUNG.state='idle'; CH.walk=false;
+    CH.gave=0;
+    guideSay('Morning. He is up, and he is holding something.',7);
+  },
+  step(dt){
+    stepLung(dt);
+    if(CH.gave===1 && !CH.walk && Math.abs(LUNG.x-FIELD_X)<8 && !DLG && !CH.said.handover){
+      CH.said.handover=true;
+      LUNG.face=1;
+      say([
+        {w:'Lung Somchai', t:'There. Five beds, and the ground on top has gone to brick. It wants breaking before it wants anything else.'},
+        {w:'Lung Somchai', t:'This is a plough. It is older than me. Do not put your weight on it all at once — wait for the pull, then drive.'},
+        {w:'Lung Somchai', t:'Rhythm. Not strength. You have plenty of the second one.'},
+      ], ()=>{ chNext(); });
+    }
+  },
+  interact(set){
+    if(CH.gave===0 && Math.abs(P.x-LUNG.x)<40)
+      set(LUNG.x, LUNG.y-32, L('good morning'), ()=>{
+        say([
+          {w:'Lung Somchai', t:'You stayed. I put money on you not staying — with myself, so I have also won.'},
+          {w:'Lung Somchai', t:'Come on. West, past the hut. Bring your shoulders.'},
+        ], ()=>{ CH.gave=1; lungWalk(FIELD_X, 52); guideSay('Follow him out to the beds.',6); });
+      });
+  } },
+
+/* ---------- 6 · break the ground ---------- */
+{ id:'plow',
+  enter(){
+    chCard('Plough the five beds', 3.2);
+    guideSay('Stand at a bed and drive the blade in on the beat.',8);
+  },
+  step(dt){
+    stepLung(dt);
+    if(plowedCount()>=PLOTS.length && !DLG && !CH.said.done){
+      CH.said.done=true;
+      addMerit(8); toast('+8 '+L('merit')+' · '+L('the ground is open'));
+      lungWalk(BED_XS[2], 46);
+      say([
+        {w:'Lung Somchai', t:'Hah! Look at that. Straight, too. I have seen buffalo make a worse line than that.'},
+        {w:'Lung Somchai', t:'Now the hard part. It is dust down there. It wants water before it wants seed.'},
+        {w:'Lung Somchai', t:'The โอ่ง are by the hut — the big jars. Do not try to carry all of them. Actually, you might.'},
+      ], ()=>chNext());
+    }
+  } },
+
+/* ---------- 7 · the jars ---------- */
+{ id:'water',
+  enter(){ chCard('Water the beds from the โอ่ง', 3.2);
+           guideSay('The jars stand by the hut. Lift one, carry it over, tip it out.',8); },
+  step(dt){
+    stepLung(dt);
+    if(wateredCount()>=PLOTS.length && !DLG && !CH.said.done){
+      CH.said.done=true;
+      addMerit(6); toast('+6 '+L('merit')+' · '+L('the beds are wet through'));
+      say([
+        {w:'Lung Somchai', t:'Good. Feel it — it gives now. Yesterday you could have built a wall out of that.'},
+        {w:'Lung Somchai', t:'Seed next. I will start at this end. You have hands like banana leaves; take the far end.'},
+      ], ()=>chNext());
+    }
+  } },
+
+/* ---------- 8 · sowing ---------- */
+{ id:'plant',
+  enter(){
+    chCard('Sow the beds with him', 3.2);
+    CH.sowT=6;
+    guideSay('He sows from the near end. Take the far one.',8);
+  },
+  step(dt){
+    stepLung(dt);
+    /* he works, slowly, and will finish the job alone if you let him — but
+       it takes him the best part of a minute a bed and he says so */
+    CH.sowT-=dt;
+    if(CH.sowT<=0){
+      CH.sowT=16;
+      const pl=PLOTS.find(p=>p.stage===0 && p.wet>0);
+      if(pl){
+        if(Math.abs(LUNG.x-pl.x)>10){ lungWalk(pl.x,44); CH.sowT=3; }
+        else { sowPlot(pl, true); lungSay(pick([
+          'One.','That is another.','Slowly, slowly. It all goes in the same ground.']),2.4); }
+      }
+    }
+    if(sownCount()>=PLOTS.length && !DLG && !CH.said.done){
+      CH.said.done=true;
+      addMerit(12); earn(40);
+      toast('+12 '+L('merit')+' · +40 '+L('baht'));
+      vignette('planted');
+      say([
+        {w:'Lung Somchai', t:'That is the field in. Two days, that would have taken me. Two days and my back for a week after.'},
+        {w:'Lung Somchai', t:'Here. Forty baht. No, take it — a man who works gets paid, and I am not going to argue about what you are.'},
+        {w:'Lung Somchai', t:'Come back when it is up. And go and see the village — they are awake now, and half of them want something carried.'},
+        {w:'Lung Somchai', t:'The stove by the shop is anybody\'s. Cook what you grow. Sell it to P\'Nok or give it away — that part is between you and whoever is keeping your accounts.'},
+      ], ()=>{
+        FARM.rented=true; FARM.rice=true; FARM.paddies=Math.max(1,FARM.paddies);
+        FARM.beds=Math.max(FARM.beds, PLOTS.length);
+        chNext(); saveGame();
+      });
+    }
+  } },
+
+/* ---------- 9 · the rest of it ---------- */
+{ id:'free',
+  enter(){
+    LUNG.home=CART_X-26;
+    CH.walk=false;
+    guideSay('The road east is open. The village is awake and the stall wants stock.',8);
+  },
+  step(dt){
+    /* he goes back to his corner, in his own time */
+    if(Math.abs(LUNG.x-LUNG.home)>6 && !CH.walk && CH.t>6) lungWalk(LUNG.home, 40);
+    stepLung(dt);
+  } },
+];
+
+/* ---------- first words ---------- */
+function talkLungFirst(){
+  P.face = LUNG.x>P.x? 1:-1; LUNG.face=-P.face;
+  npcReact(LUNG,'wai',2.4);
+  say([
+    {w:'', t:'He looks up. He looks at your knees, then further up, and further up again, and puts down the ladle.'},
+    {w:'Lung Somchai', t:'Hm.'},
+    {w:'Lung Somchai', t:'Thirty years I have had this cart on this corner. Drunks. Monks. A policeman who never paid. Two elephants, once, in the same week.'},
+    {w:'Lung Somchai', t:'You are new. Sit down before you frighten the moths.'},
+    {w:'', t:'You try to answer. What comes out of a mouth that size is a thin whistle, like wind in a bottle.'},
+    {w:'Lung Somchai', t:'Ah. One of the hungry ones. My grandmother fed one on the back step every Wan Phra of her life.'},
+    {w:'Lung Somchai', t:'Well, I am closing. Nobody comes at three. Walk with me — the house is not far and there is rice in the pot.'},
+  ], ()=>{
+    addMerit(2); toast('+2 '+L('merit')+' · '+L('somebody spoke to you'));
+    GS.q.metLung=true;
+    chNext();
+  });
+}
+
+/* ============================================================
+   SLEEPING
+   ============================================================ */
+const SLEEP={t:0, lines:0};
+function startSleep(){
+  GS.state='sleep'; SLEEP.t=0; SLEEP.lines=0;
+  P.vx=0; P.vy=0; navStop();
+  AU.gong(98,0,0.05);
+}
+const DREAM=[
+  'You do not sleep. Things like you do not sleep. You lie under a stranger\'s floorboards and wait.',
+  'A gecko says its own name seven times, directly above your head.',
+  'Somewhere behind your eyes there is a scale, and a hand putting something on it, and you cannot see whose hand.',
+  'The dogs give up around four. The frogs keep going.',
+  'The sky over the paddy goes the colour of the inside of a shell.',
+];
+function stepSleep(dt){
+  SLEEP.t+=dt;
+  setTOD(clamp((SLEEP.t-1.2)/9, 0, 0.92));
+  const want = clamp(Math.floor((SLEEP.t-0.6)/2.1),0,DREAM.length);
+  if(want>SLEEP.lines){ SLEEP.lines=want; AU.blip(); }
+  if(SLEEP.t>4 && SLEEP.t<4.2) AU.rooster();
+  if(SLEEP.t>7.4 && SLEEP.t<7.5) AU.rooster();
+  if(SLEEP.t > DREAM.length*2.1+2.4 || press('act')||press('tap')){
+    if(SLEEP.t<2){ clearPress(); return; }
+    setTOD(0.92, true);
+    GS.state='play';
+    P.x=HIDE_X+20; P.y=groundY(P.x);
+    GS.camX=clamp(P.x-W/2,0,WORLD_W-W);
+    for(const c of CRIT) if(c.k==='hen'){ c.st='peck'; }
+    scatterBirds(P.x, 260);
+    AU.rooster();
+    chGo('field');
+    toast(L('morning')+' · '+L('the field is waiting'),'#ffd98a');
+  }
+  clearPress();
+}
+function drawSleepScreen(g){
+  const t=SLEEP.t;
+  g.fillStyle='#05060f'; g.fillRect(0,0,W,H);
+  /* the underside of a wooden floor, three feet above your face */
+  for(let i=0;i<9;i++){
+    const y=8+i*7;
+    pR(g,0,y,W,6, i%2? '#171219':'#1c1620');
+    pR(g,0,y,W,1,'#241c26');
+  }
+  for(let i=0;i<7;i++) pR(g,40+i*62,8,3,H*0.24,'#120e16');
+  /* and past the edge of it, sky */
+  const sk=skyNow();
+  pVGrad(g,0,H*0.26,W,H*0.5,sk.c[1],sk.c[3],6);
+  for(const s of STARS){
+    if(s[1]>0.42) continue;
+    const y=H*0.28+s[1]*H*0.42;
+    g.fillStyle=`rgba(255,246,224,${0.5*sk.star*(0.3+s[3]*0.7)*(0.5+0.5*Math.sin(GS.t*1.3+s[2]))})`;
+    g.fillRect(R((s[0]*W+t*3)%W),R(y),1,1);
+  }
+  pR(g,0,H*0.76,W,H*0.24,'#14120e');
+  for(let i=0;i<60;i++){ const x=(i*37)%W; pR(g,x,H*0.76+((i*13)%14),2,1,'#1b1812'); }
+  /* your own knees, in the bottom of frame, because you are down there */
+  { const by=H*0.94, br=0.5+0.5*Math.sin(t*0.9);
+    pEll(g,W*0.24,by,34,15,'#191520');
+    pEll(g,W*0.24,by-4,26,10,'#221c2a');
+    pEll(g,W*0.58,by+2,40,17,'#191520');
+    for(let i=0;i<5;i++) pR(g,W*0.50+i*7,by-9+((i%2)*2),3,12,'#1d1826');
+    pEll(g,W*0.80,by+4-br*1.5,14,9,'#191520'); }
+  for(let i=0;i<6;i++){
+    const fx=(i*83 + t*9)%W, fy=H*0.60+Math.sin(t*1.3+i)*14;
+    const bl=0.5+0.5*Math.sin(t*2.4+i*1.7);
+    if(bl<0.4) continue;
+    g.globalAlpha=(bl-0.4)*1.4*(1-TOD.v);
+    pEll(g,fx,fy,1.6,1.6,'#c6ff9a'); g.globalAlpha=1;
+  }
+  /* the lines of the night */
+  let y=LANG==='th'? H*0.37 : H*0.40;
+  for(let i=0;i<SLEEP.lines;i++){
+    const a=clamp((t-(0.6+i*2.1))/0.7,0,1) * (1 - clamp((t-(0.6+i*2.1)-6.5)/1.2,0,1));
+    if(a<=0.01){ y+=20; continue; }
+    g.globalAlpha=a;
+    const ls=wrap(g,DREAM[i],W-72,7), lh=lineStep(7);
+    for(const l of ls){
+      pTxt(g,l,W/2+1,y+1,'rgba(20,12,28,0.65)',7,'center');
+      pTxt(g,l,W/2,y,'#f2ecf8',7,'center'); y+=lh; }
+    g.globalAlpha=1; y+=LANG==='th'?5:8;
+  }
+  const fade=clamp(1-t/1.0,0,1);
+  if(fade>0){ g.fillStyle=rgba('#05060f',fade); g.fillRect(0,0,W,H); }
+  pTxt(g, L('tap to wake'), W/2, H-10, 'rgba(200,190,220,0.5)', 6,'center');
+}
+
+/* ============================================================
+   STEP + DRAW
+   ============================================================ */
+function stepStory(dt){
+  CH.t+=dt;
+  if(CH.card>0) CH.card-=dt;
+  const c=chapter();
+  if(c && c.step) c.step(dt);
+  stepSeeds(dt);
+  /* the stall's fire keeps going all night */
+  if(!chPast('follow') && Math.random()<dt*3 && Math.abs(STALL2_X-GS.camX-W/2)<W)
+    pSmoke(STALL2_X-4+rnd(-3,3), groundY(STALL2_X)-40);
+}
+function storyInteract(set, taken){
+  const c=chapter();
+  if(c && c.interact && !taken()) c.interact(set);
+  if(!taken()) carryInteract(set);
+  if(!taken()) fieldInteract(set, taken);
+}
+
+function drawStoryBack(g){
+  const cx=GS.camX;
+  drawHouseLife(g);
+  drawBeds(g);
+  drawJarsWorld(g);
+  if(Math.abs(STALL2_X-cx-W/2) < W*0.9) drawNightStall(g);
+  if(Math.abs(HOME_X-cx-W/2) < W*0.9) drawLungHome(g);
+}
+function drawStoryFore(g){
+  const c=chapter();
+  if(c && c.fore) c.fore(g);
+  drawPlowWorld(g);
+  drawSeeds(g);
+  drawCarried(g);
+}
+function drawStoryUI(g){
+  if(GS.state==='sleep'){ drawSleepScreen(g); return; }
+  { const c=chapter(); if(c && c.ui && GS.state==='play' && !DLG && !VIG) c.ui(g); }
+  if(CH.card>0){
+    const a=clamp(CH.card/0.6,0,1)*clamp((CH.cardMax-CH.card)/0.35,0,1);
+    g.globalAlpha=a;
+    const ls=wrap(g,CH.cardTxt,W-100,7), lh=lineStep(7);
+    const h=ls.length*lh+10;
+    inkPanel(g, 44, 30, W-88, h);
+    let y=38+6;
+    for(const l of ls){ pTxt(g,l,W/2,y,'#e8e0f4',7,'center'); y+=lh; }
+    g.globalAlpha=1;
+  }
+}
+
+/* ============================================================
+   THE NIGHT STALL
+   ============================================================ */
+function paintStallSprite(g, gy){
+  const x=40;
+  // the cart: a glass case on bicycle wheels, which is what these are
+  pR(g,x-30,gy-30,60,22,'#6b4a30');
+  pR(g,x-30,gy-30,60,2,'#8a6442');
+  pR(g,x-28,gy-28,56,18,'#20304a');                 // the glass
+  for(let i=0;i<5;i++) pR(g,x-26+i*11,gy-27,2,16,'rgba(220,240,255,0.13)');
+  pR(g,x-26,gy-18,52,8,'#cbb182');                  // noodles and bits behind glass
+  for(let i=0;i<8;i++) pEll(g,x-22+i*6,gy-14,2.4,2,pick(['#e8c15c','#c0392f','#8fbf4a','#f2ecd8']));
+  pR(g,x-30,gy-8,60,6,'#563c27');
+  pEll(g,x-19,gy-1,6,6,'#2a2228'); pEll(g,x-19,gy-1,3,3,'#4a4048');
+  pEll(g,x+19,gy-1,6,6,'#2a2228'); pEll(g,x+19,gy-1,3,3,'#4a4048');
+  // the stock pot, on its ring, with the lid half off
+  pR(g,x+14,gy-44,18,15,'#8a8f96');
+  pR(g,x+14,gy-44,18,2,'#b4bac2');
+  pR(g,x+12,gy-46,22,3,'#6f757c');
+  pR(g,x+16,gy-49,10,3,'#9aa0a8');
+  // the umbrella, patched, and big enough to stand two people under
+  pTaper(g,x-4,gy-30,x-4,gy-92,2.4,2.4,'#7d5a3c');
+  for(let i=-5;i<=4;i++){
+    const t=(i+0.5)/5, w=Math.abs(t);
+    pTri(g, x-4, gy-95, x-4+i*13, gy-76+w*9, x-4+(i+1)*13, gy-76+Math.abs((i+1.5)/5)*9,
+         i%2? '#b4443c':'#e8dfc8');
+  }
+  pR(g,x-69,gy-76,130,2,'#8a3a34');
+  for(let i=-5;i<=5;i++) pR(g,x-4+i*13,gy-77,1,3,'#6b2c28');
+  // the bulb on its flex, and the moths' whole reason for living
+  pTaper(g,x-4,gy-86,x+18,gy-70,1,1,'#2a2620');
+  pEll(g,x+18,gy-67,3.4,4,'#fff2c0');
+  // stools, one of them occupied by nobody
+  for(const sx of [-40,-26]){ pR(g,x+sx,gy-11,9,11,'#9a4a3a'); pR(g,x+sx,gy-12,9,2,'#c05a44'); }
+  // a bucket, a crate of bottles, a rice sack
+  pR(g,x+36,gy-10,11,10,'#4a6a7a'); pR(g,x+36,gy-11,11,2,'#6b8a9a');
+  pR(g,x-52,gy-12,14,12,'#6b5a3c');
+  for(let i=0;i<4;i++) pR(g,x-50+i*3,gy-17,2,6,pick(['#3f8f5f','#c0392f','#8a6a3a','#3f6f8f']));
+  pEll(g,x+52,gy-5,9,6,'#c9b48a');
+}
+function drawNightStall(g){
+  const gy=groundY(STALL2_X);
+  const sp=farmSprite('nightstall', 140, 110, gg=>paintStallSprite(gg, 100));
+  g.drawImage(sp, R(STALL2_X-40), R(gy-100));
+  // live: the fire under the pot, and steam off the top of it
+  const fl=0.6+0.4*Math.sin(GS.t*9)+rnd(-0.12,0.12);
+  pEll(g,STALL2_X+23,gy-28,5*fl,3*fl,'rgba(255,120,40,0.5)');
+  pEll(g,STALL2_X+23,gy-29,3*fl,2*fl,'rgba(255,210,120,0.6)');
+}
+
+/* ============================================================
+   HIS HOUSE
+
+   The painted house on the play layer is a silhouette with a
+   roof. This puts the rest of a life under it: the jars, the
+   step, the pole, the washing, and a square of lamplight that
+   goes out when he goes to bed.
+   ============================================================ */
+function paintHomeSprite(g, gy){
+  const x=70;
+  // stilts and the dark underneath, where you are going to sleep
+  pR(g,x-56,gy-46,112,46,'rgba(8,8,16,0.5)');
+  for(const sx of [-50,-26,0,26,50]) pR(g,x+sx,gy-48,5,48,'#4a3726');
+  for(const sx of [-50,-26,0,26,50]) pR(g,x+sx,gy-48,2,48,'#5f4a33');
+  pR(g,x-58,gy-52,116,6,'#6b4f34');                 // the floor beam
+  pR(g,x-58,gy-52,116,2,'#8a6a46');
+  // the step that is a rock
+  pEll(g,x-46,gy-2,11,6,'#6a7060'); pEll(g,x-46,gy-4,9,4,'#7d8472');
+  // the water jars, in a row, under the eave
+  for(let i=0;i<3;i++){
+    const jx=x+22+i*17, s=i===1?1.1:0.92;
+    pEll(g,jx,gy-8*s,10*s,9*s,'#5a3a2a');
+    pEll(g,jx,gy-13*s,9*s,8*s,'#6b4432');
+    pEll(g,jx,gy-17*s,6*s,4*s,'#4a2e20');
+    pEll(g,jx,gy-18*s,4.4*s,2.6*s,'#2a1a14');
+    pR(g,jx-7*s,gy-14*s,14*s,1,'#7d5240');
+  }
+  // a wooden ladle hung on a nail
+  pTaper(g,x+8,gy-30,x+8,gy-20,1.4,1.4,'#8a6a44'); pEll(g,x+8,gy-18,3,2.4,'#a07a4e');
+  // a bamboo pole out front with the washing over it
+  pR(g,x-64,gy-36,2,36,'#a89a62'); pR(g,x-10,gy-36,2,36,'#a89a62');
+  pR(g,x-64,gy-36,56,2,'#c8bb7a');
+  for(const [wx,c,w2,h2] of [[-60,'#c9b9a2',12,14],[-46,'#4a6a8a',10,12],[-33,'#b4443c',13,15],[-18,'#d8c47a',8,10]]){
+    pR(g,x+wx,gy-35,w2,h2,c); pR(g,x+wx,gy-35,w2,1,shade(c,0.15));
+    pR(g,x+wx,gy-35+h2,w2,1,shade(c,-0.2));
+  }
+}
+function drawLungHome(g){
+  const gy=groundY(HOME_X);
+  const sp=farmSprite('lunghome', 142, 74, gg=>paintHomeSprite(gg, 68));
+  g.drawImage(sp, R(HOME_X-70), R(gy-68));
+  /* the lamp inside, which is on until he goes to bed */
+  const lit = (GS.ch|0) <= chAt('supper');
+  if(lit){
+    const wx=HOME_X+6, wy=gy-64;
+    pR(g,wx-9,wy-12,18,14,'rgba(255,196,90,0.30)');
+    pR(g,wx-7,wy-10,14,10,'rgba(255,214,130,0.45)');
+    if(Math.random()<0.02) pR(g,wx-7,wy-10,14,10,'rgba(255,230,170,0.6)');
+  }
+  if(chIs('supper') && CH.food>=1){
+    const fx=HOME_X-30, fy=gy-4;
+    pEll(g,fx,fy,10,4,'#2f6b42');                 // the banana leaf
+    pEll(g,fx,fy-2,8,3.4,'#3f8f5f');
+    pEll(g,fx-2,fy-4,5,3,'#f2ecd8');              // rice
+    pEll(g,fx+4,fy-4,4,3,'#cfc4a8');
+    if(CH.food===1 && Math.random()<0.12) pSmoke(fx+rnd(-3,3), fy-6);
+  }
+}
+
+/* ============================================================
+   PROPS AND PLATFORMS
+
+   Painted once onto the play layer after the village is built,
+   and the surfaces that go with them registered so they can be
+   stood on.
+   ============================================================ */
+function paintStory(){
+  const g=playG, r=mulberry(515151);
+  /* the burial field gets tidied westward so the road has somewhere to
+     start: markers close together, then open ground */
+  /* a low stone wall along the graveyard edge — the first thing to jump on */
+  for(let x=402;x<470;x+=4){
+    const gy=R(groundY(x));
+    pR(g,x,gy-13,4,14,'#6a7060'); pR(g,x,gy-13,4,1,'#848a78');
+    if((x/4)%3===0) pR(g,x+1,gy-10,1,7,'#585e50');
+  }
+  /* three flat rocks out of the grass, going up towards the wall */
+  for(const [x,h] of [[352,6],[372,10],[390,13]]){
+    const gy=R(groundY(x));
+    pEll(g,x,gy-h+2,11,5,'#6d7a86'); pEll(g,x,gy-h,10,4,'#87939d');
+    pEll(g,x-3,gy-h-1,4,2,'#9ba7b0');
+    pR(g,x-9,gy-h+4,18,h-2,'#55606a');
+  }
+  /* the road out of the graveyard: cart ruts and a milestone */
+  for(let x=470;x<620;x++){
+    const gy=R(groundY(x));
+    if(r()<0.4){ g.fillStyle=r()<0.5?'#6f6046':'#5c5040'; g.fillRect(x,gy+1+(r()*5|0),1,1); }
+  }
+  { const x=496, gy=R(groundY(x));
+    pR(g,x,gy-15,7,16,'#b4b6a5'); pEll(g,x+3,gy-15,4,4,'#c8cab8');
+    pR(g,x+1,gy-11,5,1,'#8d8f80'); pR(g,x+1,gy-8,5,1,'#8d8f80'); }
+  /* the one light on this road, and the fire under his pot */
+  addLight(STALL2_X+14, groundY(STALL2_X)-67, 62, PAL.lamp, 0.78, {flick:0.05});
+  addLight(STALL2_X+23, groundY(STALL2_X)-28, 26, PAL.ember, 0.42, {flick:0.3});
+  addLight(HOME_X+6,    groundY(HOME_X)-64,   40, PAL.lamp, 0.5, {id:'lunghome'});
+  /* crates and a barrel by the stall, to climb on */
+  { const x=STALL2_X+44, gy=R(groundY(x));
+    pR(g,x-10,gy-13,21,13,'#7d5a3c'); pR(g,x-10,gy-13,21,2,'#9c7551');
+    pR(g,x-10,gy-7,21,1,'#563c27');
+    pR(g,x-7,gy-25,17,12,'#6b4f34'); pR(g,x-7,gy-25,17,2,'#8a6a46');
+    pEll(g,x+16,gy-9,8,9,'#4a6a7a'); pEll(g,x+16,gy-17,7,3,'#6b8a9a'); }
+  /* his field hut gets a proper yard: a bench, a broom, a drying rack */
+  { const x=FARMHOUSE_X+34, gy=R(groundY(x));
+    pR(g,x-12,gy-11,26,3,'#8a6a44'); pR(g,x-11,gy-8,3,8,'#6b4f34'); pR(g,x+9,gy-8,3,8,'#6b4f34');
+    pTaper(g,x+20,gy,x+22,gy-22,2,2,'#a89a62'); pEll(g,x+22,gy-25,4,5,'#c8bb7a'); }
+  /* a woodpile by the chopping log */
+  { const x=LOG_X-30, gy=R(groundY(x));
+    for(let i=0;i<3;i++) for(let k=0;k<4-i;k++){
+      pEll(g, x+k*7-((4-i)*3), gy-4-i*6, 3.6,3.2,'#7d5a3c');
+      pEll(g, x+k*7-((4-i)*3), gy-4-i*6, 2,1.8,'#a8845a'); } }
+  /* the deep forest, east of where the map used to end */
+  for(let i=0;i<26;i++){
+    const x=5620+i*58+r()*30;
+    if(x>WORLD_W-40) break;
+    stamp(apick(ART.palm,i), x, groundY(x)+3, 0.8+r()*0.6);
+  }
+  for(let i=0;i<16;i++){
+    const x=5700+i*92+r()*40;
+    if(x>WORLD_W-40) break;
+    stamp(apick(ART.banana,i), x, groundY(x)+3, 0.7+r()*0.5);
+  }
+  /* a stream across the forest track, with stepping stones */
+  for(let x=6280;x<6380;x++){
+    const gy=R(groundY(x)), d=Math.sin((x-6280)/100*Math.PI);
+    pR(g,x,gy+1,1,R(2+d*10),'#1d3a52');
+    if((x%7)<2) pR(g,x,gy+2,1,1,'#4a7a9a');
+  }
+  for(const [x,h] of [[6298,5],[6322,7],[6348,5]]){
+    const gy=R(groundY(x));
+    pEll(g,x,gy-h+3,9,5,'#55606a'); pEll(g,x,gy-h,9,4,'#7d8894');
+  }
+  /* fallen logs to walk along, out in the trees */
+  for(const x of [5860, 6520, 6900]){
+    const gy=R(groundY(x));
+    pTaper(g,x-44,gy-14,x+44,gy-19,13,11,'#4c3a2c');
+    pTaper(g,x-44,gy-17,x+44,gy-22,4.5,3,'#6a5340');
+    pEll(g,x-44,gy-14,4,11,'#5f4a37'); pEll(g,x-44,gy-14,2.4,7,'#3a2c20');
+    for(let i=0;i<16;i++) pEll(g,x+r()*84-42, gy-20-r()*4, 4+r()*5,3+r()*2,'#2e5d44');
+    for(let i=0;i<5;i++) pTaper(g,x-30+i*15,gy-22,x-28+i*15,gy-30-r()*8,1.6,0.8,'#3f7550');
+  }
+}
+function placePlats(){
+  clearPlats();
+  const on=(x,w,dy,tag)=>addPlat(x-w/2,x+w/2,groundY(x)-dy,{tag});
+  // the stones and the wall out of the graveyard
+  on(352,20,6); on(372,20,10); on(390,20,13);
+  addPlat(402,470,groundY(430)-13,{tag:'wall'});
+  // crates by the stall, and the stall's own counter
+  on(STALL2_X+44,21,13); on(STALL2_X+47,17,25); on(STALL2_X+60,15,18);
+  addPlat(STALL2_X-30,STALL2_X+30,groundY(STALL2_X)-30,{tag:'cart'});
+  addPlat(STALL2_X-48,STALL2_X+40,groundY(STALL2_X)-74,{tag:'awning'});
+  // the woodpile and the chopping log
+  on(LOG_X-30,26,16); on(LOG_X,54,14,'log');
+  // the field hut: bench, then roof
+  on(FARMHOUSE_X+34,26,11);
+  addPlat(FARMHOUSE_X-30,FARMHOUSE_X+30,groundY(FARMHOUSE_X)-58,{tag:'hutroof'});
+  // his house: the floor beam, and the washing pole is not for standing on
+  addPlat(HOME_X-58,HOME_X+58,groundY(HOME_X)-52,{tag:'floor'});
+  // fences and jars through the village
+  for(const x of [1980,2044,2108,2900,2964]) on(x,30,15,'fence');
+  for(const x of [1860,2210,2430,2880,3040]) on(x,17,17,'jar');
+  // the fallen tree on the road, and the market stall roof
+  addPlat(FALLEN_TREE_X-50,FALLEN_TREE_X+52,groundY(FALLEN_TREE_X)-18,{tag:'trunk'});
+  addPlat(STALL_X-34,STALL_X+34,groundY(STALL_X)-52,{tag:'stallroof'});
+  // the sala terrace and the chedi steps at the temple
+  on(CHEDI_X-34,40,14); on(CHEDI_X-52,34,26);
+  // forest: stepping stones and the fallen logs
+  for(const [x,h] of [[6298,5],[6322,7],[6348,5]]) on(x,18,h);
+  for(const x of [5860,6520,6900]) addPlat(x-40,x+40,groundY(x)-22,{tag:'log'});
+}
+/* ============================================================
+   THE PLOUGH, THE JARS, AND THE SEED
+
+   Three verbs, and the first hour of the game is made out of
+   them: break the ground, wet it, put something in it.
+
+   The plough is the only one with a mini-game, and the whole
+   design of it is one idea — the ground pulls the blade, and
+   you drive on the pull. Miss and the blade skips out. Hit it
+   and a slab of earth turns over with a noise like a door
+   closing, the note goes up a step, and the furrow gets
+   longer. It speeds up as you go, so a bed always ends harder
+   than it started.
+   ============================================================ */
+
+/* ---------- what the beds know about themselves ---------- */
+const plowedCount  = ()=> PLOTS.filter(p=>p.plowed).length;
+const wateredCount = ()=> PLOTS.filter(p=>p.plowed && p.wet>0.05).length;
+const sownCount    = ()=> PLOTS.filter(p=>p.stage>0).length;
+const bedAt = x => PLOTS.find(p=>Math.abs(p.x-x)<16) || null;
+
+function sowPlot(pl, byHim){
+  if(pl.stage>0) return false;
+  pl.stage=1; pl.t=0; pl.pop=1;
+  AU.ranat(byHim?520:660,0,0.05);
+  for(let i=0;i<8;i++) part({k:'dust',x:pl.x+rnd(-9,9),y:groundY(pl.x)-2,vx:rnd(-14,14),vy:-rnd(10,34),life:rnd(.3,.7)});
+  if(!GS.seen.firstSow){ GS.seen.firstSow=true; vignette('firstSeed'); }
+  saveGame(); return true;
+}
+function waterPlot(pl){
+  if(!pl.plowed || pl.wet>0.05) return false;
+  pl.wet=1;
+  AU.pour();
+  for(let i=0;i<22;i++) part({k:'water',x:pl.x+rnd(-11,11),y:groundY(pl.x)-16,vx:rnd(-16,16),vy:rnd(20,70),life:.45});
+  saveGame(); return true;
+}
+
+/* ============================================================
+   CARRYING
+   ============================================================ */
+/* Jars stand where they were last put down. You lift one, it is in your
+   arms until you do something about it, and where you put it down is where
+   it stays — which is the entire point of the old man saying "do not try to
+   carry all of them" and the entire joke of you then doing it. */
+const JARS = [];
+function resetJars(){
+  JARS.length=0;
+  JARS.push({x:JAR_X+26, water:0});
+  JARS.push({x:JAR_X+42, water:0});
+  if(P) P.carry=null;
+}
+const carryMax = ()=> has('haul')? 2 : 1;
+function carriedJars(){ return P.carry? P.carry.jars : []; }
+
+function liftJar(j){
+  if(!P.carry) P.carry={k:'jar', jars:[]};
+  if(P.carry.jars.length>=carryMax()){ guideSay(L('Your arms are full.')); AU.blip(); return; }
+  const i=JARS.indexOf(j); if(i>=0) JARS.splice(i,1);
+  P.carry.jars.push(j);
+  P.face = j.x<P.x? -1:1;
+  preteAct('reach',0.5);
+  AU.land();
+  toast(L('carrying a โอ่ง'), '#8fc4e8');
+  if(!GS.seen.firstJar){ GS.seen.firstJar=true;
+    guideSay(L('Heavy, even for you. Walk it over and tip it out, or set it down where you want it.'),8); }
+}
+function dropJars(){
+  if(!P.carry) return;
+  for(const j of P.carry.jars){ j.x = R(P.x + rnd(-8,8)); JARS.push(j); }
+  P.carry=null;
+  AU.land(); pDust(P.x,P.y,6);
+}
+function fillCarried(){
+  let n=0;
+  for(const j of carriedJars()) if(j.water<3){ j.water=3; n++; }
+  if(!n){ guideSay(L('They are already full.')); AU.blip(); return; }
+  P.face = JAR_X<P.x? -1:1;
+  preteAct('water',1.0,()=>{
+    AU.pour();
+    for(let k=0;k<18;k++) part({k:'water',x:JAR_X+rnd(-5,5),y:groundY(JAR_X)-22,vx:rnd(-10,10),vy:rnd(14,44),life:.5});
+  });
+  toast(L('filled'),'#8fc4e8');
+}
+function tipOnto(pl){
+  const j = carriedJars().find(q=>q.water>0);
+  if(!j){ guideSay(L('Empty. Fill it at the big โอ่ง by the hut.')); AU.blip(); return; }
+  j.water--;
+  P.face = pl.x<P.x? -1:1;
+  preteAct('water',0.9,()=>{ waterPlot(pl); });
+}
+
+function carryInteract(set){
+  const near2=(x,d)=>Math.abs(P.x-x)<d;
+  /* the two carryable jars, wherever they have ended up */
+  if(!P.carry || P.carry.jars.length<carryMax()){
+    for(const j of JARS) if(near2(j.x,22)){
+      set(j.x, groundY(j.x)-26, L('lift the โอ่ง'), ()=>liftJar(j)); return;
+    }
+  }
+  if(!P.carry) return;
+  /* standing over a bed that wants water */
+  const pl=bedAt(P.x);
+  if(pl && pl.plowed && pl.wet<=0.05){
+    set(pl.x, groundY(pl.x)-34, L('tip it over the bed'), ()=>tipOnto(pl)); return;
+  }
+  if(near2(JAR_X,30) && carriedJars().some(j=>j.water<3)){
+    set(JAR_X, groundY(JAR_X)-34, L('fill from the big jar'), fillCarried); return;
+  }
+  set(P.x, groundY(P.x)-40, L('set it down'), dropJars);
+}
+
+function drawJarsWorld(g){
+  const cx=GS.camX;
+  for(const j of JARS){
+    if(j.x-cx<-24||j.x-cx>W+24) continue;
+    drawJarBody(g, j.x, groundY(j.x), 1, j.water);
+  }
+}
+function drawJarBody(g,x,y,s,water){
+  pEll(g,x,y-7*s,9*s,8*s,'#5a3a2a');
+  pEll(g,x,y-12*s,8*s,7*s,'#6b4432');
+  pEll(g,x-3*s,y-13*s,3.4*s,4*s,'#7d5240');
+  pEll(g,x,y-16*s,5.4*s,3.4*s,'#4a2e20');
+  pEll(g,x,y-16.6*s,4*s,2.4*s, water>0? '#2a4a5e':'#2a1a14');
+  if(water>0) pEll(g,x,y-16.8*s,3*s,1.6*s,'#3f6f8f');
+  pR(g,x-6.4*s,y-13*s,13*s,1,'#7d5240');
+  pEll(g,x,y+1,9*s,2.4*s,'rgba(10,8,24,0.34)');
+}
+function drawCarried(g){
+  if(!P.carry) return;
+  const n=P.carry.jars.length;
+  for(let i=0;i<n;i++){
+    const j=P.carry.jars[i];
+    const sw=Math.sin(P.phase*2)*1.4;
+    const x=P.x + P.face*(7+i*4) + sw*0.5;
+    const y=P.y - 52 - i*20 + Math.sin(P.phase)*1.4;
+    drawJarBody(g,x,y+20,1.15,j.water);
+  }
+}
+
+/* ============================================================
+   THE PLOUGH
+   ============================================================ */
+let PLOW=null;
+function startPlow(pl){
+  PLOW = { pl, hits:0, need:6, m:0, dir:1, sp:0.86, combo:0, best:0,
+           flash:0, fail:0, t:0, tip:0, out:0, perfect:0, msg:'', msgT:0,
+           x: pl.x-16 };
+  P.x = pl.x-24; P.y=groundY(P.x); P.vx=0; P.vy=0; P.face=1;
+  navStop(); GS.state='plow'; AU.sel();
+}
+const plowZone = ()=> (has('steady')? 0.155 : 0.125) * (has('plowman')? 1.3 : 1);
+function stepPlow(dt){
+  const A=PLOW; if(!A){ GS.state='play'; return; }
+  A.t+=dt;
+  if(A.flash>0) A.flash-=dt;
+  if(A.fail>0)  A.fail-=dt;
+  if(A.msgT>0)  A.msgT-=dt;
+  if(A.out>0){
+    A.out-=dt;
+    if(A.out<=0){ PLOW=null; GS.state='play'; clearPress(); return; }
+    GS.camX = lerp(GS.camX, clamp(A.x-W/2,0,WORLD_W-W), 1-Math.pow(0.004,dt));
+    clearPress(); return;
+  }
+  /* the marker swings, and swings faster the deeper into the bed you get */
+  A.m += A.dir*dt*A.sp;
+  if(A.m>1){ A.m=1; A.dir=-1; AU.tone(180,0.03,'sine',0.010); }
+  if(A.m<0){ A.m=0; A.dir=1;  AU.tone(180,0.03,'sine',0.010); }
+  /* the blade rides the same number, so what you watch and what you hit are
+     the same thing rather than a bar pretending to be a plough */
+  A.tip = Math.sin(A.m*Math.PI);
+
+  if(press('act')||press('tap')||press('jump')){
+    const d=Math.abs(A.m-0.5), z=plowZone();
+    if(d<z*0.4){
+      plowBite(A, 2);
+    } else if(d<z){
+      plowBite(A, 1);
+    } else {
+      A.fail=0.45; A.combo=0; A.perfect=0;
+      A.msg=L('skipped'); A.msgT=0.9;
+      AU.whiff(); AU.noise(0.1,0.03,200,3000);
+      GS.shake=Math.max(GS.shake,1.2);
+      for(let i=0;i<4;i++) part({k:'dust',x:A.x+rnd(-6,6),y:groundY(A.x),vx:rnd(-30,30),vy:-rnd(6,26),life:.4});
+      A.sp=Math.max(0.72,A.sp-0.04);
+    }
+  }
+  if(press('back')){ PLOW=null; GS.state='play'; clearPress(); return; }
+
+  const tx = clamp(A.x-W/2+14, 0, WORLD_W-W);
+  GS.camX = lerp(GS.camX, tx, 1-Math.pow(0.003,dt));
+  GS.camY = lerp(GS.camY, 6, 1-Math.pow(0.01,dt));
+  P.x = A.x-22; P.y=groundY(P.x); P.state='reach'; P.face=1;
+  stepPrete(P,dt);
+  clearPress();
+}
+function plowBite(A, grade){
+  A.hits++; A.combo++; A.best=Math.max(A.best,A.combo);
+  A.perfect = grade===2?1:0;
+  A.flash = grade===2? 0.34:0.24;
+  const pl=A.pl;
+  A.x = pl.x-16 + (A.hits/A.need)*32;
+  A.sp = Math.min(1.55, A.sp + 0.075);
+  /* the sound of it: a low thud you feel, and a note that climbs with the
+     combo so a clean bed ends on a little run of music */
+  AU.tone(64,0.2,'sine',grade===2?0.075:0.055, 38);
+  AU.noise(0.13, grade===2?0.06:0.042, 60, 900);
+  const scale=[392,440,523,587,659,784,880,988];
+  AU.ranat(scale[Math.min(scale.length-1,A.combo-1)], 0, grade===2?0.055:0.038);
+  GS.shake=Math.max(GS.shake, grade===2?3.4:2.2);
+  /* forty milliseconds of the whole world stopping. It is the difference
+     between the blade going in and the blade landing. */
+  if(grade===2) GS.hitstop=Math.max(GS.hitstop||0, 0.045);
+  /* the sod turns over: chunky clods that arc and land, not a puff */
+  const gy=groundY(A.x);
+  const n = grade===2? 9:6;
+  for(let i=0;i<n;i++)
+    part({k:'clod', x:A.x+rnd(-5,5), y:gy-3, vx:rnd(8,46), vy:-rnd(40,110),
+          life:rnd(.5,1.0), sz:1+((i%3)|0), sw:rnd(TAU)});
+  for(let i=0;i<4;i++) part({k:'dust',x:A.x+rnd(-9,9),y:gy,vx:rnd(-40,10),vy:-rnd(6,22),life:rnd(.3,.6)});
+  if(grade===2){
+    pSpark(A.x+8, gy-14, 5, '#ffe89a');
+    A.msg = A.combo>=4? L('clean line!') : L('dead on'); A.msgT=0.85;
+  } else if(A.combo>=3){ A.msg=L('good'); A.msgT=0.6; }
+  brushGrass(A.x, 30, 7);
+  if(Math.random()<0.4) scatterBirds(A.x, 90);
+
+  if(A.hits>=A.need){
+    pl.plowed=true;
+    A.out=1.5;
+    AU.fix();
+    toast(L('bed turned')+' · '+plowedCount()+'/'+PLOTS.length, PAL.jadeL);
+    if(A.best>=A.need) { addMerit(2,true); toast('+2 '+L('merit')+' · '+L('not one skip'), PAL.goldL); }
+    for(let i=0;i<18;i++)
+      part({k:'clod',x:pl.x+rnd(-16,16),y:groundY(pl.x)-2,vx:rnd(-30,30),vy:-rnd(30,90),life:rnd(.5,1.1),sz:1+((i%3)|0),sw:rnd(TAU)});
+    /* the birds know exactly what a turned bed means */
+    setTimeout(()=>{ for(const b of BIRDS) if(Math.abs(b.x-pl.x)<260 && b.st==='perch'){
+      b.st='fly'; b.vx=sign(pl.x-b.x||1)*rnd(30,60); b.vy=-rnd(30,60); b.back=rnd(1,2.5); } }, 300);
+    saveGame();
+  }
+}
+function drawPlowUI(g){
+  const A=PLOW; if(!A) return;
+  const bw=150, bx=W/2-bw/2, by=H-40;
+  inkPanel(g, bx-8, by-12, bw+16, 30);
+  /* the track, with the bite window burned into it */
+  pR(g,bx,by,bw,6,'#241c2e');
+  const z=plowZone();
+  pR(g,bx+bw*(0.5-z),by,bw*z*2,6,'rgba(120,190,120,0.30)');
+  pR(g,bx+bw*(0.5-z*0.4),by,bw*z*0.8,6,'rgba(180,240,150,0.55)');
+  pR(g,bx+bw*0.5,by-2,1,10,'rgba(240,255,220,0.7)');
+  const mx=bx+bw*A.m;
+  pR(g,mx-1,by-3,3,12, A.flash>0? '#fff0b0' : '#e8dfc8');
+  pR(g,mx,by-4,1,14,'#ffffff');
+  // progress pips
+  for(let i=0;i<A.need;i++){
+    const px=bx+2+i*(bw-4)/A.need;
+    pR(g,px,by-9,(bw-4)/A.need-2,3, i<A.hits? PAL.goldL : '#3a3248');
+  }
+  const label = A.out>0? L('bed turned') : L('drive on the beat');
+  pTxt(g,label, W/2, by+13, A.out>0? PAL.jadeL:'#a89ec0', 6,'center');
+  if(A.combo>1) pTxt(g, 'x'+A.combo, bx+bw+14, by+2, PAL.goldL, 8,'left');
+  if(A.msgT>0){
+    /* it lands over open field in daylight, so it needs its own dark behind it */
+    g.globalAlpha=clamp(A.msgT/0.4,0,1);
+    const my=by-26;
+    for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1],[1,1]])
+      pTxt(g, A.msg, W/2+dx, my+dy, 'rgba(18,12,26,0.85)', 8,'center');
+    pTxt(g, A.msg, W/2, my, A.perfect? '#ffe89a':'#cfe8ff', 8,'center');
+    g.globalAlpha=1;
+  }
+  if(A.fail>0){ g.fillStyle=`rgba(160,60,50,${0.16*A.fail/0.45})`; g.fillRect(0,0,W,H); }
+}
+/* the plough itself, drawn in the world in front of him */
+function drawPlowWorld(g){
+  const A=PLOW; if(!A) return;
+  const x=A.x, gy=groundY(x);
+  const dip = A.tip*3 + (A.flash>0? 2:0);
+  // two handles back to his hands
+  pTaper(g, x-2, gy-4+dip, x-20, gy-40, 2.4, 1.8, '#7d5a3c');
+  pTaper(g, x+2, gy-4+dip, x-16, gy-42, 2.4, 1.8, '#8a6442');
+  pR(g, x-22, gy-43, 10, 2, '#6b4f34');
+  // the beam and the share
+  pTaper(g, x-2, gy-5+dip, x+18, gy-16, 3.4, 2.4, '#6b4f34');
+  pTri(g, x-6, gy-8+dip, x+4, gy-2+dip, x-8, gy+2+dip, '#9aa0a8');
+  pTri(g, x-6, gy-8+dip, x+2, gy-4+dip, x-7, gy-1+dip, '#c4cad2');
+  pR(g, x+16, gy-18, 4, 4, '#4a3726');
+}
+
+/* ============================================================
+   SEED SHOT, AND THE LONG DRAUGHT
+   ============================================================ */
+function seedShot(pl){
+  P.face = pl.x<P.x? -1:1;
+  preteAct('wail', 0.55);
+  AU.tone(900,0.06,'square',0.03,1500);
+  const sx=P.x+P.face*10, sy=P.y-52;
+  SEEDS.push({x:sx,y:sy,tx:pl.x,ty:groundY(pl.x)-4,t:0,dur:0.42,pl});
+}
+const SEEDS=[];
+function stepSeeds(dt){
+  for(let i=SEEDS.length-1;i>=0;i--){
+    const s=SEEDS[i]; s.t+=dt;
+    const f=clamp(s.t/s.dur,0,1);
+    s.x=lerp(s.x,s.tx,0); // path is computed on draw from t
+    if(f>=1){
+      SEEDS.splice(i,1);
+      AU.tone(300,0.06,'sine',0.03,140);
+      sowPlot(s.pl);
+      for(let k=0;k<7;k++) part({k:'dust',x:s.tx+rnd(-6,6),y:s.ty,vx:rnd(-20,20),vy:-rnd(10,40),life:.5});
+    }
+  }
+}
+function drawSeeds(g){
+  for(const s of SEEDS){
+    const f=clamp(s.t/s.dur,0,1);
+    const x=lerp(s.x,s.tx,f), y=lerp(s.y,s.ty,f) - Math.sin(f*Math.PI)*26;
+    pEll(g,x,y,2,1.6,'#e8d8a0');
+    pEll(g,x-2,y+1,1.4,1,'#c0a860');
+    g.globalAlpha=0.35; pEll(g,x-4,y+2,2,1,'#e8d8a0'); g.globalAlpha=1;
+  }
+}
+function longDraught(){
+  P.gulp=3;
+  P.face = JAR_X<P.x? -1:1;
+  preteAct('water',1.1,()=>{
+    AU.pour();
+    toast(L('you are full of water'),'#8fc4e8');
+    guideSay(L('Stand at the end of a row and let it go.'),7);
+  });
+}
+function sprayRow(){
+  const beds=PLOTS.filter(p=>p.plowed && p.wet<=0.05 && Math.abs(p.x-P.x)<86);
+  if(!beds.length) return;
+  P.gulp=Math.max(0,(P.gulp||0)-1);
+  const dir = sign((beds[0].x-P.x)||1);
+  P.face=dir;
+  preteAct('wail',0.9);
+  AU.pour(); AU.noise(0.9,0.035,300,2400);
+  for(const pl of beds){
+    waterPlot(pl);
+    for(let i=0;i<10;i++)
+      part({k:'water',x:pl.x+rnd(-12,12),y:groundY(pl.x)-26,vx:dir*rnd(10,50),vy:rnd(10,50),life:.6});
+  }
+  for(let i=0;i<26;i++)
+    part({k:'water',x:P.x+dir*rnd(8,80),y:P.y-52+rnd(-8,8),vx:dir*rnd(60,150),vy:rnd(-20,50),life:.7});
+  toast(L('the whole row, at once'),'#8fc4e8');
+}
+
+/* ============================================================
+   PROMPTS FOR ALL OF IT
+   ============================================================ */
+/* Bolted onto the front of checkInteract so that during the first morning
+   these win over the ordinary farm menu, and afterwards they simply stop
+   answering. */
+function fieldInteract(set, taken){
+  if(taken()) return;
+  if(P.carry) return;                       // carrying has its own prompts
+  const pl=bedAt(P.x);
+  /* plough */
+  if(pl && !pl.plowed && chIs('plow')){
+    set(pl.x, groundY(pl.x)-30, L('plough this bed'), ()=>startPlow(pl)); return;
+  }
+  /* the long draught, at the big jar */
+  if(has('gulp') && Math.abs(P.x-JAR_X)<30 && !(P.gulp>0) && wateredCount()<PLOTS.length){
+    set(JAR_X, groundY(JAR_X)-40, L('drink the jar dry'), longDraught); return;
+  }
+  if((P.gulp>0) && PLOTS.some(p=>p.plowed && p.wet<=0.05 && Math.abs(p.x-P.x)<86)){
+    set(P.x, groundY(P.x)-54, L('spray the row'), sprayRow); return;
+  }
+  /* sowing: by hand where you stand, or spat from across the field */
+  if(pl && pl.plowed && pl.wet>0.05 && pl.stage===0){
+    set(pl.x, groundY(pl.x)-30, L('press a seed in'), ()=>{
+      P.face = pl.x<P.x? -1:1;
+      preteAct('reach',1.1,()=>sowPlot(pl));
+    });
+    return;
+  }
+  if(has('spit')){
+    let best=null,bd=92;
+    for(const p of PLOTS){
+      if(p.stage>0 || !p.plowed || p.wet<=0.05) continue;
+      const d=Math.abs(p.x-P.x);
+      if(d>18 && d<bd){ bd=d; best=p; }
+    }
+    if(best) set(best.x, groundY(best.x)-40, L('spit a seed into it'), ()=>seedShot(best));
+  }
+}
+
+/* ---------- the five beds, before anybody owns them ---------- */
+/* Drawn under the farm's own bed art, so once the place is rented and there
+   are crops in the ground this is just the soil they stand in. Before that
+   it is the whole of what you are looking at, and it has to say two things
+   at a glance: this is a bed, and nothing has been done to it in two years.
+
+   They are RAISED, which is both how a market garden is actually built and
+   the only way six pixels of soil reads as a bed rather than as a smudge on
+   the turf. A block with a lit top, a shaded face and a board along the
+   front edge, and you can see it from across the field. */
+const BED_H = 10, BED_W = 17;
+function bedBlock(g, pl, gy, top, face, edge){
+  /* the body, slightly wider at the foot the way a heap of earth is */
+  for(let i=-BED_W-2; i<=BED_W+2; i++){
+    const t=Math.abs(i)/(BED_W+2);
+    const h=BED_H*(1-Math.pow(t,3.2));
+    if(h<0.6) continue;
+    pR(g, R(pl.x+i), R(gy-h), 1, R(h)+3, face);
+  }
+  /* the lit top surface */
+  pEll(g, pl.x, gy-BED_H, BED_W, 3.4, top);
+  pEll(g, pl.x-3, gy-BED_H-0.6, BED_W*0.6, 2.2, shade(top,0.12));
+  /* a board on the front edge, pegged at both ends */
+  pR(g, pl.x-BED_W-2, gy-3, (BED_W+2)*2, 3, edge);
+  pR(g, pl.x-BED_W-2, gy-3, (BED_W+2)*2, 1, shade(edge,0.18));
+  pR(g, pl.x-BED_W-2, gy-5, 2, 5, shade(edge,-0.25));
+  pR(g, pl.x+BED_W,   gy-5, 2, 5, shade(edge,-0.25));
+  pEll(g, pl.x, gy+2, BED_W+4, 2.6, 'rgba(10,8,24,0.30)');
+}
+function drawBeds(g){
+  const cx=GS.camX;
+  for(const pl of PLOTS){
+    if(pl.x-cx<-48||pl.x-cx>W+48) continue;
+    const gy=R(groundY(pl.x));
+    if(!pl.plowed){
+      if(!storyBusy()) continue;
+      /* hardpan: baked pale clay, cracked across, with the dead stalks of
+         whatever was last in it still standing in the middle */
+      bedBlock(g, pl, gy, '#9a8e70', '#6d6450', '#7a6a44');
+      for(const c of [-11,-4,3,10]){
+        pR(g,pl.x+c,gy-BED_H-1,1,3,'#5c5442');
+        pR(g,pl.x+c+1,gy-BED_H+1,1,2,'#5c5442');
+      }
+      for(let i=0;i<5;i++){
+        const sx=pl.x-10+i*5;
+        pTaper(g,sx,gy-BED_H+1,sx-1,gy-BED_H-5-((i*7)%6),1.3,0.6,'#7a6f4a');
+      }
+      pR(g,pl.x+BED_W+3,gy-16,2,16,'#6d5138'); pR(g,pl.x+BED_W+2,gy-18,4,3,'#8a6a46');
+      continue;
+    }
+    /* turned: ridges and troughs, and darker all through when it is wet */
+    const wet = pl.wet>0.05;
+    const top  = wet? '#59391e' : '#93714a';
+    const face = wet? '#33220f' : '#5e4828';
+    bedBlock(g, pl, gy, top, face, wet? '#5c4a2c' : '#7a6a44');
+    for(let i=-7;i<=7;i++){
+      const t=i/7, w=Math.sqrt(Math.max(0,1-t*t));
+      const rx=R(pl.x+i*2.2);
+      pR(g,rx,gy-BED_H-1.4-w*1.6,1,3+w*2.2, i%2? shade(top,0.20) : shade(top,-0.22));
+    }
+    if(wet){
+      pEll(g,pl.x-5,gy-BED_H-1,4,1.3,'rgba(160,200,228,0.22)');
+      pEll(g,pl.x+6,gy-BED_H-0.4,3,1.1,'rgba(160,200,228,0.15)');
+      if(Math.random()<0.015) part({k:'dust',x:pl.x+rnd(-12,12),y:gy-BED_H,vx:rnd(-4,4),vy:-rnd(2,8),life:.8});
+    }
+  }
+}
+/* ============================================================
    UPDATE
    ============================================================ */
 function update(dt){
   GS.t+=dt;
+  stepTOD(dt);
   AU.tick(dt);
   GS.wind = Math.sin(GS.t*0.31)*0.32 + Math.sin(GS.t*0.113)*0.18;
   GS.shake = Math.max(0, GS.shake - dt*16);
@@ -9513,7 +12522,10 @@ function update(dt){
       TP.anim+=dt;
       if(press('act')||press('tap')){
         const sv=loadSaveRaw();
-        if(sv&&(sv.merit>0||(sv.q&&sv.q.metPhra))) continueGame(sv); else newGame();
+        /* A save part-way through the first night has no merit in it yet —
+           without the chapter in this test, quitting during the walk home
+           started the whole night again. */
+        if(sv&&(sv.merit>0||(sv.st|0)>0||(sv.q&&sv.q.metPhra))) continueGame(sv); else newGame();
         AU.ding();
       }
       if(press('newgame')){ clearSave(); newGame(); AU.ding(); }
@@ -9526,6 +12538,8 @@ function update(dt){
       stepNpcs(dt);
       stepFarm(dt);
       stepNew(dt);
+      stepStory(dt);
+      stepCritters(dt);
       stepOrders(dt);
       stepHands(dt);
       stepHint(dt);
@@ -9544,12 +12558,14 @@ function update(dt){
       GS.camY = lerp(GS.camY, ty, 1-Math.pow(0.004,dt));
       break; }
     case 'task':     PROMPT=null; stepTask(dt); break;
+    case 'plow':     PROMPT=null; stepStory(dt); stepCritters(dt); stepPlow(dt); break;
     case 'act':      PROMPT=null; stepHint(dt); stepAct(dt); break;
     case 'give':     PROMPT=null; stepGive(dt); break;
     case 'shop':     PROMPT=null; stepShop(dt); break;
     case 'tree':     PROMPT=null; stepTree(dt); break;
     case 'ascend':   PROMPT=null; stepAscend(dt); break;
     case 'ceremony': stepCeremony(dt); break;
+    case 'sleep':    PROMPT=null; stepSleep(dt); break;
     case 'end':
       GS.t2=(GS.t2||0)+dt;
       if(GS.t2>1.4){
@@ -9578,10 +12594,15 @@ function saveGame(){
       /* the first field: what you are carrying, how far the rice lesson got,
          and whether she has spoken to you at all */
       wa:GS.water|0, r0:GS.rice0|0, ch:GS.chops|0, po:POSOP.met?1:0,
+      /* the first night: which beat, where the two carry-jars ended up,
+         and what time it had got to */
+      st:GS.ch|0, tod:+(TOD.to.toFixed(3)),
+      jar: JARS.map(j=>({x:R(j.x), w:j.water|0})),
+      cj: (P&&P.carry)? P.carry.jars.map(j=>({w:j.water|0})) : null,
       /* the whole farm: what you have rented, what is in the ground, what is in the pen */
       fm:{ r:FARM.rented, rc:FARM.rice, h:FARM.house, b:FARM.beds, p:FARM.paddies, tr:FARM.trees,
            pen:FARM.pen, hands:FARM.hands },
-      beds:  PLOTS.map(p=>({s:p.stage,t:p.t,w:p.wet,f:p.fert})),
+      beds:  PLOTS.map(p=>({s:p.stage,t:p.t,w:p.wet,f:p.fert,pl:p.plowed?1:0})),
       pads:  PADDIES.map(p=>({s:p.stage,t:p.t,f:p.flood})),
       trees: TREES.map(t=>({c:t.crop,g:t.grow,f:t.fruit,t:t.t})),
       ord:   ORDERS.map(o=>({w:o.who,d:o.dish,n:o.n,g:o.got,p:o.pay,m:o.merit})),
@@ -9624,20 +12645,22 @@ function newGame(){
   GS.q={prayers:0,offerings:0,pets:0,gifts:0}; GS.seen={}; GS.bag={}; GS.friends={};
   GS.learned={}; GS.tut=0; GS.dawn=0; GS.ready=false; GS.mem={};
   GS.baht=0; GS.water=0; GS.rice0=0; GS.chops=0; HINT=null;
+  GS.ch=0;
   resetFarm();
-  /* Mae Posop lends you the first paddy before any landlord is involved, so
-     the game has something to do in it from the first second. The rest of the
-     farm is still nailed to the gate at a hundred and twenty baht. */
-  FARM.rice=true; FARM.paddies=1;
+  /* Nothing is yours and nothing is planted. The old man's five beds are
+     baked hard and the first morning is about that and nothing else. */
   POSOP.met=false; POSOP.bub=null; POSOP.bubT=0;
+  for(const pl of PLOTS){ pl.plowed=false; pl.wet=0; pl.stage=0; }
+  resetJars();
   BUGS.length=0; bugCool=6;
   ORDERS.length=0; orderCool=14;
-  const start = PADDY_XS[0] + 46;
-  P.x=start; P.y=groundY(start); P.vx=0; P.vy=0; P.rise=0; P.act=null; VIG=null;
+  P.carry=null; P.gulp=0; P.plat=null; SEEDS.length=0;
+  P.x=GRAVE_X; P.y=groundY(GRAVE_X); P.vx=0; P.vy=0; P.rise=0; P.act=null; VIG=null;
   resetWorld();
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
   GS.t=0; GS.state='play'; IN=null; MEMFADE=1;
-  say(WAKE, ()=>{ guideSay('West along the bund, then. Whoever it is has not moved.',7); });
+  setTOD(0,true);
+  chGo('climb');
   saveGame();
 }
 function continueGame(sv){
@@ -9648,6 +12671,14 @@ function continueGame(sv){
   GS.learned=sv.learned||{}; GS.tut=sv.tut||0; GS.mem=sv.mem||{};
   GS.baht=sv.baht|0;
   GS.water=sv.wa|0; GS.rice0=sv.r0|0; GS.chops=sv.ch|0;
+  /* a save from before the first night existed has plainly finished it */
+  GS.ch = (sv.st===undefined)? STORY.length-1 : clamp(sv.st|0,0,STORY.length-1);
+  setTOD(sv.tod===undefined? (GS.ch>=STORY.length-1?0.92:0) : +sv.tod, true);
+  P.carry=null; P.gulp=0; P.plat=null; SEEDS.length=0;
+  resetJars();
+  if(sv.jar && sv.jar.length){ JARS.length=0;
+    for(const j of sv.jar) JARS.push({x:+j.x||JAR_X, water:j.w|0}); }
+  if(sv.cj && sv.cj.length){ P.carry={k:'jar',jars:sv.cj.map(j=>({x:P.x,water:j.w|0}))}; }
   POSOP.met=!!sv.po; POSOP.bub=null; POSOP.bubT=0;
   BUGS.length=0; bugCool=4;
   resetFarm();
@@ -9658,7 +12689,8 @@ function continueGame(sv){
     if(sv.fm.hands) for(const k in sv.fm.hands) if(JOBS[sv.fm.hands[k]]) FARM.hands[k]=sv.fm.hands[k];
   }
   const oldBeds = sv.beds||sv.farm;
-  if(oldBeds) oldBeds.forEach((f,i)=>{ const pl=PLOTS[i]; if(pl){ pl.stage=f.s|0; pl.t=+f.t||0; pl.wet=+f.w||0; pl.fert=f.f|0; } });
+  if(oldBeds) oldBeds.forEach((f,i)=>{ const pl=PLOTS[i]; if(pl){ pl.stage=f.s|0; pl.t=+f.t||0; pl.wet=+f.w||0; pl.fert=f.f|0;
+    pl.plowed = f.pl!==undefined? !!f.pl : (f.s|0)>0 || (sv.st===undefined); } });
   if(sv.pads)  sv.pads.forEach((f,i)=>{ const pd=PADDIES[i]; if(pd){ pd.stage=f.s|0; pd.t=+f.t||0; pd.flood=+f.f||0; } });
   if(sv.trees) sv.trees.forEach((f,i)=>{ const tr=TREES[i]; if(tr && (!f.c||ITEMS[f.c])){ tr.crop=f.c||null; tr.grow=+f.g||0; tr.fruit=f.f|0; tr.t=+f.t||0; } });
   /* a save from before the rice lesson existed: give it the paddy and treat
@@ -9686,11 +12718,12 @@ function continueGame(sv){
   if(GS.q.lamp){ const bl=LIGHTS.find(l=>l.broken); if(bl) bl.on=true; }
   if(GS.q.cat){ CAT.state='wander'; CAT.x=TAMARIND_X+40; CAT.y=groundY(CAT.x); }
   if(GS.q.metPhra) PHRA.shown=true;
-  if(GS.q.done){ GS.dawn=1; GS.cos.halo=1; }
+  if(GS.q.done){ setTOD(1,true); GS.cos.halo=1; }
   if(GS.merit>=GOAL && GS.q.metPhra && GS.mem.bowl && !GS.q.done) GS.ready=true;
   P.x=clamp(sv.x||300,20,WORLD_W-20); P.y=groundY(P.x); P.vx=0; P.vy=0; P.rise=0; P.act=null; VIG=null;
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
   GS.state='play';
+  { const c=STORY[GS.ch|0]; if(c && c.enter && (GS.ch|0)>0) c.enter(); }
 }
 
 /* ============================================================
