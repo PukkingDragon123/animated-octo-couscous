@@ -142,7 +142,8 @@ anything is *pull*.
 
 **Tap, and a hand comes up through the soil.** Seven of them and you are out,
 kneeling in a burial field at three in the morning with your hands full of
-somebody else's earth. A line of narration a tap, no speaker, no portrait:
+somebody else's earth. A line of narration a tap — no speaker, so no cloud,
+just the words low on the screen:
 
 > *The earth does not want to let go. The earth is outvoted.*
 >
@@ -281,8 +282,9 @@ Every panel, bubble, tag and menu is a **carved wooden frame** — a dark plank
 edge, a lit inner bevel, a parchment field — and every one stays exactly inside
 its own rectangle. Your merit sits on a small plaque in one corner; what you're
 carrying sits on a **toolbar** along the bottom, one slot per thing, the way a
-farming game does it. Speakers get a round hand-drawn **portrait** beside the
-dialogue, and only one voice talks at a time.
+farming game does it. Nobody speaks from a box at the bottom of the screen:
+the words come out of the head they belong to, in a cloud with a tail, and only
+one voice talks at a time.
 
 Nothing in the interface is a font character standing in for a picture — the
 ticks, hearts, stars, arrows, flowers, prayer beads and the book on the menu
@@ -660,7 +662,7 @@ chops a phrase when that one phrase is wider than the line.
 The story prose — the memories, the villagers' lives, what Phra Phum will not
 tell you — stays in English. Everything you need in order to *play* is
 bilingual: the merit plaque, the standing request, the field prompts, the
-kitchen, the ledger, the map, the signposts, and every step of the rice lesson.
+kitchen, the ledger, the map, and every step of the rice lesson.
 
 Some words stay Thai in both languages, because there is no English for them
 and the English would be worse: **นาข้าว** for a bunded flooded rice field,
@@ -685,17 +687,70 @@ tells you plainly what to go and do:
 
 Feed them once and the first line changes for good.
 
-## The crossroads
+## Nothing announces itself
 
-Five hand-painted **signposts** stand where the road forks, each with boards
-pointing both ways — the graveyard back west, the village and the market ahead,
-the temple and the banana grove onward — with a lantern hanging off the post and
-a lamp pooling light on the dirt. You should never have to guess which way the
-village is.
+There is no signpost anywhere on this road any more. There were six, each a
+slab of painted lettering standing in the middle of a village at two in the
+morning, and every one of them was the loudest thing in its own picture. The
+place names itself instead: walk into the banana grove and *the banana grove*
+fades in at the top of the frame and fades out again.
+
+Nothing gets a banner. Merit, rice, a plank, a coin — whatever you just earned
+comes off the thing that gave it to you and drifts up out of the world, small,
+where it happened. Two at once stack rather than printing through each other.
+The one hint the guide has for you sits low on the screen like a subtitle and
+then goes.
 
 | | | |
 |---|---|---|
-| ![the crossroads](screenshots/crossroads.png) | ![the temple](screenshots/the-temple.png) | ![talking it over](screenshots/dialogue.png) |
+| ![no signs on the road](screenshots/the-road.png) | ![the temple](screenshots/the-temple.png) | ![sun through the trees](screenshots/sun-through-the-trees.png) |
+| ![what you earned](screenshots/nothing-announces-itself.png) | ![a shout](screenshots/a-shout.png) | ![a quieter line](screenshots/a-quiet-line.png) |
+
+## Talking to somebody
+
+A conversation used to be a panel at the bottom of the screen with a portrait
+stuck on the side of it. You read a panel. You do not talk to one, and nothing
+in it is happening: the letters arrive at a constant rate, out of a face that
+is not moving, in the same box for a joke and for somebody telling you they have
+been dead a hundred and forty years.
+
+Now **the words come out of the person's head.** A cloud with a tail that
+tapers all the way down to the mouth it came from, their name on a peg hooked
+over the corner, and the camera leaning off you to sit between the two of you so
+whoever is speaking is actually in the shot. Both of you turn to face each
+other. If the speaker is somewhere you cannot see them — or there is no speaker
+at all, because it is the narrator — the line comes in low across the bottom
+instead, on nothing, the way a subtitle does.
+
+**Every line has a feeling, and the face does it.** Fourteen of them: calm,
+warm, happy, laughing, bright, shocked, asking, thinking, sad, tired, cross,
+shy, awed, fond. The important lines are tagged by hand. Everything else is read
+off the text — how many exclamation marks, whether it ends in a question,
+whether the words in it are thank-you words or sorry words. It is a guess; a
+guess beats every line in the game being delivered with the same flat face.
+
+What the feeling drives:
+
+- **The brows.** The inner end of the near brow lifts for sorry and drops for
+  having none of it, which at this size is the whole of an expression.
+- **The eyes**, wider when startled and half shut when weary.
+- **The mouth**, which opens and closes while the words come out and then
+  settles into a smile, a line, or a frown.
+- **The head**, nodding along the sentence, flinching once on a shock.
+- **A blush** on the two lines that deserve one.
+- **The cloud itself** — softer paper for a quiet line, spikes all the way
+  round it for a shouted one.
+- **A small mark in the air** beside the cloud, drawn rather than typed: an
+  exclamation, a question, a note, a sweat drop, a z, three thinking dots, a
+  spark, a heart, a puff of temper. Each one is stamped nine times, eight of
+  them in cream, so it reads against a night sky as well as against parchment.
+- **The speed.** Excitement types faster, sorrow slower, and the typewriter
+  *stops*: a tenth of a second at a comma, a quarter at a full stop, and longer
+  on a dash. A machine that never pauses reads like a fax.
+- **The voice.** Everybody has their own pitch — Mali is a piccolo, Tai Hong is
+  a foghorn — and a question climbs a fifth as it goes.
+
+![a line of dialogue](screenshots/dialogue.png)
 
 Fill 108 merit — as many as the beads on a prayer mala — and the last page turns.
 Then the village throws you a water-pouring ceremony at dawn, and everyone you
