@@ -38,12 +38,22 @@ floorboards, and then a plough put into your hands at sunrise. Break the
 ground, carry the water, put the seed in. Nothing else in the game is explained
 until you need it.
 
-**Then it is a livelihood.** Forage, cook, sell it at the stall for baht; rent
-the rest of that farm off the notice on the gate; turn beds, flood the second
-นาข้าว, plant durian, buy chickens; then cook what you grew for the people who
-ordered it by name. Merit is what the ledger counts and baht is what the
-landlord counts, and you cannot get both out of the same bowl of food — giving
-it away earns one, selling it earns the other. That choice is the game.
+**Then it is a livelihood, and it runs a day at a time.** Wake at six with a
+full bar and a clock in the corner; spend the bar on the field; put the crop in
+the basket by the gate; be somewhere with a bed before two in the morning. Sleep
+is the only thing that moves the world on — the basket is paid, the watered beds
+come up a stage, and you wake to a card telling you what the night did. Forage,
+cook, tip the basket in; rent the rest of that farm off the notice on the gate;
+turn beds, flood the second นาข้าว, plant durian, buy chickens; then cook what
+you grew for the people who ordered it by name. Merit is what the ledger counts
+and baht is what the landlord counts, and you cannot get both out of the same
+bowl of food — giving it away earns one, sending it earns the other. That
+choice is the game.
+
+And merit is also the bar. A prete cannot eat, so nothing you cook puts your
+strength back; doing a kind thing for somebody does. **You cannot farm this
+land without being good to the people on it**, which is the one rule the whole
+thing is built to make you feel rather than read.
 
 Your dead friends will work the farm for you. That is not a metaphor: feed a
 hungry ghost once and it will come and water your beds while you are away.
@@ -280,11 +290,14 @@ the rice crop she teaches is the whole second act of the farm.
 
 Every panel, bubble, tag and menu is a **carved wooden frame** — a dark plank
 edge, a lit inner bevel, a parchment field — and every one stays exactly inside
-its own rectangle. Your merit sits on a small plaque in one corner; what you're
+its own rectangle. Your merit sits on a small plaque in the top left and the day,
+the clock and what's left in you on another in the top right; what you're
 carrying sits on a **toolbar** along the bottom, one slot per thing, the way a
-farming game does it. Nobody speaks from a box at the bottom of the screen:
-the words come out of the head they belong to, in a cloud with a tail, and only
-one voice talks at a time.
+farming game does it. That is the whole permanent interface: two plaques and a
+row of slots, and nothing else is on screen unless you are standing next to it.
+Nobody speaks from a box at the bottom of the screen: the words come out of the
+head they belong to, in a cloud with a tail, and only one voice talks at a
+time.
 
 Nothing in the interface is a font character standing in for a picture — the
 ticks, hearts, stars, arrows, flowers, prayer beads and the book on the menu
@@ -294,6 +307,57 @@ and every glyph lands on whole pixels at whole-number scales, which is why the
 text is sharp instead of smeared.
 
 ![talking to Kong Koi](screenshots/making-friends.png)
+
+## A day
+
+The unit of this game is a day, and it is the Stardew Valley shape on purpose:
+**the clock, the bar, the basket, the bed.**
+
+**Six in the morning to two the next night.** The clock in the top right is the
+real one — the sky reads off it rather than the other way round, so half past
+six is orange because it is half past six. It runs at about three game-minutes
+to the second, which makes a full day something like six or seven real minutes
+of work.
+
+**A bar, not a stamina meter.** Every job on the farm costs something out of it:
+turning a bed, watering, picking, flooding a paddy, chopping, catching. Empty it
+and nothing dramatic happens — the game simply stops letting you work, and if
+you stand there empty for six seconds the prete lies down where he is and the
+night takes him. You lose the rest of the day, which is Stardew's rule, and no
+more than that.
+
+The one thing that fills it back up is **merit** — which is the only mechanic
+here that had to be reinvented rather than borrowed, because Stardew refills the
+bar with food and a prete cannot eat. Doing a kind thing for somebody puts the
+strength back in your arms. That is the whole theology of the game in one
+number: the only way to keep working the land is to keep being decent to the
+people on it.
+
+**The basket by the gate.** You are never paid at the counter for a crop. You
+put it in the basket outside your gate, somebody comes for it in the night, and
+the coins are there in the morning.
+
+**Sleep is the only thing that moves the day on.** Lie down under the farmhouse
+and the night passes in one fade: the basket is emptied and paid, every watered
+bed moves a stage, the flooded paddies count another night, the trees grow, the
+animals leave you something, the ghosts you hired do a night's work — and you
+wake to **a card that tells you exactly what the night did**, which is the only
+screen in the game that stops the world.
+
+| | | |
+|---|---|---|
+| ![the farm in the morning](screenshots/day-farm.png) | ![the basket](screenshots/day-basket.png) | ![the morning card](screenshots/day-card.png) |
+
+**Hearts, and one present a day.** Everybody in the village and every ghost has
+ten hearts. Turning up and talking to somebody counts once a day; a present
+counts for a lot more, and the thing they have actually been hoping for counts
+for most of all — but only one present each, per person, per day. A friendship
+made in one afternoon with a full basket is not a friendship. The FRIENDS page
+of the ledger is the row of hearts.
+
+An order is not a present, though, and never counts against the day's one: when
+somebody has asked you for two bowls of something by name, you can hand over
+both.
 
 ## The farm
 
@@ -315,18 +379,21 @@ never runs dry, but you can only carry two waterings at a time until you go and
 earn a proper can.
 
 **Five dry beds.** One crop to a bed — green papaya, chilli, holy basil,
-galangal, morning glory — each with a painted marker board you can read from the
-far side of the road. **Sow, water, wait, pick.** Wet earth grows about twice as
-fast; manure in your basket when you sow makes it faster still.
+galangal, morning glory. **Sow, water, sleep, pick.** A watered bed moves on one
+stage in the night and a dry one does not move at all, so watering before dark
+is the whole job. There is no signboard on a stake telling you what is in it:
+walk up to a bed and what is growing there fades in over the soil, and fades
+out again behind you.
 
 **Two นาข้าว.** A rice field is a different animal: a bunded box you flood, sow,
 and then keep flooded, because rice in a dry paddy simply stops and waits. It
-takes about twice as long as a bed and pays four rice, two bran and two seed —
-and while it is standing there full of water it holds the moon in it.
+takes two flooded nights to a stage instead of one, and pays four rice, two bran
+and two seed — and while it is standing there full of water it holds the moon in
+it.
 
 **Three fruit trees.** Buy a sapling and put it in a hole and then *wait* —
-durian, mangosteen, rambutan take the better part of a minute to come up and
-then bear for the rest of the game. A durian is worth thirty-six baht on its
+durian, mangosteen, rambutan take eight nights to come up and then bear every
+second night for the rest of the game. A durian is worth thirty-six baht on its
 own, which is most of a bed's whole crop.
 
 **A pen.** Chickens, ducks and one very large water buffalo. Keep rice bran in
@@ -464,10 +531,11 @@ green in a pot. A prete has no use for a house. You build one anyway.
 
 ## Money, and orders
 
-**P'Nok buys anything.** Raw produce, cooked dishes, woven things — the stall
-takes it all and pays in baht, one item at a time or the whole basket at once.
-A dish is always worth more than the sum of its parts, which is the entire
-argument for owning a stove.
+**P'Nok sells; she does not buy.** She used to take anything off you over the
+counter, which made the basket by your gate pointless — so now her stall is
+where seed and bran come from, and the crop goes in the basket. She says so if
+you try. A dish is still always worth more than the sum of its parts, which is
+the entire argument for owning a stove.
 
 **And the village orders supper by name.** Up to three standing orders at a
 time — *P'Nok wants 2 Tom Yum · 122฿* — printed across the top of the screen,
@@ -659,10 +727,24 @@ but the Thai here uses spaces between *phrases*, and breaking by character
 regardless split those in half. It breaks on the spaces first now, and only
 chops a phrase when that one phrase is wider than the line.
 
-The story prose — the memories, the villagers' lives, what Phra Phum will not
-tell you — stays in English. Everything you need in order to *play* is
-bilingual: the merit plaque, the standing request, the field prompts, the
-kitchen, the ledger, the map, and every step of the rice lesson.
+**All of it is translated now, and that is checked rather than believed.** The
+translation happens at the drawing boundary — every string in the game goes
+through one lookup on its way to the screen — so the way to find what is still
+speaking English is to hook that lookup, walk the game through every screen
+there is, and print what came past untranslated. That sweep ships with the game
+as [`th/sweep.js`](th/sweep.js); it visits the title, all ten chapters of the
+first night, every panel of
+the ledger, the stall, the order board, the kitchen, the workbench, the give
+screen, the morning card, all four memories, the ceremony and the end card, and
+drives the prete the length of the map at four different hours. It reports 431
+strings drawn and, as of this build, **nothing untranslated**.
+
+Anything glued together out of fragments had to be taken apart for that to be
+true: `'DAY ' + 8` and `cost + ' merit'` and `'road, still blocked' + ' · ' +
+'garland, still fallen'` were each one string too long to look up, so each half
+is looked up on its own. The clock is not a translation at all but a different
+convention — Thailand does not say *half past four in the afternoon* on a clock
+face, so in Thai it reads `16:30น.`
 
 Some words stay Thai in both languages, because there is no English for them
 and the English would be worse: **นาข้าว** for a bunded flooded rice field,
@@ -694,6 +776,12 @@ slab of painted lettering standing in the middle of a village at two in the
 morning, and every one of them was the loudest thing in its own picture. The
 place names itself instead: walk into the banana grove and *the banana grove*
 fades in at the top of the frame and fades out again.
+
+The farm had its own version of the problem: a painted marker board on a stake
+over every bed, five of them in a row, so the field you were supposed to be
+proud of looked like a car park. Those went too. **Walk up to a bed and what is
+growing in it fades in over the soil**, and fades out again behind you — which
+is the same rule, applied to a thing rather than a place.
 
 Nothing gets a banner. Merit, rice, a plank, a coin — whatever you just earned
 comes off the thing that gave it to you and drifts up out of the world, small,
@@ -792,7 +880,7 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~635 KB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~700 KB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Parses and initialises in about a tenth of a second, has the whole
 road built inside half a second behind a loading screen, and holds 50–60 fps
 with a fully stocked farm on screen.
@@ -820,10 +908,13 @@ with a fully stocked farm on screen.
   breath; the walk eases in and drifts out over most of a second instead of
   snapping to speed. None of it is keyframed — it falls out of the simulation,
   which is why it never repeats exactly.
-- **The farm runs whether or not you are looking at it.** Crops, rice, fruit
-  trees and animals all advance on the same fixed step as everything else, and
-  so do the ghosts you hired — the harvester really does walk the row and put
-  things in your basket while you are two zones away buying seed.
+- **The farm runs whether or not you are looking at it.** The animals and the
+  ghosts you hired advance on the same fixed step as everything else — the
+  harvester really does walk the row and put things in your basket while you are
+  two zones away buying seed. What *grows* does not: beds, paddies and trees all
+  move in one pass while you sleep, so the state of the field is a thing you
+  decided at dusk rather than a thing that happened to you while you were
+  looking the other way.
 - **The first night is one list.** Ten beats — climb, meet, follow, supper,
   hide, field, plough, water, plant, free — each with an optional enter, step,
   prompt and overlay, stepped one at a time off a single integer in the save
@@ -835,14 +926,25 @@ with a fully stocked farm on screen.
   and one is full morning; the sky's four gradient bands, the sun, the moon,
   the stars, the clouds, the ambient darkness, the lamp glows, the aerial haze
   on each parallax layer, and whether the ambience is crickets or birds all
-  read off it and nothing else. The sleep under his floorboards is that number
-  moving from 0 to 0.92 over nine seconds.
-- **Daylight is subtraction, not a second copy.** The 7,200-pixel play layer is
-  painted once, for a village at two in the morning. Morning takes the darkness
-  overlay off, puts one additive warm pass on, and coats each parallax layer in
-  the horizon's own colour in proportion to its distance — which is aerial
-  perspective, and which is very much cheaper than keeping a second copy of a
-  two-megapixel canvas.
+  read off it and nothing else. The clock sets it now rather than the other way
+  round — half past six is orange because the clock says half past six — and
+  the sleep under his floorboards is still that number moving from 0 to 0.92
+  over nine seconds.
+- **One set of colours, graded by the clock.** The 7,200-pixel play layer and
+  the three parallax layers behind it are painted once each and never repainted.
+  The time of day is then four full-screen fills over the top: a dark stencil
+  with a hole punched in it for every lamp, a warm `overlay` pass that fades in
+  with the sun, a cool band along the ground that fades out with it, and a coat
+  of the horizon's own colour on each parallax layer in proportion to its
+  distance, which is aerial perspective. Much cheaper than a second copy of a
+  two-megapixel canvas — and the frame rate is the same with the grade as
+  without it.
+
+  The layers used to be painted for the night the story opens on, which was
+  fine while the game was one night long. With a clock running six in the
+  morning to two the next night it meant every daylight hour came out the same
+  slate grey as three a.m., so they are painted in daylight now and the night
+  is the thing that gets added.
 - **The plough is a pendulum you can see.** The marker you are timing and the
   share that dips into the soil ride the same number, so what you watch and what
   you hit are the same object rather than a bar pretending to be a plough. Every
@@ -940,6 +1042,17 @@ with a fully stocked farm on screen.
   from then on, keyed by whatever about it can actually change. Verified
   pixel-exact against painting straight into the world: zero pixels differ at
   every farm location. It bought 12 fps.
+- **The night is one function.** Everything that happens between two days —
+  the basket paid, every watered bed moved on, the flooded paddies counted, the
+  trees grown, the animals fed, the hired ghosts' night's work, the bar
+  refilled, the day's presents and conversations forgotten — is a single pass
+  over the farm, called once, that returns the card you wake up to. Nothing
+  else in the game is allowed to advance a crop, which is why the field is
+  always exactly what you left at dusk.
+- **Translation is checked, not believed.** Every string reaches the screen
+  through one lookup, so [`th/sweep.js`](th/sweep.js) hooks that lookup, walks
+  the game through every screen it has, and prints whatever came past in
+  English. 431 strings drawn, none untranslated.
 - Autosave, a friends journal, canvas-drawn touch controls, and a dawn ending.
 
 Made with rice and incense. May you go to a good place.
