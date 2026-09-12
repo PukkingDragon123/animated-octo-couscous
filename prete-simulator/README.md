@@ -58,6 +58,16 @@ thing is built to make you feel rather than read.
 Your dead friends will work the farm for you. That is not a metaphor: feed a
 hungry ghost once and it will come and water your beds while you are away.
 
+**The title screen is the game, in one picture.** He is sitting on the คันนา —
+the ridge of packed earth between one paddy and the next, which in a flooded
+field is the only thing that is not water — at first light, legs out in front
+of him and birds on him: one on his head, one standing on the palm of his
+out-held hand, another two on the earth beside him. Every so often he raises
+the hand to look at whatever has landed on it. Nothing in that image is a
+painting: the paddy, the rice, the bund, the reflection under him, the egrets
+standing out in the middle distance and the birds are all drawn from code, and
+the birds choose their own next perch.
+
 ![the title screen](screenshots/title.png)
 
 **Playtime:** an hour and a half or so · built for phones, fine on desktop · sound on if you can
@@ -1059,6 +1069,30 @@ with a fully stocked farm on screen.
   from then on, keyed by whatever about it can actually change. Verified
   pixel-exact against painting straight into the world: zero pixels differ at
   every farm location. It bought 12 fps.
+- **The title screen is a scene, not a splash.** Four bands of rice drawn as
+  clumps rather than a comb, each on a baseline that wanders a few pixels over
+  the width of the screen so that a paddy reads as a surface and not a ruled
+  line; water whose ripples and sun-path are stirred every frame; three egrets
+  standing in the middle distance; seven birds that never come down, and six
+  that do. Each of the six waits, gets bored, picks a free perch from the eight
+  going — his palm, his head, his shoulder, his knee, two patches of earth
+  beside him and two clumps out in the field — and flies there on an arc. His
+  palm is the one they prefer. The prete sits on the bund using the same puppet
+  as everywhere else with a sitting pose added to it, and is reflected in the
+  water in front of him by drawing him again upside down, clipped to the water
+  and stepped with no time at all so his cloth is not simulated twice a frame.
+- **What that scene cost, and what it costs now.** Drawn honestly it was 38ms a
+  frame — 26fps, on the front page, against 16ms for the farm, which is the
+  heaviest thing the game draws in play. Two thirds of it was rice: four bands,
+  three hundred clumps, a tapered polygon for each stalk and three more for the
+  grain on top of it. The clock on the title is pinned, so the sky, the far
+  shore and the palms are the same picture in every frame: they are painted
+  once. So is each band of rice — and then bent back into the wind by blitting
+  its strip a row at a time, each row pushed sideways by how far it stands
+  above the mud, rows wanting the same whole pixel going together. That is
+  about nine draws a band instead of eight hundred, and it is a truer bend than
+  the old one, which leaned each stalk as a straight line out of the ground.
+  6ms a frame now.
 - **Everything in reach is a list, not a slot.** The interaction check used to
   end at the first thing that matched — thirty-odd candidates each guarded by
   *if nothing has claimed the prompt yet*. That is a precedence list, and a

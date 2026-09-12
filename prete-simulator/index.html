@@ -3157,7 +3157,11 @@ function drawPrete(g, p, o={}){
      walk rolls side to side because that is what carrying does to a stride. */
   const carry = clamp(o.carry||0,0,2);
   const cWob  = carry? Math.sin(p.phase*2)*1.5*carry + Math.sin(p.swayT*0.9)*0.7*carry : 0;
-  const hipY = by - LEG*sY - bobA + kneel + carry*2.2;
+  /* SITTING. The hips come down to the ground and the legs fold out in front,
+     knees up. Everything else — the breath, the belly, the head lagging a beat
+     behind the shoulders — carries on as it does standing. */
+  const sit = o.sit? 1 : 0;
+  const hipY = by - LEG*sY*(1-sit*0.84) - bobA + kneel + carry*2.2;
   const hipX = bx + p.lean*2.4 + sway*0.4 + cWob*0.5;
   const chestY = hipY - 26*sY + p.breath*0.4;
   const chestX = hipX + p.lean*3.2 + sway*0.5 - carry*3.4*face + cWob*0.4;
@@ -3166,7 +3170,11 @@ function drawPrete(g, p, o={}){
   function legPose(i){
     const back = i===0;
     let fx, fy;
-    if(!p.onGround){ fx=(back?-6:6)*face; fy = p.vy<0? -4:1; }
+    /* feet well out in front of the hips, which is the only way a knee has
+       anywhere to go: too close and the whole leg folds up behind the belly
+       and he reads as squatting in a hole */
+    if(sit){ fx=(back? 21:27)*face; fy=5; }
+    else if(!p.onGround){ fx=(back?-6:6)*face; fy = p.vy<0? -4:1; }
     else if(p.state==='block'){ fx=(back?-10:9)*face; fy=0; }
     else {
       /* A cosine can only hold a foot still for one instant, so a cosine walk
@@ -3189,7 +3197,9 @@ function drawPrete(g, p, o={}){
   function drawLeg(i){
     const L=legPose(i), col=L.back?SHD:BODY;
     const hx0=hipX+(L.back?-2.4:2.4)*face;
-    const knee=ik2(hx0,hipY,L.fx,L.fy-5,TH*sY,SN*sY,face>0?1:-1);
+    /* sitting wants the knee ABOVE the line from hip to foot, which is the
+       other bend from the one a walking leg takes */
+    const knee=ik2(hx0,hipY,L.fx,L.fy-5,TH*sY,SN*sY, sit? (face>0?1:-1) : (face>0?1:-1));
     iTaper(g,hx0,hipY-2,knee.x,knee.y,3.2,2.6,col,OC);        // thigh
     iTaper(g,knee.x,knee.y,L.fx,L.fy-5,2.6,2.0,col,OC);       // shin, thinner still
     iEll(g,knee.x,knee.y,2,2,col,OC);                         // a knob of a knee
@@ -3208,6 +3218,13 @@ function drawPrete(g, p, o={}){
     }
     else if(ACT && ACT.k==='give'){
       hx2=chestX+(10+abell*13)*face+(back?-6*face:0); hy2=chestY+34-abell*13+(back?5:0);
+    }
+    else if(sit && !ACT){
+      /* the back hand takes his weight behind him; the front one is held out
+         flat and open, which is the whole reason anything lands on it */
+      if(back){ hx2=chestX-11*face; hy2=chestY+38; }
+      else { const lift=o.sitLift||0;
+             hx2=chestX+(27+lift*0.5)*face; hy2=chestY+11-lift*9+Math.sin(p.anim*0.7)*1.1; }
     }
     else if(carry && (!ACT || ACT.k==='pick')){
       /* both hands under the belly of it, near hand in front and a little
@@ -14168,6 +14185,412 @@ function spotHit(sx,sy){
     }
   }
   return false;
+}
+/* ============================================================
+   THE TITLE
+
+   He used to stand on an empty road at night with a string of
+   lanterns over him, which told you the game was Thai and cosy and
+   nothing else. This is the picture the game is actually about: a
+   hungry ghost sitting down in a flooded rice field at first light,
+   being landed on by birds.
+
+   Nothing here is a cutscene or a sprite sheet. The paddy, the rice,
+   the reflection and the birds are all drawn each frame, and the
+   birds decide for themselves where to sit next.
+   ============================================================ */
+
+const TT = {
+  t: 0,
+  wy: 212,                 // the top of the bund he is sitting on
+  wl: 227,                 // and where it goes into the water in front of him
+  px: 168,                 // where he sits
+  birds: [],
+  perches: [],             // filled each frame: the places a bird can land
+  landT: 0,                // how long ago one landed on his hand
+  liftT: 4,                // and when he next lifts the hand to look at it
+  lift: 0,
+  back: null,             // the sky and the far shore, painted once
+  bund: null,             // and the earth he is sitting on
+};
+const TSKY = [];           // the ones that never come down
+for(let i=0;i<7;i++) TSKY.push({x:rnd(-40,W+40), y:rnd(18,86), sp:rnd(5,11),
+                                ph:rnd(TAU), kind:(Math.random()*3)|0});
+
+function titleBirds(){
+  if(TT.birds.length) return;
+  for(let i=0;i<6;i++)
+    TT.birds.push({x:rnd(40,W-40), y:rnd(150,210), st:'perch', p:i, want:i,
+                   t:rnd(TAU), face:Math.random()<0.5?-1:1, kind:(Math.random()*3)|0,
+                   hop:0, wait:rnd(2,9), fx:0, fy:0});
+}
+
+/* ---------- the paddy ---------- */
+function titleWater(g){
+  const hz = 150;
+  const S = skyNow();
+  // the water is the sky, laid down and stirred
+  pVGrad(g, 0, hz, W, H-hz, mix(S.c[3],'#8fae9a',0.35), mix(S.c[1],'#1d3a3e',0.62), 9);
+  /* the sun's path: a column of broken light straight down from it, which is
+     the one thing that says water rather than a green floor */
+  const sx = W*0.70;
+  for(let y=hz; y<H; y+=2){
+    const t=(y-hz)/(H-hz);
+    const w = 6 + t*46;
+    const bl = 0.45 + 0.55*Math.sin(TT.t*1.6 + y*0.35);
+    g.fillStyle = rgba('#ffe6b0', (0.30-0.22*t)*bl);
+    g.fillRect(R(sx-w/2 + Math.sin(TT.t*0.8+y*0.2)*3), y, R(w), 1);
+  }
+  // ripple lines, close together at the far end and far apart at your feet
+  for(let y=hz+2; y<H; y+=1){
+    const t=(y-hz)/(H-hz);
+    if(Math.random()>0.06+t*0.10) continue;
+    const w = 5 + Math.random()*(8+t*40);
+    const x = Math.random()*W;
+    g.fillStyle = rgba('#dff0ea', 0.05+0.10*(1-t));
+    g.fillRect(R(x), y, R(w), 1);
+  }
+  // the standing ripples, which do not flicker: three long bands
+  for(let i=0;i<26;i++){
+    const t=i/25, y=hz+4+Math.pow(t,1.7)*(H-hz-6);
+    const w=18+t*150, x=(i*97)%W + Math.sin(TT.t*0.5+i)*4;
+    g.fillStyle=rgba('#cfe6dc', 0.07+0.05*(1-t));
+    g.fillRect(R(x-w/2), R(y), R(w), 1);
+  }
+}
+/* a band of rice: further off is shorter, paler and closer together.
+
+   Drawn stalk by stalk this was two thirds of the whole frame — four bands,
+   three hundred clumps, a tapered polygon per stalk and three more for the
+   grain on top of it. So each band is painted once into a strip of its own and
+   then bent back into the wind by blitting the strip a row at a time, each row
+   pushed sideways by how far it stands above the mud. Rows that want the same
+   whole pixel go together, which is about nine draws a band instead of eight
+   hundred — and it is a truer bend than the old one, which leaned each stalk
+   as a straight line out of the ground. */
+const RPAD = 12;                      // slack at each end, so bending leaves no gap
+function bakeRice(y, h, step, col, lit, seed){
+  /* the far edge of a paddy is never a ruled line: it wanders by a few inches
+     over fifty yards, and drawing it flat is what makes a field look like a
+     shelf of grass */
+  const amp = Math.min(h*0.5, 7);
+  const wave = x => Math.sin(x*0.0074+seed)*amp + Math.sin(x*0.021+seed*2)*amp*0.32;
+  const top = R(y - h*1.33 - amp - 6), bot = R(y + h*0.08 + amp + 4);
+  const cv = mkCv(W+RPAD*2, bot-top), g = G2(cv);
+  g.translate(RPAD, -top);
+  /* rice does not grow in a comb. Each clump is three or four stalks out of
+     one root, the clumps are unevenly spaced, and each one fans open. */
+  const r = mulberry(seed);
+  for(let cx2=-RPAD; cx2<W+RPAD; cx2+=step*(0.62+r()*0.9)){
+    const n = 2+((r()*3)|0);
+    const base = y + wave(cx2) + (r()-0.5)*h*0.16;
+    pEll(g, cx2, base+1, 2.2+n*0.7, 1.2, rgba('#0e2a2e',0.22));
+    for(let k=0;k<n;k++){
+      const dx = (k-(n-1)/2)*1.9 + (r()-0.5)*1.4;
+      const hh = h*(0.55+r()*0.7);
+      const sw = dx*0.7;
+      pTaper(g, cx2+dx, base+1, cx2+dx+sw, base-hh, 1.6, 0.7, col);
+      if(hh>6.5){
+        const tipx=cx2+dx+sw, tipy=base-hh;
+        pTaper(g, tipx-sw*0.25, tipy+hh*0.26, tipx+1.2, tipy-2.6, 1.5, 0.6, lit);
+        for(let q=0;q<3;q++) pR(g, tipx+(q%2?1:-1), tipy+q*1.5, 1,1, lit);
+      }
+    }
+  }
+  return {cv, top, baseRow: R(y)-top, amp: h*0.15, ph: seed*0.7};
+}
+const RICE = [];
+function riceBand(i, y, h, step, col, lit, seed){
+  if(!RICE[i]) RICE[i] = bakeRice(y,h,step,col,lit,seed);
+  return RICE[i];
+}
+/* the wind, which is one wind: the whole band leans together and comes back */
+function drawRice(g, b){
+  const a = Math.sin(TT.t*1.05 + b.ph)*b.amp + Math.sin(TT.t*0.31 + b.ph)*b.amp*0.4;
+  const n = b.cv.height;
+  let r0 = 0, cur = null;
+  for(let r=0; r<=n; r++){
+    const f = r<n? Math.max(0,(b.baseRow-r)/Math.max(b.baseRow,1)) : -1;
+    const dx = r<n? R(a*f*f) : NaN;
+    if(cur===null){ cur=dx; r0=r; continue; }
+    if(r<n && dx===cur) continue;
+    g.drawImage(b.cv, 0, r0, b.cv.width, r-r0, cur-RPAD, b.top+r0, b.cv.width, r-r0);
+    cur=dx; r0=r;
+  }
+}
+
+/* ---------- the egrets ----------
+   Every flooded paddy in the country has two or three of these standing in
+   it, perfectly still, looking at nothing. Without them it is just a field. */
+const TEGR = [{x:318,y:196,f:-1,ph:0.4},{x:392,y:184,f:1,ph:2.1},{x:246,y:178,f:-1,ph:3.6}];
+function drawEgrets(g){
+  for(const e of TEGR){
+    const x=R(e.x), y=R(e.y);
+    const dip = Math.max(0, Math.sin(TT.t*0.28+e.ph)-0.94)*130;   // now and then it stoops
+    const ny = y-24+Math.min(dip,17);
+    pR(g,x-e.f,y-6,1,6,'#3a3630'); pR(g,x+e.f,y-6,1,6,'#3a3630');   // legs in the water
+    pEll(g,x,y-9,5,3.4,'#f2ecdc');                                  // body
+    pTaper(g,x+e.f*3,y-10,x+e.f*10,y-12,2.2,0.8,'#e6dfcc');         // tail
+    /* the neck is the whole bird: it goes up twice the height of the body and
+       kinks forward at the top, and nothing else in a paddy does that */
+    pTaper(g,x-e.f*0.5,y-11,x-e.f*1.5,ny+3,1.5,1.2,'#f2ecdc');
+    pTaper(g,x-e.f*1.5,ny+3,x-e.f*2.6,ny,1.2,1.4,'#f2ecdc');
+    pEll(g,x-e.f*2.8,ny-1,2,1.7,'#f6f1e4');
+    pR(g,R(x-e.f*5),R(ny-1),3,1,'#e8a13c');
+    pR(g,R(x-e.f*3.4),R(ny-2),1,1,'#241c22');
+    pEll(g,x,y+1,5,1.4,rgba('#0e2a2e',0.28));
+  }
+}
+
+/* ---------- the bund ----------
+   The คันนา: the low ridge of packed earth that divides one paddy from the
+   next. In a flooded field it is the only thing that is not water, so it is
+   where anyone sits — which is the whole reason he is sitting rather than
+   standing about in it up to his waist. Painted once, like the sky. */
+function bundStrip(){
+  if(TT.bund) return TT.bund;
+  const S = skyNow();
+  const top = TT.wy-16, cv = mkCv(W, TT.wl-top+10), g = G2(cv);
+  g.translate(0,-top);
+  const earth = mix(S.c[2],'#6b5e42',0.62), lip = mix(S.c[3],'#a99a67',0.40);
+  const edge = x => TT.wy + Math.sin(x*0.0068)*4.2 + Math.sin(x*0.0245+2)*1.8
+                          + Math.sin(x*0.071)*0.7;
+  for(let x=0;x<W;x++){
+    const y = R(edge(x));
+    g.fillStyle=earth; g.fillRect(x, y, 1, TT.wl-y+8);
+    g.fillStyle=lip;   g.fillRect(x, y, 1, 2);
+  }
+  const r = mulberry(7);
+  // clods and stones, so the face of it is earth and not a painted wall
+  for(let i=0;i<110;i++){
+    const x=r()*W, y=edge(x)+3+r()*(TT.wl-TT.wy-2);
+    pEll(g, x, y, 1+r()*1.9, 0.9+r()*0.9, rgba(r()<0.5?'#4b4130':'#93855c', 0.38));
+  }
+  // grass along the top, which is what says earth rather than a shelf
+  for(let x=-2;x<W+2;x+=1.6+r()*3){
+    const y=edge(x), n=1+((r()*3)|0);
+    for(let k=0;k<n;k++){
+      const hh=2+r()*5.5, sw=(r()-0.5)*3.2;
+      pTaper(g, x+k*0.9, y+1, x+k*0.9+sw, y-hh, 1.2, 0.6,
+             mix(S.c[2], r()<0.4? '#93a05a' : '#5d7442', 0.5));
+    }
+  }
+  // the dark wet line where it goes under, and the light lying against it
+  g.fillStyle=rgba('#1b2a2a',0.32); g.fillRect(0,TT.wl-2,W,4);
+  g.fillStyle=rgba('#dff0ea',0.16); g.fillRect(0,TT.wl+2,W,1);
+  TT.bundTop=top; TT.bund=cv; return cv;
+}
+
+/* ---------- the birds ---------- */
+/* Six of them and about seven places to sit, so there is always somewhere to
+   go and they never all end up in the same spot. Each one waits, gets bored,
+   and flies to a free perch on a shallow arc. */
+function titlePerches(hand, headX, headY, chestX, chestY, hipX, hipY){
+  const P2 = TT.perches;
+  P2.length = 0;
+  if(hand) P2.push({x:hand.x+3, y:hand.y-3, hand:true});
+  P2.push({x:headX+1, y:headY-13});
+  P2.push({x:chestX-7, y:chestY-6});
+  P2.push({x:hipX+15, y:hipY-19});
+  P2.push({x:TT.px+63, y:TT.wy-1});      // and two standing on the earth beside him
+  P2.push({x:TT.px-49, y:TT.wy-2});
+  P2.push({x:TT.px+126, y:182});         // two more out on the rice
+  P2.push({x:TT.px-104, y:195});
+}
+function stepTitleBirds(dt){
+  const P2 = TT.perches;
+  if(!P2.length) return;
+  const taken = {};
+  for(const b of TT.birds) taken[b.want] = true;
+  for(const b of TT.birds){
+    b.t += dt;
+    if(b.hop>0) b.hop -= dt;
+    if(b.st==='perch'){
+      const p = P2[Math.min(b.p, P2.length-1)];
+      b.x = p.x; b.y = p.y;
+      b.wait -= dt;
+      if(Math.random()<dt*0.8){ b.hop = 0.2; b.face = Math.random()<0.5?-1:1; }
+      if(b.wait<=0){
+        // pick somewhere free to go, and prefer his hand — that is the game
+        const free = [];
+        for(let i=0;i<P2.length;i++) if(!taken[i] && i!==b.p) free.push(i);
+        if(free.length){
+          const hi = P2.findIndex(q=>q.hand);
+          const want = (hi>=0 && !taken[hi] && Math.random()<0.45)? hi : pick(free);
+          taken[b.p]=false; taken[want]=true;
+          b.want = want; b.st='fly'; b.fx=b.x; b.fy=b.y; b.t=0;
+          b.face = (P2[want].x > b.x)? -1 : 1;
+        } else b.wait = rnd(2,5);
+      }
+    } else {
+      const p = P2[Math.min(b.want, P2.length-1)];
+      b.t += dt*0.6;
+      const u = clamp(b.t*0.9, 0, 1);
+      b.x = lerp(b.fx, p.x, u);
+      b.y = lerp(b.fy, p.y, u) - Math.sin(u*Math.PI)*26;
+      if(u>=1){ b.st='perch'; b.p=b.want; b.wait=rnd(2.5,8); b.t=0;
+                if(p.hand) TT.landT = 1.1; }
+    }
+  }
+  if(TT.landT>0) TT.landT -= dt;
+}
+function drawTitleBird(g,b){
+  const x=R(b.x), y=R(b.y);
+  const body = ['#3a3630','#6b5442','#2e4a58'][b.kind];
+  const belly= ['#9a9084','#c0a888','#8fb0be'][b.kind];
+  if(b.st==='perch'){
+    const hop = b.hop>0? -2:0;
+    pEll(g,x,y-3+hop,3,2.6,body);
+    pEll(g,x-b.face*1,y-4.6+hop,2,1.8,body);
+    pR(g,x-b.face*3,y-4.6+hop,2,1,'#e8a13c');
+    pR(g,x-b.face*2,y-5+hop,1,1,'#120e18');
+    pEll(g,x+b.face*0.6,y-2.4+hop,2,1.4,belly);
+    pTaper(g,x+b.face*2,y-3.4+hop,x+b.face*6,y-4.6+hop,1.8,0.8,body);
+    pR(g,x-1,y-1+hop,1,1+(hop?0:1),'#c8a05c'); pR(g,x+1,y-1+hop,1,1+(hop?0:1),'#c8a05c');
+  } else {
+    const f=Math.sin(b.t*26);
+    pEll(g,x,y,3,2.2,body);
+    pEll(g,x-b.face*2.6,y-1,1.8,1.6,body);
+    pR(g,x-b.face*4.4,y-1,2,1,'#e8a13c');
+    pTaper(g,x+b.face*2,y-0.4,x+b.face*6,y-1.4,1.6,0.7,body);
+    for(const s of [-1,1]) pTaper(g,x,y-1,x-b.face*2+s*0.6,y-1+s*f*5.5,2.2,1,shade(body,s>0?0.12:-0.08));
+  }
+}
+
+/* ============================================================
+   and the whole picture
+   ============================================================ */
+function drawTitle(){
+  const g=ctx;
+  TT.t += 1/60;
+  titleBirds();
+  setTOD(0.78, true);              // the half hour after the sun clears the trees
+  const S=skyNow();
+  /* the sky, the far shore and the palms on the bund are the same picture in
+     every frame of the title — the clock is pinned — so paint them once and
+     blit them. It was a quarter of the frame. */
+  if(!TT.back){
+    TT.back = mkCv(W,H);
+    const b2 = G2(TT.back);
+    drawSky(b2);
+    // the far shore: two soft ridges and a line of palms standing on the bund
+    for(let L=0;L<2;L++){
+      const base=144-L*7, col=mix(S.c[2], L?'#6f86a8':'#8ea2bc', 0.55);
+      b2.fillStyle=col;
+      for(let x=0;x<W;x++){
+        const h2=base - (Math.sin(x*0.017+L*2)*5 + Math.sin(x*0.006+L)*8);
+        b2.fillRect(x, R(h2), 1, 150-R(h2));
+      }
+    }
+    const r=mulberry(4);
+    for(let i=0;i<13;i++){
+      const x=6+i*38+r()*16, h2=10+r()*11, col=mix(S.c[2],'#41624f',0.62);
+      pTaper(b2,x,148,x+(r()-0.5)*3,148-h2,1.6,1,col);
+      for(let k=0;k<6;k++){ const a=(k/6)*TAU;
+        pTaper(b2,x,148-h2,x+Math.cos(a)*5,148-h2+Math.sin(a)*2.4+1.6,1.6,0.7,col); }
+    }
+    pR(b2,0,147,W,3,mix(S.c[2],'#4a4232',0.5));
+  }
+  g.drawImage(TT.back,0,0);
+  // the birds that never come down
+  for(const b of TSKY){
+    b.x += b.sp/60; if(b.x>W+40) b.x=-40;
+    const f=Math.sin(TT.t*9+b.ph);
+    const x=R(b.x), y=R(b.y+Math.sin(TT.t*0.6+b.ph)*3);
+    const col=mix(S.c[1],'#2b2a3a',0.7);
+    pTaper(g,x,y,x-5,y-f*3.5,1.6,0.8,col);
+    pTaper(g,x,y,x+5,y-f*3.5,1.6,0.8,col);
+  }
+
+  titleWater(g);
+  drawRice(g, riceBand(0, 158, 5,  4, mix(S.c[2],'#6e8a68',0.42), mix(S.c[3],'#c8cf98',0.35), 11));
+  drawEgrets(g);
+  drawRice(g, riceBand(1, 190, 11, 6, mix('#4e7350',S.c[2],0.24), mix('#c2c67e',S.c[3],0.2), 22));
+
+  g.drawImage(bundStrip(), 0, TT.bundTop);
+
+  /* him, and him again upside down in the water. The reflection is stepped
+     with no time at all, so the cloth is not simulated twice a frame, and it
+     is clipped to the water in front of the bund — earth does not reflect. */
+  TP.x = TT.px; TP.y = TT.wy + 2;
+  TP.face = 1;
+  TP.anim += 1/60; TP.blink -= 1/60; if(TP.blink<-0.12) TP.blink=rnd(2.4,6.5);
+  /* he watches whichever bird is on his hand, and he is pleased about it */
+  TP.mouthS = TT.landT>0? 0.9 : 0.45;
+  TP.eye    = TT.landT>0? 0.5 : 0;
+  const bob = Math.sin(TT.t*0.9)*0.6 + (TT.landT>0? Math.sin(TT.landT*22)*TT.landT*0.8 : 0);
+
+  g.save();
+  g.beginPath(); g.rect(0,TT.wl+1,W,H-TT.wl); g.clip();
+  g.translate(0, (TT.wl+1)*2); g.scale(1,-1); g.globalAlpha=0.17;
+  drawPrete(g, TP, {dt:0, sit:true, wind:0.1, cos:{skirt:'ash'}});
+  g.restore();
+
+  /* every so often he raises the hand to look at whatever is standing on it,
+     and lowers it again. The bird rides up with it because the perch is the
+     hand, so it needs no code of its own. */
+  TT.liftT -= 1/60;
+  if(TT.liftT<0) TT.liftT = rnd(6,11);
+  const lu = TT.liftT>2.6? 0 : Math.sin(clamp((2.6-TT.liftT)/2.6,0,1)*Math.PI);
+  TT.lift = lerp(TT.lift, lu, 0.06);
+  const o = {dt:1/60, sit:true, wind:Math.sin(TT.t*0.4)*0.2, cos:{skirt:'ash'},
+             sitLift: TT.lift,
+             headX: Math.sin(TT.t*0.5)*1.2 + (TT.landT>0? 3:0) + TT.lift*2.5};
+  TP.y = TT.wy + 2 + bob;
+  /* A pale grey ghost against a pale grey field disappears. The sun is behind
+     him, so put the sun behind him: one soft warm pool on the water, which
+     lifts him off the rice without drawing him twice. */
+  { const gx=TP.x+4, gy=TP.y-34;
+    const gr=g.createRadialGradient(gx,gy,4,gx,gy,62);
+    gr.addColorStop(0,'rgba(255,224,158,0.30)');
+    gr.addColorStop(0.55,'rgba(255,214,150,0.13)');
+    gr.addColorStop(1,'rgba(255,206,140,0)');
+    g.fillStyle=gr; g.fillRect(gx-62,gy-62,124,124); }
+  drawPrete(g, TP, o);
+
+  // where a bird can sit: his hand first, then his head, shoulder, knee, and the rice
+  const hand = o.hands && o.hands[1];
+  titlePerches(hand, TP.x+1, TP.y-52, TP.x, TP.y-34, TP.x, TP.y-4);
+  stepTitleBirds(1/60);
+  for(const b of TT.birds) if(b.st==='perch' && b.y < TT.wy+2) drawTitleBird(g,b);
+
+  /* his feet are in it, so it rings off them, and the near rice stands in
+     front of the lot */
+  pEll(g, TP.x+5, TT.wl+2, 9, 2.2, rgba('#cfe6dc',0.26));
+  for(let i=0;i<3;i++){
+    const u=((TT.t*0.36)+i/3)%1;
+    pEll(g, TP.x+5, TT.wl+2+u*3, 8+u*20, 1.6+u*3.4, rgba('#dff0ea', 0.20*(1-u)));
+  }
+  drawRice(g, riceBand(2, TT.wl+27, 17, 7, '#3c5c3f', '#cbc57e', 33));
+  drawRice(g, riceBand(3, H+12,     34, 9, '#253c29', '#8c9654', 44));
+  for(const b of TT.birds) if(b.st!=='perch' || b.y >= TT.wy+2) drawTitleBird(g,b);
+
+  // morning motes over the water
+  for(let i=0;i<14;i++){
+    const fx=W*0.5+Math.sin(TT.t*0.35+i*2.1)*180+Math.sin(TT.t*0.18+i)*40;
+    const fy=126+Math.cos(TT.t*0.28+i*1.7)*38;
+    const bl=0.5+0.5*Math.sin(TT.t*1.6+i*3);
+    g.fillStyle=`rgba(255,240,190,${0.5*bl})`; g.fillRect(R(fx),R(fy),1,1);
+  }
+
+  /* the lettering, out over the water where there is nothing behind it */
+  /* all of it above the far bund, so no line of it ever has to be read off a
+     field of rice */
+  const tx = W*0.665;
+  pTxt(g,'PRETE',tx,50,PAL.gold,44,'center',true);
+  pTxt(g,'SIMULATOR',tx,74,'#ffe9b3',20,'center',true);
+  pTxt(g,'a cozy Thai ghost-village life',tx,94,'#4a4760',7,'center');
+  pTxt(g,'tap the ground to walk  ·  tap a thing to use it',tx,107,'rgba(74,71,96,0.7)',6,'center');
+  const sv=loadSaveRaw();
+  const hasSave=sv&&(sv.merit>0||(sv.q&&sv.q.metPhra));
+  g.globalAlpha=0.78+0.22*Math.sin(GS.t*4);
+  pTxt(g,hasSave?(sv.q&&sv.q.done?'ENTER — a morning stroll':'ENTER — continue'):'PRESS ENTER',
+       tx,123,'#fff8dc',11,'center');
+  g.globalAlpha=1;
+  if(hasSave && !(sv.q&&sv.q.done))
+    pTxt(g, L('day')+' '+(sv.dy||1)+'  ·  '+(sv.merit|0)+' '+L('merit'), tx,135,'#ffeec8',7,'center');
+  if(hasSave) pTxt(g,'N — new night',tx,145,'#f0e2c0',7,'center');
+
 }
 /* ============================================================
    UPDATE
