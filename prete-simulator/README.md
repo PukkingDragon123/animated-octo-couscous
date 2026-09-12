@@ -76,6 +76,15 @@ uses whatever is standing on the spot — tap the stove and he walks over and st
 cooking, tap a plant and he picks it, tap a ghost and he says hello. A gold mark
 pulses on the ground where you're headed. Drag to change your mind.
 
+**And when you get there, everything in reach gets an icon.** A row of them
+above his head, left to right in the order the things are actually standing
+around him, each with a hair-thin thread down to the thing it belongs to. Tap
+one and he does that. The gold one is what **E** does; the rest are the
+neighbours. This exists because the game used to keep exactly one interaction
+at a time, and the shipping basket, the rice barn and a ghost all stand within
+about thirty pixels of each other — so two of the three were simply unusable,
+whichever way you shuffled along. Now none of them are.
+
 There are four buttons, bottom corners, and each one is a drawn picture rather
 than a letter:
 
@@ -110,7 +119,9 @@ runs, **E** confirms, **G** gives, **C** whistles, **Tab** opens the ledger,
 **Q** jumps to the map, **V** switches between English and Thai, **M** mutes,
 **Esc** goes back. Turn a phone sideways. Progress saves in the browser.
 
-![tap to walk, three buttons](screenshots/on-a-phone.png)
+| | |
+|---|---|
+| ![tap to walk, three buttons](screenshots/on-a-phone.png) | ![everything in reach](screenshots/in-reach.png) |
 
 ## The past comes back in pieces, and you play every one
 
@@ -190,6 +201,11 @@ the way you put food out for a dog you have decided to like. **You get it as
 far as your mouth.** The mouth is the width of a needle's eye and the rice is
 rice. What comes through is the steam.
 
+He stoops ninety pixels of leg down to the step for it, gets both hands under
+it, brings it all the way up, tips his face into the bowl, and holds it there
+with his hands shaking while the mouth opens as far as a needle's eye opens.
+The lines land on the frame where it does not work. Then he puts it back down.
+
 > *It is the first kind thing anybody has done for you and you cannot even do
 > it properly.*
 
@@ -201,7 +217,8 @@ goes the colour of the inside of a shell.
 | | |
 |---|---|
 | ![he is not afraid of you](screenshots/he-is-not-afraid.png) | ![walking him home](screenshots/walking-him-home.png) |
-| ![rice on the step](screenshots/rice-on-the-step.png) | ![the night passes](screenshots/the-night-passes.png) |
+| ![rice on the step](screenshots/rice-on-the-step.png) | ![the food you cannot eat](screenshots/the-food-you-cannot-eat.png) |
+| ![the night passes](screenshots/the-night-passes.png) | ![carrying the jar](screenshots/carrying-the-jar.png) |
 
 ## The plough, the jars, and the seed
 
@@ -736,7 +753,7 @@ as [`th/sweep.js`](th/sweep.js); it visits the title, all ten chapters of the
 first night, every panel of
 the ledger, the stall, the order board, the kitchen, the workbench, the give
 screen, the morning card, all four memories, the ceremony and the end card, and
-drives the prete the length of the map at four different hours. It reports 431
+drives the prete the length of the map at four different hours. It reports 438
 strings drawn and, as of this build, **nothing untranslated**.
 
 Anything glued together out of fragments had to be taken apart for that to be
@@ -1042,6 +1059,24 @@ with a fully stocked farm on screen.
   from then on, keyed by whatever about it can actually change. Verified
   pixel-exact against painting straight into the world: zero pixels differ at
   every farm location. It bought 12 fps.
+- **Everything in reach is a list, not a slot.** The interaction check used to
+  end at the first thing that matched — thirty-odd candidates each guarded by
+  *if nothing has claimed the prompt yet*. That is a precedence list, and a
+  precedence list is fine right up until two things overlap, at which point the
+  loser does not exist. The guards are gone: every candidate adds itself, the
+  order they were written in becomes the order of the list, the front of the
+  list is the prompt exactly as before, and the rest each get an icon. One or
+  two things ask to sit at the back rather than be left out — the water jar
+  standing where the bed is, after dark — and a stable sort keeps everything
+  else where it was.
+- **Carrying is a pose, not an attachment.** The water jar used to float beside
+  the hip; now it is drawn inside the prete, between his two arms, so the back
+  hand is behind it and the front hand closes over the rim. Both elbows are
+  bent the other way from usual so they fall outward under the weight, the
+  torso leans back off it, the head comes forward over it, the hips drop two
+  pixels and the whole walk rolls side to side. And lifting it is a movement:
+  he crouches, gets his hands under it, and the jar arrives in his arms
+  halfway up — which is the frame where the weight becomes his.
 - **The night is one function.** Everything that happens between two days —
   the basket paid, every watered bed moved on, the flooded paddies counted, the
   trees grown, the animals fed, the hired ghosts' night's work, the bar
@@ -1052,7 +1087,7 @@ with a fully stocked farm on screen.
 - **Translation is checked, not believed.** Every string reaches the screen
   through one lookup, so [`th/sweep.js`](th/sweep.js) hooks that lookup, walks
   the game through every screen it has, and prints whatever came past in
-  English. 431 strings drawn, none untranslated.
+  English. 438 strings drawn, none untranslated.
 - Autosave, a friends journal, canvas-drawn touch controls, and a dawn ending.
 
 Made with rice and incense. May you go to a good place.

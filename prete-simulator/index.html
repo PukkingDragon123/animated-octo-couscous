@@ -168,6 +168,9 @@ cv.addEventListener('pointerdown', ev=>{
     for(const t of TPADS) if(dist(p.x,p.y,t.x,t.y) < t.r+8){ hit=t; break; }
   }
   if(hit){ TOUCH.pts.set(ev.pointerId, hit.key); keyDown(hit.key); }
+  /* an icon over something in reach beats a walk order: it is the only way to
+     pick out the one you meant when three things are standing on the same spot */
+  else if(typeof spotHit==='function' && spotHit(p.x,p.y)){ TOUCH.pts.set(ev.pointerId,'@spot'); }
   else if(tapIsWalk()){
     TOUCH.pts.set(ev.pointerId, '@nav');
     navTo(clamp(p.x + GS.camX, 16, WORLD_W-16));
@@ -3144,11 +3147,20 @@ function drawPrete(g, p, o={}){
   const kneel= !ACT ? 0
              : ACT.k==='plant'||ACT.k==='pick' ? abell*16
              : ACT.k==='water' ? abell*7
-             : ACT.k==='wai'   ? abell*3 : 0;
-  const hipY = by - LEG*sY - bobA + kneel;
-  const hipX = bx + p.lean*2.4 + sway*0.4;
+             : ACT.k==='wai'   ? abell*3
+             /* eating is three beats: stoop for the bowl, lift it to the face,
+                and straighten again with nothing in you. The knees only bend
+                for the first of them. */
+             : ACT.k==='eat'   ? clamp(1-au*3.2,0,1)*15 : 0;
+  /* CARRYING. A hundred and forty pounds of glazed water jar against the belly:
+     the knees give a little, the whole body leans back off the load, and the
+     walk rolls side to side because that is what carrying does to a stride. */
+  const carry = clamp(o.carry||0,0,2);
+  const cWob  = carry? Math.sin(p.phase*2)*1.5*carry + Math.sin(p.swayT*0.9)*0.7*carry : 0;
+  const hipY = by - LEG*sY - bobA + kneel + carry*2.2;
+  const hipX = bx + p.lean*2.4 + sway*0.4 + cWob*0.5;
   const chestY = hipY - 26*sY + p.breath*0.4;
-  const chestX = hipX + p.lean*3.2 + sway*0.5;
+  const chestX = hipX + p.lean*3.2 + sway*0.5 - carry*3.4*face + cWob*0.4;
   const shY = chestY - 2;
 
   function legPose(i){
@@ -3197,6 +3209,23 @@ function drawPrete(g, p, o={}){
     else if(ACT && ACT.k==='give'){
       hx2=chestX+(10+abell*13)*face+(back?-6*face:0); hy2=chestY+34-abell*13+(back?5:0);
     }
+    else if(carry && (!ACT || ACT.k==='pick')){
+      /* both hands under the belly of it, near hand in front and a little
+         lower, so the elbows fall outward and down the way they do when you
+         are taking the weight rather than reaching for something */
+      hx2 = chestX + (back? 4.5 : 10.5)*face + cWob*0.3;
+      hy2 = chestY + (back? 26 : 23) - carry*1.5;
+    }
+    else if(ACT && ACT.k==='eat'){
+      /* down to the step, up to the mouth, and back down again. Both hands
+         stay on it the whole way — it is the one thing anybody has given him. */
+      const up = clamp(au<0.30? au/0.30 : au<0.78? 1 : 1-(au-0.78)/0.22, 0, 1);
+      /* he tries. The tremble is the trying, and it is the only part of this
+         that does anything at all. */
+      const tre = (au>0.38 && au<0.72)? Math.sin(au*180)*0.9 : 0;
+      hx2 = chestX + (9.5+ (1-up)*3)*face + (back? -5.5*face : 0);
+      hy2 = lerp(chestY+40, chestY-4, up) + tre + (back? 3 : 0);
+    }
     else if(ACT){
       // down into the earth, both hands, the near one leading
       const reach = ACT.k==='water'? 21 : 15;
@@ -3220,7 +3249,11 @@ function drawPrete(g, p, o={}){
     const {hx2,hy2}=armPose(back);
     const col=back?SHD:BODY;
     const sx0=chestX+(back?-4:4)*face;
-    const el=ik2(sx0,shY,hx2,hy2,AU2,AL,back?(face>0?1:-1):(face>0?-1:1));
+    /* both elbows drop outward under a load — the back one bending the usual
+       way put its point above the shoulder, which reads as a hand on the hip */
+    const bend = (carry || (ACT&&ACT.k==='eat'))? (face>0?1:-1)
+                 : (back?(face>0?1:-1):(face>0?-1:1));
+    const el=ik2(sx0,shY,hx2,hy2,AU2,AL,bend);
     iTaper(g,sx0,shY,el.x,el.y,2.8,2.4,col,OC);
     iTaper(g,el.x,el.y,hx2,hy2,2.4,2.0,col,OC);
     iEll(g,el.x,el.y,1.7,1.7,col,OC);
@@ -3280,9 +3313,13 @@ function drawPrete(g, p, o={}){
   o.hands=[handB,handF];
 
   /* ---- the head. it is the reason anybody remembers him. ---- */
-  const headTilt = ACT ? (ACT.k==='wai'? -abell*2 : abell*5) : 0;   // he looks at his hands
+  const headTilt = ACT ? (ACT.k==='wai'? -abell*2
+                        : ACT.k==='eat'? (au<0.78? 2+clamp(au/0.30,0,1)*7 : 9-17*(au-0.78)/0.22)
+                        : abell*5) : 0;   // he looks at his hands
   const headY = chestY - 20 + p.headBob + Math.sin(p.anim*1.1)*0.5 + headTilt;
-  const headX = chestX + p.lean*2.2 + p.headLag + sway*0.8 + (o.headX||0)
+  /* his face goes to the bowl, because the bowl is not going anywhere near it */
+  const eatLean = (ACT && ACT.k==='eat') ? clamp(au/0.30,0,1)*(au<0.82?1:1-(au-0.82)/0.18)*4.5 : 0;
+  const headX = chestX + p.lean*2.2 + p.headLag + sway*0.8 + (o.headX||0) + carry*2.2*face + eatLean*face
               + (ACT && ACT.k!=='wai' ? abell*3*face : 0);
   iTaper(g, chestX, chestY-5, headX, headY+9, 3.0, 2.6, shade(SHD,-0.08), OC);
   const HRX=11.2, HRY=12.0;
@@ -3352,7 +3389,13 @@ function drawPrete(g, p, o={}){
   pR(g, headX+0.6*face, ey+4.4, 1, 1, '#f0a860');
   /* the mouth. Still the eye of a needle — that is the whole joke of him —
      but a needle can still turn up at the corners or down at them. */
-  const mo=clamp(o.mouth||0,0,1);
+  /* the mouth opens for the bowl as far as it opens for anything, which is
+     barely, and the whole point is that it is not enough */
+  let mo=clamp(o.mouth||0,0,1);
+  if(ACT && ACT.k==='eat'){
+    const up = au<0.30? 0 : au<0.78? (au-0.30)/0.48 : 1-(au-0.78)/0.22;
+    mo = Math.max(mo, clamp(up,0,1)*0.42);
+  }
   const ms=clamp(p.mouthS===undefined?0:p.mouthS,-1,1);
   const mx0=headX+1.4*face, my0=ey+9.6;
   pEll(g, mx0, my0, 1.7+mo*2.2, 2.1+mo*2.6, '#241c22');
@@ -3363,6 +3406,38 @@ function drawPrete(g, p, o={}){
   } else if(mo<0.2 && ms<-0.2){               // and drop
     pR(g, R(mx0-2.6+ms*0.6), R(my0-1.4-ms*1.0), 2, 1, '#241c22');
     pR(g, R(mx0+1.6-ms*0.6), R(my0-1.4-ms*1.0), 2, 1, '#241c22');
+  }
+  /* the bowl. Drawn after the head, because when he raises it the bowl is
+     between you and his face — that is the shot. */
+  if(ACT && ACT.k==='eat'){
+    const up = clamp(au<0.30? au/0.30 : au<0.78? 1 : 1-(au-0.78)/0.22, 0, 1);
+    // exactly where the hands are, two pixels in front of them
+    const tre = (au>0.38 && au<0.72)? Math.sin(au*180)*0.9 : 0;
+    const bx2 = chestX + (11.5+(1-up)*3)*face;
+    const by2 = lerp(chestY+40, chestY-1, up) + tre;
+    pEll(g,bx2,by2+2.4,6.4,2.2,'rgba(12,9,20,0.3)');
+    pEll(g,bx2,by2,6.2,4.4,'#3a2c20');
+    pEll(g,bx2,by2,5.2,3.6,'#f2e8d2');
+    pEll(g,bx2,by2-0.6,4.4,2.4,'#e2d4b8');
+    pEll(g,bx2,by2-1.2,3.6,1.6,'#fdfaf0');
+    pR(g,bx2-3,by2-1.6,2,1,'#cfc0a2');
+    // steam, which is the whole of his supper
+    for(let i=0;i<5;i++){
+      const t=(p.anim*0.9+i*0.2)%1;
+      const sxx=bx2+Math.sin(t*5+i)*2.4, syy=by2-3-t*13;
+      pR(g,sxx,syy,1,1, rgba('#f6f0dc', (1-t)*0.5));
+    }
+  }
+  /* and the water jars, in the same place between the arms. Hugged against
+     the belly rather than floating off the hip: it is the heaviest thing in
+     the game and it should look like it is being held, not carried past. */
+  if(carry && typeof drawJarBody==='function'){
+    for(let i=0;i<carry;i++){
+      const jw=(o.carryWater&&o.carryWater[i]&&o.carryWater[i].water)||0;
+      const jx=chestX+(7.5+i*0.8)*face+cWob*0.8;
+      const jy=chestY+33-i*23+Math.sin(p.phase*2+i)*0.9;
+      drawJarBody(g,jx,jy,1.32-i*0.1,jw);
+    }
   }
   if(p.blush){
     pR(g, R(headX+6.4*face), R(ey+4.2), 3, 1, '#c4706a');
@@ -6227,20 +6302,22 @@ function checkNewFixed(set, taken){
   }
   /* a wide trigger on purpose: the prete is a hundred pixels tall and twenty-six
      wide, so a sixteen-pixel one meant standing on top of the basket to use it.
-     The barn is sixteen pixels further along, so whichever you are nearer to
-     is the one you get. */
-  if(!taken() && !storyBusy() && FARM.rented && near(SHIP_X,26)
-     && Math.abs(P.x-SHIP_X) <= Math.abs(P.x-BARN_X))
+     The barn is sixteen pixels along from it and they overlap on purpose now —
+     both get an icon, and you tap the one you meant. */
+  if(!taken() && !storyBusy() && FARM.rented && near(SHIP_X,26)){
     set(SHIP_X, groundY(SHIP_X)-38,
         shippable().length? 'tip the basket in ('+shipBagValue()+'฿)' : 'the shipping basket',
         tipTheBasket, 'give');
+    // stand nearer the barn than the basket and the barn is what E does
+    if(Math.abs(P.x-SHIP_X) > Math.abs(P.x-BARN_X)) spotLast();
+  }
   if(!taken() && !storyBusy() && GS.q.metPhra && near(SHRINE_X+18,16))
     set(SHRINE_X+18, groundY(SHRINE_X)-52,
         GS.incense? 'the incense is burnt down' : 'light incense',
         burnIncense, 'give');
-  if(!taken() && near(BARN_X,14))
+  if(!taken() && near(BARN_X,20))
     set(BARN_X, groundY(BARN_X)-56, barnPrompt(), useBarn, 'give');
-  if(!taken() && near(JAR_X,13))
+  if(!taken() && near(JAR_X,18))
     set(JAR_X, groundY(JAR_X)-34,
         (GS.water|0)>=waterCap()? 'the can is full' : 'fill up at the โอ่ง', waterFill);
   if(!taken() && near(LOG_X+18,16))
@@ -7563,6 +7640,11 @@ function render(){
     headX:(P.chatX||0),
     armTarget: HT? {x:HT.hx,y:HT.hy}
               : PLOW? {x:PLOW.x-19, y:groundY(PLOW.x)-41} : null,
+    /* asked this way rather than through carriedJars(), which built a throwaway
+       array twice a frame for the ninety-nine per cent of the time he is not
+       carrying anything at all */
+    carry: P.carry? P.carry.jars.length : 0,
+    carryWater: P.carry? P.carry.jars : null,
     gold: GS.cos.halo?1:0, rise:P.rise||0});
   if(HT) drawTaskWorld(ctx);
   drawStoryFore(ctx);  // whoever is walking you home, and what you are holding
@@ -8145,29 +8227,40 @@ function drawLedger(g){
    INTERACTIONS
    ============================================================ */
 let PROMPT=null;
+/* everything in reach this frame, best first. PROMPT is SPOTS[0]. */
+const SPOTS=[], SPOT_MAX=7;
 function near(x,d=34){ return Math.abs(P.x-x)<d; }
 function checkInteract(){
-  PROMPT=null;
+  SPOTS.length=0; PROMPT=null;
   if(DLG) return;
-  const set=(x,y,txt,fn,sub)=>{ PROMPT={x,y,txt,fn,sub}; };
+  /* Everything within reach goes in the list, nearest-first by the order the
+     checks below are written in. PROMPT is simply the front of it — which is
+     exactly what it used to be — and the rest each get a little icon of their
+     own, because two things standing close together used to mean only one of
+     them could ever be used. */
+  const set=(x,y,txt,fn,sub,icon)=>{
+    if(SPOTS.length>=SPOT_MAX) return;
+    for(const o of SPOTS) if(o.fn===fn || (o.txt===txt && Math.abs(o.x-x)<3)) return;
+    SPOTS.push({x,y,txt,fn,sub,icon:icon||spotIcon(txt,sub), pri:0});
+  };
   /* ---- the first night owns every prompt while it is running. Until the
      old man's field is sown there is no shop, no order board and no ghost
      wanting a chat: there is one thing to do and the game says what it is. ---- */
-  storyInteract(set, ()=>!!PROMPT);
+  storyInteract(set, ()=>false);
   if(storyBusy()){ endInteract(); return; }
   /* ---- the farm first: it is fixed furniture, and a ghost drifting across
      a bed must never stop you working it ---- */
-  checkNewFixed(set, ()=>!!PROMPT);      // the barn, the jar, the log, and her
-  checkNewBugsFirst(set, ()=>!!PROMPT);  // and a bug you are standing right under
-  if(!PROMPT && near(FARM_GATE,22))
+  checkNewFixed(set, ()=>false);      // the barn, the jar, the log, and her
+  checkNewBugsFirst(set, ()=>false);  // and a bug you are standing right under
+  if(near(FARM_GATE,22))
     set(FARM_GATE, groundY(FARM_GATE)-56, FARM.rented? 'read the farm board' : 'read the notice', openBoard);
-  if(!PROMPT && FARM.rented && near(PEN_X,30)){
+  if(FARM.rented && near(PEN_X,30)){
     const p=FARM.pen;
     if(!penHas()) set(PEN_X, groundY(PEN_X)-38, 'the pen is empty', ()=>guideSay('The board at the gate sells chickens, ducks, and one very large buffalo.'));
     else if(penFull()) set(PEN_X, groundY(PEN_X)-40, 'take what they left you', penCollect, 'feed');
     else set(PEN_X, groundY(PEN_X)-38, p.feed>0? 'the animals are settled' : 'the animals want feeding', penFeed);
   }
-  if(!PROMPT){
+  if(true){
     const pl=plotAt(P.x);
     if(pl && near(pl.x,15)){
       const t=plotPrompt(pl);
@@ -8176,23 +8269,23 @@ function checkInteract(){
       else set(pl.x, groundY(pl.x)-30, t, ()=>usePlot(pl));
     }
   }
-  if(!PROMPT){
+  if(true){
     const pd=paddyAt(P.x);
     if(pd) set(pd.x, groundY(pd.x)-28, paddyPrompt(pd), ()=>{
       if(pd.stage===0 && !bagHas('seed')) guideSay('Rice starts as seed too. The sack is in the barn.');
       else usePaddy(pd);
     });
   }
-  if(!PROMPT){
+  if(true){
     const tr=treeAt(P.x);
     if(tr) set(tr.x, groundY(tr.x)-72, treePrompt(tr), ()=>useTree(tr));
   }
-  /* then people. This loop wants the same !PROMPT guard everything else has:
-     without it a spirit standing near a barn or a water jar silently
-     overwrote the prompt that had already been set, which is how Krahang
-     came to be answering for the โอ่ง. */
+  /* then people. A spirit standing by a barn or a water jar used to overwrite
+     the prompt that was already set, which is how Krahang came to be
+     answering for the โอ่ง; now they queue up behind it instead and you can
+     tap whichever of them you actually meant. */
   for(const s of SPIRITS){
-    if(!PROMPT && near(s.x,40)){
+    if(near(s.x,40)){
       const y = s.id==='krasue'? s.y-76 : s.y-56;
       if(s.friend && FARM.rented)
         set(s.x,y, handOf(s.id)? L('talk to')+' '+L(s.name) : 'ask them to help', ()=>openHands(s), 'give');
@@ -8200,27 +8293,27 @@ function checkInteract(){
         set(s.x,y, s.met? L('talk to')+' '+L(s.name) : 'say hello', ()=>talkSpirit(s), 'give');
     }
   }
-  if(!PROMPT && !GS.q.garland && GS.q.metPhra && near(SHRINE_X-16,30))
+  if(!GS.q.garland && GS.q.metPhra && near(SHRINE_X-16,30))
     set(SHRINE_X-16, groundY(SHRINE_X)-100,'hang the fallen garland', ()=>startTask('garland',SHRINE_X));
-  if(!PROMPT && near(PHRA.x,40) && PHRA.shown) set(PHRA.x,PHRA.y-30,'speak to Phra Phum', talkPhra);
-  if(!PROMPT && near(PHRA.x,40) && !PHRA.shown) set(SHRINE_X,groundY(SHRINE_X)-96,'pay respects', talkPhra);
-  if(!PROMPT && near(STALL_X+34,20)) set(STALL_X+34, groundY(STALL_X+34)-44,'read the orders', openOrderBoard);
-  if(!PROMPT && near(STALL_X-30,22)) set(STALL_X-30, groundY(STALL_X-30)-52,'buy seed and feed', openStall);
-  if(!PROMPT && near(KITCHEN_X,34)) set(KITCHEN_X, groundY(KITCHEN_X)-64,'cook something', ()=>startActivity('cook'));
-  if(!PROMPT && near(CRAFT_X,34))   set(CRAFT_X,   groundY(CRAFT_X)-52,'sit and make something', ()=>startActivity('craft'));
-  if(!PROMPT && near(TANI.x,36)) set(TANI.x,TANI.y-40,L('talk to')+' '+L('Tani'), talkTani);
-  if(!PROMPT && near(MONK.x,30)) set(MONK.x,MONK.y-30,'approach politely', talkMonk, 'give');
-  if(!PROMPT && near(UNCLE.x,28)) set(UNCLE.x,UNCLE.y-30,'talk', talkUncle, 'give');
-  if(!PROMPT && near(MALI.x,26))  set(MALI.x,MALI.y-26,L('talk to')+' '+L('Mali'), talkMali, 'give');
-  for(const v of VILLAGERS) if(!PROMPT && near(v.x,26))
+  if(near(PHRA.x,40) && PHRA.shown) set(PHRA.x,PHRA.y-30,'speak to Phra Phum', talkPhra);
+  if(near(PHRA.x,40) && !PHRA.shown) set(SHRINE_X,groundY(SHRINE_X)-96,'pay respects', talkPhra);
+  if(near(STALL_X+34,20)) set(STALL_X+34, groundY(STALL_X+34)-44,'read the orders', openOrderBoard);
+  if(near(STALL_X-30,22)) set(STALL_X-30, groundY(STALL_X-30)-52,'buy seed and feed', openStall);
+  if(near(KITCHEN_X,34)) set(KITCHEN_X, groundY(KITCHEN_X)-64,'cook something', ()=>startActivity('cook'));
+  if(near(CRAFT_X,34))   set(CRAFT_X,   groundY(CRAFT_X)-52,'sit and make something', ()=>startActivity('craft'));
+  if(near(TANI.x,36)) set(TANI.x,TANI.y-40,L('talk to')+' '+L('Tani'), talkTani);
+  if(near(MONK.x,30)) set(MONK.x,MONK.y-30,'approach politely', talkMonk, 'give');
+  if(near(UNCLE.x,28)) set(UNCLE.x,UNCLE.y-30,'talk', talkUncle, 'give');
+  if(near(MALI.x,26))  set(MALI.x,MALI.y-26,L('talk to')+' '+L('Mali'), talkMali, 'give');
+  for(const v of VILLAGERS) if(near(v.x,26))
     set(v.x,v.y-28, L('talk to')+' '+L(v.name), ()=>talkVillager(v), 'give');
-  if(!PROMPT && !GS.q.cat && GS.q.maliMet && near(TAMARIND_X+16,50))
+  if(!GS.q.cat && GS.q.maliMet && near(TAMARIND_X+16,50))
     set(TAMARIND_X+16,groundY(TAMARIND_X)-118,'reach up for the cat', ()=>startTask('cat',TAMARIND_X));
-  if(!PROMPT && GS.q.cat && CAT.state==='wander' && near(CAT.x,20)) set(CAT.x,CAT.y-20,'pet',()=>{
+  if(GS.q.cat && CAT.state==='wander' && near(CAT.x,20)) set(CAT.x,CAT.y-20,'pet',()=>{
     AU.purr(); pHeart(CAT.x,CAT.y-12);
     if(GS.q.pets<3){ GS.q.pets++; addMerit(1,true); toast('+1 merit · purr'); } else toast('purr','#ff9eb0');
   });
-  if(!PROMPT && !GS.q.lamp && near(LAMP_XS[BROKEN_LAMP]+8,40))
+  if(!GS.q.lamp && near(LAMP_XS[BROKEN_LAMP]+8,40))
     set(LAMP_XS[BROKEN_LAMP]+8, groundY(LAMP_XS[BROKEN_LAMP])-150,'reach the junction box', ()=>{
       if(!GS.seen.lampIntro){ GS.seen.lampIntro=true;
         say([{w:'',t:'The lamp dies. People hurry through this stretch.'},
@@ -8228,26 +8321,32 @@ function checkInteract(){
           ()=>startTask('lamp',LAMP_XS[BROKEN_LAMP]));
       } else startTask('lamp',LAMP_XS[BROKEN_LAMP]);
     });
-  if(!PROMPT && !GS.q.tree && near(FALLEN_TREE_X,54))
+  if(!GS.q.tree && near(FALLEN_TREE_X,54))
     set(FALLEN_TREE_X, groundY(FALLEN_TREE_X)-40,'lift the fallen tree', ()=>startTask('tree',FALLEN_TREE_X));
-  if(!PROMPT && near(SALA_X,32)) set(SALA_X, groundY(SALA_X)-108,'ring the bell', ()=>{
+  if(near(SALA_X,32)) set(SALA_X, groundY(SALA_X)-108,'ring the bell', ()=>{
     AU.gong(131,0,0.1); pRing(SALA_X,groundY(SALA_X)-70,PAL.goldL,90);
     if(!GS.seen.bell){ GS.seen.bell=true; addMerit(4); toast('+4 merit · the bell carries a long way'); }
     else toast('the bell hums','#cfc4ae');
   });
   // the seed crate and the plants come last, so people always win the prompt
-  checkNewBugs(set, ()=>!!PROMPT);    // last: a dragonfly must not shadow a ripe bed
-  if(!PROMPT) for(const nd of NODES){
+  checkNewBugs(set, ()=>false);    // last: a dragonfly must not shadow a ripe bed
+  if(true) for(const nd of NODES){
     if(nd.ready && near(nd.x,22)){ const it=ITEMS[nd.item];
-      set(nd.x, nd.y-30, L('pick')+' '+L(it.n), ()=>gather(nd)); break; }
+      set(nd.x, nd.y-30, L('pick')+' '+L(it.n), ()=>gather(nd), null, 'pick'); }
   }
   /* and last of all the things that only ever answer: a jar, a bell, a stone
      with something under it. They must never take a prompt off a person. */
-  thingInteract(set, ()=>!!PROMPT);
-  dogInteract(set, ()=>!!PROMPT);
+  thingInteract(set, ()=>false);
+  dogInteract(set, ()=>false);
   endInteract();
 }
 function endInteract(){
+  /* the list was built in precedence order; a handful of things ask to sit at
+     the back of it rather than be left out altogether — a water jar standing
+     where the bed is, after dark. The sort is stable, so everything else keeps
+     the order the checks above put it in. */
+  SPOTS.sort((a,b)=>a.pri-b.pri);
+  PROMPT = SPOTS[0] || null;
   // arriving on a tapped spot interacts with whatever is standing there
   if(PROMPT && (press('act') || navTake())){ const f=PROMPT.fn; PROMPT=null; f(); }
   else navTake();
@@ -9626,6 +9725,9 @@ function drawHUD(){
   /* what used to be a stack of banners across the middle of the screen is
      now a number drifting up out of the world where it was earned */
   drawFloats(g);
+  /* one small icon over every thing in reach, so the one the prompt happens
+     to be naming is not the only one you can use */
+  drawSpots(g);
   if(PROMPT){
     const s=PROMPT.txt;
     const w2=txtW(s,7)+22;
@@ -9634,7 +9736,7 @@ function drawHUD(){
        lands on his chest, so lift the prompt clear of his head when he is under it */
     const px=P.x-GS.camX;
     let y=PROMPT.y-GS.camY;
-    if(Math.abs(x-px)<52) y=Math.min(y, P.y-GS.camY-128);
+    if(Math.abs(x-px)<52) y=Math.min(y, P.y-GS.camY-152);   // clear of the icon row
     y=Math.max(y,76);
     /* a small wedge down at the thing it is about — but only when the wedge
        can actually reach it. Lifted clear of the prete's head the point had
@@ -11821,12 +11923,18 @@ const STORY = [
       set(HOME_X-30, groundY(HOME_X)-16, L('the food on the step'), ()=>{
         CH.food=2;
         P.face = -1;
-        preteAct('reach',1.4);
-        say([
-          {w:'', t:'You get it as far as your mouth. Nothing goes through.'},
-          {w:'', t:'Only the steam. Warm, sweet, gone.'},
-          {e:'sad', w:'', t:'First kind thing anyone\'s done for you, and you can\'t even take it.'},
-        ]);
+        /* he stoops for it, gets it all the way to his mouth, and the mouth is
+           the eye of a needle. The lines land on the beat the act calls its
+           moment of contact, which is the moment it does not work. */
+        preteAct('eat', 2.6, ()=>{
+          P.mouthS=-0.8; P.brow=-1;
+          say([
+            {w:'', t:'You get it as far as your mouth. Nothing goes through.'},
+            {w:'', t:'Only the steam. Warm, sweet, gone.'},
+            {e:'sad', w:'', t:'First kind thing anyone\'s done for you, and you can\'t even take it.'},
+          ], ()=>{ P.mouthS=0; P.brow=0; });
+        });
+        AU.tone(196,0.5,'sine',0.03,150);
         for(let i=0;i<10;i++) pSmoke(HOME_X-30+rnd(-4,4), groundY(HOME_X)-18, i*0.12);
       });
   } },
@@ -12390,23 +12498,34 @@ function resetJars(){
 const carryMax = ()=> has('haul')? 2 : 1;
 function carriedJars(){ return P.carry? P.carry.jars : []; }
 
+/* Lifting is a movement, not a state change. He folds ninety pixels of leg
+   into a crouch, gets both hands under it, and the jar arrives in his arms on
+   the way up — which is the moment the weight is actually his. */
 function liftJar(j){
-  if(!P.carry) P.carry={k:'jar', jars:[]};
-  if(P.carry.jars.length>=carryMax()){ guideSay(L('Your arms are full.')); AU.blip(); return; }
-  const i=JARS.indexOf(j); if(i>=0) JARS.splice(i,1);
-  P.carry.jars.push(j);
+  if(P.carry && P.carry.jars.length>=carryMax()){ guideSay(L('Your arms are full.')); AU.blip(); return; }
   P.face = j.x<P.x? -1:1;
-  preteAct('reach',0.5);
-  AU.land();
-  toast(L('carrying a โอ่ง'), '#8fc4e8');
-  if(!GS.seen.firstJar){ GS.seen.firstJar=true;
-    guideSay(L('Heavy, even for you. Walk it over and tip it out.'),8); }
+  preteAct('pick', 0.85, ()=>{
+    if(!P.carry) P.carry={k:'jar', jars:[]};
+    if(P.carry.jars.length>=carryMax()) return;
+    const i=JARS.indexOf(j); if(i>=0) JARS.splice(i,1);
+    P.carry.jars.push(j);
+    AU.land(); AU.tone(116,0.3,'sine',0.045,80);      // the sound of it being heavy
+    pDust(j.x, groundY(j.x), 5);
+    P.squash = Math.max(P.squash||0, 0.22);
+    toast(L('carrying a โอ่ง'), '#8fc4e8');
+    if(!GS.seen.firstJar){ GS.seen.firstJar=true;
+      guideSay(L('Heavy, even for you. Walk it over and tip it out.'),8); }
+  });
 }
 function dropJars(){
-  if(!P.carry) return;
-  for(const j of P.carry.jars){ j.x = R(P.x + rnd(-8,8)); JARS.push(j); }
-  P.carry=null;
-  AU.land(); pDust(P.x,P.y,6);
+  if(!P.carry || P.act) return;
+  const jars=P.carry.jars.slice();
+  preteAct('pick', 0.8, ()=>{
+    if(!P.carry) return;
+    for(const j of jars){ j.x = R(P.x + P.face*rnd(9,15)); JARS.push(j); }
+    P.carry=null;
+    AU.land(); pDust(P.x+P.face*11,P.y,6);
+  });
 }
 function fillCarried(){
   let n=0;
@@ -12432,11 +12551,14 @@ function carryInteract(set){
   /* the two carryable jars, wherever they have ended up */
   if(!P.carry || P.carry.jars.length<carryMax()){
     /* the big jar stands under the farmhouse's own stilts, so after dark it
-       was covering the bed — and sleeping is the whole point of after dark.
-       Empty-handed and standing at the bed at night, the bed wins. */
+       covers the bed — and sleeping is the whole point of after dark. It is
+       still offered, it just goes to the back of the queue, so the bed is what
+       E does and the jar keeps an icon of its own. */
     const bedtime = !P.carry && !storyBusy() && DAY.min/60>=17 && bedNear()!==null;
-    if(!bedtime) for(const j of JARS) if(near2(j.x,22)){
-      set(j.x, groundY(j.x)-26, L('lift the โอ่ง'), ()=>liftJar(j)); return;
+    for(const j of JARS) if(near2(j.x,22)){
+      set(j.x, groundY(j.x)-26, L('lift the โอ่ง'), ()=>liftJar(j), null, 'lift');
+      if(bedtime) spotLast();
+      return;
     }
   }
   if(!P.carry) return;
@@ -12468,17 +12590,9 @@ function drawJarBody(g,x,y,s,water){
   pR(g,x-6.4*s,y-13*s,13*s,1,'#7d5240');
   pEll(g,x,y+1,9*s,2.4*s,'rgba(10,8,24,0.34)');
 }
-function drawCarried(g){
-  if(!P.carry) return;
-  const n=P.carry.jars.length;
-  for(let i=0;i<n;i++){
-    const j=P.carry.jars[i];
-    const sw=Math.sin(P.phase*2)*1.4;
-    const x=P.x + P.face*(7+i*4) + sw*0.5;
-    const y=P.y - 52 - i*20 + Math.sin(P.phase)*1.4;
-    drawJarBody(g,x,y+20,1.15,j.water);
-  }
-}
+/* the jars ride inside drawPrete now, between his two arms, so that his front
+   hand closes over the rim instead of the jar hanging in the air beside him */
+function drawCarried(g){}
 
 /* ============================================================
    THE PLOUGH
@@ -13891,6 +14005,169 @@ function drawDayHUD(g){
 function drawDay(g){
   if(DAY.card) drawDayCard(g);
   if(DAY.sleeping) drawSleep(g);
+}
+/* ============================================================
+   THINGS IN REACH
+
+   The game used to keep exactly one interaction at a time. Stand
+   where a water jar, a bed and a spirit all overlap — which is most
+   of the farm — and two of the three were simply unusable: the
+   first check to match took the prompt and the rest were silently
+   dropped.
+
+   So now every candidate goes in a list. The front of the list is
+   the prompt, as before, and the rest each get a small icon of
+   their own, sitting over the thing it belongs to. Tap an icon and
+   you use that thing. Nothing is unreachable because something else
+   happens to be standing next to it.
+   ============================================================ */
+
+/* what a line of prompt text is asking you to do, as a picture */
+function spotIcon(txt, sub){
+  const t = String(txt||'').toLowerCase();
+  if(/sleep|bed|lie down/.test(t))                 return 'sleep';
+  if(/talk|hello|speak|approach|ask them|respect/.test(t)) return 'talk';
+  if(/pick|gather|take what/.test(t))              return 'pick';
+  if(/water|โอ่ง|jar|tip it|flood/.test(t))         return 'water';
+  if(/cook|stove|kitchen|make something/.test(t))  return 'cook';
+  if(/read|board|orders|notice|buy/.test(t))       return 'read';
+  if(/catch|net/.test(t))                          return 'net';
+  if(/pet\b|purr/.test(t))                         return 'pet';
+  if(/basket|ship/.test(t))                        return 'give';
+  if(/bell|ring/.test(t))                          return 'bell';
+  if(/lift|carry|haul/.test(t))                    return 'lift';
+  if(/plough|plow|sow|seed|harvest|cut/.test(t))   return 'work';
+  if(sub==='give')                                 return 'talk';
+  return 'use';
+}
+
+/* the little pictures. 11px across, ink on cream, no letters. */
+function spotGlyph(g,k,x,y,c){
+  switch(k){
+    case 'talk':
+      pEll(g,x,y-0.5,4,3,c); pTri(g,x-1,y+2, x-2.5,y+4.5, x+1.5,y+2, c);
+      pR(g,x-2,y-1,1,1,'#f4ecd6'); pR(g,x+1,y-1,1,1,'#f4ecd6'); break;
+    case 'give': icoHeart(g,x,y,0.85,c); break;
+    case 'pick':
+      pTaper(g,x-3,y+3,x+2,y-3,1,3,c); pR(g,x-3,y+2,1,2,c); break;
+    case 'water':
+      pTri(g,x,y-4, x-3,y+1, x+3,y+1, c); pEll(g,x,y+1,3,2.4,c); break;
+    case 'cook':
+      pEll(g,x,y+1,4,2.6,c); pR(g,x-4,y-1,8,2,c);
+      pTaper(g,x,y-2,x-1,y-5,2,1,c); break;
+    case 'read':
+      pR(g,x-4,y-3,8,7,c); pR(g,x-3,y-2,6,1,'#f4ecd6');
+      pR(g,x-3,y,6,1,'#f4ecd6'); pR(g,x-3,y+2,4,1,'#f4ecd6'); break;
+    case 'net':
+      pEll(g,x+1,y-2,3,3,c); pTaper(g,x-1,y,x-4,y+4,1.6,1,c); break;
+    case 'pet':
+      pEll(g,x,y+1.5,2.6,2,c);
+      for(let i=0;i<3;i++) pEll(g,x-2.4+i*2.4,y-2,1,1.2,c); break;
+    case 'bell':
+      pEll(g,x,y-1,3.4,3.4,c); pR(g,x-4,y+1,8,1.4,c); pR(g,x-0.5,y-5,1,2,c); break;
+    case 'lift':
+      pTri(g,x,y-4, x-3.4,y-0.6, x+3.4,y-0.6, c); pR(g,x-3.4,y+1.6,7,1.8,c); break;
+    case 'sleep':
+      pR(g,x-4,y+1,9,1.6,c); pR(g,x-4,y-1,2,2,c);
+      pR(g,x+1,y-4,3.6,1,c); pR(g,x+1,y-1,3.6,1,c); pTaper(g,x+4,y-4,x+1,y-1,1,1,c); break;
+    case 'work':
+      pTaper(g,x-3,y+3,x+2,y-2,1.6,1.6,c); pEll(g,x+2.6,y-2.6,2.2,2.2,c); break;
+    default:  // a hand, offered
+      pEll(g,x,y+1,3,2.6,c);
+      for(let i=0;i<3;i++) pR(g,x-2.4+i*2,y-3.4,1.4,3.4,c);
+      pR(g,x+2,y-1.4,1.6,2,c);
+  }
+}
+
+/* Each icon is the same handful of ellipses every frame, so paint each one
+   once into a small canvas and blit it from then on. Two dozen sprites, and
+   the row costs one drawImage apiece. */
+const _spotSpr=new Map();
+function spotSprite(k, first){
+  const key=k+(first?'!':'.');
+  let c=_spotSpr.get(key);
+  if(c) return c;
+  const r=first?8:7, S=r+2;
+  c=mkCv(S*2,S*2+2);
+  const g=G2(c), x=S, y=S;
+  pEll(g,x,y+1,r,r*0.9,'rgba(20,14,8,0.35)');
+  pEll(g,x,y,r,r,first?'#3f2d14':'#37302a');
+  pEll(g,x,y,r-1,r-1,first?'#ffe9b3':'#e4d8bc');
+  pEll(g,x,y-r+1.6,r-3,1.2,first?'#fffdf6':'#f4ecd6');
+  spotGlyph(g,k,x,y+0.5,first?'#4a3212':'#4a4034');
+  c._o=S;
+  _spotSpr.set(key,c);
+  return c;
+}
+
+/* send the thing just added to the back of the queue: it is still reachable,
+   it just should not be what E does from here */
+function spotLast(){ if(SPOTS.length) SPOTS[SPOTS.length-1].pri=1; }
+
+/* where each icon landed on the screen this frame, for the tap test */
+const SPOT_HITS=[];
+function spotShown(){
+  return GS.state==='play' && !DLG && !VIG && !P.act && !storyBusy()
+      && !DAY.card && !DAY.sleeping && SPOTS.length>0;
+}
+/* A row of them above his head, left to right in the order the things
+   actually stand around him. Not over the things themselves: he is a hundred
+   pixels of prete and twenty-six wide, and everything within arm's reach is
+   therefore behind him. A hair-thin leader drops from each icon to the thing
+   it belongs to, so the row still says which is which. */
+function drawSpots(g){
+  SPOT_HITS.length=0;
+  if(!spotShown()) return;
+  const cx=GS.camX, cy=GS.camY||0;
+  const list=SPOTS.map((s,i)=>({s,i})).sort((a,b)=>a.s.x-b.s.x);
+  const n=list.length, gap=26;   // wider than the tap target, so none of them overlap
+  const px=P.x-cx;
+  let x0=clamp(px-(n-1)*gap/2, 18, W-18-(n-1)*gap);
+  /* under the plaque, wherever the plaque ended up. It gets clamped to the top
+     of the screen when the thing it names is high up, and the row followed it
+     into the same pixels. */
+  let ly = PROMPT? PROMPT.y-cy : -999;
+  if(PROMPT && Math.abs((PROMPT.x-cx)-px)<52) ly=Math.min(ly, P.y-cy-152);
+  ly = Math.max(ly,76) + (PROMPT && PROMPT.sub? 22 : 9);
+  const row=R(Math.max(P.y-cy-120, ly+11));
+  for(let k=0;k<n;k++){
+    const {s,i}=list[k];
+    const first=(i===0);
+    const x=R(x0+k*gap), y=R(row+Math.sin(GS.t*2.4+k*1.7)*0.9);
+    // a thread down to the thing it is about
+    const tx=R(s.x-cx), ty=R(s.y-cy+8);
+    if(ty>y+14){
+      g.fillStyle='rgba(43,38,32,0.32)';
+      for(let t=1;t<=5;t++) g.fillRect(R(lerp(x,tx,t/6)), R(lerp(y+10,ty,t/6)), 1,1);
+    }
+    const spr=spotSprite(s.icon, first);
+    g.drawImage(spr, x-spr._o, y-spr._o);
+    if(first){          // the one E does, marked underneath
+      const bl=0.5+0.5*Math.sin(GS.t*5);
+      pR(g,x-2,y+10,5,1, rgba('#ffe9b3',0.45+0.45*bl));
+    }
+    /* a thumb is wider than an eleven-pixel disc: the target is the size of
+       one, not the size of the picture */
+    SPOT_HITS.push({x:x-12,y:y-12,w:25,h:25,i});
+  }
+}
+/* a tap on an icon uses that thing, whatever the prompt happens to say */
+function spotHit(sx,sy){
+  if(!spotShown()) return false;
+  for(let k=SPOT_HITS.length-1;k>=0;k--){
+    const h=SPOT_HITS[k];
+    if(sx>=h.x && sx<=h.x+h.w && sy>=h.y && sy<=h.y+h.h){
+      const s=SPOTS[h.i];
+      if(!s) return false;
+      navStop();
+      P.face = s.x < P.x ? -1 : 1;
+      AU.sel();
+      PROMPT=null;
+      s.fn();
+      return true;
+    }
+  }
+  return false;
 }
 /* ============================================================
    UPDATE
