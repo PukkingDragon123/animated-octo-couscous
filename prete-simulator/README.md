@@ -86,14 +86,24 @@ uses whatever is standing on the spot — tap the stove and he walks over and st
 cooking, tap a plant and he picks it, tap a ghost and he says hello. A gold mark
 pulses on the ground where you're headed. Drag to change your mind.
 
-**And when you get there, everything in reach gets an icon.** A row of them
-above his head, left to right in the order the things are actually standing
-around him, each with a hair-thin thread down to the thing it belongs to. Tap
-one and he does that. The gold one is what **E** does; the rest are the
-neighbours. This exists because the game used to keep exactly one interaction
-at a time, and the shipping basket, the rice barn and a ghost all stand within
-about thirty pixels of each other — so two of the three were simply unusable,
-whichever way you shuffled along. Now none of them are.
+**And when you get there, everything in reach gets an icon — and nothing gets
+a word.** There used to be a wooden plaque over whatever you were nearest with
+*talk to Lung Somchai* written across it. It is gone. What it named is the first
+icon in a row above his head, drawn bigger and ringed in gold; everything else
+within reach is one of the others, left to right in the order the things
+actually stand around him, each on a hair-thin thread down to the thing it
+belongs to. Tap one and he does that.
+
+**A person's icon is the person.** Three identical speech bubbles cannot tell
+you which of the three people standing here is Yai Pen, and the words that used
+to do that are gone — so the icon is their face, cut into the disc, and you pick
+the one you meant by looking at them. A small pink heart in the corner means you
+could give them something as well as talk to them.
+
+The row exists because the game used to keep exactly one interaction at a time,
+and the shipping basket, the rice barn and a ghost all stand within about thirty
+pixels of each other — so two of the three were simply unusable, whichever way
+you shuffled along. Now none of them are.
 
 There are four buttons, bottom corners, and each one is a drawn picture rather
 than a letter:
@@ -192,7 +202,9 @@ the road, one light is on.**
 
 He has had that cart on that corner for thirty years. Drunks, monks, a
 policeman who never paid, two elephants once in the same week. He looks at your
-knees, then further up, and further up again, and puts the ladle down.
+knees, then further up, and further up again — which is played rather than
+printed, because a nine-foot ghost standing over a small old man is a picture
+and a picture does not need a caption — and he puts the ladle down.
 
 > **Lung Somchai:** *Ah. One of the hungry ones. My grandmother fed one on the
 > back step every Wan Phra of her life.*
@@ -206,10 +218,27 @@ the way: a dog called Daeng who barks at him too, and every other dog in the
 village answering; his own field, dark and untouched for two seasons; a window
 going out overhead as you pass under it; a hundred yards of sleeping houses.
 
+**His family are not there, and nobody says so.** The house says it. There is a
+washing line built for four people with one shirt on it and the pegs still up
+either side. A rope swing off the floor beam with nothing on the seat. A child's
+bicycle in under the stilts where it has been for years, with the tyres gone. Two
+sandals by the step, side by side, much too small. Three water jars, of which he
+fills one; the other two have been dry long enough to grow a web across the mouth
+and moss round the foot. He sets out two plates for supper, looks at them, and
+puts one back — *habit; thirty years of habit takes longer than the people do* —
+and that is the only line about it in the whole game. The boy rang at New Year.
+Two minutes. Very good line, though.
+
+![one shirt on a line built for four](screenshots/one-shirt.png)
+
 At the house he puts a banana leaf of rice down on the step and steps back —
 the way you put food out for a dog you have decided to like. **You get it as
 far as your mouth.** The mouth is the width of a needle's eye and the rice is
 rice. What comes through is the steam.
+
+**That is played as a scene, not as an interaction.** The bars come down deeper
+than anywhere else in the game, the village goes dark around him, the camera
+leans in, and nothing is said at all for three seconds while it happens.
 
 He stoops ninety pixels of leg down to the step for it, gets both hands under
 it, brings it all the way up, tips his face into the bowl, and holds it there
@@ -386,6 +415,88 @@ An order is not a present, though, and never counts against the day's one: when
 somebody has asked you for two bowls of something by name, you can hand over
 both.
 
+## The piggy bank, and four times it breaks
+
+The merit counter used to be a bar with a number beside it: **merit 41/108.**
+True, and worth nothing to look at.
+
+It is a **กระปุกออมสิน** now — the fat ceramic pig every Thai child has on a
+shelf — lying across the corner of the screen and filling with gold from the
+snout end. Merit goes in through the slot on its back. In the last quarter a
+thin gold arc comes up over it and coins start dropping into the slot on their
+own, because it knows.
+
+**And then it breaks.** The village dims, the pig comes up out of the corner of
+the screen and stands over you three times its size with the cracks spreading
+across the ceramic, and it goes — in a bang of white that fills the screen, and
+thirty coins going up and out. When the light lets go, what is standing there is
+a little less of a hungry ghost than what walked in:
+
+- the dead grey warms towards skin
+- the ribs sink under it
+- the starved belly comes down
+- the two saucer eyes stop being saucers
+- seven hairs become sixteen, and go dark
+- and the mouth — the eye of a needle, the whole joke of him — opens a fraction
+
+Four times, over a whole game, at fifteen, thirty-eight, seventy and a hundred
+and four merit. You cannot buy it. It is the only thing in the game merit is not
+spent on, because it is what merit **means**. And it is the same puppet
+throughout — there is no second sprite, only this one with the ghost turned
+down.
+
+The village does not stop for it, either. The day runs, the crops drink, the
+ducks carry on being ducks. He is the only thing that cannot move, which is
+rather the point of it.
+
+| | |
+|---|---|
+| ![the piggy bank](screenshots/piggy-bank.png) | ![it breaks](screenshots/the-light.png) |
+| ![four steps out of the ghost](screenshots/becoming-human.png) | ![and the village notices](screenshots/waied-at.png) |
+
+## Building things for people who will never know
+
+Thai merit-making is not mostly about praying. It is about putting things where
+other people will need them. There are five plots along the road and the farm,
+staked out in bamboo and string by somebody who never came back to them:
+
+| | what it is | what it takes |
+|---|---|---|
+| **ศาลพระภูมิ** | a spirit house, at the edge of your field | timber, clay, and flowers for the roof |
+| **คอกควาย** | a shed, so something large has somewhere out of the rain | posts, bamboo, and thatch |
+| **ศาลาริมทาง** | a roadside shelter with a bench you could lie down on | a frame, and a tiled roof |
+| **โอ่งน้ำ** | a jar of drinking water and a tin cup, for anyone walking | a stand, and a jar to go on it |
+| **บ่อน้ำ** | a well, because the nearest water is four hundred paces | a stone ring, a frame, a bucket |
+
+Each goes up in two goes — raise the frame, then put the roof on — and each is
+worth more merit than anything else in the game, because it is worth more. And
+each one keeps being worth something afterwards: you can pay respects at the
+spirit house, sit a while under the sala, draw a bucket up from the well, or
+top the jar up for whoever comes past next. Once a day, each.
+
+Nobody ever thanks you for any of it. Nobody knows who put them there.
+
+![what you built](screenshots/what-you-built.png)
+
+## The buffalo
+
+**ควาย.** The biggest thing in a Thai village and the least hurried. It used to
+be a twenty-six pixel prop standing in the pen with the chickens, which is not
+what a buffalo is.
+
+It walks the farm now, head down, chewing, with an egret riding on its back
+taking the ticks off — and neither of them thinks anything of it. When the sun
+gets high it goes and lies in a flooded paddy with only its back and its horns
+above the water, which is the single most characteristic thing a buffalo does.
+At dusk it walks itself home to the shed, if you built it one. It drops what it
+drops, and that is fertiliser. Scratch it once a day and it leans into your hand.
+
+The horns are the whole animal: one long flattened crescent each side, out of
+the top of the skull and swept back and up until they nearly meet over the neck.
+Get those wrong and you have drawn a cow.
+
+![the buffalo](screenshots/the-buffalo.png)
+
 ## The farm
 
 Out west in the rice fields there is a shack with a hole in the roof, an empty
@@ -436,6 +547,40 @@ die, they just look at you about it.
 Every one of those is a *gesture*, not a menu tick: he folds ninety pixels of
 leg into a crouch, reaches both long arms down to the soil, and the thing
 happens at the moment his hands actually get there.
+
+## A village with a day in it
+
+Everybody used to do the same thing at three in the morning as at three in the
+afternoon: drift ninety pixels either side of where they were standing, for
+ever, with their arms down.
+
+The hour decides now. There is a yard to sweep at seven, rice to winnow at nine,
+shade under the tamarind to sit in at one, a pot on at five, and a door to be
+behind at ten. Each of those is a pose with something in the hands — a broom, a
+flat winnowing tray with the grain jumping in it, a ladle in a pot, a folded palm
+fan going in the heat.
+
+**The monk walks the road at first light** with his bowl, and everybody he
+passes goes down on one knee without being told to. If you are standing there
+with rice, you can put it in — rice you cannot eat, into a bowl you will never
+hold. It is worth more merit than almost anything.
+
+**Two people who end up next to each other stop and say something,** and then go
+on. The lamp on the corner is mended. Somebody did that. Nobody says who.
+
+![the alms round](screenshots/the-alms-round.png)
+
+**And they look at you.** This is where the piggy bank shows: at the start they
+take a step back with their hands up and a **!** over their heads, because you
+are nine feet of dead thing. One burst of light later they only stare. Two, and
+you get a wave. Three, and somebody wais you in the road — which is the first
+time anybody has greeted you since the ground, and the game stops for a second
+to let you have it.
+
+**The ghosts stopped staring too.** They used to face you from anywhere on the
+screen, which is the posture of a thing waiting to be clicked. They look where
+they like now, drift a few pixels on their own clock, and turn when you are
+close enough to be worth turning for.
 
 ## Ghosts make good farmhands
 
@@ -1081,6 +1226,28 @@ with a fully stocked farm on screen.
   as everywhere else with a sitting pose added to it, and is reflected in the
   water in front of him by drawing him again upside down, clipped to the water
   and stepped with no time at all so his cloth is not simulated twice a frame.
+- **The interaction prompt is a picture, and a person's picture is their face.**
+  The plaque that named one thing at a time is gone: what it named is the first
+  icon in the row, drawn bigger and ringed in gold, and everything else in reach
+  is one of the others. Icons are painted once into small canvases and blitted,
+  keyed on what can actually change about them, so a row of seven costs seven
+  `drawImage` calls. A person's icon is their dialogue medallion built again at
+  sixteen pixels with the rim and the sky dropped and the head cropped a third
+  tighter — at that size the rim IS the picture otherwise, and every face comes
+  out the same smudge.
+- **How human he is, is a number between nought and one.** `drawPrete` takes it
+  and lerps six things off it: two colour ramps towards skin, the rib contrast
+  towards nothing, a belly scale, an eye scale, a hair count and a mouth radius.
+  There is no second sprite and no swap — the ghost is a dial. The step is
+  credited the instant the piggy bank breaks, so nothing can leave him owed one,
+  but `humanAmt()` reports the PREVIOUS step for as long as the burst is
+  charging, which is how the change ends up hidden inside the white.
+- **The village routine is a table, not a state machine.** Six rows per person
+  of `[from, to, offset, job]` against the clock; the walk order is issued when
+  they are more than twenty-six pixels from where the hour says they should be,
+  and marked `routine` so that being spoken to cancels it. The job is a pose
+  plus something in the hands, and it only plays when they are standing still,
+  within thirty pixels of the spot, and not reacting to anything.
 - **What that scene cost, and what it costs now.** Drawn honestly it was 38ms a
   frame — 26fps, on the front page, against 16ms for the farm, which is the
   heaviest thing the game draws in play. Two thirds of it was rice: four bands,
