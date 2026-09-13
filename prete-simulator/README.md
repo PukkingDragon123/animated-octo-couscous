@@ -843,10 +843,29 @@ descend, and the ledger is waiting where you left it.
 Four wooden tabs over a drifting sky: **looks**, **friends**, the **past** — your
 recovered memories, one flat page each, blank and question-marked until they come
 back, with a red dot on the tab when there's one you haven't read — and the whole
-7,200-pixel road drawn as a **map**: nine named zones along the top, every stove,
-shrine, workbench, pond and grove pinned on four tiers so nothing collides, your
-five ghost friends on their own row, a marker where you're standing, and one line
-at the bottom telling you what to do next.
+ten-thousand-pixel road drawn as a **map**.
+
+It used to be one straight line across a sheet of paper with every label dealt
+out onto four rows above it, which is a diagram of a road rather than a map of a
+country — and ten thousand six hundred pixels will not fit on one line at a
+readable scale anyway. So it is **two strips now**, west to east and then east
+again, folded the way a strip map folds a long road onto a short page, with an
+arrow off the end of the first strip and back in at the start of the second.
+
+Each strip is drawn country rather than a coloured band: hatched paddy, roof
+triangles over the village, blobs of tree through the grove and the forest, a
+gold chedi at the temple, grey blocks along the town, and the road wandering
+down the middle of it — inked where you have walked and dotted where you have
+not. Every landmark is a **small picture on a post**: a chedi, a wok, a spirit
+house, a cat, a crossroad, a shop. Each one's name sits on its own scrap of
+paper, and when two names want the same inch of road the second one slides along
+until it is clear, with a hairline back to the post it belongs to. Nothing on
+that map lands on anything else, and there is a test that proves it.
+
+Underneath: the ghosts you have met as small dots on the road, a red pin bobbing
+where you are standing, a compass rose, a scale bar that says **half an hour's
+walk**, how many friends you have made, and how much of the road you have
+actually covered.
 
 Every card is a tap target: tap it to read it, tap it again to choose it.
 
@@ -978,16 +997,25 @@ percentage of the road you have actually seen.
 There used to be a seven-pixel strip of blue at the foot of the farm with grass
 either side of it, which is a puddle.
 
-There are now **six terraces of flooded paddy stepping away from you** behind
-the whole farm and behind the village too — each one a sheet of water with an
-earth bund at its far edge, rice standing along the bunds, long still ripples
-across the sheets, and four egrets out in it. The water at your own feet is two
-dozen pixels deep, goes darker as it goes down, and has the sky broken up in it
-and the green of the rice lying under it. It runs in seven separate spans, so
-the farmhouse and the pen and the orchard stand on dry ground in the middle of
-it the way a farmhouse does.
+There are now **four terraces of flooded paddy stepping away from you** behind
+the farm — water from one bund to the next rather than three thin sheets with
+the country showing between them, rice standing in every one of them at its own
+height and its own green, long still ripples across the water, and four egrets
+out in it, which is the thing that tells you it is water at all.
 
-And the same thing starts again past the town and runs to the edge of the world.
+The water at your own feet is a cross-section of a flooded field: bright at the
+surface with the sky in it, darkening fast into silt, rice growing up out of it
+in two rows and throwing a green smear back down through it, and low earth bunds
+crossing it every hundred pixels or so — the ridges you actually walk along.
+
+**And it is only in the rice fields.** It used to run under the village houses
+and across the road, which is not a paddy, it is a flood; and the hills in the
+far distance used to fill straight down to the bottom of the frame in ridge
+blue, so from anywhere without trees in front of it the middle distance read as
+a lake lying across the whole country. Behind the village there is land now — a
+hazy green plain with hedgerows and clumps of palm lying across it — and the
+standing water is exactly two paddy plots, the ground the rice spirit is
+standing on, and the far paddies past the town.
 
 ## Pounding som tam
 
@@ -1136,7 +1164,7 @@ as [`th/sweep.js`](th/sweep.js); it visits the title, all ten chapters of the
 first night, every panel of
 the ledger, the stall, the order board, the kitchen, the workbench, the give
 screen, the morning card, all four memories, the ceremony and the end card, and
-drives the prete the length of the map at four different hours. It reports 438
+drives the prete the length of the map at four different hours. It reports 383
 strings drawn and, as of this build, **nothing untranslated**.
 
 Anything glued together out of fragments had to be taken apart for that to be
@@ -1516,7 +1544,7 @@ with a fully stocked farm on screen.
 - **Translation is checked, not believed.** Every string reaches the screen
   through one lookup, so [`th/sweep.js`](th/sweep.js) hooks that lookup, walks
   the game through every screen it has, and prints whatever came past in
-  English. 438 strings drawn, none untranslated.
+  English. 383 strings drawn, none untranslated.
 - Autosave, a friends journal, canvas-drawn touch controls, and a dawn ending.
 
 Made with rice and incense. May you go to a good place.

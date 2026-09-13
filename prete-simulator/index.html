@@ -871,8 +871,8 @@ const _thaiFace = ['"Noto Sans Thai"','"Noto Sans Thai UI"','"Leelawadee UI"','L
                    'Thonburi','"Sarabun"','"Sukhumvit Set"','"Tahoma"',THAI_STACK].join(',');
 const isThai = s => THAI_RE.test(s);
 const F5W=5, F5H=7, F3W=3, F3H=5;
-const F5={'A':[[14,17,17,31,17,17,17],0],'B':[[30,17,17,30,17,17,30],0],'C':[[14,17,16,16,16,17,14],0],'D':[[30,17,17,17,17,17,30],0],'E':[[31,16,16,30,16,16,31],0],'F':[[31,16,16,30,16,16,16],0],'G':[[14,17,16,23,17,17,14],0],'H':[[17,17,17,31,17,17,17],0],'I':[[14,4,4,4,4,4,14],0],'J':[[7,2,2,2,2,18,12],0],'K':[[17,18,20,24,20,18,17],0],'L':[[16,16,16,16,16,16,31],0],'M':[[17,27,21,21,17,17,17],0],'N':[[17,25,21,21,19,17,17],0],'O':[[14,17,17,17,17,17,14],0],'P':[[30,17,17,30,16,16,16],0],'Q':[[14,17,17,17,21,18,13],0],'R':[[30,17,17,30,20,18,17],0],'S':[[15,16,16,14,1,1,30],0],'T':[[31,4,4,4,4,4,4],0],'U':[[17,17,17,17,17,17,14],0],'V':[[17,17,17,17,17,10,4],0],'W':[[17,17,17,21,21,21,10],0],'X':[[17,17,10,4,10,17,17],0],'Y':[[17,17,10,4,4,4,4],0],'Z':[[31,1,2,4,8,16,31],0],'a':[[0,0,14,1,15,17,15],0],'b':[[16,16,30,17,17,17,30],0],'c':[[0,0,14,16,16,16,14],0],'d':[[1,1,15,17,17,17,15],0],'e':[[0,0,14,17,31,16,14],0],'f':[[6,8,8,30,8,8,8],0],'g':[[15,17,17,15,1,17,14],1],'h':[[16,16,30,17,17,17,17],0],'i':[[4,0,12,4,4,4,14],0],'j':[[2,0,6,2,2,18,12],1],'k':[[16,16,18,20,24,20,18],0],'l':[[12,4,4,4,4,4,14],0],'m':[[0,0,26,21,21,21,21],0],'n':[[0,0,30,17,17,17,17],0],'o':[[0,0,14,17,17,17,14],0],'p':[[30,17,17,30,16,16,16],1],'q':[[15,17,17,15,1,1,1],1],'r':[[0,0,22,24,16,16,16],0],'s':[[0,0,15,16,14,1,30],0],'t':[[8,8,30,8,8,9,6],0],'u':[[0,0,17,17,17,19,13],0],'v':[[0,0,17,17,17,10,4],0],'w':[[0,0,17,21,21,21,10],0],'x':[[0,0,17,10,4,10,17],0],'y':[[17,17,17,15,1,17,14],1],'z':[[0,0,31,2,4,8,31],0],'0':[[14,17,19,21,25,17,14],0],'1':[[4,12,4,4,4,4,14],0],'2':[[14,17,1,2,4,8,31],0],'3':[[30,1,1,14,1,1,30],0],'4':[[2,6,10,18,31,2,2],0],'5':[[31,16,30,1,1,17,14],0],'6':[[6,8,16,30,17,17,14],0],'7':[[31,1,2,4,4,8,8],0],'8':[[14,17,17,14,17,17,14],0],'9':[[14,17,17,15,1,2,12],0],' ':[[0,0,0,0,0,0,0],0],'.':[[0,0,0,0,0,12,12],0],',':[[0,0,0,0,12,12,8],0],'\'':[[8,8,0,0,0,0,0],0],'"':[[10,10,0,0,0,0,0],0],'!':[[4,4,4,4,4,0,4],0],'?':[[14,17,1,6,4,0,4],0],':':[[0,12,12,0,12,12,0],0],';':[[0,12,12,0,12,12,8],0],'-':[[0,0,0,31,0,0,0],0],'+':[[0,4,4,31,4,4,0],0],'/':[[1,1,2,4,8,16,16],0],'(':[[2,4,8,8,8,4,2],0],')':[[8,4,2,2,2,4,8],0],'%':[[25,26,4,8,19,5,9],0],'*':[[0,21,14,31,14,21,0],0],'=':[[0,0,31,0,31,0,0],0],'#':[[10,31,10,10,31,10,0],0],'&':[[12,18,20,8,21,18,13],0],'—':[[0,0,0,31,0,0,0],0],'·':[[0,0,0,4,0,0,0],0],'…':[[0,0,0,0,0,21,0],0],'฿':[[4,30,21,30,21,30,4],0]};
-const F3={'A':[[2,5,7,5,5],0],'B':[[6,5,6,5,6],0],'C':[[3,4,4,4,3],0],'D':[[6,5,5,5,6],0],'E':[[7,4,6,4,7],0],'F':[[7,4,6,4,4],0],'G':[[3,4,5,5,3],0],'H':[[5,5,7,5,5],0],'I':[[7,2,2,2,7],0],'J':[[1,1,1,5,2],0],'K':[[5,5,6,5,5],0],'L':[[4,4,4,4,7],0],'M':[[5,7,7,5,5],0],'N':[[5,7,7,7,5],0],'O':[[2,5,5,5,2],0],'P':[[6,5,6,4,4],0],'Q':[[2,5,5,6,3],0],'R':[[6,5,6,5,5],0],'S':[[3,4,2,1,6],0],'T':[[7,2,2,2,2],0],'U':[[5,5,5,5,3],0],'V':[[5,5,5,5,2],0],'W':[[5,5,7,7,5],0],'X':[[5,5,2,5,5],0],'Y':[[5,5,2,2,2],0],'Z':[[7,1,2,4,7],0],'a':[[2,5,7,5,5],0],'b':[[6,5,6,5,6],0],'c':[[3,4,4,4,3],0],'d':[[6,5,5,5,6],0],'e':[[7,4,6,4,7],0],'f':[[7,4,6,4,4],0],'g':[[3,4,5,5,3],0],'h':[[5,5,7,5,5],0],'i':[[7,2,2,2,7],0],'j':[[1,1,1,5,2],0],'k':[[5,5,6,5,5],0],'l':[[4,4,4,4,7],0],'m':[[5,7,7,5,5],0],'n':[[5,7,7,7,5],0],'o':[[2,5,5,5,2],0],'p':[[6,5,6,4,4],0],'q':[[2,5,5,6,3],0],'r':[[6,5,6,5,5],0],'s':[[3,4,2,1,6],0],'t':[[7,2,2,2,2],0],'u':[[5,5,5,5,3],0],'v':[[5,5,5,5,2],0],'w':[[5,5,7,7,5],0],'x':[[5,5,2,5,5],0],'y':[[5,5,2,2,2],0],'z':[[7,1,2,4,7],0],'0':[[2,5,5,5,2],0],'1':[[2,6,2,2,7],0],'2':[[6,1,2,4,7],0],'3':[[6,1,2,1,6],0],'4':[[5,5,7,1,1],0],'5':[[7,4,6,1,6],0],'6':[[3,4,6,5,2],0],'7':[[7,1,2,2,2],0],'8':[[2,5,2,5,2],0],'9':[[2,5,3,1,6],0],' ':[[0,0,0,0,0],0],'.':[[0,0,0,0,2],0],',':[[0,0,0,2,4],0],'\'':[[2,2,0,0,0],0],'!':[[2,2,2,0,2],0],'?':[[6,1,2,0,2],0],':':[[0,2,0,2,0],0],'-':[[0,0,7,0,0],0],'/':[[1,1,2,4,4],0],'(':[[1,2,2,2,1],0],')':[[4,2,2,2,4],0],'+':[[0,2,7,2,0],0],'=':[[0,7,0,7,0],0],'—':[[0,0,7,0,0],0],'·':[[0,0,2,0,0],0],'…':[[0,0,0,0,5],0],'฿':[[2,7,7,7,2],0]};
+const F5={'A':[[14,17,17,31,17,17,17],0],'B':[[30,17,17,30,17,17,30],0],'C':[[14,17,16,16,16,17,14],0],'D':[[30,17,17,17,17,17,30],0],'E':[[31,16,16,30,16,16,31],0],'F':[[31,16,16,30,16,16,16],0],'G':[[14,17,16,23,17,17,14],0],'H':[[17,17,17,31,17,17,17],0],'I':[[14,4,4,4,4,4,14],0],'J':[[7,2,2,2,2,18,12],0],'K':[[17,18,20,24,20,18,17],0],'L':[[16,16,16,16,16,16,31],0],'M':[[17,27,21,21,17,17,17],0],'N':[[17,25,21,21,19,17,17],0],'O':[[14,17,17,17,17,17,14],0],'P':[[30,17,17,30,16,16,16],0],'Q':[[14,17,17,17,21,18,13],0],'R':[[30,17,17,30,20,18,17],0],'S':[[15,16,16,14,1,1,30],0],'T':[[31,4,4,4,4,4,4],0],'U':[[17,17,17,17,17,17,14],0],'V':[[17,17,17,17,17,10,4],0],'W':[[17,17,17,21,21,21,10],0],'X':[[17,17,10,4,10,17,17],0],'Y':[[17,17,10,4,4,4,4],0],'Z':[[31,1,2,4,8,16,31],0],'a':[[0,0,14,1,15,17,15],0],'b':[[16,16,30,17,17,17,30],0],'c':[[0,0,14,16,16,16,14],0],'d':[[1,1,15,17,17,17,15],0],'e':[[0,0,14,17,31,16,14],0],'f':[[6,8,8,30,8,8,8],0],'g':[[15,17,17,15,1,17,14],1],'h':[[16,16,30,17,17,17,17],0],'i':[[4,0,12,4,4,4,14],0],'j':[[2,0,6,2,2,18,12],1],'k':[[16,16,18,20,24,20,18],0],'l':[[12,4,4,4,4,4,14],0],'m':[[0,0,26,21,21,21,21],0],'n':[[0,0,30,17,17,17,17],0],'o':[[0,0,14,17,17,17,14],0],'p':[[30,17,17,30,16,16,16],1],'q':[[15,17,17,15,1,1,1],1],'r':[[0,0,22,24,16,16,16],0],'s':[[0,0,15,16,14,1,30],0],'t':[[8,8,30,8,8,9,6],0],'u':[[0,0,17,17,17,19,13],0],'v':[[0,0,17,17,17,10,4],0],'w':[[0,0,17,21,21,21,10],0],'x':[[0,0,17,10,4,10,17],0],'y':[[17,17,17,15,1,17,14],1],'z':[[0,0,31,2,4,8,31],0],'0':[[14,17,19,21,25,17,14],0],'1':[[4,12,4,4,4,4,14],0],'2':[[14,17,1,2,4,8,31],0],'3':[[30,1,1,14,1,1,30],0],'4':[[2,6,10,18,31,2,2],0],'5':[[31,16,30,1,1,17,14],0],'6':[[6,8,16,30,17,17,14],0],'7':[[31,1,2,4,4,8,8],0],'8':[[14,17,17,14,17,17,14],0],'9':[[14,17,17,15,1,2,12],0],' ':[[0,0,0,0,0,0,0],0],'.':[[0,0,0,0,0,12,12],0],',':[[0,0,0,0,12,12,8],0],'\'':[[8,8,0,0,0,0,0],0],'’':[[8,8,0,0,0,0,0],0],'→':[[0,4,2,31,2,4,0],0],'"':[[10,10,0,0,0,0,0],0],'!':[[4,4,4,4,4,0,4],0],'?':[[14,17,1,6,4,0,4],0],':':[[0,12,12,0,12,12,0],0],';':[[0,12,12,0,12,12,8],0],'-':[[0,0,0,31,0,0,0],0],'+':[[0,4,4,31,4,4,0],0],'/':[[1,1,2,4,8,16,16],0],'(':[[2,4,8,8,8,4,2],0],')':[[8,4,2,2,2,4,8],0],'%':[[25,26,4,8,19,5,9],0],'*':[[0,21,14,31,14,21,0],0],'=':[[0,0,31,0,31,0,0],0],'#':[[10,31,10,10,31,10,0],0],'&':[[12,18,20,8,21,18,13],0],'—':[[0,0,0,31,0,0,0],0],'·':[[0,0,0,4,0,0,0],0],'…':[[0,0,0,0,0,21,0],0],'฿':[[4,30,21,30,21,30,4],0]};
+const F3={'A':[[2,5,7,5,5],0],'B':[[6,5,6,5,6],0],'C':[[3,4,4,4,3],0],'D':[[6,5,5,5,6],0],'E':[[7,4,6,4,7],0],'F':[[7,4,6,4,4],0],'G':[[3,4,5,5,3],0],'H':[[5,5,7,5,5],0],'I':[[7,2,2,2,7],0],'J':[[1,1,1,5,2],0],'K':[[5,5,6,5,5],0],'L':[[4,4,4,4,7],0],'M':[[5,7,7,5,5],0],'N':[[5,7,7,7,5],0],'O':[[2,5,5,5,2],0],'P':[[6,5,6,4,4],0],'Q':[[2,5,5,6,3],0],'R':[[6,5,6,5,5],0],'S':[[3,4,2,1,6],0],'T':[[7,2,2,2,2],0],'U':[[5,5,5,5,3],0],'V':[[5,5,5,5,2],0],'W':[[5,5,7,7,5],0],'X':[[5,5,2,5,5],0],'Y':[[5,5,2,2,2],0],'Z':[[7,1,2,4,7],0],'a':[[2,5,7,5,5],0],'b':[[6,5,6,5,6],0],'c':[[3,4,4,4,3],0],'d':[[6,5,5,5,6],0],'e':[[7,4,6,4,7],0],'f':[[7,4,6,4,4],0],'g':[[3,4,5,5,3],0],'h':[[5,5,7,5,5],0],'i':[[7,2,2,2,7],0],'j':[[1,1,1,5,2],0],'k':[[5,5,6,5,5],0],'l':[[4,4,4,4,7],0],'m':[[5,7,7,5,5],0],'n':[[5,7,7,7,5],0],'o':[[2,5,5,5,2],0],'p':[[6,5,6,4,4],0],'q':[[2,5,5,6,3],0],'r':[[6,5,6,5,5],0],'s':[[3,4,2,1,6],0],'t':[[7,2,2,2,2],0],'u':[[5,5,5,5,3],0],'v':[[5,5,5,5,2],0],'w':[[5,5,7,7,5],0],'x':[[5,5,2,5,5],0],'y':[[5,5,2,2,2],0],'z':[[7,1,2,4,7],0],'0':[[2,5,5,5,2],0],'1':[[2,6,2,2,7],0],'2':[[6,1,2,4,7],0],'3':[[6,1,2,1,6],0],'4':[[5,5,7,1,1],0],'5':[[7,4,6,1,6],0],'6':[[3,4,6,5,2],0],'7':[[7,1,2,2,2],0],'8':[[2,5,2,5,2],0],'9':[[2,5,3,1,6],0],' ':[[0,0,0,0,0],0],'.':[[0,0,0,0,2],0],',':[[0,0,0,2,4],0],'\'':[[2,2,0,0,0],0],'’':[[2,2,0,0,0],0],'%':[[5,1,2,4,5],0],'→':[[0,1,7,1,0],0],'!':[[2,2,2,0,2],0],'?':[[6,1,2,0,2],0],':':[[0,2,0,2,0],0],'-':[[0,0,7,0,0],0],'/':[[1,1,2,4,4],0],'(':[[1,2,2,2,1],0],')':[[4,2,2,2,4],0],'+':[[0,2,7,2,0],0],'=':[[0,7,0,7,0],0],'—':[[0,0,7,0,0],0],'·':[[0,0,2,0,0],0],'…':[[0,0,0,0,5],0],'฿':[[2,7,7,7,2],0]};
 /* pick the font and the whole-number scale for a requested size */
 function fontPick(size){
   if(size<=6)  return {f:F3, w:F3W, h:F3H, s:1, gap:1};
@@ -1152,7 +1152,7 @@ function fontFor(){ return '7px monospace'; }   // nothing measures with canvas 
 let LANG = 'en';
 const TH = {
   // --- the interface ---
-  'merit':'บุญ', 'THE LEDGER':'สมุดบุญ', 'back':'กลับ', 'skip':'ข้าม',
+  'merit':'บุญ', 'THE LEDGER':'สมุดบุญ', 'THE ROAD':'ถนนสายยาว', 'back':'กลับ', 'skip':'ข้าม',
   'SKILLS':'ทักษะ', 'LOOKS':'เครื่องแต่ง', 'FRIENDS':'เพื่อน', 'MAP':'แผนที่', 'PAST':'อดีต',
   'BODY':'กาย', 'HANDS':'มือ', 'HEART':'ใจ',
 
@@ -1167,8 +1167,6 @@ const TH = {
   'you made two':'ได้มาสองชิ้น', 'you need':'ต้องใช้',
   'hold — keep it in the green':'กดค้าง ให้อยู่ในแถบเขียว',
   'tap each side on the beat':'แตะสลับซ้ายขวาให้ตรงจังหวะ',
-  'VILLAGE MAP':'แผนที่หมู่บ้าน',
-  'you are here':'เจ้าอยู่ตรงนี้',
   'A MEMORY':'ความทรงจำ',
   'the page turns on its own, a line at a time':'หน้ากระดาษพลิกเอง ทีละบรรทัด',
   // --- what you can do ---
@@ -1204,7 +1202,6 @@ const TH = {
   'Inner Eye':'ตาใน', 'Cool Heart':'ใจเย็น', 'Loving-Kindness':'เมตตา',
   // --- the guide ---
 
-  'rent the farm, west in the rice fields':'ไปเช่าไร่ ทางตะวันตกในทุ่งนา',
 
   // --- what the garden and the orchard grow ---
   'galangal':'ข่า', 'holy basil':'กะเพรา', 'pandan leaf':'ใบเตย',
@@ -1543,7 +1540,6 @@ const TH = {
   'for the spirits ~':'สำหรับเหล่าภูตผี ~',
   'FOUR BOWLS':'สี่ถ้วย',
   'Four bowls. She has set four every morning since you died.':'สี่ถ้วย นางจัดสี่ถ้วยทุกเช้าตั้งแต่เจ้าตาย',
-  'friends   ? still waiting':'เพื่อน   ? ยังรออยู่',
   'G — switch tab':'G — สลับหน้า',
   'Get off the road and sleep.':'ออกจากถนนแล้วไปนอนเถอะ',
   'give ':'ให้ ',
@@ -1671,7 +1667,6 @@ const TH = {
   'The lamp hums awake. Behind you, somebody stops hurrying.':'ไฟติดขึ้นมาเบาๆ ข้างหลังเจ้า มีคนหยุดรีบ',
   'The lamppost ghost!! I KNEW it!':'ผีเสาไฟ!! ว่าแล้วเชียว!',
   'The ledger is read, and it is level.':'สมุดถูกอ่านแล้ว และมันเสมอกัน',
-  'THE ONE LONG ROAD · west to east':'ถนนสายยาวสายเดียว · ตะวันตกไปตะวันออก',
   'the paddy is spoken for. the rest of it\'s not.':'นาข้าวมีเจ้าของแล้ว ที่เหลือยังไม่มี',
   'the rag you woke in':'ผ้าที่เจ้าตื่นมาพร้อมกับมัน',
   'THE SCALE':'ตราชั่ง',
@@ -1774,7 +1769,6 @@ const TH = {
   'sow it':'หว่านเมล็ด',
   'streetlight fixed':'ซ่อมไฟถนนแล้ว',
   'streetlight, still dark':'ไฟถนน ยังดับอยู่',
-  'tell Phra Phum — the ledger is full':'ไปบอกพระภูมิ สมุดเต็มแล้ว',
   'temple':'วัด',
   'the farm':'ไร่นา',
   'The hungry ghost smiled. A smile the width of a needle\'s eye.':'เปรตตนนั้นยิ้ม ยิ้มกว้างเท่ารูเข็ม',
@@ -1916,6 +1910,11 @@ const TH = {
   'Brakes. A long look. Then the road again, faster than before.':'เสียงเบรก สายตาที่จ้องค้าง แล้วก็เร่งไปเร็วกว่าเดิม',
   'It went past. Nobody in it will ever know how close that was.':'มันแล่นผ่านไป คนในรถไม่มีวันรู้ว่าเฉียดแค่ไหน',
 
+  'west to east, and then east again':'ตะวันตกไปตะวันออก แล้วไปตะวันออกอีก',
+  'walked':'เดินแล้ว',
+  "half an hour's walk":'เดินราวครึ่งชั่วโมง',
+  'the bus stop':'ป้ายรถเมล์',
+  'the shop':'ร้านชำ',
 };
 function L(s){
   if(LANG!=='th') return s;
@@ -2731,7 +2730,38 @@ function paintFar(){
       if((x+L)%3!==0) g.fillRect(x, R(h2), 1, 1);
     }
   }
-  // a far treeline blur
+  /* the plain at the foot of the hills.
+     Every ridge layer above fills straight down to the bottom of the canvas
+     in ridge blue, so anywhere there was nothing in front of it — the village
+     road most of all — the middle distance read as a sheet of standing water
+     lying across the whole country. There is water in this game and it is in
+     the paddies. Behind the village there is land. */
+  const plainTop=176;
+  for(let y=plainTop;y<H;y++){
+    const k=(y-plainTop)/(H-plainTop);
+    g.fillStyle = mix('#7d9683','#a3b189', Math.pow(k,0.65));
+    g.fillRect(0,y,w,1);
+  }
+  // hedgerows and windbreaks lying across it, hazier the further back they are
+  for(let i=0;i<260;i++){
+    const x=r()*w, y=plainTop+3+r()*(H-plainTop-8);
+    const k=(y-plainTop)/(H-plainTop);
+    g.globalAlpha=0.18+0.22*k;
+    g.fillStyle = mix('#5b7d69','#6d8a5a',k);
+    g.fillRect(R(x),R(y),R(5+r()*24),1+R(r()*1.7));
+    g.globalAlpha=1;
+  }
+  // and a few clumps of palm standing out of it
+  for(let i=0;i<90;i++){
+    const x=r()*w, y=plainTop+6+r()*(H-plainTop-14);
+    const k=(y-plainTop)/(H-plainTop);
+    g.globalAlpha=0.26+0.24*k;
+    const c2=mix('#4f7360','#5f7f52',k);
+    pTaper(g,x,y+3,x,y-4-r()*3,1.4,1,c2);
+    pEll(g,x,y-5-r()*2,2.6+r()*1.6,1.6+r(),c2);
+    g.globalAlpha=1;
+  }
+  // a far treeline blur along the back of it
   g.fillStyle='#547a7e';
   for(let x=0;x<w;x+=2){
     const h2 = 178 + Math.sin(x*0.02)*3 + Math.sin(x*0.007)*5;
@@ -2784,7 +2814,7 @@ function paintBg(){
       g.globalAlpha=1; }
   }
   paintTerraces(g, sc, r, PADDY_A, PADDY_B);
-  paintTerraces(g, sc, r, 9060, 10580);
+  paintTerraces(g, sc, r, 9080, 10580);
   // a wash of night over everything back here
   g.globalCompositeOperation='source-atop';
   g.fillStyle='rgba(126,158,186,0.20)'; g.fillRect(0,0,w,H);
@@ -2797,21 +2827,29 @@ function paintBg(){
    lying in it — and this is that, built into the back layer: six terraces
    stepping away from you, each one a sheet of water with an earth bund at
    its far edge, rice along the bunds, and long still ripples across them. */
-const PADDY_A = 520, PADDY_B = 1980;         // how far the terraces go, in world x
+const PADDY_A = 700, PADDY_B = 1500;         // how far the terraces go, in world x
 /* where there is standing water at your own feet. Not one span: the farm
    buildings, the pen and the orchard sit on dry ground in the middle of it,
    the way a farmhouse does. */
-const WET = [[534,716],[1166,1462],[1500,1548],[1600,1778],[1812,2110],
-             [9140,9720],[9790,10560]];
+/* Standing water belongs in a rice field and nowhere else. It used to run
+   under the village houses and across the road, which is not a paddy, it is
+   a flood. Here it is the two paddy plots and the ground the rice spirit
+   stands on, and it stops short of the orchard: fruit trees do not grow in
+   a foot of water. Everything east of the town is the far paddies. */
+const WET = [[1118,1338], [9140,9720], [9790,10560]];
 function paintTerraces(g, sc, r, PA, PB){
   const N=4;
   for(let i=N-1;i>=0;i--){
     const t=i/(N-1);                          // 1 is the furthest terrace
     const lift = 11 + i*9.5;                  // how far up the screen it sits
-    const dep  = lerp(5.5, 2.6, t);           // and how thin the sheet looks
-    const wat  = mix('#5f8898','#aec8cc', Math.pow(t,0.65));
-    const watL = shade(wat, 0.26), bund = mix('#6b5a40','#95856a', t*0.9);
-    const al   = lerp(0.58, 0.34, t);
+    /* Deep enough to meet the terrace in front of it. They used to be three
+       thin sheets with the country showing between them, which reads as haze
+       over a field rather than as a field under water. A paddy in the rains
+       is water from one bund to the next. */
+    const dep  = 10.5;
+    const wat  = mix('#4d7f90','#9cc0c6', Math.pow(t,0.6));
+    const watL = shade(wat, 0.3), bund = mix('#6b5a40','#95856a', t*0.9);
+    const al   = lerp(0.92, 0.66, t);
     const x0=R(PA*sc), x1=R(PB*sc);
     for(let x=x0;x<x1;x++){
       const gy = R(groundY(x/sc)) - 4 - lift;
@@ -2819,21 +2857,27 @@ function paintTerraces(g, sc, r, PA, PB){
       if(edge<=0.03) continue;
       g.globalAlpha = al*edge;
       g.fillStyle=wat;  g.fillRect(x, gy, 1, R(dep));
-      g.fillStyle=watL; g.fillRect(x, gy, 1, 1);
-      g.globalAlpha = al*edge*1.25;
-      g.fillStyle=bund; g.fillRect(x, gy+R(dep), 1, 1);
+      g.fillStyle=watL; g.fillRect(x, gy, 1, 1);       // sky caught on the surface
+      g.fillStyle=shade(wat,-0.22); g.fillRect(x, gy+R(dep)-2, 1, 2);
+      g.globalAlpha = Math.min(1, al*edge*1.3);
+      g.fillStyle=bund; g.fillRect(x, gy+R(dep)-1, 1, 2);   // the bund you walk along
+      g.fillStyle=shade(bund,0.2); g.fillRect(x, gy+R(dep)-1, 1, 1);
       g.globalAlpha=1;
     }
     // rice along the bund of each terrace: sparse, short, paler further off
-    const h2=R(lerp(4,2,t)), step=R(lerp(3,2,t));
-    const rc = mix('#4a8257','#93ad92', Math.pow(t,0.7));
-    for(let x=x0;x<x1;x+=step){
-      if(r()<0.55) continue;
+    /* rice standing in it. One stalk per column all the same height is a
+       barcode, so each one gets its own height and its own green. */
+    const hMax=lerp(7.5,3,t);
+    const rc = mix('#437d50','#8aa88b', Math.pow(t,0.7));
+    for(let x=x0;x<x1;x++){
+      if(r()<0.42) continue;
       const gy = R(groundY(x/sc)) - 4 - lift;
       const edge = clamp((x-x0)/120,0,1)*clamp((x1-x)/120,0,1);
       if(edge<=0.03) continue;
-      g.globalAlpha=al*edge*1.4;
-      g.fillStyle = r()<0.4? shade(rc,0.16) : rc;
+      const h2=Math.max(1,R(hMax*(0.35+r()*0.9)));
+      g.globalAlpha=al*edge*(0.8+r()*0.6);
+      const v=r();
+      g.fillStyle = v<0.3? shade(rc,0.2) : v<0.6? shade(rc,-0.12) : rc;
       g.fillRect(x, gy-h2+1, 1, h2);
       g.globalAlpha=1;
     }
@@ -2928,42 +2972,56 @@ function paintPlay(){
   for(const [wa,wb] of WET){
     for(let x=wa;x<wb;x++){
       const gy=R(groundY(x));
-      const onBund = ((x-wa) % 118) < 7;          // the ridges you walk along
-      const fade = clamp((x-wa)/46,0,1)*clamp((wb-x)/46,0,1);
+      const m0 = (x-wa) % 118;
+      const onBund = m0 < 7;                     // the earth ridges you walk along
+      const fade = clamp((x-wa)/64,0,1)*clamp((wb-x)/64,0,1);
       if(fade<0.04) continue;
       if(onBund){
-        g.fillStyle='#6f6046'; g.fillRect(x,gy,1,4);
-        g.fillStyle='#8a7a5c'; g.fillRect(x,gy,1,1);
+        // a bund is a low ridge of packed earth, not a wall between two tanks
+        g.fillStyle='#6f6046'; g.fillRect(x,gy-1,1,7);
+        g.fillStyle='#8a7a5c'; g.fillRect(x,gy-1,1,1);
+        g.fillStyle='#5a4c36'; g.fillRect(x,gy+6,1,3);
         continue;
       }
-      /* deep enough to read as a flooded field rather than a gutter: the
-         sheet takes the top of the soil, goes darker as it goes down, and
-         has the sky and whatever is standing in it broken up across it */
-      const d=R(24+Math.sin(x*0.013)*5);
+      /* A cross-section of a flooded field. The top few rows are the surface
+         with the sky in them; under that it darkens fast into silt, so it
+         reads as water with depth rather than a blue tank sunk in the mud. */
+      const d=R(19+Math.sin(x*0.013)*4);
       for(let k=0;k<d;k++){
         const kt=k/d;
-        g.fillStyle = mix('#2d5f7e','#12283a', Math.pow(kt,0.7));
+        g.fillStyle = mix('#5490a8','#1b3226', Math.pow(kt,1.25));
         g.fillRect(x,gy+1+k,1,1);
       }
-      g.fillStyle='#9fc6d8'; g.fillRect(x,gy+1,1,1);
-      g.fillStyle='#6f9fbe'; g.fillRect(x,gy+2,1,1);
-      if((x*7)%13<2){ g.fillStyle='#7fa6c8'; g.fillRect(x,gy+2+((x*5)%(d-3)),1,1); }
-      if((x*11)%29<1){ g.fillStyle='rgba(223,240,234,0.55)'; g.fillRect(x,gy+2,R(4+(x%11)),1); }
-      if((x*13)%41<1){ g.fillStyle='rgba(223,240,234,0.3)'; g.fillRect(x,gy+6+((x*3)%8),R(6+(x%14)),1); }
-      // the green of the rice, lying in the water under it
-      if((x*3)%17<3){ g.fillStyle='rgba(58,112,72,0.32)'; g.fillRect(x,gy+3,1,R(3+(x%7))); }
+      g.fillStyle='#cbe6ec'; g.fillRect(x,gy,1,1);        // the waterline itself
+      g.fillStyle='#9ac8d8'; g.fillRect(x,gy+1,1,1);
+      g.fillStyle='#6ea6c0'; g.fillRect(x,gy+2,1,1);
+      if((x*7)%13<2){ g.fillStyle='#7fa6c8'; g.fillRect(x,gy+2+((x*5)%Math.max(2,d-3)),1,1); }
+      if((x*11)%29<1){ g.fillStyle='rgba(223,240,234,0.6)'; g.fillRect(x,gy+1,R(5+(x%13)),1); }
+      if((x*13)%41<1){ g.fillStyle='rgba(223,240,234,0.28)'; g.fillRect(x,gy+5+((x*3)%7),R(7+(x%15)),1); }
+      // every stalk standing in it throws a green smear down through the water
+      if((x*3)%7<4){ g.fillStyle='rgba(48,96,66,0.42)'; g.fillRect(x,gy+2,1,R(4+(x%9))); }
     }
-    // rice standing up out of it, thickest along the bunds
-    for(let x=wa+3;x<wb-3;x+=2){
-      const gy=R(groundY(x));
-      const fade = clamp((x-wa)/46,0,1)*clamp((wb-x)/46,0,1);
-      if(fade<0.1) continue;
-      const m=(x-wa)%118, near=(m<14||m>110);
-      if(r() > (near?0.88:0.42)*fade) continue;
-      const h2=5+r()*5, lean=(r()-0.5)*2;
-      g.fillStyle = r()<0.45? '#4c8a5c' : '#3a7048';
-      for(let k=0;k<h2;k++) g.fillRect(R(x+lean*k/h2), R(gy-k+1), 1,1);
-      if(r()<0.3){ g.fillStyle='#c8cf8a'; g.fillRect(R(x+lean),R(gy-h2+1),1,1); }
+    /* Rice standing up out of it. The title screen is a wall of stalks and
+       this was nine of them, so the field you actually walk through read as
+       a trench of blue with a bank of grass. Two rows: a pale one set back,
+       a darker one at the front. */
+    for(let pass=0;pass<2;pass++){
+      const back = pass===0;
+      for(let x=wa+2;x<wb-2;x+=1){
+        const gy=R(groundY(x));
+        const fade = clamp((x-wa)/64,0,1)*clamp((wb-x)/64,0,1);
+        if(fade<0.1) continue;
+        const m=(x-wa)%118;
+        if(m<9 || m>113) continue;               // the bund itself stays clear
+        const near=(m<20||m>104);                // thickest along the bunds
+        if(r() > (near?0.94:0.72)*fade) continue;
+        const h2=(back?5:7)+r()*(back?5:7), lean=(r()-0.5)*2.4;
+        g.fillStyle = back ? (r()<0.5?'#6f9e72':'#5e8f66')
+                           : (r()<0.45?'#4c8a5c':'#376d46');
+        for(let k=0;k<h2;k++) g.fillRect(R(x+lean*k/h2), R(gy-k+(back?-2:1)), 1,1);
+        if(!back && r()<0.34){ g.fillStyle='#cdd48c';
+          g.fillRect(R(x+lean),R(gy-h2+1),1,1); g.fillRect(R(x+lean),R(gy-h2+2),1,1); }
+      }
     }
   }
   // the pond by the road
@@ -3027,7 +3085,6 @@ function paintPlay(){
   }
   // --- the rice fields: dikes west of the farm, and one scarecrow on it ---
   stamp(ART.scare, 1180, groundY(1180)+2, 1);
-  stamp(ART.scare, 1712, groundY(1712)+2, 0.9);
   // the fallen tree across the road (a task for someone tall)
   {
     const x=FALLEN_TREE_X, gy=groundY(x);
@@ -10169,65 +10226,18 @@ const MAP_PINS = [
   {x:()=>TANI_X,     n:'Tani',         ic:'tani'},
   {x:()=>SALA_X,     n:'the temple',   ic:'bell'},
   {x:()=>6330,       n:'the stream',   ic:'water'},
+  /* east of the deep country, where the paved road starts */
+  {x:()=>CROSS_X,    n:'the crossroad', ic:'cross'},
+  {x:()=>BUSSTOP_X,  n:'the bus stop', ic:'house'},
+  {x:()=>STORE_X,    n:'the shop',     ic:'store'},
+  {x:()=>9860,       n:'the far fields', ic:'rice'},
 ];
-function drawMap(g,x0,y0,w,h){
-  cloud(g,x0,y0,w,h,{seed:97,top:'#fdf6e2',body:'#f1e5c8',under:'#d9c9a2',edge:'#b09a72'});
-  const rx=x0+16, rw=w-32, ry=y0+h*0.56;
-  pTxt(g,'VILLAGE MAP',x0+14,y0+16,CL.ink,11);
-  pTxt(g,'THE ONE LONG ROAD · west to east',x0+120,y0+15,CL.ink3,6);
-  // zone bands, named along the top
-  ZONES.forEach((z,i)=>{
-    const a=rx+rw*(z.a/WORLD_W), b=rx+rw*(z.b/WORLD_W);
-    pR(g,a,y0+24,Math.max(1,b-a-1),9, i%2?'rgba(90,130,90,0.18)':'rgba(140,115,70,0.18)');
-    pTxt(g,z.s||z.name,(a+b)/2,y0+31,CL.ink2,6,'center');
-    pR(g,a,y0+24,1,ry-y0-24,'rgba(150,130,95,0.45)');
-  });
-  // the road itself
-  pR(g,rx,ry-2,rw,5,'#c2a97e'); pR(g,rx,ry-2,rw,1,'#dcc79a');
-  for(let i=0;i<rw;i+=7) pR(g,rx+i,ry+1,4,1,'#a88b5e');
-  // pins on three tiers above, so labels never collide
-  MAP_PINS.forEach((p,i)=>{
-    const px2=rx+rw*(p.x()/WORLD_W);
-    const tier=i%4;
-    const py=ry-16-tier*13;
-    pR(g,px2,py+5,1,ry-py-4,'rgba(140,120,85,0.7)');
-    const done=p.done&&p.done();
-    pEll(g,px2,py,4.4,4.4, done?'#8fbf6a':'#f2c14e');
-    pEll(g,px2,py,3.2,3.2, done?'#d4f0b4':'#fff0b8');
-    if(done) icoTick(g,px2,py,0.8,'#2e5a1e');
-    else pR(g,px2-1,py-1,2,2,'#8a6a1e');
-    pTxt(g,p.n,px2,py-6,CL.ink,6,'center');
-  });
-  // the people, on a row of their own
-  const fy=ry+16;
-  pTxt(g,'friends',rx+2,fy-9,CL.ink3,6);
-  for(const s of SPIRITS){
-    const px2=rx+rw*(s.x/WORLD_W);
-    pR(g,px2,ry+3,1,fy-ry-6,'rgba(140,120,85,0.5)');
-    pEll(g,px2,fy,4.2,4.2, s.friend?'#e8829e':'#b8aec8');
-    if(s.friend) icoHeart(g,px2,fy,0.7,'#6e2038'); else pTxt(g,'?',px2,fy+2,'#4a4458',6,'center');
-    pTxt(g, s.name, px2, fy+13, s.friend?'#8a3a54':CL.ink3, 6,'center');
-  }
-  // you are here
-  const yx=rx+rw*(P.x/WORLD_W);
-  const bob=Math.sin(GS.t*3)*1.5;
-  pR(g,yx,ry-3,1,10,'#8f2a20');
-  pTaper(g,yx,ry+7+bob,yx,ry-1+bob,5,2,'#c0392f');
-  pEll(g,yx,ry-2+bob,3.6,3.6,'#e05a48'); pEll(g,yx-1,ry-3+bob,1.4,1.4,'#ffb0a0');
-  pTxt(g,'you are here',yx,ry+16+bob,'#8f2a20',6,'center');
-  icoHeart(g,x0+17,y0+h-12,0.7,CL.ink3); pTxt(g,'friends   ? still waiting',x0+24,y0+h-10,CL.ink3,6);
-  let obj = !GS.q.metPhra? 'go east to the spirit house'
-    : !FARM.rented? 'rent the farm, west in the rice fields'
-    : reqLine()? reqLine()
-    : !GS.q.metPhra? 'go east to the spirit house'
-    : GS.q.done? 'wander as long as you like'
-    : GS.ready? 'return to the spirit house'
-    : GS.merit>=GOAL && !GS.mem.bowl? 'one page of you is still turning'
-    : GS.merit>=GOAL? 'tell Phra Phum — the ledger is full'
-    : SPIRITS.some(s=>!s.friend)? 'somebody out there is still waiting'
-    : 'keep making things and giving them away';
-  pTxt(g,obj,x0+w-12,y0+h-10,CL.ink2,6,'right');
-}
+/* The map is drawn in one place, and that place is not here. There used to
+   be a copy of drawMap at this point in the file — a straight line across
+   the page with the labels dealt onto four tiers — and because every one of
+   these parts is concatenated into a single script, the later definition in
+   pchat.js silently won. A dead function that looks live is worse than no
+   function, so it is gone. */
 
 /* ============================================================
    SIGNPOSTS, drawn live so the lettering is real
@@ -10765,7 +10775,7 @@ function drawLedger(g){
       pTxt(g,L('friends made')+' '+made+'/'+list.length,W-22,H-11,CL.ink3,6,'right');
     }
   } else if(TREE.tab===3){
-    drawMap(g,12,52,W-24,H-66);
+    drawMap(g,6,51,W-12,H-57);
   } else {
     drawPast(g);
   }
@@ -14186,86 +14196,262 @@ function drawFloats(g){
    and the signs are gone. Soft dots now, and the label under
    the dot rather than balanced on top of it.
    ============================================================ */
+/* ============================================================
+   THE MAP
+
+   It used to be one straight line across a sheet of paper with
+   every label dealt out onto four rows above it — a diagram of
+   a road, not a map of a country. Ten thousand six hundred
+   pixels will not fit on one line at a readable scale anyway.
+
+   So: two rows, west to east and then east again, each one a
+   strip of drawn country with the terrain of whatever zone it
+   is passing through, a road that wanders the way a road does,
+   and a small picture at every landmark. Where you have not
+   walked there is bare paper and a dotted line.
+   ============================================================ */
+const MAP_ROWS = 2;
+/* every name the map put down last time it drew, so a test can prove none of
+   them landed on top of another one */
+const MAP_LABELS = [];
+/* the small pictures. Seven pixels each, ink on paper. */
+function mapIcon(g,kind,x,y,c,c2){
+  const I=c||'#5a4632', L=c2||'#9c8460';
+  switch(kind){
+    case 'chedi':
+      pTri(g,x,y-5,x-3,y+1,x+3,y+1,I); pR(g,R(x)-4,R(y)+1,9,2,I); pR(g,R(x),R(y)-7,1,2,I); break;
+    case 'shrine':
+      pTri(g,x,y-5,x-4,y-1,x+4,y-1,I); pR(g,R(x)-3,R(y)-1,7,3,L); pR(g,R(x)-1,R(y)+2,3,3,I); break;
+    case 'wok':
+      pEll(g,x,y-1,4,2.2,I); pR(g,R(x)-4,R(y)-3,9,1,I); pR(g,R(x)-1,R(y)+1,3,3,L); break;
+    case 'water':
+      for(let i=0;i<3;i++) pR(g,R(x)-4+((i%2)*2),R(y)-3+i*2,7,1, i%2?L:I); break;
+    case 'log':
+      pR(g,R(x)-5,R(y)-2,11,4,I); pEll(g,x-5,y,2,2,L); break;
+    case 'lamp':
+      pR(g,R(x),R(y)-6,1,8,I); pR(g,R(x)-2,R(y)-7,6,2,I); pEll(g,x+3,y-5,1.6,1.4,L); break;
+    case 'craft':
+      pR(g,R(x)-5,R(y)-1,11,3,I); pR(g,R(x)-4,R(y)+2,2,3,I); pR(g,R(x)+3,R(y)+2,2,3,I);
+      pR(g,R(x)-2,R(y)-4,5,3,L); break;
+    case 'cat':
+      pEll(g,x,y,3.4,2.4,I); pEll(g,x+3,y-2,2,2,I);
+      pTri(g,x+2,y-5,x+1,y-2,x+4,y-2.6,I); pTaper(g,x-3,y-1,x-6,y-4,1.4,1,L); break;
+    case 'tani':
+      pTaper(g,x,y+2,x,y-3,2,1.4,I); for(let i=0;i<4;i++){ const a=-0.4-i*0.5;
+        pTaper(g,x,y-3,x+Math.cos(a)*5,y-3+Math.sin(a)*4,1.6,1,L); } break;
+    case 'bell':
+      pEll(g,x,y-1,3,3.4,I); pR(g,R(x)-4,R(y)+2,9,2,I); pR(g,R(x),R(y)-6,1,2,I); break;
+    case 'house':
+      pTri(g,x,y-5,x-5,y-1,x+5,y-1,I); pR(g,R(x)-4,R(y)-1,9,4,L); pR(g,R(x)-1,R(y)+1,3,2,I); break;
+    case 'store':
+      pR(g,R(x)-5,R(y)-4,11,7,L); pR(g,R(x)-5,R(y)-6,11,2,I);
+      pR(g,R(x)-3,R(y)-2,4,5,I); break;
+    case 'cross':
+      pR(g,R(x)-6,R(y),13,2,I); pR(g,R(x),R(y)-6,2,13,I); break;
+    case 'rice':
+      for(let i=0;i<4;i++) pTaper(g,x-4+i*2.6,y+2,x-4+i*2.6+((i%2)?1:-1),y-4,1.4,0.8,I); break;
+    default: pEll(g,x,y,2.4,2.4,I);
+  }
+}
+/* what the ground looks like on paper, per zone */
+const MAP_TERRAIN = {
+  charnel:{c:'#c9c4b4', k:'stone'}, roadside:{c:'#d5cbaa', k:'grass'},
+  paddy:{c:'#b8d2cc', k:'paddy'},   villageW:{c:'#dcc9a4', k:'roofs'},
+  centre:{c:'#dcc9a4', k:'roofs'},  grove:{c:'#b9cfa6', k:'trees'},
+  wat:{c:'#e4d6b0', k:'chedi'},     forest:{c:'#a8c39a', k:'trees'},
+  deep:{c:'#9cba90', k:'trees'},    cross:{c:'#cfc7b4', k:'road'},
+  town:{c:'#cdc6bc', k:'blocks'},   far:{c:'#b8d2cc', k:'paddy'},
+};
 function drawMap(g,x0,y0,w,h){
   cloud(g,x0,y0,w,h,{seed:97,top:'#fdf6e2',body:'#f1e5c8',under:'#d9c9a2',edge:'#b09a72'});
-  const rx=x0+16, rw=w-32, ry=y0+h*0.56;
-  pTxt(g,'VILLAGE MAP',x0+14,y0+16,CL.ink,11);
-  pTxt(g,'THE ONE LONG ROAD · west to east',x0+120,y0+15,CL.ink3,6);
-  pTxt(g, Math.round(seenFrac()*100)+'%', x0+w-18, y0+15, CL.ink3, 6, 'right');
-  ZONES.forEach((z,i)=>{
-    const a=rx+rw*(z.a/WORLD_W), b=rx+rw*(z.b/WORLD_W);
-    if(!seenSpan(z.a,z.b)) return;                 // nobody drew you a map
-    pR(g,a,y0+24,Math.max(1,b-a-1),9, i%2?'rgba(90,130,90,0.18)':'rgba(140,115,70,0.18)');
-    const zn=L(z.s||z.name);
-    if(txtW(zn,6) < b-a-4) pTxt(g,zn,(a+b)/2,y0+31,CL.ink2,6,'center');
-    pR(g,a,y0+24,1,ry-y0-24,'rgba(150,130,95,0.30)');
-  });
-  /* the road itself: inked where you have walked it, and a bare dotted line
-     where you have not */
-  const nSeg=Math.ceil(WORLD_W/MAPSTEP);
-  for(let i=0;i<nSeg;i++){
-    const a=rx+rw*(i*MAPSTEP/WORLD_W), b=rx+rw*((i+1)*MAPSTEP/WORLD_W);
-    if(GS.seenX && GS.seenX[i]){
-      pR(g,a,ry-2,Math.max(1,b-a),5,'#c2a97e'); pR(g,a,ry-2,Math.max(1,b-a),1,'#dcc79a');
-    } else {
-      for(let k=0;k<b-a;k+=5) pR(g,a+k,ry,2,1,'rgba(176,154,114,0.45)');
+  /* the paper: fold lines and a wash of age */
+  g.globalAlpha=0.45;
+  pR(g,R(x0+w*0.34),R(y0+6),1,h-12,'#dfd0a8'); pR(g,R(x0+w*0.68),R(y0+6),1,h-12,'#dfd0a8');
+  g.globalAlpha=1;
+  /* the heading, and then whatever room is left over for the rest of it.
+     Thai sets wider than English and the line under it used to start at a
+     fixed x, which put the subtitle straight through the title. */
+  const ttl=L('THE ROAD');
+  pTxt(g,ttl,x0+12,y0+14,CL.ink,11);
+  const pc=Math.round(seenFrac()*100), tail=L('walked')+' '+pc+'%';
+  pTxt(g, tail, x0+w-12, y0+14, pc>70?'#6e8a4c':CL.ink3, 6, 'right');
+  const sub=L('west to east, and then east again');
+  const sa=x0+20+txtW(ttl,11), sb=x0+w-20-txtW(tail,6);
+  if(sb-sa > txtW(sub,6)) pTxt(g,sub,sa,y0+14,CL.ink3,6);
+
+  MAP_LABELS.length=0;
+  const mx=x0+16, mw=w-32;
+  const rowH=Math.floor((h-46)/MAP_ROWS);
+  const seg=WORLD_W/MAP_ROWS;
+  const rowRy=[];
+
+  for(let row=0;row<MAP_ROWS;row++){
+    const wa=row*seg, wb=(row+1)*seg;
+    const th=rowH-22;                          // the drawn strip; the rest is margin for labels
+    const ty=y0+26+row*rowH+11;
+    const ry=ty+th*0.5;                        // the road runs down the middle of the strip
+    const X=wx => mx + mw*((wx-wa)/seg);
+    const bend = wx => Math.sin(wx*0.0016)*2.6 + Math.sin(wx*0.00052+1.1)*1.7;
+    rowRy.push(ry);
+    /* the strip of paper this row of country sits on */
+    pR(g,mx-2,ty-2,mw+4,th+4,'#e7dab6');
+    pR(g,mx-2,ty-2,mw+4,1,'#f6eed4');
+    pR(g,mx-2,ty+th+1,mw+4,1,'#cbb88e');
+    /* the country, zone by zone, and only where you have been */
+    ZONES.forEach(z=>{
+      const a=Math.max(z.a,wa), b=Math.min(z.b,wb);
+      if(b<=a) return;
+      const xa=R(X(a)), xb=R(X(b)), ww=Math.max(1,xb-xa);
+      const t=MAP_TERRAIN[z.id]||{c:'#d8cdb0',k:'grass'};
+      const known=seenSpan(a,b);
+      if(!known){
+        /* unwalked: bare paper, and only a suggestion that anything is there */
+        for(let i=0;i<ww;i+=6) for(let j=0;j<th;j+=6)
+          pR(g,xa+i+((j/6)%2)*3, ty+j, 1,1,'rgba(176,154,114,0.28)');
+      } else {
+        pR(g,xa,ty,ww,th,t.c);
+        const seed=mulberry(R(z.a));
+        if(t.k==='paddy'){
+          for(let i=0;i<ww;i+=7) pR(g,xa+i,ty+2,1,th-4,'rgba(120,160,160,0.55)');
+          for(let j=3;j<th-1;j+=5) pR(g,xa+1,ty+j,ww-2,1,'rgba(255,255,255,0.42)');
+          for(let i=2;i<ww;i+=12) mapIcon(g,'rice',xa+i,ty+th*0.30,'rgba(70,120,92,0.50)');
+        } else if(t.k==='trees'){
+          for(let i=0;i<ww;i+=6){ const jy=ty+3+(seed()*(th-9));
+            pEll(g,xa+i+2,jy,2.6,2.2,'rgba(74,118,72,0.55)');
+            pR(g,R(xa+i+2),R(jy+2),1,2,'rgba(92,74,52,0.5)'); }
+        } else if(t.k==='roofs'){
+          for(let i=0;i<ww-6;i+=10){ const jy=ty+3+(seed()*(th-12));
+            pTri(g,xa+i+4,jy,xa+i,jy+3,xa+i+8,jy+3,'rgba(150,86,60,0.62)');
+            pR(g,R(xa+i+1),R(jy+3),7,3,'rgba(196,168,122,0.6)'); }
+        } else if(t.k==='blocks'){
+          for(let i=0;i<ww-5;i+=8){ const hh=4+R(seed()*5);
+            pR(g,xa+i+1,ty+th-3-hh,6,hh,'rgba(130,126,120,0.55)');
+            pR(g,xa+i+1,ty+th-3-hh,6,1,'rgba(230,226,216,0.6)'); }
+        } else if(t.k==='stone'){
+          for(let i=0;i<ww-3;i+=10) mapIcon(g,'chedi',xa+i+4,ty+th*0.36,'rgba(120,114,104,0.5)');
+        } else if(t.k==='chedi'){
+          mapIcon(g,'chedi',xa+ww*0.5,ty+th*0.34,'rgba(176,140,52,0.72)');
+        } else if(t.k==='road'){
+          for(let i=0;i<ww;i+=5) pR(g,xa+i,ty+2,2,1,'rgba(150,130,95,0.5)');
+        } else {
+          for(let i=0;i<ww;i+=5){ const jy=ty+3+(seed()*(th-6));
+            pR(g,R(xa+i),R(jy),2,1,'rgba(130,150,96,0.5)'); }
+        }
+      }
+      /* the zone's name goes in the margin under the strip, not on top of the
+         country — a name printed over a paddy is a name you cannot read and a
+         paddy you cannot see. And only where you have been: the names of
+         places you have never walked to are not yours to know yet. */
+      if(!known) return;
+      const zn=L(z.s||z.name);
+      if(txtW(zn,6) < ww-8) pTxt(g,zn,(xa+xb)/2,ty+th+9,'rgba(96,76,54,0.8)',6,'center');
+      if(ww>10) pR(g,xa,ty,1,th,'rgba(150,130,95,0.35)');
+    });
+    /* the road: it wanders, and it is only inked where you have walked */
+    let prev=null;
+    for(let wx=wa; wx<=wb; wx+=seg/mw){
+      const px=X(wx), py=ry+bend(wx);
+      if(prev){
+        const ww2=Math.max(1,R(px)-R(prev[0])+1);
+        if(seenAt(wx)){
+          pR(g,R(prev[0]),R(prev[1])-1,ww2,4,'#c2a97e');
+          pR(g,R(prev[0]),R(prev[1])-1,ww2,1,'#dcc79a');
+        } else if((R(px)%5)<2){
+          pR(g,R(px),R(py),2,1,'rgba(176,154,114,0.55)');
+        }
+      }
+      prev=[px,py];
+    }
+    for(let wx=wa; wx<wb; wx+=seg/mw*6){
+      if(!seenAt(wx)) continue;
+      pR(g,R(X(wx)),R(ry+bend(wx)+1),3,1,'#a88b5e');
+    }
+    /* ---- the landmarks ----
+       A picture on a post above or below the road, and the name beside it.
+       Two landmarks a hundred pixels apart is easy; six of them inside forty
+       is the whole problem. So each side of the road keeps a running edge,
+       and a name that will not fit where its post is slides along until it
+       does, with a hairline back to say which post it belongs to. */
+    const pins=MAP_PINS.filter(pn=>{ const wx=pn.x(); return wx>=wa && wx<wb && seenAt(wx); })
+                       .map(pn=>({pn, px:X(pn.x()), py:ry+bend(pn.x())}))
+                       .sort((a,b)=>a.px-b.px);
+    const edge=[-1e9,-1e9];                    // right edge of the last name on each side
+    pins.forEach((it,i)=>{
+      const nm=L(it.pn.n);
+      const lw=Math.max(txtW(nm,6),16)+5;
+      const want=it.px-lw/2;
+      const push=s=>Math.max(0,(edge[s]+3)-want);
+      let s = push(0)<=push(1) ? 0 : 1;
+      if(push(0)<=0 && push(1)<=0) s=i%2;       // both clear: alternate, so the map breathes
+      let la=Math.max(want, edge[s]+3);
+      la=clamp(la, mx-4, x0+w-8-lw);
+      edge[s]=la+lw;
+      const lx=la+lw/2, up = s===0;
+      const iy = it.py + (up? -12 : 12);
+      const tb = iy + (up? -10 : 16);           // the name's baseline
+      const done=it.pn.done&&it.pn.done();
+      /* the post down to the road */
+      const pa=Math.min(iy,it.py), pb2=Math.max(iy,it.py);
+      pR(g,R(it.px),R(pa)+6,1,Math.max(1,pb2-pa-6),'rgba(120,98,66,0.55)');
+      /* and the hairline over to the name, when the name had to move */
+      if(Math.abs(lx-it.px)>6){
+        const a2=Math.min(lx,it.px), b3=Math.max(lx,it.px);
+        pR(g,R(a2),R(up?tb-3:tb-2),R(b3-a2),1,'rgba(140,118,82,0.45)');
+      }
+      pEll(g,it.px,iy,7.4,7.4,'#f6efd8');
+      pEll(g,it.px,iy,6.6,6.6, done?'#e2eed2':'#f1e5c8');
+      mapIcon(g,it.pn.ic,it.px,iy+1, done?'#6e8a4c':'#5a4632', done?'#9fc07c':'#9c8460');
+      /* the name on its own scrap of paper, so nothing under it muddies it */
+      g.globalAlpha=0.86; pR(g,R(la),R(tb)-6,R(lw),8,'#f6efd8'); g.globalAlpha=1;
+      pTxt(g,nm, lx, tb, done?'#5b7a3c':CL.ink2, 6,'center');
+      MAP_LABELS.push({n:nm, row:row, side:s, a:la, b:la+lw, y:tb});
+    });
+    /* the ghosts you have met, as small dots on the road itself */
+    SPIRITS.forEach(sp=>{
+      if(sp.x<wa||sp.x>=wb || !seenAt(sp.x)) return;
+      const px=X(sp.x), py=ry+bend(sp.x)+5;
+      pEll(g,px,py,4.2,4.2, sp.friend?'rgba(232,130,158,0.35)':'rgba(184,174,200,0.35)');
+      pEll(g,px,py,2.6,2.6, sp.friend?'#e8829e':'#b8aec8');
+      if(sp.friend) icoHeart(g,px,py,0.55,'#6e2038');
+    });
+    /* and you */
+    if(P.x>=wa && P.x<wb){
+      const px=X(P.x), py=ry+bend(P.x);
+      const bob=Math.sin(GS.t*3)*1.4;
+      pTaper(g,px,py+5+bob,px,py-4+bob,5,2,'#c0392f');
+      pEll(g,px,py-5+bob,3.4,3.4,'#e05a48'); pEll(g,px-1,py-6+bob,1.4,1.4,'#ffb0a0');
     }
   }
-  for(let i=0;i<rw;i+=7){ const wx=i/rw*WORLD_W; if(seenAt(wx)) pR(g,rx+i,ry+1,4,1,'#a88b5e'); }
-  /* Labels used to be dealt out onto four rows in the order the pins happen
-     to be declared, which put "fallen tree" and "the cat" on the same row
-     eight pixels apart and printed one through the other. Each label now
-     takes the highest row it actually fits on. */
-  const rowEnd=[-99,-99,-99,-99,-99];
-  MAP_PINS.forEach((p,i)=>{
-    if(!seenAt(p.x())) return;                     // you have not been there yet
-    const px2=rx+rw*(p.x()/WORLD_W);
-    const lw=txtW(p.n,6);
-    let tier=0;
-    while(tier<rowEnd.length-1 && px2-lw/2 < rowEnd[tier]+4) tier++;
-    rowEnd[tier]=px2+lw/2;
-    const py=ry-14-tier*13;
-    const done=p.done&&p.done();
-    // a soft dot with a halo, and a faint thread down to the road
-    for(let k=ry-4;k>py+3;k-=3) pR(g,px2,k,1,1,'rgba(150,130,95,0.40)');
-    pEll(g,px2,py,5,5, done?'rgba(110,170,90,0.30)':'rgba(226,180,70,0.30)');
-    pEll(g,px2,py,3,3, done?'#7fae5c':'#e8b13c');
-    pEll(g,px2,py-0.6,1.6,1.4, done?'#d4f0b4':'#fff0b8');
-    pTxt(g,p.n,px2,py-6,done?CL.ink3:CL.ink,6,'center');
-  });
-  const fy=ry+16;
-  pTxt(g,'friends',rx+2,fy-9,CL.ink3,6);
-  const fEnd=[-99,-99];
-  for(const s of SPIRITS){
-    if(!seenAt(s.x)) continue;                     // you have not been down there
-    const px2=rx+rw*(s.x/WORLD_W);
-    const lw=txtW(s.name,6);
-    const row = (px2-lw/2 < fEnd[0]+4) ? 1 : 0;
-    fEnd[row]=px2+lw/2;
-    for(let k=ry+4;k<fy-4;k+=3) pR(g,px2,k,1,1,'rgba(150,130,95,0.34)');
-    pEll(g,px2,fy,4.4,4.4, s.friend?'rgba(232,130,158,0.35)':'rgba(184,174,200,0.35)');
-    pEll(g,px2,fy,2.8,2.8, s.friend?'#e8829e':'#b8aec8');
-    if(s.friend) icoHeart(g,px2,fy,0.6,'#6e2038');
-    if(row) pR(g,px2,fy+4,1,9,'rgba(150,130,95,0.34)');
-    pTxt(g, s.name, px2, fy+13+row*10, s.friend?'#8a3a54':CL.ink3, 6,'center');
+  /* the road runs off the right of one strip and comes back at the left of
+     the next, the way a strip map folds a long road onto a short page */
+  for(let row=0;row+1<MAP_ROWS;row++){
+    const yA=rowRy[row], yB=rowRy[row+1];
+    pR(g,R(mx+mw+1),R(yA),5,1,'rgba(150,128,92,0.7)');
+    pTri(g,mx+mw+9,yA+0.5, mx+mw+5,yA-2.5, mx+mw+5,yA+3.5,'rgba(140,118,82,0.8)');
+    pR(g,R(mx-7),R(yB),5,1,'rgba(150,128,92,0.7)');
+    pTri(g,mx-1,yB+0.5, mx-5,yB-2.5, mx-5,yB+3.5,'rgba(140,118,82,0.8)');
   }
-  const yx=rx+rw*(P.x/WORLD_W);
-  const bob=Math.sin(GS.t*3)*1.5;
-  pTaper(g,yx,ry+6+bob,yx,ry-2+bob,5,2,'#c0392f');
-  pEll(g,yx,ry-3+bob,3.4,3.4,'#e05a48'); pEll(g,yx-1,ry-4+bob,1.4,1.4,'#ffb0a0');
-  pTxt(g,'you are here',yx,ry+16+bob,'#8f2a20',6,'center');
-  icoHeart(g,x0+17,y0+h-12,0.7,CL.ink3); pTxt(g,'friends   ? still waiting',x0+24,y0+h-10,CL.ink3,6);
-  let obj = !GS.q.metPhra? 'go east to the spirit house'
-    : !FARM.rented? 'rent the farm, west in the rice fields'
-    : reqLine()? reqLine()
-    : GS.q.done? 'wander as long as you like'
-    : GS.ready? 'return to the spirit house'
-    : GS.merit>=GOAL && !GS.mem.bowl? 'one page of you is still turning'
-    : GS.merit>=GOAL? 'tell Phra Phum — the ledger is full'
-    : SPIRITS.some(s=>!s.friend)? 'somebody out there is still waiting'
-    : 'keep making things and giving them away';
-  pTxt(g,obj,x0+w-12,y0+h-10,CL.ink2,6,'right');
+  /* west at the head of the road, east at its end */
+  pTxt(g,'W', mx-8, rowRy[0]-6, 'rgba(120,98,66,0.85)', 6,'center');
+  pTxt(g,'E', mx+mw+8, rowRy[MAP_ROWS-1]-6, 'rgba(120,98,66,0.85)', 6,'center');
+  /* a compass rose and a scale bar, because it is a map */
+  {
+    const cx2=x0+w-26, cy2=y0+h-15;
+    for(let i=0;i<4;i++){ const a=i*Math.PI/2-Math.PI/2;
+      pTaper(g,cx2,cy2,cx2+Math.cos(a)*7,cy2+Math.sin(a)*7, i?1.6:2.4, 1, i?'#a88b5e':'#8f2a20'); }
+    pEll(g,cx2,cy2,1.6,1.6,'#5a4632');
+    pTxt(g,'N',cx2,cy2-13,'#8f2a20',6,'center');
+  }
+  {
+    const sx=x0+14, sy=y0+h-11, sw=40;
+    pR(g,sx,sy,sw,2,'#8f7a54'); pR(g,sx,sy-3,1,8,'#8f7a54'); pR(g,sx+sw-1,sy-3,1,8,'#8f7a54');
+    pR(g,R(sx+sw/2),sy-2,1,6,'#8f7a54');
+    pTxt(g,L("half an hour's walk"),sx+sw+6,sy+1,CL.ink3,6);
+  }
+  icoHeart(g,x0+w-116,y0+h-10,0.7,CL.ink3);
+  pTxt(g,SPIRITS.filter(s=>s.friend).length+'/'+SPIRITS.length,x0+w-108,y0+h-8,CL.ink3,6);
 }
+
 /* the signposts are gone, so nothing draws them */
 function drawSigns(g){}
 
