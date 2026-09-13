@@ -11,16 +11,17 @@ somebody else's earth at a time. You do not know your name. You do not know
 what you did. You are a **prete** — a hungry ghost, tall as the palm trees and
 thin as a pole, ash-grey, with hands like palm leaves, a pot belly under a
 visible ribcage, a mouth the size of a needle's eye, one small orange nose, six
-hairs left, **no nose at all**, two pale ringed eyes that have not closed
-properly since, and a mouth that is a mosquito's: a fine proboscis held out in
-front of his face, with nothing behind it that food can get through.
+hairs left, **no nose at all**, two pale ringed eyes set in their sockets that
+have not closed properly since, and a **sea horse's snout** where a mouth goes:
+a long tapering ringed tube held out in front of his face with a hole at the end
+of it no wider than a straw. He can get the smell of a thing and nothing else.
 You cannot eat anything you cook. You're going to cook a great deal anyway.
 
 ![what he looks like](screenshots/the-face.png)
 
 *Left to right: his face at rest, pleased, sorry, tired — and at the far right,
-what four turns in the light have made of him. The needle gets shorter every
-time, and by the end there is a mouth under it.*
+what four turns in the light have made of him. The snout gets shorter every
+time, and by the end there is a mouth at the end of it.*
 
 Far down the road there is one light on: a noodle cart with an old man behind
 it, open since four in the afternoon, selling to nobody. **He looks you up, and
@@ -911,6 +912,104 @@ drawn out of the same parts as the rest of the game:
   being given to you.
 
 ![a cover, half way across](screenshots/a-transition.png)
+
+## Ten thousand pixels of road, and you have to walk it to know it
+
+The world used to stop at seven thousand two hundred pixels of country lane.
+Past the old forest there is now:
+
+**The crossroad.** A real one — a side road running away from you in
+perspective with its own centre line and its gravel shoulders, the convex
+traffic mirror on a post that every Thai junction has, a corner spirit house
+with a red drink and three sticks of incense on it, a bus shelter nobody is
+waiting in, and a dog asleep across the middle of it.
+
+**The town road.** Two rows of concrete shophouses — roller shutters half up
+with a light on behind them, balconies with washing out, air-con boxes, a water
+tank and an aerial on every flat roof — and a **convenience store** that never
+shuts: a striped awning, a wall of fridges, a counter with somebody behind it,
+and the light out of the glass front lying on the road at night. It sells green
+papaya, bird chillies, limes, eggs, rice, coconut milk in a carton, and one cold
+sweet drink you cannot drink and somebody else can.
+
+**Traffic.** Motorbikes with a rider and sometimes a sack on the back, pickups
+with sacks in the tray, and a songthaew with three people riding home on the
+benches under its orange roof. They come both ways and they sound the horn for
+the dogs, which is the correct behaviour and the only reason the dogs are still
+alive. Stray dogs sleep in the road, get up when you come near, and lie back
+down when you have gone; scratching one is worth a merit the first time.
+
+**And the poles.** Square-section concrete, two crossarms, porcelain
+insulators, a transformer drum, a flyer stapled on at eye height, and the
+bundle of nine cables sagging between them that is the real national
+architecture. They march the whole way and out into the far paddies.
+
+![the crossroad](screenshots/the-crossroad.png)
+
+| | |
+|---|---|
+| ![the shop](screenshots/the-shop.png) | ![the far paddies](screenshots/the-far-paddies.png) |
+
+### The map starts blank
+
+It used to open with the whole seven miles on it, every zone named and every pin
+already placed, which is a map somebody else drew for you. The paper is blank
+now. Zones appear when you have walked them, pins when you have been past them,
+the road is inked behind you and dotted ahead, your five ghost friends are not
+on it until you have met them where they stand, and the corner tells you what
+percentage of the road you have actually seen.
+
+![a map with most of it still blank](screenshots/the-map-unread.png)
+
+## The rice fields, which is what this game is a picture of
+
+There used to be a seven-pixel strip of blue at the foot of the farm with grass
+either side of it, which is a puddle.
+
+There are now **six terraces of flooded paddy stepping away from you** behind
+the whole farm and behind the village too — each one a sheet of water with an
+earth bund at its far edge, rice standing along the bunds, long still ripples
+across the sheets, and four egrets out in it. The water at your own feet is two
+dozen pixels deep, goes darker as it goes down, and has the sky broken up in it
+and the green of the rice lying under it. It runs in seven separate spans, so
+the farmhouse and the pen and the orchard stand on dry ground in the middle of
+it the way a farmhouse does.
+
+And the same thing starts again past the town and runs to the edge of the world.
+
+## Pounding som tam
+
+Papaya salad is not a timing bar. It is a rhythm, and the rhythm is: **strike,
+turn, strike, turn**. The pestle comes down on the beat and you hit it; between
+strikes you turn the papaya over with the spoon — the outer thirds of a phone
+screen, or the arrow keys. Every fourth beat something else goes in the ครก and
+you can see it arrive: chillies, then tomato, then the long beans. Land one
+cleanly and the juice comes over the rim.
+
+![the mortar](screenshots/pounding-som-tam.png)
+
+## Keeping out of sight
+
+Nine feet of grey ghost walking up a village road at two in the morning is a
+thing people have a reaction to, and the reaction is always the same. You can go
+round that now.
+
+**Hold down** — or pull the stick down — and he folds almost in half and moves
+at a crawl. Standing upright inside somebody's view while they are facing you
+fills a small eye over their head; when it fills, they see you, and whatever
+they were doing is over. Crouched it fills at a tenth of the rate, and in one of
+the six **hiding places** — the ditch west of the farm gate, the long grass by
+the first house, under the tamarind, the banana grove, the bus shelter, behind
+the bins on the town road — it barely fills at all. Walk a stretch past somebody
+without frightening them and it counts for something.
+
+Twice the road makes a scene of it. **Headlights at the crossroad after dark**:
+a pickup comes up the road, its beams sweep along it, and you hold one button
+through a window to stay still. **The dogs at the edge of town**: one tap, in
+time, to get past them slowly. Both can be lost, and losing is not a game over —
+it is brakes, a long look, and the road again faster than before.
+
+![the headlights, and one button](screenshots/keeping-out-of-sight.png)
 
 ## Everybody is friendly, including the frightening ones
 

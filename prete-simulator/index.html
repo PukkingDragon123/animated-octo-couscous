@@ -191,7 +191,10 @@ function tapIsWalk(){
 function tapSides(){
   if(typeof GS==='undefined' || DLG) return false;
   switch(GS.state){
-    case 'act':    return !!ACT && ACT.phase==='do' && (ACT.k.t==='rhythm' || ACT.k.t==='place');
+    /* ส้มตำ turns the papaya with the outer thirds, so the mortar needs the
+       two sides as much as the rhythm steps do */
+    case 'act':    return !!ACT && ACT.phase==='do'
+                          && (ACT.k.t==='rhythm' || ACT.k.t==='place' || ACT.k.t==='krok');
     case 'give':   return true;
     case 'shop':   return false;
     case 'ascend': return !!ASC && ASC.phase==='climb';
@@ -1875,6 +1878,44 @@ const TH = {
   'tools, in the ledger':'เครื่องมืออยู่ในสมุด',
   'your ledger':'สมุดของเจ้า',
 
+  /* ---------- what the runtime sweep found still speaking English ---------- */
+  'a bag of rice':'ข้าวสารถุงหนึ่ง',
+  'a cold sweet drink':'น้ำหวานเย็น ๆ',
+  'a tray of four':'แผงละสี่ฟอง',
+  'bird chillies':'พริกขี้หนู',
+  'buy something cold':'ซื้อของเย็น ๆ',
+  'coconut milk':'กะทิ',
+  'eggs':'ไข่',
+  'everything here is somebody else’s work, and it costs':'ของในนี้คนอื่นทำไว้ทั้งนั้น และมีราคา',
+  'for the sourness':'เอาไว้ให้เปรี้ยว',
+  'go past them slowly':'เดินผ่านช้า ๆ',
+  'held':'นิ่งได้',
+  'hold still':'อยู่นิ่ง ๆ',
+  'in a carton, which is cheating':'ใส่กล่อง ซึ่งก็โกงอยู่',
+  'limes':'มะนาว',
+  'nobody saw you':'ไม่มีใครเห็นเจ้า',
+  'open all night, cold inside':'เปิดทั้งคืน ข้างในเย็น',
+  'out of sight':'พ้นสายตา',
+  'scratch the dog':'เกาหมา',
+  'seen':'โดนเห็น',
+  'shredded, for pounding':'สับไว้แล้ว รอตำ',
+  'small and serious':'เม็ดเล็ก แต่เอาจริง',
+  'somebody else grew it':'คนอื่นปลูกมา',
+  'strike':'ตำ',
+  'strike, then turn':'ตำ แล้วคน',
+  'the crossroad':'สี่แยก',
+  'the far fields':'ทุ่งไกล',
+  'the far paddies':'นาไกล',
+  'THE SHOP':'ร้านสะดวกซื้อ',
+  'the town':'ในตลาด',
+  'the town road':'ถนนในตลาด',
+  'turn it':'คนให้ทั่ว',
+  'you cannot drink it. Somebody can.':'เจ้ากินไม่ได้ แต่คนอื่นกินได้',
+
+  /* ---------- what the runtime sweep found still speaking English ---------- */
+  'Brakes. A long look. Then the road again, faster than before.':'เสียงเบรก สายตาที่จ้องค้าง แล้วก็เร่งไปเร็วกว่าเดิม',
+  'It went past. Nobody in it will ever know how close that was.':'มันแล่นผ่านไป คนในรถไม่มีวันรู้ว่าเฉียดแค่ไหน',
+
 };
 function L(s){
   if(LANG!=='th') return s;
@@ -2578,7 +2619,7 @@ function hitTap(){
 /* The map got another sixteen hundred pixels of country on the east end:
    proper forest, a stream with stones across it, and logs to walk along.
    Nothing lives out there but birds and the noise of them. */
-const WORLD_W = 7200;
+const WORLD_W = 10600;
 const GBASE = 216;
 
 const ZONES = [
@@ -2590,7 +2631,10 @@ const ZONES = [
   {id:'grove',   a:3000, b:3800, name:'the banana grove', el:1, s:'grove'},
   {id:'wat',     a:3800, b:4600, name:'the temple', s:'temple'},
   {id:'forest',  a:4600, b:5600, name:'the old forest', s:'old forest'},
-  {id:'deep',    a:5600, b:WORLD_W, name:'the deep country', s:'deep forest'},
+  {id:'deep',    a:5600, b:6900, name:'the deep country', s:'deep forest'},
+  {id:'cross',   a:6900, b:7760, name:'the crossroad', s:'the crossroad'},
+  {id:'town',    a:7760, b:9080, name:'the town road', s:'the town'},
+  {id:'far',     a:9080, b:WORLD_W, name:'the far paddies', s:'the far fields'},
 ];
 function zoneAt(x){ for(const z of ZONES) if(x>=z.a && x<z.b) return z; return ZONES[ZONES.length-1]; }
 function band(x,a,b,f){ return clamp((x-a)/f,0,1) * clamp((b-x)/f,0,1); }
@@ -2613,9 +2657,15 @@ function groundY(x){
   const deep = clamp((x-5600)/260,0,1);
   y = lerp(y, y + Math.sin(x*0.0026)*11 - 6, deep);
   y = lerp(y, GBASE+14, band(x,6250,6410,90)*0.85);
+  // and the road out of the crossroad is graded flat too, like the village one
+  y = lerp(y, GBASE+1, band(x,6940,9080,200)*0.94);
+  // the far paddies lie low and wet, the way the near ones do
+  y = lerp(y, GBASE+10, band(x,9120,WORLD_W,200)*0.85);
   return y;
 }
-const isRoad = x => x>1380 && x<3120;
+/* where the ground is metalled. Two stretches: the village road, and the
+   one that runs out of the crossroad through the town. */
+const isRoad = x => (x>1380 && x<3120) || (x>6960 && x<9060);
 
 /* ---------- interactive anchors ---------- */
 const LAMP_XS = [1520,1700,1880,2060,2250,2440,2640,2840,3020];
@@ -2733,10 +2783,83 @@ function paintBg(){
       g.drawImage(c2, R(x-c2.width*s2/2), R(base-c2.height*s2), R(c2.width*s2), R(c2.height*s2));
       g.globalAlpha=1; }
   }
+  paintTerraces(g, sc, r, PADDY_A, PADDY_B);
+  paintTerraces(g, sc, r, 9060, 10580);
   // a wash of night over everything back here
   g.globalCompositeOperation='source-atop';
   g.fillStyle='rgba(126,158,186,0.20)'; g.fillRect(0,0,w,H);
   g.globalCompositeOperation='source-over';
+}
+/* ---------- the rice fields, going back as far as you can see ----------
+   There used to be a seven-pixel strip of blue at the foot of the farm with
+   grass either side of it, which is a puddle. The title screen has the thing
+   this game is actually about in it — a flooded field with the whole sky
+   lying in it — and this is that, built into the back layer: six terraces
+   stepping away from you, each one a sheet of water with an earth bund at
+   its far edge, rice along the bunds, and long still ripples across them. */
+const PADDY_A = 520, PADDY_B = 1980;         // how far the terraces go, in world x
+/* where there is standing water at your own feet. Not one span: the farm
+   buildings, the pen and the orchard sit on dry ground in the middle of it,
+   the way a farmhouse does. */
+const WET = [[534,716],[1166,1462],[1500,1548],[1600,1778],[1812,2110],
+             [9140,9720],[9790,10560]];
+function paintTerraces(g, sc, r, PA, PB){
+  const N=4;
+  for(let i=N-1;i>=0;i--){
+    const t=i/(N-1);                          // 1 is the furthest terrace
+    const lift = 11 + i*9.5;                  // how far up the screen it sits
+    const dep  = lerp(5.5, 2.6, t);           // and how thin the sheet looks
+    const wat  = mix('#5f8898','#aec8cc', Math.pow(t,0.65));
+    const watL = shade(wat, 0.26), bund = mix('#6b5a40','#95856a', t*0.9);
+    const al   = lerp(0.58, 0.34, t);
+    const x0=R(PA*sc), x1=R(PB*sc);
+    for(let x=x0;x<x1;x++){
+      const gy = R(groundY(x/sc)) - 4 - lift;
+      const edge = clamp((x-x0)/120,0,1)*clamp((x1-x)/120,0,1);
+      if(edge<=0.03) continue;
+      g.globalAlpha = al*edge;
+      g.fillStyle=wat;  g.fillRect(x, gy, 1, R(dep));
+      g.fillStyle=watL; g.fillRect(x, gy, 1, 1);
+      g.globalAlpha = al*edge*1.25;
+      g.fillStyle=bund; g.fillRect(x, gy+R(dep), 1, 1);
+      g.globalAlpha=1;
+    }
+    // rice along the bund of each terrace: sparse, short, paler further off
+    const h2=R(lerp(4,2,t)), step=R(lerp(3,2,t));
+    const rc = mix('#4a8257','#93ad92', Math.pow(t,0.7));
+    for(let x=x0;x<x1;x+=step){
+      if(r()<0.55) continue;
+      const gy = R(groundY(x/sc)) - 4 - lift;
+      const edge = clamp((x-x0)/120,0,1)*clamp((x1-x)/120,0,1);
+      if(edge<=0.03) continue;
+      g.globalAlpha=al*edge*1.4;
+      g.fillStyle = r()<0.4? shade(rc,0.16) : rc;
+      g.fillRect(x, gy-h2+1, 1, h2);
+      g.globalAlpha=1;
+    }
+    // one or two long still ripples across the sheet
+    for(let k=0;k<3;k++){
+      const x=R(lerp(x0,x1,r())), gy=R(groundY(x/sc))-4-lift;
+      g.globalAlpha=al*0.5;
+      g.fillStyle='#dff0ea';
+      g.fillRect(x, gy+1+R(r()*Math.max(1,dep-2)), R(14+r()*54), 1);
+      g.globalAlpha=1;
+    }
+  }
+  /* egrets standing out in it, which is what tells you it is water */
+  for(const [wx,ti] of (PA<5000? [[760,1],[1190,2],[1620,0],[1900,3]]
+                                 : [[9300,1],[9800,2],[10200,0],[10450,3]])){
+    const t=ti/(N-1), lift=11+ti*9.5;
+    const x=R(wx*sc), gy=R(groundY(wx))-4-lift;
+    const sc2=lerp(1,0.62,t);
+    g.globalAlpha=0.72;
+    pEll(g, x, gy-4*sc2, 3.2*sc2, 2.2*sc2, '#f2efe4');
+    pEll(g, x+2*sc2, gy-7.2*sc2, 1.6*sc2, 1.6*sc2, '#f2efe4');
+    pTaper(g, x+3*sc2, gy-7.2*sc2, x+5.6*sc2, gy-6.4*sc2, 1, 0.6, '#e0a84c');
+    pTaper(g, x+1*sc2, gy-6*sc2, x+1.5*sc2, gy-8.4*sc2, 1, 0.8, '#f2efe4');
+    pR(g, R(x-0.6), R(gy-2*sc2), 1, R(2*sc2), '#3a3630');
+    g.globalAlpha=1;
+  }
 }
 
 /* ---------- the play layer: ground, road, props ---------- */
@@ -2798,20 +2921,50 @@ function paintPlay(){
   }
   for(let x=1400;x<3100;x+=1){ const gy=R(groundY(x));
     if(Math.sin(x*0.03)>0.2){ g.fillStyle=shade(PAL.dirtD,-0.08); g.fillRect(x,gy+7,1,2); } }
-  // ---- water in the paddies ----
-  for(let x=790;x<1450;x++){
-    const gy=R(groundY(x));
-    const inPaddy = Math.sin(x*0.021)>-0.25;
-    if(!inPaddy) continue;
-    g.fillStyle=PAL.water; g.fillRect(x,gy+1,1,7);
-    g.fillStyle=PAL.waterL; g.fillRect(x,gy+1+((x*7)%3),1,1);
-    if((x%11)<1){ g.fillStyle='#6f8fb8'; g.fillRect(x,gy+2,1,1); }
-  }
-  for(let x=790;x<1450;x+=5){
-    const gy=R(groundY(x));
-    if(Math.sin(x*0.021)<=-0.25) continue;
-    for(let i=0;i<3;i++){ const sx=x+r()*5, sy=gy+r()*6;
-      g.fillStyle=r()<0.5?'#4c8a5c':'#3a7048'; g.fillRect(R(sx),R(sy)-4,1,5); }
+  /* ---- the field you are standing in ----
+     Flooded end to end rather than in seven-pixel puddles, with earth bunds
+     crossing it every so often and rice standing up out of the water either
+     side of them. This is the thing the title screen is a picture of. */
+  for(const [wa,wb] of WET){
+    for(let x=wa;x<wb;x++){
+      const gy=R(groundY(x));
+      const onBund = ((x-wa) % 118) < 7;          // the ridges you walk along
+      const fade = clamp((x-wa)/46,0,1)*clamp((wb-x)/46,0,1);
+      if(fade<0.04) continue;
+      if(onBund){
+        g.fillStyle='#6f6046'; g.fillRect(x,gy,1,4);
+        g.fillStyle='#8a7a5c'; g.fillRect(x,gy,1,1);
+        continue;
+      }
+      /* deep enough to read as a flooded field rather than a gutter: the
+         sheet takes the top of the soil, goes darker as it goes down, and
+         has the sky and whatever is standing in it broken up across it */
+      const d=R(24+Math.sin(x*0.013)*5);
+      for(let k=0;k<d;k++){
+        const kt=k/d;
+        g.fillStyle = mix('#2d5f7e','#12283a', Math.pow(kt,0.7));
+        g.fillRect(x,gy+1+k,1,1);
+      }
+      g.fillStyle='#9fc6d8'; g.fillRect(x,gy+1,1,1);
+      g.fillStyle='#6f9fbe'; g.fillRect(x,gy+2,1,1);
+      if((x*7)%13<2){ g.fillStyle='#7fa6c8'; g.fillRect(x,gy+2+((x*5)%(d-3)),1,1); }
+      if((x*11)%29<1){ g.fillStyle='rgba(223,240,234,0.55)'; g.fillRect(x,gy+2,R(4+(x%11)),1); }
+      if((x*13)%41<1){ g.fillStyle='rgba(223,240,234,0.3)'; g.fillRect(x,gy+6+((x*3)%8),R(6+(x%14)),1); }
+      // the green of the rice, lying in the water under it
+      if((x*3)%17<3){ g.fillStyle='rgba(58,112,72,0.32)'; g.fillRect(x,gy+3,1,R(3+(x%7))); }
+    }
+    // rice standing up out of it, thickest along the bunds
+    for(let x=wa+3;x<wb-3;x+=2){
+      const gy=R(groundY(x));
+      const fade = clamp((x-wa)/46,0,1)*clamp((wb-x)/46,0,1);
+      if(fade<0.1) continue;
+      const m=(x-wa)%118, near=(m<14||m>110);
+      if(r() > (near?0.88:0.42)*fade) continue;
+      const h2=5+r()*5, lean=(r()-0.5)*2;
+      g.fillStyle = r()<0.45? '#4c8a5c' : '#3a7048';
+      for(let k=0;k<h2;k++) g.fillRect(R(x+lean*k/h2), R(gy-k+1), 1,1);
+      if(r()<0.3){ g.fillStyle='#c8cf8a'; g.fillRect(R(x+lean),R(gy-h2+1),1,1); }
+    }
   }
   // the pond by the road
   for(let x=POND_X-70;x<POND_X+70;x++){
@@ -2874,7 +3027,7 @@ function paintPlay(){
   }
   // --- the rice fields: dikes west of the farm, and one scarecrow on it ---
   stamp(ART.scare, 1180, groundY(1180)+2, 1);
-  for(let x=770;x<800;x+=64){ const gy=groundY(x); pR(g,x,gy-3,54,4,'#6f6046'); pR(g,x,gy-3,54,1,'#8a7a5c'); }
+  stamp(ART.scare, 1712, groundY(1712)+2, 0.9);
   // the fallen tree across the road (a task for someone tall)
   {
     const x=FALLEN_TREE_X, gy=groundY(x);
@@ -2994,7 +3147,7 @@ function buildStep(){
 /* ---------- mist: it pools in the graveyard, the paddy and the deep forest ---------- */
 const MIST=[];
 for(let i=0;i<54;i++){
-  const zone = i<20? rnd(0,760) : i<36? rnd(760,1480) : rnd(4600,WORLD_W);
+  const zone = i<18? rnd(0,760) : i<32? rnd(760,1480) : i<44? rnd(4600,6900) : rnd(9100,WORLD_W);
   MIST.push({x:zone, y:groundY(zone)-rnd(2,16), w:rnd(40,120), h:rnd(5,13), sp:rnd(1.5,5), ph:rnd(TAU), a:rnd(0.05,0.14)});
 }
 /* Weather, not a gate. It used to be called drawMist, which is also what the
@@ -3468,7 +3621,7 @@ function drawPrete(g, p, o={}){
      They still act: p.brow lifts them, p.eye opens them wide or shuts them
      to slits, and a blink shuts and opens inside the same eighth of a
      second rather than slamming and jumping back. */
-  const EYE='#f4f1e6', RING='#8f8a80', PUP='#211f26';
+  const EYE='#f4f1e6', EYED='#d6d0c0', RING='#8f8a80', RINGD='#5e5a52', PUP='#211f26';
   const ES = 0.72;                                   // smaller than the old pair
   const ey = headY - 0.6 + (p.brow||0)*0.35;
   const EK = (1 - hum*0.15) * ES;
@@ -3477,19 +3630,30 @@ function drawPrete(g, p, o={}){
   const wear  = clamp(-(p.eye||0), 0, 1);            // weariness shuts them
   const blinkK= p.blink<0? Math.sin(clamp(-p.blink/0.12,0,1)*Math.PI) : 0;
   const lid   = clamp(Math.max(wear, blinkK), 0, 1);
-  pEll(g, farX,  ey, 5.2*EK, 5.3*EK*eOpen, RING);
-  pEll(g, nearX, ey, 6.1*EK, 6.2*EK*eOpen, RING);
-  pEll(g, farX,  ey, 4.1*EK, 4.2*EK*eOpen, EYE);
-  pEll(g, nearX, ey, 4.9*EK, 5.0*EK*eOpen, EYE);
-  const pdx = 0.7*face + Math.sin(p.swayT*0.8)*0.35, pdy = Math.sin(p.anim*0.6)*0.4;
   const pr = 1 + clamp(p.eye||0,-0.6,1)*0.18;        // a startled pupil is small
-  pEll(g, farX+pdx,  ey+pdy, 1.9*ES/pr, 2.0*ES/pr, PUP);
-  pEll(g, nearX+pdx, ey+pdy, 2.3*ES/pr, 2.4*ES/pr, PUP);
-  pR(g, farX+pdx-1.1,  ey+pdy-1.3, 1, 1, '#fffdf6');
-  pR(g, nearX+pdx-1.4, ey+pdy-1.5, 1, 1, '#fffdf6');
+  /* A sea horse turns each eye on its own, and so does he: the two pupils
+     share a drift and then disagree about it by a fraction, which is the
+     cheapest thing in this whole file and the one that makes him look like
+     there is somebody in there. */
+  const drift = Math.sin(p.swayT*0.8)*0.35, bobp = Math.sin(p.anim*0.6)*0.4;
+  const preteEye = (x, rx, ry, dx, dy, out)=>{
+    pEll(g, x, ey+0.4, rx+0.9, ry+0.9, RINGD);         // a socket to sit the ring in
+    pEll(g, x, ey, rx, ry, RING);
+    pEll(g, x, ey, rx-1.1, ry-1.1, EYED);
+    pEll(g, x, ey-ry*0.14, rx-1.5, ry-1.6, EYE);       // the white, brightest at the top
+    pEll(g, x+dx, ey+dy, 2.3*ES/pr, 2.4*ES/pr, PUP);
+    pEll(g, x+dx, ey+dy+0.6, 1.5*ES/pr, 1.2*ES/pr, '#3a3542');
+    pR(g, R(x+dx-1.5), R(ey+dy-1.6), 2, 2, '#fffdf6');  // the light in it
+    pR(g, R(x+dx+1.1), R(ey+dy+0.9), 1, 1, 'rgba(255,253,246,0.7)');
+    pTaper(g, x-rx*0.62*out, ey+ry*0.86, x+rx*0.62*out, ey+ry*0.78, 1, 0.8, shade(SHD,0.06));
+  };
+  preteEye(farX,  5.2*EK, 5.3*EK*eOpen, 0.7*face+drift*0.82, bobp,       -face);
+  preteEye(nearX, 6.1*EK, 6.2*EK*eOpen, 0.7*face+drift,      bobp*1.18,   face);
   if(lid>0.05){
-    pEll(g, farX,  ey-4.6*EK*eOpen+lid*4.4*EK/ES*0.86, 4.3*EK, 2.6*lid*ES+0.6, BODY);
-    pEll(g, nearX, ey-5.4*EK*eOpen+lid*5.2*EK/ES*0.86, 5.1*EK, 3.0*lid*ES+0.6, BODY);
+    pEll(g, farX,  ey-4.6*EK*eOpen+lid*4.4*EK/ES*0.86, 4.6*EK, 2.6*lid*ES+0.7, BODY);
+    pEll(g, nearX, ey-5.4*EK*eOpen+lid*5.2*EK/ES*0.86, 5.4*EK, 3.0*lid*ES+0.7, BODY);
+    pEll(g, farX,  ey-4.6*EK*eOpen+lid*4.4*EK/ES*0.86+2.2*lid*ES, 4.4*EK, 0.6, shade(BODY,-0.12));
+    pEll(g, nearX, ey-5.4*EK*eOpen+lid*5.2*EK/ES*0.86+2.6*lid*ES, 5.2*EK, 0.6, shade(BODY,-0.12));
   }
   if(o.angry){ pR(g, farX-4.6, ey-5.4, 9.2, 1.6, PAL.ember); pR(g, nearX-5.4, ey-5.8, 10.8, 1.8, PAL.ember); }
   /* the brows. Two bones over two eyes, and the inner ends do the acting. */
@@ -3507,36 +3671,59 @@ function drawPrete(g, p, o={}){
      the same lid as everything else now, asked to come all the way down. */
   /* No nose. There was a small orange one, and it was the one part of him
      that looked like it belonged on something warm-blooded. */
-  /* the mouth is a mosquito's: a fine proboscis hanging off the face with two
-     short palps either side of it. That is the whole joke of him — the thing
-     he eats with is a needle, and a needle has never been enough. It shortens
-     every time the light takes him, and there is a mouth under it by the end. */
+  /* Not a mosquito's needle in the end — a sea horse's. A long tapering
+     tube of a snout, ringed like something with a skeleton on the outside,
+     curving down off the face and hooking up at the tip, with a mouth at
+     the very end of it no wider than a straw. He can get the smell of a
+     thing and nothing else, which is the whole of him. It shortens every
+     time the light takes him. */
   let mo=clamp(o.mouth||0,0,1);
   if(ACT && ACT.k==='eat'){
     const up = au<0.30? 0 : au<0.78? (au-0.30)/0.48 : 1-(au-0.78)/0.22;
     mo = Math.max(mo, clamp(up,0,1)*0.42);
   }
   const ms=clamp(p.mouthS===undefined?0:p.mouthS,-1,1);
-  const mx0=headX+2.4*face, my0=ey+8.6;
-  const PRO='#2b2129', PROL='#6d5a64', PROM='#8a636e';
+  const mx0=headX+2.8*face, my0=ey+8.4;
+  const SN1=mix('#8a7a74','#a08a80',hum*0.5),      // the lit top of the tube
+        SN2=mix('#5c4850','#7a5f62',hum*0.5),      // its body
+        SN3='#33272e',                             // the shadow under it
+        SNM='#241a20';                             // the hole at the end
   {
-    /* no lips. There is a needle where a mouth goes, and it only opens into
-       a mouth at all once the light has taken him a few times. */
-    if(mo>0.10||hum>0.22){
-      const rw = 0.9 + mo*1.8 + hum*1.8;
-      pEll(g, mx0-1.4*face, my0-0.4, rw, 0.7+mo*1.4+hum*1.1, PRO);
-      pEll(g, mx0-1.4*face, my0, rw*0.6, 0.4+mo*0.7+hum*0.5, PROM);
+    const len = (1 - hum*0.55);
+    /* five joints down the snout, each a little thinner than the last, on a
+       curve that drops away from the face and lifts again at the tip */
+    const N=5, pts=[];
+    for(let i=0;i<=N;i++){
+      const t=i/N;
+      const reach = (14.5 + mo*2.4) * len * t;
+      /* straight out and down, the way a sea horse holds it, with the last
+         joint turning back up. Drawn as a curve it read as a drooping noodle. */
+      let drop = t*8.2*len - ms*2.4*t;
+      if(t>0.70) drop -= (t-0.70)/0.30 * (3.0*len);
+      pts.push([mx0 + face*(0.5 + reach), my0 + drop]);
     }
-    /* the needle, held out in front of his face the way a mosquito holds one.
-       Down the jaw it read as a dribble; out into the air it reads as what it
-       is. It gets shorter every time the light takes him. */
-    const plen = 1 - hum*0.62;
-    const tx2 = mx0 + face*(1.0 + (10.0 + mo*2.0)*plen + ms*0.9);
-    const ty2 = my0 + (5.0 - ms*1.9)*plen;
-    const mx1 = mx0 + face*(0.6 + 4.4*plen), my1 = my0 + (2.4 - ms*0.9)*plen;
-    pTaper(g, mx0, my0, mx1, my1, 1.3, 0.9, PRO);
-    pTaper(g, mx1, my1, tx2, ty2, 0.9, 0.5, PRO);
-    pTaper(g, mx0+0.5*face, my0-0.8, mx1, my1-0.8, 0.6, 0.5, PROL);
+    for(let i=0;i<N;i++){
+      const t=i/N, w1=lerp(3.6,1.7,t), w2=lerp(3.6,1.7,(i+1)/N);
+      pTaper(g, pts[i][0],pts[i][1], pts[i+1][0],pts[i+1][1], w1, w2, SN2);
+    }
+    // the ridge along the top, and the shadow along the bottom
+    for(let i=0;i<N;i++){
+      const t=i/N, w=lerp(1.3,0.6,t);
+      pTaper(g, pts[i][0],pts[i][1]-lerp(1.2,0.5,t), pts[i+1][0],pts[i+1][1]-lerp(1.2,0.5,(i+1)/N), w, w*0.8, SN1);
+      pTaper(g, pts[i][0],pts[i][1]+lerp(1.3,0.5,t), pts[i+1][0],pts[i+1][1]+lerp(1.3,0.5,(i+1)/N), w*0.8, w*0.6, SN3);
+    }
+    // the bony rings, which is what makes it a sea horse and not a hose
+    for(let i=2;i<N;i++){
+      const t=i/N, w=lerp(3.2,1.5,t);
+      pTaper(g, pts[i][0], pts[i][1]-w*0.46, pts[i][0]+face*0.5, pts[i][1]+w*0.46, 0.8, 0.8, SN3);
+    }
+    // where it leaves the face, and the mouth at the far end of it
+    pEll(g, mx0, my0, 2.6+mo*0.8, 2.2+mo*0.7, SN2);
+    pEll(g, mx0-0.8*face, my0-0.6, 1.7, 1.2, SN1);
+    const tip=pts[N];
+    pEll(g, tip[0], tip[1], 1.5+mo*1.1, 1.4+mo*1.1, SN2);
+    pEll(g, tip[0]+face*0.4, tip[1], 0.8+mo*0.9, 0.7+mo*0.9, SNM);
+    if(hum>0.3){ pEll(g, tip[0]+face*0.4, tip[1]+0.4, 0.6+hum*0.8, 0.4+hum*0.5, '#8a636e'); }
   }
   /* the bowl. Drawn after the head, because when he raises it the bowl is
      between you and his face — that is the shot. */
@@ -4014,7 +4201,33 @@ const GS = {
   water:0, rice0:0, chops:0,
   en:undefined, hearts:{}, talked:{}, gifted:{}, incense:0,
   ch:0,                       // which beat of the first night we are on
+  seenX:{},                   // which stretches of road you have actually walked
 };
+/* ---------- a map you have to go and look at ----------
+   It used to open with the whole seven miles on it, every zone named and
+   every pin already placed, which is a map somebody else drew for you. The
+   paper is blank now and fills in behind you, one stretch at a time. */
+const MAPSTEP = 150;
+function markSeen(x){
+  if(!GS.seenX) GS.seenX={};
+  let got=false;
+  for(let d=-150; d<=150; d+=MAPSTEP*0.5){
+    const i=Math.floor(clamp(x+d,0,WORLD_W-1)/MAPSTEP);
+    if(!GS.seenX[i]){ GS.seenX[i]=1; got=true; }
+  }
+  return got;
+}
+const seenAt = x => !!(GS.seenX && GS.seenX[Math.floor(clamp(x,0,WORLD_W-1)/MAPSTEP)]);
+function seenSpan(a,b){
+  if(!GS.seenX) return false;
+  for(let i=Math.floor(a/MAPSTEP); i<=Math.floor((b-1)/MAPSTEP); i++) if(GS.seenX[i]) return true;
+  return false;
+}
+function seenFrac(){
+  const n=Math.ceil(WORLD_W/MAPSTEP);
+  let k=0; for(let i=0;i<n;i++) if(GS.seenX&&GS.seenX[i]) k++;
+  return k/n;
+}
 const has = s => !!GS.skills[s];
 const avail = ()=> GS.merit - GS.spent;
 const bagCount = ()=> Object.values(GS.bag).reduce((a,b)=>a+b,0);
@@ -4095,7 +4308,7 @@ const ITEMS = {
   shrine:   {th:'roadside shrine', en:'roadside shrine', c:'#c0392f', k:'craft'},
 };
 const RECIPES = {
-  somtam:      {out:'somtam',      need:{papaya:1,chili:1,lime:1},           steps:['pound','mix'],  n:'Papaya Salad',      d:'Pound it. Keep pounding. That\'s the whole secret.'},
+  somtam:      {out:'somtam',      need:{papaya:1,chili:1,lime:1},           steps:['krok','mix'],   n:'Papaya Salad',      d:'Pound it. Keep pounding. That\'s the whole secret.'},
   stickyMango: {out:'stickyMango', need:{rice:1,mango:1,coconut:1},          steps:['steam','plate'],n:'Mango Sticky Rice', d:'Even a needle-mouth can manage the smell.'},
   tomyum:      {out:'tomyum',      need:{lemongrass:1,chili:1,lime:1,herb:1},steps:['boil','mix'],   n:'Tom Yum',           d:'Sour, hot, and loud. A soup that argues back.'},
   friedBanana: {out:'friedBanana', need:{banana:2,coconut:1},                steps:['fry','plate'],  n:'Fried Banana',      d:'The smell brings children from three houses away.'},
@@ -7147,6 +7360,10 @@ function drawHandTag(g,s){
 var VIG = null;
 
 const VIGS = {
+  sneakPast: { once:true, at:()=>P.x, hold:0.9,
+    lines:['It went past. Nobody in it will ever know how close that was.'] },
+  sneakSeen: { once:true, at:()=>P.x, hold:0.9,
+    lines:['Brakes. A long look. Then the road again, faster than before.'] },
   firstSeed: { once:true, dur:0, at:()=>P.x, hold:0.9,
     lines:['A seed doesn\'t care what you used to be.'] },
   firstHarvest: { once:true, at:()=>P.x, hold:0.9,
@@ -7467,6 +7684,9 @@ function drawIcon(g,id,x,y,s=1){
    ============================================================ */
 let ACT = null;
 const STEP_KIND = {
+  /* ส้มตำ is not a timing bar. It is a rhythm: strike, turn the spoon,
+     strike, turn — and every fourth beat something else goes in the ครก. */
+  krok:{t:'krok',n:10,v:'pound',h:'strike, then turn'},
   pound:{t:'timing',n:5,v:'pound',h:'pound it'},        fry:{t:'timing',n:3,v:'fry',h:'flip when golden'},
   pin:{t:'timing',n:3,v:'pin',h:'pin the folds'},       split:{t:'timing',n:4,v:'split',h:'split the bamboo'},
   light:{t:'timing',n:2,v:'light',h:'catch the wick'},
@@ -7542,6 +7762,30 @@ function stepAct(dt){
       else { AU.whiff(); A.flash=0.3; A.perfect=-1; }
       if(A.hits>=A.need) nextStep();
     }
+  }
+  else if(k.t==='krok'){
+    /* the pestle falls on the beat and you strike with it; between strikes
+       you turn the papaya over with the spoon. Miss and it jars. */
+    A.m += dt*1.55;
+    if(A.m>1){ A.m=0; A.beat=(A.beat||0)+1;
+      if((A.hits%2)===0) AU.drum(0,0.035); else AU.noise(0.05,0.02,300,2600); }
+    const wantStrike = (A.hits%2)===0;
+    const onBeat = Math.abs(A.m-0.5) < 0.40*easy;
+    const tapped = press('act')||press('tap');
+    const turned = press('left')||press('right');
+    if(tapped||turned){
+      const right = wantStrike? tapped : turned;
+      if(right && onBeat){
+        A.hits++; A.stepScore += (Math.abs(A.m-0.5)<0.18? 1 : 0.6);
+        A.perfect=1; A.flash=0.22; A.pound = wantStrike? 1 : 0;
+        if(wantStrike){ AU.hit(false); AU.ranat(300+A.hits*24,0,0.05); pSpark(0,0,0); }
+        else AU.ranat(520+A.hits*18,0,0.035);
+        /* every fourth beat another thing goes in */
+        if(A.hits%4===0){ A.drop=(A.drop||0)+1; AU.ding(); }
+      } else { AU.whiff(); A.flash=0.3; A.perfect=-1; }
+      if(A.hits>=A.need) nextStep();
+    }
+    if(A.pound>0) A.pound-=dt*4;
   }
   else if(k.t==='rhythm'){
     // alternate left and right, in time with the beat
@@ -7902,6 +8146,8 @@ function render(){
   drawNew(ctx);        // the barn, the jar, the log, and her
   drawBuilds(ctx);     // what you have put up, and what is still string and stakes
   drawBuff(ctx);       // ควาย
+  if(typeof drawTraffic==='function') drawTraffic(ctx);   // what is on the road east
+  if(typeof drawStealthScene==='function') drawStealthScene(ctx);
   if(GS.state==='play') drawNavMark(ctx);
   // gatherable plants
   for(const nd of NODES){
@@ -7954,6 +8200,7 @@ function render(){
   pEll(ctx,P.x,P.y+1,9,2.6,'rgba(10,8,24,0.4)');
   drawPrete(ctx,P,{dt:1/60, wind:GS.wind, mouth:P.state==='wail'?1:(P.talk||0),
     headX:(P.chatX||0),
+    sit: (typeof SNEAK!=='undefined'? SNEAK.k*0.55 : 0),
     armTarget: HT? {x:HT.hx,y:HT.hy}
               : PLOW? {x:PLOW.x-19, y:groundY(PLOW.x)-41} : null,
     /* asked this way rather than through carriedJars(), which built a throwaway
@@ -8001,7 +8248,9 @@ function render(){
   vg.addColorStop(1,`rgba(8,6,20,${0.38-0.26*TOD.v})`);
   ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
+  if(typeof drawSneakUI==='function') drawSneakUI(ctx);
   if(GS.state==='play' && !VIG){ drawPosopBubble(ctx); drawHintLine(ctx); drawHUD(); }
+  if(typeof drawQTE==='function') drawQTE(ctx);
   if(GS.state==='plow') drawPlowUI(ctx);
   else if(GS.state==='task') drawTaskHUD(ctx);
   drawVig(ctx);
@@ -8656,6 +8905,14 @@ function checkInteract(){
   if(near(PHRA.x,40) && !PHRA.shown) set(SHRINE_X,groundY(SHRINE_X)-96,'pay respects', talkPhra);
   if(near(STALL_X+34,20)) set(STALL_X+34, groundY(STALL_X+34)-44,'read the orders', openOrderBoard);
   if(near(STALL_X-30,22)) set(STALL_X-30, groundY(STALL_X-30)-52,'buy seed and feed', openStall);
+  /* the shop out on the town road, which is open whatever the hour is */
+  if(typeof STORE_X!=='undefined' && near(STORE_X+30,26))
+    set(STORE_X+30, groundY(STORE_X+30)-58,'buy something cold', openStore, null, 'read');
+  /* and the dogs, who will let you scratch them once they are up */
+  if(typeof ROAD_DOGS!=='undefined') for(const d of ROAD_DOGS){
+    if(near(d.x,24) && d.st!=='sleep')
+      set(d.x, groundY(d.x)-22, 'scratch the dog', ()=>petRoadDog(d), null, 'pet');
+  }
   if(near(KITCHEN_X,34)) set(KITCHEN_X, groundY(KITCHEN_X)-64,'cook something', ()=>startActivity('cook'));
   if(near(CRAFT_X,34))   set(CRAFT_X,   groundY(CRAFT_X)-52,'sit and make something', ()=>startActivity('craft'));
   if(near(TANI.x,36)) set(TANI.x,TANI.y-40,L('talk to')+' '+L('Tani'), talkTani, null, '@tani');
@@ -10262,7 +10519,45 @@ function drawAct(g){
   pTxt(g,'step '+(A.step+1)+'/'+r.steps.length+' · '+k.h, W/2, 63,CL.ink2,6,'center');
 
   const cxp=W/2, cyp=132;
-  if(cook){
+  if(k.t==='krok'){
+    /* ส้มตำ is made on a table, not over a fire: a granite ครก, a wooden
+       pestle coming down on the beat, and a spoon turning it between. */
+    pR(g,cxp-62,cyp+26,124,10,'#8a6f52'); pR(g,cxp-62,cyp+26,124,2,'#a3865f');
+    pR(g,cxp-54,cyp+36,8,22,'#6f5840'); pR(g,cxp+46,cyp+36,8,22,'#6f5840');
+    const strike=(A.hits%2)===0, pnd=clamp(A.pound||0,0,1);
+    const beat = strike? (1-Math.abs(A.m-0.5)*2) : 0;
+    // the pestle
+    const py2 = cyp-26 + pnd*18 + beat*7;
+    pTaper(g, cxp-2, py2-34, cxp-1, py2, 7, 11, '#6f6a62');
+    pTaper(g, cxp-3, py2-34, cxp-2.4, py2-20, 5, 5, '#8d887e');
+    pEll(g, cxp-1, py2, 7, 4.4, '#57534c');
+    // the spoon, coming over between strikes
+    if(!strike){
+      const sw=Math.sin(A.m*Math.PI)*12;
+      pTaper(g, cxp+34, cyp-24, cxp+6+sw, cyp+2, 3.2, 2.2, '#8a6a44');
+      pEll(g, cxp+6+sw, cyp+4, 6, 3, '#b08c5c');
+    }
+    // the mortar
+    pEll(g, cxp, cyp+24, 30, 7, 'rgba(12,9,20,0.32)');
+    pEll(g, cxp, cyp+10, 28, 18, '#5d5a55');
+    pEll(g, cxp, cyp+8, 25, 15, '#6f6c66');
+    pEll(g, cxp, cyp+3, 21, 10, '#3e3b37');
+    const shreds=8+(A.drop||0)*4;
+    for(let i=0;i<shreds;i++){
+      const a2=(i*2.7)%TAU, rr=3+((i*5)%12);
+      pR(g, R(cxp+Math.cos(a2)*rr), R(cyp+3+Math.sin(a2)*rr*0.42), 4, 1, i%3? '#cfe08a' : '#e2edac');
+    }
+    if((A.drop||0)>=1) for(let i=0;i<3;i++) pEll(g, cxp-10+i*4, cyp+1, 2,1.4,'#c0392f');
+    if((A.drop||0)>=2) for(let i=0;i<2;i++) pEll(g, cxp+5+i*5, cyp+4, 2.8,2,'#d84a3a');
+    if((A.drop||0)>=3) pEll(g, cxp+2, cyp-1, 3,2.2,'#8fbf4a');
+    if(A.flash>0 && A.perfect>0) for(let i=0;i<7;i++){
+      const a2=rnd(-2.6,-0.5);
+      pR(g, R(cxp+Math.cos(a2)*rnd(8,22)), R(cyp-1+Math.sin(a2)*rnd(5,15)), 1,1,'#e8e0a0');
+    }
+    // the lime and the chillies waiting on the table
+    pEll(g,cxp-48,cyp+22,4,3,'#8fbf4a'); pEll(g,cxp-42,cyp+23,3.4,2.6,'#7fae3c');
+    for(let i=0;i<3;i++) pTaper(g,cxp+40+i*3,cyp+20,cxp+42+i*3,cyp+25,2,1,'#c0392f');
+  } else if(cook){
     pR(g,cxp-40,cyp+22,80,20,'#a8633a'); pR(g,cxp-40,cyp+22,80,3,'#c47c4c');
     for(let i=0;i<5;i++){ const fh=8+Math.sin(GS.t*9+i)*4;
       pTaper(g,cxp-22+i*11,cyp+30,cxp-22+i*11+Math.sin(GS.t*7+i)*3,cyp+30-fh,5,1, i%2?'#ff9a3c':'#ffd257'); }
@@ -10295,6 +10590,14 @@ function drawAct(g){
     pR(g,mx+mw*0.5-zw*0.45,my,zw*0.9,8,'rgba(140,235,160,0.7)');
     pR(g,mx+mw*A.m-1,my-3,3,14, A.flash>0? (A.perfect>0?'#2f8f4c':A.perfect<0?'#a8392c':'#8f6a1e') : '#3b3128');
     pTxt(g,A.hits+'/'+A.need, W/2, my+18,CL.ink,7,'center');
+  } else if(k.t==='krok'){
+    cloud(g,mx-10,my-14,mw+20,50,{seed:73});
+    const strike=(A.hits%2)===0, pulse=1-Math.abs(A.m-0.5)*2;
+    pR(g,mx,my,mw,8,'#cbbfa6');
+    pR(g,mx+mw*0.5-mw*0.22*pulse,my,mw*0.44*pulse,8,'rgba(90,180,110,0.5)');
+    pTxt(g, strike? L('strike') : L('turn it'), W/2, my+18,
+         A.flash>0&&A.perfect<0?'#a8392c':CL.ink, 8,'center');
+    pTxt(g, A.hits+'/'+A.need, W/2, my+27, CL.ink3, 6,'center');
   } else if(k.t==='rhythm'){
     cloud(g,mx-10,my-12,mw+20,40,{seed:72});
     const wantLeft=(A.hits%2)===0;
@@ -11334,7 +11637,8 @@ cv.addEventListener('pointerup',     e=>SWIPE.delete(e.pointerId));
 cv.addEventListener('pointercancel', e=>SWIPE.delete(e.pointerId));
 
 /* ---------- the walk and the jump ---------- */
-const SPD = ()=> (has('stride')? 98 : 76) * (P.carry? (has('haul')?0.92:0.74) : 1) * (P.run?1.42:1);
+const SPD = ()=> (has('stride')? 98 : 76) * (P.carry? (has('haul')?0.92:0.74) : 1) * (P.run?1.42:1)
+              * (typeof sneakSpeed==='function'? sneakSpeed() : 1);
 const JUMP_V = ()=> 252 * (P.carry? (has('haul')?0.94:0.8) : 1);
 function stepPlayer(dt){
   const busy = !!DLG || GS.state!=='play' || !!P.act || !!VIG || CH.lock;
@@ -13884,21 +14188,34 @@ function drawMap(g,x0,y0,w,h){
   const rx=x0+16, rw=w-32, ry=y0+h*0.56;
   pTxt(g,'VILLAGE MAP',x0+14,y0+16,CL.ink,11);
   pTxt(g,'THE ONE LONG ROAD · west to east',x0+120,y0+15,CL.ink3,6);
+  pTxt(g, Math.round(seenFrac()*100)+'%', x0+w-18, y0+15, CL.ink3, 6, 'right');
   ZONES.forEach((z,i)=>{
     const a=rx+rw*(z.a/WORLD_W), b=rx+rw*(z.b/WORLD_W);
+    if(!seenSpan(z.a,z.b)) return;                 // nobody drew you a map
     pR(g,a,y0+24,Math.max(1,b-a-1),9, i%2?'rgba(90,130,90,0.18)':'rgba(140,115,70,0.18)');
     const zn=L(z.s||z.name);
     if(txtW(zn,6) < b-a-4) pTxt(g,zn,(a+b)/2,y0+31,CL.ink2,6,'center');
     pR(g,a,y0+24,1,ry-y0-24,'rgba(150,130,95,0.30)');
   });
-  pR(g,rx,ry-2,rw,5,'#c2a97e'); pR(g,rx,ry-2,rw,1,'#dcc79a');
-  for(let i=0;i<rw;i+=7) pR(g,rx+i,ry+1,4,1,'#a88b5e');
+  /* the road itself: inked where you have walked it, and a bare dotted line
+     where you have not */
+  const nSeg=Math.ceil(WORLD_W/MAPSTEP);
+  for(let i=0;i<nSeg;i++){
+    const a=rx+rw*(i*MAPSTEP/WORLD_W), b=rx+rw*((i+1)*MAPSTEP/WORLD_W);
+    if(GS.seenX && GS.seenX[i]){
+      pR(g,a,ry-2,Math.max(1,b-a),5,'#c2a97e'); pR(g,a,ry-2,Math.max(1,b-a),1,'#dcc79a');
+    } else {
+      for(let k=0;k<b-a;k+=5) pR(g,a+k,ry,2,1,'rgba(176,154,114,0.45)');
+    }
+  }
+  for(let i=0;i<rw;i+=7){ const wx=i/rw*WORLD_W; if(seenAt(wx)) pR(g,rx+i,ry+1,4,1,'#a88b5e'); }
   /* Labels used to be dealt out onto four rows in the order the pins happen
      to be declared, which put "fallen tree" and "the cat" on the same row
      eight pixels apart and printed one through the other. Each label now
      takes the highest row it actually fits on. */
   const rowEnd=[-99,-99,-99,-99,-99];
   MAP_PINS.forEach((p,i)=>{
+    if(!seenAt(p.x())) return;                     // you have not been there yet
     const px2=rx+rw*(p.x()/WORLD_W);
     const lw=txtW(p.n,6);
     let tier=0;
@@ -13917,6 +14234,7 @@ function drawMap(g,x0,y0,w,h){
   pTxt(g,'friends',rx+2,fy-9,CL.ink3,6);
   const fEnd=[-99,-99];
   for(const s of SPIRITS){
+    if(!seenAt(s.x)) continue;                     // you have not been down there
     const px2=rx+rw*(s.x/WORLD_W);
     const lw=txtW(s.name,6);
     const row = (px2-lw/2 < fEnd[0]+4) ? 1 : 0;
@@ -15513,6 +15831,649 @@ function drawBuff(g){
   drawBuffaloBig(g, B.x, groundY(B.x), {wall:B.wall, head:B.head});
 }
 /* ============================================================
+   THE ROAD EAST
+
+   The map used to stop at seven thousand two hundred pixels of
+   country lane. Past the old forest there is a crossroad now —
+   a real one, with a side road going away from you in
+   perspective, a spirit house on the corner where the two meet,
+   a bus shelter nobody is waiting in and a dog asleep across
+   the middle of it — and then a town: two rows of concrete
+   shophouses with roller shutters, a lit convenience store that
+   never closes, and the tangle of cable on concrete poles that
+   is the real national architecture. Past the town the rice
+   starts again and goes to the edge of the world.
+
+   Everything here is painted once into the play layer, except
+   what moves: the traffic and the dogs.
+   ============================================================ */
+const CROSS_X   = 7320;          // where the two roads meet
+const STORE_X   = 8180;          // the convenience store
+const BUSSTOP_X = 7560;
+const TOWN_A    = 7760, TOWN_B = 9080;
+
+/* ---------- a concrete power pole, with everything hung off it ---------- */
+function artPole(seed){
+  const r=mulberry(seed), w=54, h=120, c=mkCv(w,h), g=G2(c), px=22;
+  // the pole: square-section concrete, tapering, with its casting marks
+  for(let y=0;y<h;y++){
+    const t=y/h, ww=lerp(5,8,t);
+    pR(g,px-ww/2,h-y,ww,1, y%26<2? '#6f6f76' : '#9a9aa4');
+    pR(g,px-ww/2,h-y,1.4,1, '#b8b8c2');
+  }
+  pR(g,px-7,h-6,14,6,'#7a7a84'); pR(g,px-7,h-6,14,1,'#a4a4ae');
+  // two crossarms and their insulators
+  for(const [cy,cw] of [[16,26],[30,20]]){
+    pR(g,px-cw/2,cy,cw,3,'#8f8f99'); pR(g,px-cw/2,cy+2,cw,1,'#5f5f68');
+    for(let i=0;i<3;i++){ const ix=px-cw/2+2+i*(cw-6)/2;
+      pR(g,ix,cy-5,3,5,'#d8d4c8'); pR(g,ix,cy-6,3,1,'#f0ece0'); }
+  }
+  // the transformer drum, and the bundle of cable that is the whole point
+  pR(g,px+7,44,10,15,'#5a5f6c'); pR(g,px+7,44,10,2,'#7a8090');
+  pEll(g,px+12,60,5,2,'#4a4e5a');
+  for(let i=0;i<9;i++){
+    const y=52+i*2.2+r()*1.4;
+    pR(g,px-4,y,13,1, i%3? '#231f26':'#332d36');
+  }
+  pR(g,px-6,60,17,2,'#1c181f');
+  // the loop of slack every one of these has, and a zip tie or six
+  for(let i=0;i<3;i++) pEll(g,px+2+i*3,68+i*2,4,3,'rgba(28,24,31,0.8)');
+  for(let i=0;i<5;i++) pR(g,px-3,74+i*4,8,1,'#2a2a30');
+  // a flyer stapled on at eye height, and the rust under it
+  if(r()<0.7){ pR(g,px-6,86,12,10,'#e8dfc8'); pR(g,px-6,86,12,1,'#c0392f');
+    for(let i=0;i<3;i++) pR(g,px-4,89+i*3,8-(i%2)*3,1,'#6a6254'); }
+  pR(g,px-3,104,6,3,'#8a6a3c');
+  return c;
+}
+/* ---------- a two-storey shophouse ---------- */
+function artShophouse(seed){
+  const r=mulberry(seed), w=96, h=132, c=mkCv(w,h), g=G2(c);
+  const wall = pick(['#d8cfbc','#c9b8a0','#bcc6c0','#d2bfa8','#b9a894']);
+  const trim = pick(['#8a2c24','#2c5a7a','#3f6b4a','#8a6a2c']);
+  // the block itself
+  pR(g,4,10,w-8,h-14,wall);
+  pR(g,4,10,w-8,2,shade(wall,0.2));
+  pR(g,w-18,10,14,h-14,shade(wall,-0.18));
+  // a flat roof with a parapet, a water tank and an aerial
+  pR(g,2,6,w-4,6,shade(wall,-0.1)); pR(g,2,6,w-4,1,shade(wall,0.24));
+  pR(g,w-40,-4,16,12,'#6f7a80'); pR(g,w-40,-4,16,2,'#96a2a8');
+  pR(g,14,-8,1,14,'#5a5a60'); pR(g,10,-8,9,1,'#5a5a60');
+  // the roller shutter on the ground floor
+  const sx=10, sw=w-30, sy=h-52;
+  pR(g,sx-2,sy-3,sw+4,3,trim);
+  pR(g,sx,sy,sw,44,'#8c8f94');
+  for(let y=sy+2;y<sy+44;y+=3) pR(g,sx,y,sw,1,'#6c7076');
+  pR(g,sx,sy,sw,2,'#a8acb2');
+  if(r()<0.5){ // half up, and something lit inside
+    pR(g,sx,sy+22,sw,22,'#241f1c');
+    pR(g,sx+3,sy+26,sw-6,16,'#f0d08a');
+    pR(g,sx+5,sy+30,sw-10,2,'#c8a45c');
+    pR(g,sx+sw-16,sy+28,10,14,'#b8603a');
+  }
+  // the balcony of the upper floor, with washing on it
+  pR(g,4,h-70,w-8,3,shade(wall,-0.3));
+  for(let i=0;i<7;i++) pR(g,8+i*12,h-80,2,10,shade(wall,-0.12));
+  pR(g,6,h-80,w-12,1,shade(wall,-0.3));
+  for(let i=0;i<3;i++){ if(r()<0.7) pR(g,12+i*24+(r()*8|0), h-79, 9, 10+(r()*5|0),
+    pick(['#c0392f','#4a7a9e','#e8dfc8','#d8b04a','#57a869'])); }
+  // two upstairs windows, with a shutter and an air-con box
+  for(let i=0;i<2;i++){
+    const wx=16+i*40, wy=h-108;
+    pR(g,wx-2,wy-2,24,26,shade(wall,-0.24));
+    pR(g,wx,wy,20,22,'#2e3238');
+    if(r()<0.6){ pR(g,wx+1,wy+1,18,20,'#f0d08a'); pR(g,wx+10,wy+1,1,20,shade('#f0d08a',-0.3)); }
+    pR(g,wx,wy+10,20,1,'#1c2026');
+  }
+  pR(g,w-30,h-96,14,10,'#d8d4cc'); pR(g,w-30,h-96,14,1,'#f0ece4');
+  for(let i=0;i<4;i++) pR(g,w-28,h-94+i*2,10,1,'#a8a49c');
+  // a sign board over the shutter, in a colour and nothing else
+  pR(g,6,sy-14,w-22,11,trim); pR(g,6,sy-14,w-22,1,shade(trim,0.3));
+  for(let i=0;i<4;i++) pR(g,11+i*14,sy-11,9,5,shade(trim,0.5));
+  return c;
+}
+/* ---------- the convenience store: lit, cold, and open ---------- */
+function artStore(){
+  const w=126, h=112, c=mkCv(w,h), g=G2(c);
+  // the box
+  pR(g,2,16,w-4,h-20,'#e8e4da'); pR(g,2,16,w-4,2,'#fbf8f0');
+  pR(g,w-16,16,14,h-20,'#cfcabe');
+  // the awning band across the front, in the stripes every one of these has
+  for(let i=0;i<Math.ceil((w-8)/10);i++)
+    pR(g,4+i*10,8,10,10, i%3===0?'#e8572f' : i%3===1?'#f2b21e' : '#2b8a4c');
+  pR(g,2,6,w-4,3,'#f6f2e8'); pR(g,2,17,w-4,2,'#b8b2a4');
+  // the glass front, and the light coming out of it onto the road
+  pR(g,8,26,w-30,h-34,'#1d2a2e');
+  pR(g,10,28,w-34,h-38,'#dff2e8');
+  // shelves and the fridge wall behind the glass
+  for(let i=0;i<4;i++){
+    pR(g,13,34+i*12,44,9,'#c6d8cc'); pR(g,13,34+i*12,44,1,'#eef8f0');
+    for(let k=0;k<6;k++) pR(g,15+k*7,36+i*12,4,6,
+      ['#c0392f','#f2c14e','#4a7a9e','#57a869','#e8572f','#8a4ac8'][(i*6+k)%6]);
+  }
+  pR(g,62,32,30,h-46,'#b6d4dc'); pR(g,62,32,30,2,'#e2f4f8');
+  for(let i=0;i<5;i++){ pR(g,64,36+i*11,26,9,'#9ec4d0');
+    for(let k=0;k<5;k++) pR(g,65+k*5,37+i*11,3,7,['#e8572f','#f2c14e','#2b8a4c','#4a7a9e','#d8d4cc'][k]); }
+  // the door, with the two stickers and the bell
+  pR(g,w-34,26,26,h-34,'#1d2a2e');
+  pR(g,w-32,28,22,h-38,'#cfe8e0');
+  pR(g,w-22,28,2,h-38,'#9ab8b0');
+  pR(g,w-30,44,7,9,'#e8572f'); pR(g,w-19,44,7,9,'#2b8a4c');
+  // the counter just inside, and somebody behind it
+  pR(g,10,h-30,46,12,'#b0a894'); pR(g,10,h-30,46,2,'#d6cdb8');
+  pR(g,20,h-42,8,12,'#d8a878'); pEll(g,24,h-44,5,5,'#d8a878');
+  pR(g,21,h-46,6,3,'#2b2420');
+  // the step, and the mat
+  pR(g,0,h-8,w,8,'#8f8a80'); pR(g,0,h-8,w,1,'#b0aba0');
+  pR(g,w-40,h-6,32,4,'#5a5f52');
+  return c;
+}
+/* ---------- the corner spirit house at the crossroad ---------- */
+function artCrossShrine(){
+  const w=46,h=74,c=mkCv(w,h),g=G2(c), cx=w/2;
+  pR(g,cx-9,52,18,20,'#cfc8b6'); pR(g,cx-9,52,18,2,'#eae4d4');
+  pR(g,cx-12,70,24,4,'#b0a894');
+  pR(g,cx-14,34,28,20,'#f4ecd6'); pR(g,cx+6,34,8,20,'#dcd2b8');
+  pR(g,cx-6,40,12,14,'#3a2a3e');
+  pR(g,cx-2,44,4,9,PAL.gold); pEll(g,cx,42,3,3,PAL.goldL);
+  for(let i=0;i<6;i++){ const t=i/5, yy=lerp(34,20,t), ww=lerp(40,12,t);
+    pR(g,cx-ww/2,yy-3,ww,4,i%2?PAL.redD:PAL.red); pR(g,cx-ww/2,yy-3,ww,1,PAL.gold); }
+  pTri(g,cx,14,cx-8,24,cx+8,24,PAL.red);
+  pTaper(g,cx-19,33,cx-24,24,3,1,PAL.gold);
+  pTaper(g,cx+19,33,cx+24,24,3,1,PAL.gold);
+  // the offerings: a red drink, a garland, three sticks of incense
+  pR(g,cx-17,46,5,8,'#e03a3a'); pR(g,cx-16,44,1,2,'#f5ead8');
+  pEll(g,cx+14,50,4,3,'#f6f0dc'); pEll(g,cx+14,49,3,2,'#ffe089');
+  for(let i=0;i<3;i++){ pR(g,cx-3+i*3,44,1,8,'#b8a894'); pR(g,cx-3+i*3,43,1,1,PAL.ember); }
+  return c;
+}
+/* ---------- the bus shelter ---------- */
+function artBusStop(){
+  const w=92,h=72,c=mkCv(w,h),g=G2(c);
+  pR(g,6,h-6,w-12,6,'#8f8a80');
+  for(const px of [10,w-14]){ pR(g,px,14,5,h-18,'#6f7a80'); pR(g,px,14,2,h-18,'#98a4aa'); }
+  pR(g,4,10,w-8,6,'#3f6b4a'); pR(g,4,10,w-8,2,'#57a869');
+  pR(g,2,8,w-4,3,'#2c4a34');
+  pR(g,14,h-26,w-28,6,'#9a8a6c'); pR(g,14,h-26,w-28,1,'#bcae90');
+  for(let i=0;i<3;i++) pR(g,20+i*22,h-20,4,14,'#7a6a4c');
+  // an advert panel at one end, sun-bleached
+  pR(g,w-30,20,24,30,'#e8dfc8'); pR(g,w-28,22,20,26,'#c9b89e');
+  pR(g,w-26,26,16,4,'#8a2c24'); pR(g,w-26,34,12,3,'#4a5f7a');
+  return c;
+}
+
+/* ---------- painting it all into the world, once ---------- */
+const POLE_XS = [];
+function paintEast(){
+  const g=playG, r=mulberry(770077);
+  /* the metalled road: asphalt with a broken centre line and a gravel
+     shoulder, because the town road is not the village lane */
+  for(let x=6960;x<9060;x++){
+    const gy=R(groundY(x));
+    const edge=clamp((x-6960)/90,0,1)*clamp((9060-x)/90,0,1);
+    if(edge<0.05) continue;
+    g.fillStyle = ((x*7)%23<1)? '#4c4a4e' : '#3f3d42';
+    g.fillRect(x,gy,1,7);
+    g.fillStyle='#5a5860'; g.fillRect(x,gy,1,1);
+    if((x%54)<24){ g.fillStyle='#d8d2b8'; g.fillRect(x,gy+3,1,1); }   // the centre line
+    if((x%211)<2){ g.fillStyle='#2a282c'; g.fillRect(x,gy+1,1,5); }   // a patch of repair
+  }
+  for(let x=6940;x<9080;x+=3){
+    const gy=R(groundY(x));
+    if(r()<0.6) continue;
+    g.fillStyle=r()<0.5?'#8a8272':'#6f6a5e'; g.fillRect(x,gy+7,2,1);
+  }
+  /* the crossroad: a side road going away from you, drawn in perspective,
+     with the two verges converging on a vanishing point up the screen */
+  {
+    const gy=R(groundY(CROSS_X)), vpy=gy-46;
+    for(let y=0;y<46;y++){
+      const t=y/46, ww=R(lerp(74,5,Math.pow(t,0.8)));
+      const yy=gy-y;
+      g.fillStyle = mix('#56545c','#8e8c94', t*0.85);
+      g.fillRect(CROSS_X-ww/2, yy, ww, 1);
+      if(y%8<4 && ww>7){ g.fillStyle=mix('#e8e2c8','#a8a69c',t); g.fillRect(CROSS_X-1, yy, R(lerp(2,1,t)), 1); }
+      // the grass verges either side of it
+      // a gravel shoulder, then grass, both of them narrowing away from you
+      g.fillStyle=mix('#8a8272','#a8a698',t*0.8);
+      g.fillRect(CROSS_X-ww/2-R(lerp(4,1,t)), yy, R(lerp(4,1,t)), 1);
+      g.fillRect(CROSS_X+ww/2, yy, R(lerp(4,1,t)), 1);
+      g.fillStyle=mix('#3f6b4a','#8aa38e',t*0.85);
+      g.fillRect(CROSS_X-ww/2-R(lerp(10,2,t)), yy, R(lerp(6,1,t)), 1);
+      g.fillRect(CROSS_X+ww/2+R(lerp(4,1,t)), yy, R(lerp(6,1,t)), 1);
+    }
+    // the far end of it disappears into the trees
+    pEll(g, CROSS_X, vpy+2, 16, 6, 'rgba(58,74,60,0.7)');
+    // a mirror on a post at the junction, because every Thai junction has one
+    pR(g, CROSS_X-52, gy-34, 3, 34, '#8f8f99');
+    pEll(g, CROSS_X-51, gy-40, 9, 8, '#5a5f6c');
+    pEll(g, CROSS_X-51, gy-40, 7.4, 6.4, '#b8c8d0');
+    pEll(g, CROSS_X-53, gy-42, 3, 2, '#e4eef2');
+    pR(g, CROSS_X-58, gy-30, 13, 3, '#c0392f');
+  }
+  stamp(artCrossShrine(), CROSS_X+58, groundY(CROSS_X+58)+2, 1);
+  stamp(artBusStop(),     BUSSTOP_X,   groundY(BUSSTOP_X)+2, 1);
+  /* the poles, marching the whole way and out into the far fields */
+  for(let x=6980;x<10480;x+=176){
+    POLE_XS.push(x);
+    stamp(artPole(x), x, groundY(x)+3, 1);
+  }
+  // the cable running between them, sagging
+  for(let i=0;i+1<POLE_XS.length;i++){
+    const a=POLE_XS[i], b=POLE_XS[i+1];
+    const ya=groundY(a)-104, yb=groundY(b)-104;
+    for(let k=0;k<5;k++){
+      const off=k*2.2;
+      for(let x=a;x<=b;x+=1){
+        const t=(x-a)/(b-a);
+        const y=lerp(ya,yb,t)+Math.sin(t*Math.PI)*9+off;
+        g.fillStyle = k<2? '#231f26' : '#332d36';
+        g.fillRect(x, R(y), 1, 1);
+      }
+    }
+  }
+  /* the town: two rows of shophouses, and the store */
+  for(let i=0;i<9;i++){
+    const x=TOWN_A+60+i*150;
+    if(Math.abs(x-STORE_X)<80) continue;
+    stamp(artShophouse(x), x, groundY(x)+4, 1);
+    addLight(x+ (i%2?28:-26), groundY(x)-62, 40, PAL.lamp, 0.42);
+  }
+  stamp(artStore(), STORE_X, groundY(STORE_X)+4, 1);
+  addLight(STORE_X, groundY(STORE_X)-52, 84, '#dff2e8', 0.62);
+  addLight(STORE_X+38, groundY(STORE_X)-20, 44, '#dff2e8', 0.4);
+  /* motorbikes parked nose-in along the kerb, and a rubbish bin */
+  for(const x of [STORE_X-66, STORE_X-48, STORE_X+54, 8560, 8578]){
+    const gy=groundY(x);
+    pEll(g,x,gy+1,9,2,'rgba(10,8,20,0.3)');
+    pCirc(g,x-6,gy-4,4,'#2c2c30'); pCirc(g,x-6,gy-4,2,'#6a6a74');
+    pCirc(g,x+6,gy-4,4,'#2c2c30'); pCirc(g,x+6,gy-4,2,'#6a6a74');
+    pR(g,x-7,gy-9,14,4, pick(['#c0392f','#2c5a7a','#3f6b4a','#d8b04a']));
+    pR(g,x-2,gy-13,7,5,'#3a3630');
+    pTaper(g,x+5,gy-12,x+9,gy-9,2,1,'#8f8f99');
+  }
+  pR(g,8640,groundY(8640)-14,12,14,'#3f6b4a'); pR(g,8640,groundY(8640)-16,12,3,'#57a869');
+  /* the far paddies get a scarecrow and a hut of their own */
+  stamp(ART.scare, 9460, groundY(9460)+2, 1);
+  stamp(ART.scare, 10120, groundY(10120)+2, 0.9);
+}
+
+/* ============================================================
+   WHAT MOVES ON IT
+   ============================================================ */
+const TRAFFIC=[], ROAD_DOGS=[];
+const VEH = ['moto','moto','moto','pickup','songthaew','moto'];
+function seedTraffic(){
+  for(let i=0;i<7;i++){
+    const dir = Math.random()<0.5? -1 : 1;
+    TRAFFIC.push({ kind:pick(VEH), x:rnd(6980,9040), dir,
+                   sp:rnd(52,128), t:rnd(9), horn:0 });
+  }
+  for(const x of [7290, 8060, 8820]) ROAD_DOGS.push({x, hx:x, t:rnd(9), st:'sleep', sp:0, face:1, wake:0});
+}
+function stepTraffic(dt){
+  for(const v of TRAFFIC){
+    v.t+=dt;
+    v.x += v.dir*v.sp*dt;
+    if(v.x<6900){ v.x=9100; }
+    if(v.x>9100){ v.x=6900; }
+    /* it slows for a dog in the road, which is the correct behaviour and
+       also the only reason the dog is still alive */
+    for(const d of ROAD_DOGS) if(Math.abs(d.x-v.x)<40 && d.st==='sleep'){ v.horn=0.5; }
+    if(v.horn>0) v.horn-=dt;
+  }
+  for(const d of ROAD_DOGS){
+    d.t+=dt;
+    if(d.st==='sleep'){
+      /* it gets up when somebody comes near enough, and lies back down when
+         they have gone */
+      if(Math.abs(P.x-d.x)<48){ d.st='up'; d.wake=rnd(3,6); }
+      else if(Math.random()<dt*0.06){ d.st='up'; d.wake=rnd(2,5); }
+    } else {
+      d.wake-=dt;
+      const tgt = clamp(d.hx + Math.sin(d.t*0.5)*26, d.hx-30, d.hx+30);
+      const dx = tgt-d.x;
+      if(Math.abs(dx)>2){ d.x += sign(dx)*17*dt; d.face=sign(dx); d.sp=1; } else d.sp=0;
+      if(d.wake<=0 && Math.abs(P.x-d.x)>60){ d.st='sleep'; d.sp=0; }
+    }
+  }
+}
+function drawVehicle(g,v){
+  const x=v.x, gy=groundY(x), f=v.dir;
+  const bob=Math.sin(v.t*9)*0.6;
+  pEll(g,x,gy+1,16,3,'rgba(10,8,20,0.32)');
+  if(v.kind==='moto'){
+    const c1=['#c0392f','#2c5a7a','#3f6b4a','#d8b04a','#e8e4da'][(R(x)%5)];
+    pCirc(g,x-7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x-7*f,gy-4+bob,2,'#7a7a84');
+    pCirc(g,x+7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x+7*f,gy-4+bob,2,'#7a7a84');
+    pR(g,x-8*f,gy-10+bob,16,5,c1); pR(g,x-8*f,gy-10+bob,16,1,shade(c1,0.3));
+    pR(g,x-2*f,gy-14+bob,8,5,'#3a3630');
+    pTaper(g,x+6*f,gy-13+bob,x+10*f,gy-10+bob,2,1,'#9a9aa4');
+    // the rider, and whatever is on the back
+    const ry=gy-16+bob;
+    pR(g,x-1*f,ry-8,6,10,['#e8dfc8','#c0392f','#4a7a9e'][(R(x)%3)]);
+    pEll(g,x+1*f,ry-11,4,4,'#d8a878');
+    pEll(g,x+1*f,ry-12.4,4.4,3.4,['#c0392f','#2c5a7a','#f2c14e'][(R(x)%3)]);  // helmet, sometimes
+    pLimb(g,x+2*f,ry-5,x+7*f,ry-2,2,'#d8a878');
+    if((R(x)%3)===0){ pR(g,x-9*f,ry-4,7,8,'#8a6a44'); pR(g,x-9*f,ry-4,7,1,'#b08c5c'); }
+    if(v.horn>0){ for(let i=0;i<3;i++) pEll(g,x+(11+i*3)*f, gy-14+bob-i, 1.4,1.4,'rgba(242,193,78,0.7)'); }
+  } else if(v.kind==='pickup'){
+    const c1=['#e8e4da','#2c5a7a','#8a2c24'][(R(x)%3)];
+    pCirc(g,x-12*f,gy-5+bob,5.4,'#2c2c30'); pCirc(g,x-12*f,gy-5+bob,2.4,'#7a7a84');
+    pCirc(g,x+12*f,gy-5+bob,5.4,'#2c2c30'); pCirc(g,x+12*f,gy-5+bob,2.4,'#7a7a84');
+    pR(g,x-18*f,gy-14+bob,36,9,c1); pR(g,x-18*f,gy-14+bob,36,1,shade(c1,0.28));
+    pR(g,x-4*f,gy-22+bob,16,9,c1); pR(g,x-2*f,gy-21+bob,12,7,'#2e3a44');
+    pR(g,x-18*f,gy-20+bob,13,7,shade(c1,-0.2));      // the tray, with sacks in it
+    pR(g,x-16*f,gy-24+bob,4,5,'#9a8a6c'); pR(g,x-11*f,gy-23+bob,4,4,'#8a7a5c');
+    pR(g,x+17*f,gy-11+bob,3,2,'#f2e0a0');
+  } else {
+    const c1='#2b6a8a';
+    pCirc(g,x-14*f,gy-5+bob,5.4,'#2c2c30'); pCirc(g,x-14*f,gy-5+bob,2.4,'#7a7a84');
+    pCirc(g,x+14*f,gy-5+bob,5.4,'#2c2c30'); pCirc(g,x+14*f,gy-5+bob,2.4,'#7a7a84');
+    pR(g,x-20*f,gy-15+bob,40,10,c1); pR(g,x-20*f,gy-15+bob,40,1,shade(c1,0.3));
+    pR(g,x+6*f,gy-24+bob,14,10,c1); pR(g,x+8*f,gy-23+bob,10,7,'#2e3a44');
+    // the roofed back, with two benches and whoever is riding home on them
+    pR(g,x-21*f,gy-29+bob,30,3,'#d8552f'); pR(g,x-20*f,gy-26+bob,28,11,'rgba(20,26,30,0.45)');
+    for(let i=0;i<3;i++){ pR(g,x-(16-i*8)*f,gy-24+bob,4,7,['#e8dfc8','#c0392f','#4a7a9e'][i]);
+      pEll(g,x-(14-i*8)*f,gy-25+bob,2.4,2.4,'#d8a878'); }
+    for(const px of [-21,-9,3]) pR(g,x+px*f,gy-29+bob,2,15,'#9a9aa4');
+  }
+}
+function drawRoadDog(g,d){
+  const x=d.x, gy=groundY(x), f=d.face;
+  if(d.st==='sleep'){
+    pEll(g,x,gy-1,13,4,'rgba(10,8,20,0.3)');
+    pEll(g,x,gy-4,11,4.4,'#c9a06a'); pEll(g,x,gy-5.4,9.4,3.2,'#dcb47e');
+    pEll(g,x-9*f,gy-5,4.6,3.8,'#c9a06a'); pEll(g,x-10*f,gy-6,3.8,3,'#dcb47e');
+    pTri(g,x-12*f,gy-9,x-14*f,gy-4,x-9*f,gy-5,'#a87f4e');
+    pR(g,R(x-12*f),R(gy-5),2,1,'#5a4028');
+    pEll(g,x+10*f,gy-4,4.4,2.4,'#a87f4e');
+    pR(g,R(x-3),R(gy-1),3,2,'#b8905a'); pR(g,R(x+4),R(gy-1),3,2,'#b8905a');
+  } else {
+    const ph=d.t*7, step=d.sp? Math.sin(ph)*2.4 : 0;
+    pEll(g,x,gy-1,11,3,'rgba(10,8,20,0.28)');
+    pEll(g,x,gy-8,9,4.2,'#c9a06a'); pEll(g,x,gy-9.4,7.6,3,'#dcb47e');
+    pEll(g,x+8*f,gy-12,4.4,4,'#c9a06a'); pEll(g,x+9*f,gy-13,3.4,3,'#dcb47e');
+    pTri(g,x+7*f,gy-16,x+5*f,gy-12,x+10*f,gy-13,'#a87f4e');
+    pR(g,R(x+9*f),R(gy-12),1,1,'#3a2c1e');
+    pR(g,R(x+11*f),R(gy-11),2,1,'#5a4028');
+    pTaper(g,x-8*f,gy-9,x-13*f,gy-14+Math.sin(d.t*4)*2,3,1,'#a87f4e');
+    for(let i=0;i<2;i++){
+      pLimb(g,x+(i?5:-5)*f,gy-6,x+(i?5:-5)*f+(i?step:-step),gy-1,2.2,i?'#b8905a':'#a87f4e');
+    }
+  }
+}
+function drawTraffic(g){
+  for(const v of TRAFFIC){ if(v.x-GS.camX<-70||v.x-GS.camX>W+70) continue; drawVehicle(g,v); }
+  for(const d of ROAD_DOGS){ if(d.x-GS.camX<-40||d.x-GS.camX>W+40) continue; drawRoadDog(g,d); }
+}
+BUILD_STEPS.push(['grading the road east', paintEast]);
+BUILD_STEPS.push(['letting the traffic out', seedTraffic]);
+
+/* ---------- the shop that never shuts ---------- */
+function openStore(){
+  openCounter({
+    title:'THE SHOP',
+    sub:'open all night, cold inside',
+    note:'everything here is somebody else’s work, and it costs',
+    rows(){
+      const out=[];
+      const buy=(item,n,cost,name,icon,sub)=>({ n:L(name), sub:L(sub), icon:icon||item, cost, ok:true,
+        fn(){ if(!pay(cost)) return tooPoor(cost); bagAdd(item,n,true); AU.ranat(720,0,0.05);
+              toast('+'+n, PAL.jadeL, item); } });
+      out.push(buy('papaya',2,14,'green papaya','papaya','shredded, for pounding'));
+      out.push(buy('chili',3,9,'bird chillies','chili','small and serious'));
+      out.push(buy('lime',3,9,'limes','lime','for the sourness'));
+      out.push(buy('egg',4,12,'eggs','egg','a tray of four'));
+      out.push(buy('rice',4,16,'a bag of rice','rice','somebody else grew it'));
+      out.push(buy('coconut',2,15,'coconut milk','coconut','in a carton, which is cheating'));
+      out.push({ n:L('a cold sweet drink'), sub:L('you cannot drink it. Somebody can.'), icon:'flower', cost:12,
+        ok:true, fn(){ if(!pay(12)) return tooPoor(12); bagAdd('flower',1,true);
+          AU.ding(); toast('+1', PAL.goldL, 'flower'); } });
+      return out;
+    }
+  });
+}
+
+/* a dog in the road is a dog in the road. It is worth one merit a day, once,
+   and after that it is worth doing anyway. */
+function petRoadDog(d){
+  d.st='up'; d.wake=rnd(4,7); d.t+=0.4;
+  AU.purr && AU.purr();
+  if(!GS.seen['dog'+R(d.hx)]){
+    GS.seen['dog'+R(d.hx)]=true; addMerit(1,true);
+    toast('+1', PAL.gold, 'merit');
+  } else spark('#d8b04a');
+  endInteract();
+}
+/* ============================================================
+   KEEPING OUT OF SIGHT
+
+   Nine feet of grey ghost walking up a village road at two in
+   the morning is a thing people have a reaction to, and the
+   reaction is always the same: they stop, they back off, and
+   whatever they were doing is over. You can go round that now.
+
+   Hold DOWN — or pull the stick down — and he folds himself
+   almost in half and moves at a crawl. Sneaking he throws no
+   shadow anybody looks twice at, and he passes.  Standing up
+   inside somebody's sight while they are facing you fills a
+   little eye over their head, and when it is full they see you.
+
+   Twice the road makes a scene of it: headlights at the
+   crossroad, and the dogs at the edge of town. Both are held on
+   one button and both can be lost.
+   ============================================================ */
+const SNEAK = { on:false, k:0, seenBy:null, heat:0, quiet:0, praise:0 };
+/* the places a nine-foot ghost can get out of sight in */
+const HIDES = [
+  [716, 796],        // the ditch west of the farm gate
+  [1500, 1560],      // the long grass by the first house
+  [2612, 2688],      // under the tamarind
+  [3160, 3280],      // the banana grove
+  [7238, 7302],      // the bus shelter at the crossroad
+  [8618, 8676],      // behind the bins on the town road
+];
+function inHide(x){ for(const h of HIDES) if(x>h[0] && x<h[1]) return h; return null; }
+function sneakSpeed(){ return SNEAK.on? 0.42 : 1; }
+
+/* who can see you, and how well */
+function watchers(){
+  const out=[];
+  if(typeof NPCS==='undefined') return out;
+  for(const n of NPCS){
+    const d=n.x-P.x, ad=Math.abs(d);
+    if(ad>96) continue;
+    const infront = (n.face>0) === (d<0);          // are you on the side they face
+    out.push({n, d, ad, infront});
+  }
+  return out;
+}
+function stepSneak(dt){
+  if(GS.state!=='play' || DLG || VIG || BURST || (typeof QTE!=='undefined' && QTE)){ SNEAK.on=false; return; }
+  /* crouching: the stick pulled down, or the down key held, and only when
+     his feet are on something */
+  const want = !!K.down && !P.jump && Math.abs(P.vy||0)<40;
+  if(want!==SNEAK.on){ SNEAK.on=want; AU.noise(0.06,0.012,120,900); }
+  SNEAK.k = lerp(SNEAK.k, SNEAK.on?1:0, 1-Math.pow(0.002,dt));
+  const hid = !!inHide(P.x);
+  /* the eye over somebody's head fills while you are upright in their view */
+  let worst=null, worstV=0;
+  for(const w of watchers()){
+    const n=w.n;
+    n.see = n.see||0;
+    const lit = 1 - 0.45*(typeof TOD!=='undefined'? clamp(1-TOD.v,0,1)*0.8 : 0);
+    const rate = (SNEAK.on? 0.10 : 0.85) * (hid? 0.05 : 1) * (w.infront? 1 : 0.25)
+               * clamp(1-(w.ad-28)/70, 0.1, 1) * lit;
+    if(w.ad<92 && !n.met2) n.see = clamp(n.see + rate*dt, 0, 1);
+    else n.see = Math.max(0, n.see - dt*0.7);
+    if(n.see>worstV){ worstV=n.see; worst=n; }
+  }
+  for(const n of NPCS) if(Math.abs(n.x-P.x)>=96) n.see=Math.max(0,(n.see||0)-dt*0.9);
+  SNEAK.heat = worstV; SNEAK.seenBy = worst;
+  if(worst && worstV>=1 && !worst.spooked){
+    worst.spooked=3.2; worst.react={k:'back',t:2.2,dur:2.2}; worst.face = P.x<worst.x? -1:1;
+    worst.bub={t:2.0,txt:'!'}; AU.wail && AU.wail(); worst.see=0.5;
+    SNEAK.quiet=0;
+  }
+  for(const n of NPCS) if(n.spooked) n.spooked=Math.max(0,n.spooked-dt);
+  /* and a stretch of road walked past somebody without frightening them is
+     worth something, once */
+  if(SNEAK.on && worst && worstV<0.5 && SNEAK.heat<0.5){
+    SNEAK.quiet += dt;
+    if(SNEAK.quiet>2.6){
+      SNEAK.quiet=0;
+      if(!GS.seen['snuck'+worst.id]){
+        GS.seen['snuck'+worst.id]=true; addMerit(2,true);
+        toast('+2', PAL.gold, 'merit'); SNEAK.praise=1.6;
+      }
+    }
+  } else if(!worst) SNEAK.quiet=0;
+  if(SNEAK.praise>0) SNEAK.praise-=dt;
+}
+/* ---------- what it looks like ---------- */
+function drawSneakUI(g){
+  if(GS.state!=='play') return;
+  /* a small eye over anybody who is starting to notice you */
+  for(const w of watchers()){
+    const n=w.n, v=n.see||0;
+    if(v<=0.02) continue;
+    const x=n.x-GS.camX, y=n.y-GS.camY-46;
+    if(x<-20||x>W+20) continue;
+    const c = v>=1? '#e05a48' : v>0.6? '#f2c14e' : '#cfc4ae';
+    g.globalAlpha=clamp(v*1.4,0,1);
+    pEll(g,x,y,7,4.4,'rgba(20,16,30,0.55)');
+    pEll(g,x,y,5.6,3.2,'#f4ecd6');
+    pEll(g,x,y,2.2*clamp(v+0.3,0,1),2.2*clamp(v+0.3,0,1),c);
+    pR(g,R(x-6),R(y+5),R(12*v),1,c);
+    g.globalAlpha=1;
+  }
+  /* and a line under him when he is down in the grass */
+  if(SNEAK.k>0.04){
+    const x=P.x-GS.camX, y=P.y-GS.camY;
+    g.globalAlpha=SNEAK.k*0.5;
+    for(let i=0;i<9;i++) pR(g, R(x-16+i*4), R(y+2+Math.sin(GS.t*3+i)*1), 3,1,'#3f6b4a');
+    g.globalAlpha=1;
+    if(inHide(P.x)){
+      g.globalAlpha=0.55+0.25*Math.sin(GS.t*4);
+      pTxt(g,L('out of sight'), x, y-64, '#9fd8a8', 6, 'center');
+      g.globalAlpha=1;
+    }
+  }
+  if(SNEAK.praise>0){
+    g.globalAlpha=clamp(SNEAK.praise,0,1);
+    pTxt(g,L('nobody saw you'), P.x-GS.camX, P.y-GS.camY-98, '#9fd8a8', 6,'center');
+    g.globalAlpha=1;
+  }
+}
+
+/* ============================================================
+   QUICK-TIME: one button, one window, one chance
+   ============================================================ */
+let QTE = null;
+function startQTE(o){
+  QTE = { icon:o.icon||'hold', word:o.word||'hold still', t:0,
+          dur:o.dur||2.2, win:o.win||[0.45,0.78], need:o.need||'hold',
+          got:0, done:0, ok:null, fn:o.fn||null, fail:o.fail||null, who:o.who||null };
+  AU.blip();
+}
+function stepQTE(dt){
+  if(!QTE) return;
+  const q=QTE; q.t+=dt;
+  const f=q.t/q.dur;
+  if(q.done){ if(q.t>q.dur+1.1){ const ok=q.ok; const fn=ok?q.fn:q.fail; QTE=null; if(fn) fn(); } return; }
+  const held = q.need==='hold'? (K.act||K.jump||(TOUCH.on&&TOUCH.pts.size>0)) : false;
+  const tapped = q.need==='tap'? (press('act')||press('tap')||press('jump')) : false;
+  if(q.need==='hold'){
+    if(f>=q.win[0] && f<=q.win[1] && held) q.got += dt;
+    if(held && (f<q.win[0]-0.08)){ q.done=1; q.ok=false; q.t=q.dur; AU.whiff(); }
+  } else if(tapped){
+    q.done=1; q.ok = (f>=q.win[0] && f<=q.win[1]);
+    q.t=q.dur; q.ok? AU.ding() : AU.whiff();
+  }
+  if(f>=1 && !q.done){
+    q.done=1;
+    q.ok = q.need==='hold'? (q.got > (q.win[1]-q.win[0])*q.dur*0.66) : false;
+    q.t=q.dur; q.ok? AU.ding() : AU.whiff();
+  }
+  clearPress();
+}
+function drawQTE(g){
+  if(!QTE) return;
+  const q=QTE, f=clamp(q.t/q.dur,0,1);
+  // the whole frame goes quiet and dark at the edges
+  g.globalAlpha=0.42; pR(g,0,0,W,30,'#0b0814'); pR(g,0,H-30,W,30,'#0b0814'); g.globalAlpha=1;
+  const cx=W/2, cy=H-52;
+  cloud(g,cx-92,cy-20,184,42,{seed:88});
+  // the window you have to be inside
+  const bx=cx-70, bw=140;
+  pR(g,bx,cy,bw,9,'#cbbfa6');
+  pR(g,bx+bw*q.win[0],cy,bw*(q.win[1]-q.win[0]),9,'rgba(90,180,110,0.5)');
+  pR(g,bx+bw*f-1,cy-4,3,17, q.done? (q.ok?'#2f8f4c':'#a8392c') : '#3b3128');
+  const word = q.done? (q.ok? L('held') : L('seen')) : L(q.word);
+  pTxt(g, word, cx, cy-6, q.done? (q.ok?'#2f8f4c':'#a8392c') : CL.ink, 8, 'center');
+  // the button, pulsing
+  const pu=0.6+0.4*Math.sin(GS.t*9);
+  g.globalAlpha=q.done?0.4:pu;
+  pEll(g, cx+86, cy+4, 11, 11, '#3f2d14');
+  pEll(g, cx+86, cy+4, 9, 9, '#f2c14e');
+  pTxt(g, q.need==='tap'? '!' : '—', cx+86, cy+1, '#57400a', 9, 'center');
+  g.globalAlpha=1;
+}
+
+/* ============================================================
+   THE TWO SCENES THE ROAD MAKES OF IT
+   ============================================================ */
+const STEALTH = { lights:0, dir:1, x:0, t:0, on:null };
+const STEALTH_SPOTS = [
+  { id:'headlights', a:7180, b:7460, night:true,
+    say:'something is coming up the road',
+    go(){ STEALTH.on='headlights'; STEALTH.t=0; STEALTH.x=P.x+150; STEALTH.dir=-1; STEALTH.lights=0;
+      startQTE({ word:'hold still', need:'hold', dur:2.6, win:[0.34,0.80],
+        fn(){ STEALTH.on=null; if(!GS.seen.stealth1){ GS.seen.stealth1=true; addMerit(3,true);
+                toast('+3', PAL.gold,'merit'); }
+              vignette && vignette('sneakPast'); },
+        fail(){ STEALTH.on=null; AU.wail && AU.wail(); GS.shake=4;
+                vignette && vignette('sneakSeen'); } }); } },
+  { id:'dogs', a:8500, b:8760, night:false,
+    say:'the dogs have your number',
+    go(){ STEALTH.on='dogs'; STEALTH.t=0;
+      startQTE({ word:'go past them slowly', need:'tap', dur:2.2, win:[0.52,0.74],
+        fn(){ STEALTH.on=null; if(!GS.seen.stealth2){ GS.seen.stealth2=true; addMerit(3,true);
+                toast('+3', PAL.gold,'merit'); }
+              for(const d of ROAD_DOGS) d.st='sleep'; },
+        fail(){ STEALTH.on=null; for(const d of ROAD_DOGS){ d.st='up'; d.wake=6; }
+                AU.whiff(); GS.shake=3; } }); } },
+];
+function stepStealth(dt){
+  if(QTE) { if(STEALTH.on==='headlights'){ STEALTH.t+=dt; STEALTH.x+=STEALTH.dir*96*dt;
+              STEALTH.lights=clamp(1-Math.abs(STEALTH.x-P.x)/180,0,1); } return; }
+  if(GS.state!=='play' || DLG || VIG || BURST || storyBusy()) return;
+  for(const sp of STEALTH_SPOTS){
+    if(GS.seen['st_'+sp.id]) continue;
+    if(P.x<sp.a || P.x>sp.b) continue;
+    if(sp.night && !(DAY.min/60>=19 || DAY.min/60<5)) continue;
+    GS.seen['st_'+sp.id]=true;
+    navStop(); P.vx=0;
+    sp.go();
+    return;
+  }
+}
+function drawStealthScene(g){
+  if(STEALTH.on!=='headlights') return;
+  const x=STEALTH.x-GS.camX, gy=groundY(STEALTH.x)-GS.camY;
+  // two cones of headlight sweeping down the road ahead of it
+  g.globalAlpha=0.30+0.30*STEALTH.lights;
+  for(const off of [-4,4]){
+    pTri(g, x+off, gy-14, x-150, gy-30, x-150, gy+16, 'rgba(255,240,190,0.55)');
+  }
+  g.globalAlpha=1;
+  // and the thing itself, a pickup with one headlight brighter than the other
+  pEll(g,x,gy+1,18,4,'rgba(10,8,20,0.35)');
+  pR(g,x-18,gy-14,36,9,'#2b3a44'); pR(g,x-4,gy-22,16,9,'#2b3a44');
+  pCirc(g,x-12,gy-5,5.4,'#2c2c30'); pCirc(g,x+12,gy-5,5.4,'#2c2c30');
+  pEll(g,x-18,gy-11,3,2.4,'#fff4c8'); pEll(g,x-18,gy-6,2.4,2,'#ffe89a');
+}
+/* ============================================================
    A VILLAGE WITH A DAY IN IT
 
    Everyone used to do the same thing at three in the morning as
@@ -16372,6 +17333,12 @@ function update(dt){
   }
   if(typeof stepPig==='function') stepPig(dt);
   if(typeof stepWipe==='function') stepWipe(dt);
+  if(typeof stepTraffic==='function' && GS.state==='play') stepTraffic(dt);
+  if(typeof stepQTE==='function') stepQTE(dt);
+  if(typeof stepSneak==='function') stepSneak(dt);
+  if(typeof stepStealth==='function') stepStealth(dt);
+  /* while a quick-time is up he does not go anywhere */
+  if(typeof QTE!=='undefined' && QTE){ K.left=K.right=false; if(typeof P!=='undefined'&&P) P.vx=0; navStop(); }
   if(press('lang')){ toggleLang(); toast(LANG==='th'?'ภาษาไทย':'English','#9ecbff'); }
 
   switch(GS.state){
@@ -16436,6 +17403,7 @@ function update(dt){
         if(press('map')){ AU.sel(); wipeTo(()=>{ GS.state='tree'; TREE.tab=3; }, 'page'); }
       }
       if(GS.ready && !GS.q.done && Math.abs(P.x-SHRINE_X)<44 && !DLG){ PROMPT=null; startCeremony(); }
+      if(typeof markSeen==='function' && markSeen(P.x)) saveGame();
       const gy=groundY(P.x);
       const look=clamp(P.vx*0.42,-46,46);
       if(!VIG) GS.camX = lerp(GS.camX, clamp(chatCamX(P.x+look)-W/2, 0, WORLD_W-W), 1-Math.pow(0.0009,dt));
@@ -16474,7 +17442,7 @@ function saveGame(){
   try{
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       v:2, merit:GS.merit, spent:GS.spent, baht:GS.baht|0, mute:AU.muted,
-      skills:GS.skills, cos:GS.cos, q:GS.q, seen:GS.seen,
+      skills:GS.skills, cos:GS.cos, q:GS.q, seen:GS.seen, sx:GS.seenX,
       bag:GS.bag, friends:GS.friends, learned:GS.learned, tut:GS.tut, mem:GS.mem,
       /* the first field: what you are carrying, how far the rice lesson got,
          and whether she has spoken to you at all */
@@ -16532,7 +17500,7 @@ function seedAtmosphere(){
 }
 function newGame(){
   GS.merit=0; GS.spent=0; GS.skills={}; GS.cos={skirt:'ash'};
-  GS.q={prayers:0,offerings:0,pets:0,gifts:0}; GS.seen={}; GS.bag={}; GS.friends={};
+  GS.q={prayers:0,offerings:0,pets:0,gifts:0}; GS.seen={}; GS.seenX={}; GS.bag={}; GS.friends={};
   GS.learned={}; GS.tut=0; GS.dawn=0; GS.ready=false; GS.mem={}; GS.human=0; GS.bankDue=0; BURST=null;
   GS.baht=0; GS.water=0; GS.rice0=0; GS.chops=0; HINT=null;
   GS.hearts={}; GS.talked={}; GS.gifted={}; GS.incense=0; GS.en=undefined;
@@ -16562,7 +17530,7 @@ function continueGame(sv){
   GS.human=GS.bankDue=humanStage(); BURST=null;
   GS.skills=sv.skills||{}; GS.cos=Object.assign({skirt:'ash'},sv.cos||{});
   GS.q=Object.assign({prayers:0,offerings:0,pets:0,gifts:0},sv.q||{});
-  GS.seen=sv.seen||{}; GS.bag=sv.bag||{}; GS.friends=sv.friends||{};
+  GS.seen=sv.seen||{}; GS.seenX=sv.sx||{}; GS.bag=sv.bag||{}; GS.friends=sv.friends||{};
   GS.learned=sv.learned||{}; GS.tut=sv.tut||0; GS.mem=sv.mem||{};
   GS.baht=sv.baht|0;
   GS.water=sv.wa|0; GS.rice0=sv.r0|0; GS.chops=sv.ch|0;
