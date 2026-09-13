@@ -11,7 +11,8 @@ somebody else's earth at a time. You do not know your name. You do not know
 what you did. You are a **prete** — a hungry ghost, tall as the palm trees and
 thin as a pole, ash-grey, with hands like palm leaves, a pot belly under a
 visible ribcage, a mouth the size of a needle's eye, one small orange nose, six
-hairs left, and two enormous ringed eyes that have not closed properly since.
+hairs left, and two big wet eyes — a white, a gold-brown iris, a pupil, and a
+light caught in the corner of each — that have not closed properly since.
 You cannot eat anything you cook. You're going to cook a great deal anyway.
 
 Far down the road there is one light on: a noodle cart with an old man behind
@@ -142,6 +143,21 @@ runs, **E** confirms, **G** gives, **C** whistles, **Tab** opens the ledger,
 | | |
 |---|---|
 | ![tap to walk, three buttons](screenshots/on-a-phone.png) | ![everything in reach](screenshots/in-reach.png) |
+
+### The tutorial is seventeen pictures
+
+It used to be seventeen sentences read out along the bottom of the screen. It
+is seventeen little rows of pictures now — what you do, in the order you do it,
+with an arrow between each — and three or four words underneath saying what the
+row is for. Rice is **work · water · sleep · pick**, which is the entire lesson;
+the caption just says *that is rice*.
+
+The numbers that come up over your head went the same way. A gift used to read
+`+3 merit · noodles for the unseen (the steam is enough)`. It is a gold star and
+a **+3** now. Nothing in the sentence was worth the second and a half it took to
+read.
+
+![the tutorial](screenshots/the-tutorial.png)
 
 ## The past comes back in pieces, and you play every one
 
@@ -850,8 +866,50 @@ neighbour with a small problem:
 | **Krasue** | a floating head trailing her own glowing entrails | leaves her body in the forest each night and can never find it again. Cheerful about it. Needs a lantern |
 | **Tai Hong** | died badly on this road and simply stayed | not angry. Not anything. Just still there, waiting to be noticed. Wants a small shrine so people know somebody was here |
 
+![the five of them](screenshots/the-ghosts.png)
+
 Plus five villagers, a monk who isn't supposed to want anything and would still
 like a leaf float, and a cat.
+
+### They are drawn like cartoons, on purpose
+
+Every one of them is built head-first: the skull is between a third and a half
+of the whole figure, the limbs are short and thick, and the silhouette is made
+of circles. Kong Koi is nine-tenths head and one leg. Krahang is a barrel with a
+basket in each hand. At 480×270 a realistically-proportioned ghost is a grey
+smudge with a dot on top; a cartoon one is a character you can tell apart from
+forty pixels away.
+
+The eyes are the same eyes the prete got: a white, an iris with a dark rim and a
+lit underside, a pupil, a big catchlight and a small one, and a lid that comes
+down — for a blink, or because the hour is wrong for them and they are half
+asleep. The pupils slide to whatever has their attention.
+
+### And they have evenings
+
+They used to stand on a mark and turn to face you from anywhere on the screen,
+which is the posture of a thing waiting to be clicked. Each of them now has
+something they are doing at this hour, something they are looking at, and a
+feeling about it that you can read without a word being said:
+
+| Who | What they do with the evening |
+|---|---|
+| **Kong Koi** | chases whatever is glowing, in short hops, and gives up on it; sits down and dozes before dawn |
+| **Krahang** | practises flying after dark — up, wobble, down — and spends the day sitting with the broken baskets |
+| **Phi Pop** | edges away whenever a villager comes near, and comes back out when they have gone |
+| **Krasue** | drifts up and down the forest path looking for the body she left somewhere |
+| **Tai Hong** | watches the road, and looks away when somebody walks down it who cannot see him |
+
+Come within about fifty pixels and they notice you once — a small start, a look
+up, and a mark in the air over their head: a question mark if you have never
+spoken, a heart if you are friends. Carry the thing one of them has been wanting
+and they perk up at it from twice that distance. A ghost that was dozing wakes
+when you arrive. And when the piggy bank goes off, every one of them within
+sight of it turns, stares, and then is delighted.
+
+The mark in the air is the whole vocabulary — question, heart, spark, tear,
+zzz, dots — and the mouth underneath it changes shape to match. Nothing here
+speaks.
 
 ## It speaks Thai, properly
 
