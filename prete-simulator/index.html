@@ -95,7 +95,7 @@ const KEYMAP = {
   ' ':'jump', z:'light', j:'light', x:'heavy', k:'heavy',
   c:'whistle', l:'whistle', shift:'block',
   e:'act', enter:'act', tab:'tree', t:'tree',
-  h:'help', m:'mute', escape:'back', r:'restart', n:'newgame', g:'give', f:'give', q:'map', v:'lang',
+  h:'help', escape:'back', r:'restart', n:'newgame', g:'give', f:'give', q:'map', v:'lang',
 };
 function keyDown(k){ if(!K[k]) PRESS[k]=true; K[k]=true; }
 function keyUp(k){ K[k]=false; }
@@ -122,6 +122,48 @@ const NAV = { on:false, tx:0, fire:0, t:0 };
 function navTo(worldX){ NAV.on=true; NAV.tx=worldX; NAV.t=0; NAV.fire=0; }
 function navStop(){ NAV.on=false; NAV.fire=0; }
 function navTake(){ if(NAV.fire){ NAV.fire=0; return true; } return false; }
+
+/* ---------- the stick ----------
+   Tapping the ground to walk is still there, but a thumb on a stick is what
+   a platformer wants: you can stop on a plank edge with it, and you cannot
+   stop anywhere with a walk order. */
+const STICK = { cx:34, cy:220, r:21, kr:8.5, kx:0, ky:0, on:false, jumped:false, ducked:false };
+function stickAt(p){ return dist(p.x,p.y,STICK.cx,STICK.cy) < STICK.r+13; }
+function stickGrab(p){
+  STICK.on=true;
+  stickMove(p);
+}
+function stickMove(p){
+  let dx=p.x-STICK.cx, dy=p.y-STICK.cy;
+  const d=Math.hypot(dx,dy), m=STICK.r-3;
+  if(d>m){ dx=dx/d*m; dy=dy/d*m; }
+  STICK.kx=dx; STICK.ky=dy;
+  stickKeys();
+}
+function stickDrop(){
+  STICK.on=false; STICK.kx=0; STICK.ky=0;
+  keyUp('left'); keyUp('right'); keyUp('down'); keyUp('block');
+  if(STICK.jumped){ keyUp('jump'); STICK.jumped=false; }
+  STICK.ducked=false;
+}
+/* the stick holds the walk keys down the way a keyboard would */
+function stickKeys(){
+  const dead=STICK.r*0.30;
+  const L = STICK.kx < -dead, Rt = STICK.kx > dead;
+  if(L!==!!K.left){ L? keyDown('left') : keyUp('left'); }
+  if(Rt!==!!K.right){ Rt? keyDown('right') : keyUp('right'); }
+  // all the way over and he runs
+  const run = Math.abs(STICK.kx) > STICK.r*0.80;
+  if(run!==!!K.block){ run? keyDown('block') : keyUp('block'); }
+  // a shove upward is a jump, once per shove
+  const up = STICK.ky < -STICK.r*0.60;
+  if(up && !STICK.jumped){ STICK.jumped=true; keyDown('jump'); }
+  if(!up && STICK.jumped){ STICK.jumped=false; keyUp('jump'); }
+  // and down drops you through a plank
+  const dn = STICK.ky > STICK.r*0.55;
+  if(dn!==!!K.down){ dn? keyDown('down') : keyUp('down'); }
+  if(STICK.kx||STICK.ky) navStop();       // the stick wins over a walk order
+}
 
 const TPADS = [];  // filled after UI layout
 function tLayout(){
@@ -167,6 +209,11 @@ cv.addEventListener('pointerdown', ev=>{
   if(TOUCH.on && uiShowsPads()){
     for(const t of TPADS) if(dist(p.x,p.y,t.x,t.y) < t.r+8){ hit=t; break; }
   }
+  if(!hit && TOUCH.on && uiShowsPads() && stickAt(p)){
+    TOUCH.pts.set(ev.pointerId,'@stick'); stickGrab(p);
+    try{ cv.setPointerCapture(ev.pointerId); }catch(e){}
+    return;
+  }
   if(hit){ TOUCH.pts.set(ev.pointerId, hit.key); keyDown(hit.key); }
   /* an icon over something in reach beats a walk order: it is the only way to
      pick out the one you meant when three things are standing on the same spot */
@@ -189,6 +236,7 @@ cv.addEventListener('pointermove', ev=>{
   const p = cvPos(ev);
   TOUCH.aim.x=p.x; TOUCH.aim.y=p.y;
   const cur = TOUCH.pts.get(ev.pointerId);
+  if(cur==='@stick'){ stickMove(p); return; }
   if(cur==='@nav' && tapIsWalk()){ TAP.x=p.x; TAP.y=p.y;   // drag to redirect the walk
     navTo(clamp(p.x + GS.camX, 16, WORLD_W-16)); return; }
   if(!cur || cur==='@tap') return;
@@ -198,7 +246,8 @@ cv.addEventListener('pointermove', ev=>{
 });
 function endPt(ev){
   const cur = TOUCH.pts.get(ev.pointerId);
-  if(cur==='@tap') keyUp('act');          // a held tap must let go of E
+  if(cur==='@stick') stickDrop();
+  else if(cur==='@tap') keyUp('act');     // a held tap must let go of E
   else if(cur && cur!=='@nav') keyUp(cur);
   TOUCH.pts.delete(ev.pointerId);
   if(TOUCH.pts.size===0) TOUCH.aim.active=false;
@@ -1264,7 +1313,6 @@ const TH = {
     'แมว เด็ก และผีขี้อาย เลิกสะดุ้งกับเจ้า',
 
   'merit to spend':'บุญที่ใช้ได้', 'earned':'ที่ได้มา', 'spent':'ที่ใช้ไป',
-  'E to ascend':'กด E เพื่อขึ้นไป', 'requires':'ต้องมี',
 
   /* ============ THE FIRST FIELD ============ */
   // the rice mother, and her lesson
@@ -3413,62 +3461,36 @@ function drawPrete(g, p, o={}){
      p.brow lifts and drops them, p.tilt turns sorry into having none of it,
      p.eye opens them wide or closes them to slits, p.mouthS bends the mouth,
      p.blush puts two pixels on the cheekbones. */
-  /* An eye, rather than a saucer with a full stop in it. The old pair could be
-     surprised and nothing else, because a circle with a dot in the middle has
-     exactly one expression. This one has a socket to sit in, an almond of
-     white, an amber iris with a ring round it and light caught in the bottom,
-     a pupil that opens and shuts — and the thing that actually makes an eye
-     read as an eye, an upper lid that comes down OVER the top of the iris
-     instead of stopping politely above it. Blink, weariness and wide-awake
-     are all that one lid at different heights, which is why they finally
-     agree with each other. */
-  const EYE='#f7f4ea', PUP='#171119';
-  const IRIS_D = mix('#6a5334','#402a17', hum*0.75),
-        IRIS   = mix('#c49a54','#8b6036', hum*0.75),
-        IRIS_L = mix('#ecd094','#bb8e58', hum*0.75),
-        LASH   = mix('#4a4038','#241b14', hum*0.8);
+  /* The pair he woke up with: two pale rings with a full stop in each, drawn
+     smaller than they were. The almond-and-iris pair that replaced them for
+     one build were a nicer eye and the wrong face — a prete is not supposed
+     to look like somebody you would pass in the road.
+     They still act: p.brow lifts them, p.eye opens them wide or shuts them
+     to slits, and a blink shuts and opens inside the same eighth of a
+     second rather than slamming and jumping back. */
+  const EYE='#f4f1e6', RING='#8f8a80', PUP='#211f26';
+  const ES = 0.72;                                   // smaller than the old pair
   const ey = headY - 0.6 + (p.brow||0)*0.35;
-  const EK = 1 - hum*0.15;                           // and settle to human size
-  const nearX = headX + 4.2*EK*face, farX = headX - 5.0*EK*face;
+  const EK = (1 - hum*0.15) * ES;
+  const nearX = headX + 4.2*EK/ES*face, farX = headX - 5.0*EK/ES*face;
   const eOpen = clamp(1 + (p.eye||0)*0.30, 0.45, 1.42);
   const wear  = clamp(-(p.eye||0), 0, 1);            // weariness shuts them
-  /* a blink shuts and opens inside the same eighth of a second, rather than
-     slamming shut and then jumping open on the frame the timer resets */
   const blinkK= p.blink<0? Math.sin(clamp(-p.blink/0.12,0,1)*Math.PI) : 0;
-  const gx2 = 0.7*face + Math.sin(p.swayT*0.8)*0.35, gy2 = Math.sin(p.anim*0.6)*0.4;
-  const dil = 1 + clamp(p.eye||0,-0.6,1)*0.18;       // a startled pupil is small
-  const preteEye = (x, rx, ry, out)=>{
-    // the socket, so it is set into a skull and not painted on one
-    pEll(g, x, ey+0.5, rx+1.5, ry+1.1, shade(SHD,-0.13));
-    pEll(g, x, ey, rx, ry, EYE);
-    /* the iris: round, in an almond. An oval iris in an oval eye is a fish. */
-    const ix=x+gx2, iy=ey+gy2, ir=Math.min(rx,ry)*0.82;
-    pEll(g, ix, iy, ir, ir, IRIS_D);
-    pEll(g, ix, iy, ir-0.9, ir-0.9, IRIS);
-    pEll(g, ix, iy+ir*0.34, ir*0.66, ir*0.36, IRIS_L);      // light caught low in it
-    pEll(g, ix, iy, ir*0.46/dil, ir*0.46/dil, PUP);
-    pEll(g, ix-ir*0.44, iy-ir*0.50, 1.25, 1.05, '#fffdf6');
-    pR(g, R(ix+ir*0.34), R(iy+ir*0.40), 1, 1, 'rgba(255,253,246,0.85)');
-    /* the upper lid. Nought closes nothing; one closes it altogether, and
-       weariness and a blink are just two ways of asking for the same number.
-       At rest it takes the very top off the iris, which is where the whole
-       difference between an eye and a marble lives. */
-    const shut = clamp(Math.max(wear*0.72, blinkK), 0, 1);
-    const drop = ry*(0.04 + shut*1.92);
-    pEll(g, x, ey-ry*1.30+drop, rx*1.10, ry*0.78, BODY);
-    pEll(g, x, ey-ry*1.30+drop+ry*0.66, rx*1.00, ry*0.16, shade(BODY,-0.07));
-    // the lash line along it, heavier at the outer corner
-    pTaper(g, x-rx*out*1.02, ey-ry*0.50+drop-ry*0.28, x+rx*out*1.00, ey-ry*0.30+drop-ry*0.28,
-           1.7, 1.1, LASH);
-    if(hum>0.24) for(let i=0;i<2;i++)
-      pTaper(g, x-rx*out*(0.80-i*0.26), ey-ry*0.62+drop-ry*0.28,
-                x-rx*out*(1.22-i*0.20), ey-ry*1.00+drop-ry*0.28-i*0.5, 1.1, 0.5, LASH);
-    // and a lower lid, one pixel of light under the eye
-    pTaper(g, x-rx*0.78, ey+ry*0.94, x+rx*0.78, ey+ry*0.88, 1.1, 0.9, shade(SHD,0.10));
-  };
-  /* wider than tall, because that is what an eye is */
-  preteEye(farX,  4.5*EK, 3.8*EK*eOpen, -face);
-  preteEye(nearX, 5.3*EK, 4.5*EK*eOpen,  face);
+  const lid   = clamp(Math.max(wear, blinkK), 0, 1);
+  pEll(g, farX,  ey, 5.2*EK, 5.3*EK*eOpen, RING);
+  pEll(g, nearX, ey, 6.1*EK, 6.2*EK*eOpen, RING);
+  pEll(g, farX,  ey, 4.1*EK, 4.2*EK*eOpen, EYE);
+  pEll(g, nearX, ey, 4.9*EK, 5.0*EK*eOpen, EYE);
+  const pdx = 0.7*face + Math.sin(p.swayT*0.8)*0.35, pdy = Math.sin(p.anim*0.6)*0.4;
+  const pr = 1 + clamp(p.eye||0,-0.6,1)*0.18;        // a startled pupil is small
+  pEll(g, farX+pdx,  ey+pdy, 1.9*ES/pr, 2.0*ES/pr, PUP);
+  pEll(g, nearX+pdx, ey+pdy, 2.3*ES/pr, 2.4*ES/pr, PUP);
+  pR(g, farX+pdx-1.1,  ey+pdy-1.3, 1, 1, '#fffdf6');
+  pR(g, nearX+pdx-1.4, ey+pdy-1.5, 1, 1, '#fffdf6');
+  if(lid>0.05){
+    pEll(g, farX,  ey-4.6*EK*eOpen+lid*4.4*EK/ES*0.86, 4.3*EK, 2.6*lid*ES+0.6, BODY);
+    pEll(g, nearX, ey-5.4*EK*eOpen+lid*5.2*EK/ES*0.86, 5.1*EK, 3.0*lid*ES+0.6, BODY);
+  }
   if(o.angry){ pR(g, farX-4.6, ey-5.4, 9.2, 1.6, PAL.ember); pR(g, nearX-5.4, ey-5.8, 10.8, 1.8, PAL.ember); }
   /* the brows. Two bones over two eyes, and the inner ends do the acting. */
   {
@@ -3483,31 +3505,38 @@ function drawPrete(g, p, o={}){
   }
   /* the blink used to be two skin-coloured discs slapped over the top. It is
      the same lid as everything else now, asked to come all the way down. */
-  /* one small orange nose, which is somehow the saddest part */
-  pTri(g, headX+1.8*face, ey+6.2, headX-0.8*face, ey+1.4, headX+4.2*face, ey+1.8, '#b8622c');
-  pTri(g, headX+1.8*face, ey+5.4, headX+0.2*face, ey+2.0, headX+3.6*face, ey+2.2, '#e08a44');
-  pR(g, headX+0.6*face, ey+4.4, 1, 1, '#f0a860');
-  /* the mouth. Still the eye of a needle — that is the whole joke of him —
-     but a needle can still turn up at the corners or down at them. */
-  /* the mouth opens for the bowl as far as it opens for anything, which is
-     barely, and the whole point is that it is not enough */
+  /* No nose. There was a small orange one, and it was the one part of him
+     that looked like it belonged on something warm-blooded. */
+  /* the mouth is a mosquito's: a fine proboscis hanging off the face with two
+     short palps either side of it. That is the whole joke of him — the thing
+     he eats with is a needle, and a needle has never been enough. It shortens
+     every time the light takes him, and there is a mouth under it by the end. */
   let mo=clamp(o.mouth||0,0,1);
   if(ACT && ACT.k==='eat'){
     const up = au<0.30? 0 : au<0.78? (au-0.30)/0.48 : 1-(au-0.78)/0.22;
     mo = Math.max(mo, clamp(up,0,1)*0.42);
   }
   const ms=clamp(p.mouthS===undefined?0:p.mouthS,-1,1);
-  const mx0=headX+1.4*face, my0=ey+9.6;
-  /* the eye of a needle. It is a fraction less of a needle each time the
-     light takes him, and that fraction is the whole promise of the game. */
-  pEll(g, mx0, my0, 1.7+mo*2.2+hum*1.6, 2.1+mo*2.6+hum*1.0, '#241c22');
-  pEll(g, mx0, my0+0.8+mo, 1.1+mo, 1.0+mo, '#5e3f48');
-  if(mo<0.2 && ms>0.2){                       // the corners lift
-    pR(g, R(mx0-2.6-ms), R(my0+1.0-ms*1.2), 2, 1, '#241c22');
-    pR(g, R(mx0+1.6+ms), R(my0+1.0-ms*1.2), 2, 1, '#241c22');
-  } else if(mo<0.2 && ms<-0.2){               // and drop
-    pR(g, R(mx0-2.6+ms*0.6), R(my0-1.4-ms*1.0), 2, 1, '#241c22');
-    pR(g, R(mx0+1.6-ms*0.6), R(my0-1.4-ms*1.0), 2, 1, '#241c22');
+  const mx0=headX+2.4*face, my0=ey+8.6;
+  const PRO='#2b2129', PROL='#6d5a64', PROM='#8a636e';
+  {
+    /* no lips. There is a needle where a mouth goes, and it only opens into
+       a mouth at all once the light has taken him a few times. */
+    if(mo>0.10||hum>0.22){
+      const rw = 0.9 + mo*1.8 + hum*1.8;
+      pEll(g, mx0-1.4*face, my0-0.4, rw, 0.7+mo*1.4+hum*1.1, PRO);
+      pEll(g, mx0-1.4*face, my0, rw*0.6, 0.4+mo*0.7+hum*0.5, PROM);
+    }
+    /* the needle, held out in front of his face the way a mosquito holds one.
+       Down the jaw it read as a dribble; out into the air it reads as what it
+       is. It gets shorter every time the light takes him. */
+    const plen = 1 - hum*0.62;
+    const tx2 = mx0 + face*(1.0 + (10.0 + mo*2.0)*plen + ms*0.9);
+    const ty2 = my0 + (5.0 - ms*1.9)*plen;
+    const mx1 = mx0 + face*(0.6 + 4.4*plen), my1 = my0 + (2.4 - ms*0.9)*plen;
+    pTaper(g, mx0, my0, mx1, my1, 1.3, 0.9, PRO);
+    pTaper(g, mx1, my1, tx2, ty2, 0.9, 0.5, PRO);
+    pTaper(g, mx0+0.5*face, my0-0.8, mx1, my1-0.8, 0.6, 0.5, PROL);
   }
   /* the bowl. Drawn after the head, because when he raises it the bowl is
      between you and his face — that is the shot. */
@@ -4115,6 +4144,46 @@ const SKILLS = {
   spit:   {br:4,i:2,cost:6, n:'Seed Shot',     d:'A seed behind that needle of a mouth. Sow a bed from across the field.', need:'plowman'},
   gulp:   {br:4,i:3,cost:6, n:'Long Draught',  d:'Drink the jar. All of it. Then stand at the end of a row and give it back.', need:'spit'},
 };
+/* ---------- the ledger pays you back ----------
+   There used to be a tree you spent merit in, five columns wide, and it was
+   the one screen in the game that asked you to do sums: which of twenty
+   things is worth four merit, and is that better than a skirt. Merit goes
+   into the piggy bank now and nowhere else. The things you used to buy
+   arrive on their own, in this order, as the total climbs — tools first,
+   because the farm needs them and nothing here should ever be a wall. */
+const LEARN_AT = [
+  /* tools first, because the farm needs them and nothing here is ever a wall.
+     The field skills come later on purpose: the first morning is where you
+     learn to carry one jar at a time, and a yoke handed out before that
+     lesson lands takes the lesson away. */
+  [2,'sickle'],  [5,'can'],    [8,'magnet'],  [12,'net'],    [16,'eye'],
+  [20,'haul'],   [24,'axe'],   [28,'stride'], [32,'plowman'],[36,'steady'],
+  [41,'reach'],  [46,'taste'], [51,'spit'],   [57,'cool'],   [63,'carry'],
+  [70,'weave'],  [78,'gulp'],  [86,'float'],  [94,'two'],    [102,'metta'],
+];
+function learnDue(){
+  for(const r of LEARN_AT) if(GS.merit>=r[0] && !GS.skills[r[1]]) return r[1];
+  return null;
+}
+/* is it a moment for a ceremony, or for a mark in the air and back to work */
+function ascendOK(){
+  return GS.state==='play' && !DLG && !VIG && !BURST && !P.act
+      && typeof storyBusy==='function' && !storyBusy()
+      && !(typeof DAY!=='undefined' && (DAY.card||DAY.sleeping));
+}
+/* the four that end a branch are worth the whole ceremony. The rest arrive
+   as a mark in the air, because a twenty-second blessing every time you help
+   somebody with a bucket is not a reward, it is an interruption. */
+const BLESSED = { float:1, two:1, metta:1, gulp:1 };
+function learn(id){
+  if(!id || GS.skills[id]) return;
+  if(BLESSED[id] && ascendOK() && typeof startAscend==='function'){ startAscend(id); return; }
+  GS.skills[id]=1;
+  AU.unlock();
+  if(typeof toast==='function') toast(L(SKILLS[id].n), PAL.jadeL, 'merit');
+  saveGame();
+}
+
 /* The strap lines are short because there are five columns now and each one
    is ninety pixels wide. Anything longer wanders into its neighbour. */
 const BRANCHES = [
@@ -4396,6 +4465,10 @@ function addMerit(n, quiet){
     /* and it arrives as coins, from wherever you were when you earned it */
     if(typeof pigCoin==='function' && GS.state==='play')
       pigCoin(GS.merit-b, P.x, P.y-60);
+    /* and whatever the total has now earned you comes back. One at a time
+       normally; a big jump catches up rather than leaving you owed. */
+    if(typeof learnDue==='function')
+      for(let k=0;k<4;k++){ const d=learnDue(); if(!d) break; learn(d); if(GS.state==='ascend') break; }
   }
   saveGame();
 }
@@ -6648,7 +6721,7 @@ function cntRows(){ const r = CNT.rowsFn(); CNT.i = clamp(CNT.i, 0, Math.max(0,r
 function stepShop(dt){
   const C=CNT;
   C.flash = Math.max(0, C.flash-dt);
-  if(press('back')||press('tree')){ GS.state='play'; CNT=null; clearPress(); return; }
+  if(press('back')||press('tree')){ wipeTo(()=>{ GS.state='play'; CNT=null; },'page'); clearPress(); return; }
   hitTap();
   if(GS.state!=='shop') return;
   const rows=cntRows();
@@ -7415,7 +7488,7 @@ function startActivity(mode){
   ACT = {mode, phase:'pick', pick:0, ids:Object.keys(book), book, t:0,
          step:0, score:0, hits:0, m:0, dir:1, need:0, held:0, gauge:0.5, band:0.5, bandV:0.4,
          slot:0, placed:0, cursor:0, cdir:1, flash:0, doneT:0, quality:0, out:null};
-  GS.state='act'; AU.sel();
+  AU.sel(); if(typeof wipeTo==='function') wipeTo(()=>{ GS.state='act'; },'iris'); else GS.state='act';
 }
 function actRecipe(){ return ACT.book[ACT.ids[ACT.pick]]; }
 function beginSteps(){
@@ -7436,7 +7509,7 @@ function stepAct(dt){
   const A=ACT; A.t+=dt;
   if(A.flash>0) A.flash-=dt;
   if(press('back')){
-    if(A.phase==='pick'){ GS.state='play'; ACT=null; clearPress(); return; }
+    if(A.phase==='pick'){ wipeTo(()=>{ GS.state='play'; ACT=null; },'iris'); clearPress(); return; }
     A.phase='pick'; clearPress(); return;
   }
   if(A.phase==='pick'){
@@ -7562,11 +7635,11 @@ function openGive(target){
   const list=Object.keys(GS.bag).filter(id=>ITEMS[id] && (ITEMS[id].k==='dish'||ITEMS[id].k==='craft') && GS.bag[id]>0);
   if(!list.length){ guideSay('Nothing made in your basket yet. Cook something.'); return; }
   GIVE={target, list, i:0};
-  GS.state='give'; AU.sel();
+  AU.sel(); if(typeof wipeTo==='function') wipeTo(()=>{ GS.state='give'; },'page'); else GS.state='give';
 }
 function stepGive(dt){
   const G3=GIVE;
-  if(press('back')){ GS.state='play'; GIVE=null; clearPress(); return; }
+  if(press('back')){ wipeTo(()=>{ GS.state='play'; GIVE=null; },'page'); clearPress(); return; }
   if(press('left')||press('up')) { G3.i=(G3.i+G3.list.length-1)%G3.list.length; AU.blip(); }
   if(press('right')||press('down')){ G3.i=(G3.i+1)%G3.list.length; AU.blip(); }
   if(press('act')){
@@ -8007,19 +8080,55 @@ function padIcon(g,ic,x,y,c){
   else if(ic==='call') icoCall(g,x+2,y,1.7,c);
   else if(ic==='book') icoBook(g,x,y,1.8,c);
 }
-function drawPads(g){
-  /* wooden keys, pressed in when held — the same plank as every other panel */
-  for(const t of TPADS){
-    const down=K[t.key], r=R(t.r), d=down?1:0;
-    const x=R(t.x-r), y=R(t.y-r+d), w=r*2, h=r*2;
-    g.globalAlpha=down?1:0.88;
-    if(!down){ g.save(); g.globalAlpha=0.34; pR(g,x+1,y+2,w-2,h-1,'#0b0814'); g.restore(); }
-    pR(g,x,y+1,w,h-2,CL.edge); pR(g,x+1,y,w-2,h,CL.edge);
-    pR(g,x+1,y+2,w-2,h-4,down?CL.wood:CL.woodL); pR(g,x+2,y+1,w-4,h-2,down?CL.wood:CL.woodL);
-    pR(g,x+2,y+3,w-4,h-6,down?CL.mid:CL.body); pR(g,x+3,y+2,w-6,h-4,down?CL.mid:CL.body);
-    if(!down) pR(g,x+3,y+3,w-6,1,CL.rim);
-    padIcon(g,t.ic,t.x,t.y+1+d,down?'#8f4a2a':CL.ink);
+/* ---------- a carved disc, which is what every button here is ----------
+   They used to be little wooden plaques with square corners, which is what
+   the panels are made of and not what a button is. A disc with a rim, a
+   bevel, a light on the top-left and a shadow under it reads as something
+   you press from three feet away. */
+function padDisc(g,x,y,r,down,gold){
+  const yy=y+(down?1:0);
+  if(!down){ g.globalAlpha=0.32; pEll(g,x,y+r*0.42+2,r*0.94,r*0.40,'#0b0814'); g.globalAlpha=1; }
+  pEll(g,x,yy,r,r,CL.edge);
+  pEll(g,x,yy,r-1,r-1, gold? '#8a6412' : CL.woodD);
+  pEll(g,x,yy,r-2,r-2, down? CL.wood : (gold? '#d8a52c' : CL.woodL));
+  pEll(g,x,yy+0.7,r-3.2,r-3.2, down? CL.mid : (gold? '#f2c14e' : CL.body));
+  if(down){ pEll(g,x,yy-r*0.30,r-3.4,r*0.34, shade(CL.mid,-0.12)); }
+  else {
+    pEll(g,x-r*0.30,yy-r*0.38,r*0.46,r*0.28, gold? '#ffe89a' : CL.rim);
+    g.globalAlpha=0.45;
+    pEll(g,x,yy+r*0.46,r*0.62,r*0.20, gold? '#a87a18' : CL.under);
     g.globalAlpha=1;
+  }
+}
+/* ---------- the stick ---------- */
+function drawStick(g){
+  const S=STICK, a=S.on?1:0.74;
+  g.globalAlpha=a*0.30; pEll(g,S.cx,S.cy+S.r*0.44+2,S.r*0.94,S.r*0.38,'#0b0814'); g.globalAlpha=a;
+  pEll(g,S.cx,S.cy,S.r,S.r,CL.edge);
+  pEll(g,S.cx,S.cy,S.r-1,S.r-1,CL.woodD);
+  pEll(g,S.cx,S.cy,S.r-2.4,S.r-2.4,'#4a3520');
+  pEll(g,S.cx,S.cy+0.7,S.r-3.4,S.r-3.4,'#3a2818');
+  pEll(g,S.cx,S.cy-S.r*0.34,S.r-4.2,S.r*0.32,'#5c4228');
+  // four notches, so it reads as a stick and not a plate
+  for(let i=0;i<4;i++){ const an=i/4*TAU;
+    pR(g, R(S.cx+Math.cos(an)*(S.r-4.4))-1, R(S.cy+Math.sin(an)*(S.r-4.4))-1, 2,2,
+       'rgba(242,193,78,'+(S.on?0.5:0.3)+')'); }
+  const kx=S.cx+S.kx, ky=S.cy+S.ky;
+  g.globalAlpha=a*0.42; pEll(g,kx,ky+2.6,S.kr*0.9,S.kr*0.38,'#0b0814'); g.globalAlpha=a;
+  pEll(g,kx,ky,S.kr,S.kr,'#7a5a10');
+  pEll(g,kx,ky,S.kr-1,S.kr-1,'#d8a52c');
+  pEll(g,kx,ky-0.5,S.kr-2,S.kr-2,'#f2c14e');
+  pEll(g,kx-S.kr*0.30,ky-S.kr*0.34,S.kr*0.44,S.kr*0.30,'#ffe89a');
+  // a grip, so a thumb has something to be on
+  for(let i=-1;i<=1;i++) pR(g,R(kx)-3+i*3,R(ky)-2,1,5,'rgba(122,90,16,0.55)');
+  g.globalAlpha=1;
+}
+function drawPads(g){
+  drawStick(g);
+  for(const t of TPADS){
+    const down=!!K[t.key], gold=t.id==='jump';
+    padDisc(g,t.x,t.y,t.r,down,gold);
+    padIcon(g,t.ic,t.x,t.y+(down?1:0),down?'#7a3a18':(gold?'#57400a':CL.ink));
   }
 }
 /* the mark you tapped, on the ground where you are headed */
@@ -8332,10 +8441,10 @@ function drawGive(g){
 /* ============================================================
    THE LEDGER
    ============================================================ */
-const TREE={col:0,row:0,tab:0};
+const TREE={col:0,row:0,tab:1};   // 0 was the skill tree, and it is gone
 function stepTree(dt){
   GS.seen.ledger=true;
-  if(press('back')||press('tree')){ GS.state='play'; AU.sel(); clearPress(); return; }
+  if(press('back')||press('tree')){ AU.sel(); wipeTo(()=>{ GS.state='play'; },'page'); clearPress(); return; }
   if(press('heavy')||press('whistle')||press('give')){ TREE.tab=(TREE.tab+1)%3; TREE.row=0; AU.sel(); }
   if(TREE.tab===0){
     const keys=Object.keys(SKILLS);
@@ -9621,10 +9730,10 @@ function stepAscend(dt){
       else { A.fill=Math.max(0,A.fill-dt*0.35); A.beam=Math.max(0,A.beam-dt*2); }
       if(A.fill>=1 && !A.done){
         A.done=true; A.phase='granted'; A.t=0; A.flash=1;
-        GS.skills[A.id]=1; GS.spent+=A.s.cost;
+        GS.skills[A.id]=1;
         AU.metta(); AU.bigDing();
-        toast('learned '+A.s.n, PAL.jadeL);
-        if(A.id==='metta'){ GS.seen.own_halo=true; toast('Halo unlocked',PAL.goldL); }
+        toast(L(A.s.n), PAL.jadeL, 'merit');
+        if(A.id==='metta') GS.seen.own_halo=true;
         GS.seen['blessed'+A.s.br]=true;
         saveGame();
       }
@@ -9634,7 +9743,7 @@ function stepAscend(dt){
       break;
     case 'descend':
       for(const c of ASC_CLOUDS){ c.y -= 2.4*dt; if(c.y<-0.25) c.y=1.2; }
-      if(A.t>1.6){ ASC=null; GS.state='tree'; return; }
+      if(A.t>1.6){ ASC=null; GS.state='play'; return; }   // back to the field, not to a menu
       break;
   }
   for(let i=A.sparks.length-1;i>=0;i--){ const s=A.sparks[i]; s.t+=dt; s.y-=s.v*dt;
@@ -10243,27 +10352,11 @@ function drawGive(g){
 /* ---------------- the ledger ---------------- */
 function stepTree(dt){
   GS.seen.ledger=true;
-  if(press('back')||press('tree')){ GS.state='play'; AU.sel(); clearPress(); return; }
+  if(press('back')||press('tree')){ AU.sel(); wipeTo(()=>{ GS.state='play'; },'page'); clearPress(); return; }
   hitTap();                     // a tap lands on whatever was drawn there
   if(GS.state!=='tree') return; // ...which may have been the close button
-  if(press('heavy')||press('whistle')||press('give')){ TREE.tab=(TREE.tab+1)%5; TREE.row=0; AU.sel(); }
-  if(TREE.tab===0){
-    const keys=Object.keys(SKILLS);
-    const nb=BRANCHES.length;
-    if(press('left')){ TREE.col=(TREE.col+nb-1)%nb; AU.blip(); }
-    if(press('right')){ TREE.col=(TREE.col+1)%nb; AU.blip(); }
-    const col=keys.filter(k=>SKILLS[k].br===TREE.col);
-    if(press('up')) { TREE.row=clamp(TREE.row-1,0,col.length-1); AU.blip(); }
-    if(press('down')){ TREE.row=clamp(TREE.row+1,0,col.length-1); AU.blip(); }
-    TREE.row=clamp(TREE.row,0,col.length-1);
-    if(press('act')){
-      const id=col[TREE.row], s=SKILLS[id];
-      if(GS.skills[id]) AU.blip();
-      else if(s.need && !GS.skills[s.need]){ toast('learn '+SKILLS[s.need].n+' first','#a8392c'); AU.blip(); }
-      else if(avail()<s.cost){ toast('you need '+(s.cost-avail())+' more merit','#a8392c'); AU.blip(); }
-      else { startAscend(id); clearPress(); return; }   // up you go
-    }
-  } else if(TREE.tab===1){
+  if(press('heavy')||press('whistle')||press('give')){ TREE.tab=1+(TREE.tab%4); TREE.row=0; AU.sel(); }
+  if(TREE.tab===1){
     const ids=Object.keys(COSMETICS).filter(c=>!COSMETICS[c].locked || GS.seen['own_'+c]);
     if(press('left')) { TREE.row=(TREE.row+ids.length-1)%ids.length; AU.blip(); }
     if(press('right')){ TREE.row=(TREE.row+1)%ids.length; AU.blip(); }
@@ -10302,11 +10395,10 @@ function drawLedger(g){
      both of them ran under the language key, so Thai gets the same three
      numbers on one line instead of two. */
   if(LANG==='th'){
-    pTxt(g, L('merit to spend')+' '+avail()+' · '+L('earned')+' '+GS.merit+' · '+L('spent')+' '+GS.spent,
-         W-118, 21, '#8f6a1e', 6, 'right');
+    pTxt(g, GS.merit+' '+L('merit')+' · '+L('day')+' '+DAY.n, W-118, 21, '#8f6a1e', 6, 'right');
   } else {
-    pTxt(g,avail()+' '+L('merit to spend'),W-90,17,'#8f6a1e',8,'right');
-    pTxt(g,GS.merit+' '+L('earned')+' · '+GS.spent+' '+L('spent'),W-90,25,CL.ink3,6,'right');
+    pTxt(g,GS.merit+' '+L('merit'),W-90,17,'#8f6a1e',8,'right');
+    pTxt(g,L('day')+' '+DAY.n,W-90,25,CL.ink3,6,'right');
   }
   /* a close chevron in the corner of the header */
   icoDown(g,W-26,17,1.5,CL.ink2);
@@ -10318,62 +10410,7 @@ function drawLedger(g){
   pTxt(g,LANG==='th'?'ไทย':'EN',lx+lw/2,20,CL.ink,7,'center');
   hitAdd(lx,8,lw+4,18,()=>{ toggleLang(); AU.sel(); });
 
-  if(TREE.tab===0){
-    const keys=Object.keys(SKILLS);
-    let selId=null;
-    /* Five columns now that the field skills have a home of their own, so
-       each one is about ninety pixels wide and the strap line under the
-       heading has to wrap rather than run into its neighbour. */
-    const nb=BRANCHES.length, colW=(W-96)/(nb-1);
-    for(let b=0;b<nb;b++){
-      const col=keys.filter(k=>SKILLS[k].br===b);
-      const cx=48+b*colW;
-      pTxt(g,BRANCHES[b].n,cx,66,BRANCHES[b].c,9,'center');
-      { let yy=75;
-        for(const l of wrap(g,BRANCHES[b].d,colW-6,6).slice(0,2)){ pTxt(g,l,cx,yy,'#b8b0c8',6,'center'); yy+=7; } }
-      /* every connector first, then every node: drawn in one pass the next
-         row's connector came down through this row's name and read as a
-         stray vertical bar in the middle of the word */
-      /* The rows are four pixels further apart than they were: at 26 the
-         label sat exactly in the gap between two circles, so the line joining
-         them came down through the middle of the word and read as a stray
-         bar — "Divine|Tongue". At 30 the line has room of its own. */
-      col.forEach((id,i)=>{
-        if(i===0) return;
-        const y=100+i*30;
-        pR(g,cx,y-13,1,5, GS.skills[id]?BRANCHES[b].c:'rgba(255,255,255,0.18)');
-      });
-      col.forEach((id,i)=>{
-        const s=SKILLS[id], y=100+i*30;
-        const owned=!!GS.skills[id], locked=s.need&&!GS.skills[s.need];
-        const canBuy=!owned&&!locked&&avail()>=s.cost, sel=TREE.col===b&&TREE.row===i;
-        if(sel) selId=id;
-        const r=8;
-        if(sel){ for(let k2=0;k2<20;k2++){ const a=k2/20*TAU+GS.t*0.6;
-          pR(g,cx+Math.cos(a)*(r+4),y+Math.sin(a)*(r+4),1,1,rgba(BRANCHES[b].c,0.8)); } }
-        pCirc(g,cx,y,r, owned?BRANCHES[b].c: locked?'#3a3550': canBuy?'#f2e8c8':'#5a5468');
-        pCirc(g,cx,y,r-3, owned?shade(BRANCHES[b].c,0.35):locked?'#2a2640':'#fffdf2');
-        if(owned) icoTick(g,cx,y+1,1.1,'#26221c');
-        else if(locked) pTxt(g,'·',cx,y+3,'#6a6478',8,'center');
-        else pTxt(g,''+s.cost,cx,y+3,canBuy?'#8f6a1e':'#3b3128',7,'center');
-        pTxt(g,s.n,cx,y+16,owned?'#fff6dc':locked?'#6a6478':'#e8e0d0',6,'center');
-        hitAdd(cx-colW/2+2,y-12,colW-4,30,()=>{ const same=TREE.col===b&&TREE.row===i;
-          TREE.col=b; TREE.row=i; if(same) PRESS.act=true; else AU.blip(); });
-      });
-    }
-    const s=SKILLS[selId];
-    if(s){
-      cloud(g,12,H-50,W-24,42,{seed:130});
-      pTxt(g,s.n,22,H-34,BRANCHES[s.br].c,9);
-      const owned=GS.skills[selId];
-      pTxt(g, owned? L('learned')
-                   : (s.need&&!GS.skills[s.need])? L('requires')+' '+L(SKILLS[s.need].n)
-                   : s.cost+' '+L('merit')+' · '+L('E to ascend'),
-        W-22,H-34,owned?'#4a7a2c':'#8f6a1e',7,'right');
-      let y=H-22;
-      for(const l of wrap(g,s.d,W-46,7).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,7); y+=lineStep(7); }
-    }
-  } else if(TREE.tab===1){
+  if(TREE.tab===1){
     const ids=Object.keys(COSMETICS).filter(c=>!COSMETICS[c].locked||GS.seen['own_'+c]);
     ids.forEach((id,i)=>{
       const c=COSMETICS[id], x=18+(i%4)*114, y=58+Math.floor(i/4)*44;
@@ -10430,16 +10467,20 @@ function drawLedger(g){
 }
 /* flat tabs: scallops this close to the header would just pile up */
 function drawLedgerTabs(g){
-  ['SKILLS','LOOKS','FRIENDS','MAP','PAST'].forEach((t,i)=>{
-    const x=8+i*94, on=TREE.tab===i, y=on?33:35, h=on?17:15;
-    pR(g,x,y+1,90,h-2,CL.edge); pR(g,x+1,y,88,h,CL.edge);
-    pR(g,x+1,y+2,88,h-4,on?CL.woodL:CL.woodD); pR(g,x+2,y+1,86,h-2,on?CL.woodL:CL.woodD);
-    pR(g,x+2,y+3,86,h-5,on?CL.body:'#4a3018'); pR(g,x+3,y+2,84,h-3,on?CL.body:'#4a3018');
-    if(on) pR(g,x+3,y+3,84,1,CL.rim);
-    pTxt(g,t,x+45,y+11,on?CL.ink:'#c2a880',6,'center');
+  /* four tabs. There were five, and the first was a skill tree you spent
+     merit in; merit is the piggy bank's now, and everything you used to buy
+     there comes to you on its own as the total climbs. */
+  [[1,'LOOKS'],[2,'FRIENDS'],[3,'MAP'],[4,'PAST']].forEach(function(row,j){
+    const i=row[0], t=row[1];
+    const x=6+j*118, on=TREE.tab===i, y=on?33:35, h=on?17:15;
+    pR(g,x,y+1,114,h-2,CL.edge); pR(g,x+1,y,112,h,CL.edge);
+    pR(g,x+1,y+2,112,h-4,on?CL.woodL:CL.woodD); pR(g,x+2,y+1,110,h-2,on?CL.woodL:CL.woodD);
+    pR(g,x+2,y+3,110,h-5,on?CL.body:'#4a3018'); pR(g,x+3,y+2,108,h-3,on?CL.body:'#4a3018');
+    if(on) pR(g,x+3,y+3,108,1,CL.rim);
+    pTxt(g,t,x+57,y+11,on?CL.ink:'#c2a880',6,'center');
     // a page you have not read yet nags at you from the tab
-    if(i===4 && GS.seen.newmem && !on) pEll(g,x+81,41,2.6,2.6,'#e05a48');
-    hitAdd(x,33,90,17,()=>{ TREE.tab=i; TREE.row=0; AU.sel(); });
+    if(i===4 && GS.seen.newmem && !on) pEll(g,x+105,41,2.6,2.6,'#e05a48');
+    hitAdd(x,33,114,17,()=>{ TREE.tab=i; TREE.row=0; AU.sel(); });
   });
 }
 /* ---------------- what you have got back ---------------- */
@@ -11245,21 +11286,34 @@ function standY(x, y){
 /* ---------- touch: a jump key, and a flick upward that means the same ---------- */
 function tLayout(){
   TPADS.length = 0;
-  const bs = 34, m = 10;
-  TPADS.push({id:'tree',   x:m+bs*0.5,    y:H-m-bs*0.5, r:bs*0.58, key:'tree',   ic:'book'});
-  TPADS.push({id:'whistle',x:m+bs*1.75,   y:H-m-bs*0.5, r:bs*0.52, key:'whistle',ic:'call'});
-  TPADS.push({id:'give',   x:W-m-bs*1.85, y:H-m-bs*0.5, r:bs*0.56, key:'give',   ic:'heart'});
-  TPADS.push({id:'jump',   x:W-m-bs*0.55, y:H-m-bs*0.62,r:bs*0.72, key:'jump',   ic:'jump'});
+  /* the stick takes the bottom-left corner, so every button moved over to
+     the right hand where a thumb can reach all four without stretching */
+  STICK.cx = 38; STICK.cy = H-37; STICK.r = 22; STICK.kr = 9.5;
+  TPADS.push({id:'jump',   x:W-29, y:H-33, r:15,   key:'jump',   ic:'jump'});
+  TPADS.push({id:'give',   x:W-58, y:H-39, r:11.5, key:'give',   ic:'heart'});
+  TPADS.push({id:'whistle',x:W-83, y:H-29, r:11.5, key:'whistle',ic:'call'});
+  TPADS.push({id:'tree',   x:W-31, y:H-68, r:11.5, key:'tree',   ic:'book'});
 }
 tLayout();
 function padIcon(g,ic,x,y,c){
-  if(ic==='heart') icoHeart(g,x,y-2,2.2,c);
-  else if(ic==='call') icoCall(g,x+2,y,1.7,c);
-  else if(ic==='book') icoBook(g,x,y,1.8,c);
+  if(ic==='heart') icoHeart(g,x,y-1,2.4,c);
+  else if(ic==='call'){
+    /* a mouth with the sound going out of it. The old one was a two-pixel
+       squiggle that could have been anything, and mostly was. */
+    pEll(g,x-4,y,2.0,2.6,c);
+    for(let i=0;i<3;i++){
+      const r=3.4+i*2.5, col = i===0? c : rgba(c,0.7-i*0.18);
+      for(let k=-2;k<=2;k++){ const an=k*0.31;
+        pR(g, R(x-2.5+Math.cos(an)*r), R(y+Math.sin(an)*r), 1,1, col); }
+    }
+  }
+  else if(ic==='book') icoBook(g,x,y,1.9,c);
   else if(ic==='jump'){
-    // a chevron with a little ground under it
-    for(let i=0;i<7;i++){ pR(g,x-6+i,y-2-Math.abs(3-i),2,2,c); }
-    pR(g,x-5,y+4,11,1,c); pR(g,x-3,y+6,7,1,rgba(c,0.5));
+    // an arrow going up, off a bit of ground
+    pTri(g,x,y-7, x-5,y-1.6, x+5,y-1.6, c);
+    pR(g,R(x)-1.5,R(y)-2,3,5,c);
+    pR(g,R(x)-5,R(y)+5,11,1,c);
+    pR(g,R(x)-3,R(y)+7,7,1,rgba(c,0.45));
   }
 }
 /* a flick upward anywhere in the world is a jump, so the button is a
@@ -11433,6 +11487,7 @@ function drawVillager(g, v, o={}){
   const rk  = v.react ? v.react.k : null;
   const wai = v.state==='wai' || o.wai || rk==='wai';
   const legC = v.legs||'#3a3a44';
+  const chestY=hipY-9+breathe;
 
   /* ---------- legs and sandals ---------- */
   for(let i=0;i<2;i++){
@@ -11447,63 +11502,32 @@ function drawVillager(g, v, o={}){
       // the shin below a rolled trouser leg
       pLimb(g,knee.x,knee.y+1.5,fx,fy-1,2.2, i===0? skD:sk);
     }
-    // a sandal: a sole, a toe strap, a foot
-    pEll(g,fx+face*0.6,fy-1.6,2.4,1.8, i===0? skD:sk);
-    pR(g,R(fx)-2,R(fy)-1,5,1,'#4a3a2c');
-    pR(g,R(fx)-2,R(fy),5,1,'#33281e');
-    pR(g,R(fx)+(face>0?1:1),R(fy)-2,1,1,'#5c4936');
+    /* a sandal: a sole with a lip at the front, a toe strap across the foot,
+       and a foot with a visible ankle above it */
+    pEll(g,fx+face*0.6,fy-1.8,2.5,1.9, i===0? skD:sk);
+    pR(g,R(fx)-1,R(fy)-3,2,1, i===0? skD:skL);                    // ankle
+    pR(g,R(fx)-2,R(fy)-1,6,1,'#4a3a2c');
+    pR(g,R(fx)-2,R(fy),6,1,'#33281e');
+    pR(g,R(fx)+face*2.4,R(fy)-1,1,1,'#5c4936');                   // the lip at the toe
+    pR(g,R(fx),R(fy)-2,2,1,'#6b5640');                            // the strap over the foot
   }
   if(v.skirt){
     stepCloth(v.cloth,hipX,hipY-1,10,o.dt||0.016,o.wind||0,v.vx);
     drawCloth(g,v.cloth,v.skirtPat||'plaid',face,{flare:4});
   }
 
-  /* ---------- torso ---------- */
-  const chestY=hipY-9+breathe;
-  // the body under the shirt, so the neck and the arm holes have something in them
-  pR(g,hipX-3.4,chestY+1,7,9,skD);
-  // the shirt itself: shoulders a touch wider than the waist
-  for(let i=0;i<10;i++){
-    const t=i/9;
-    const w=4.3 - t*0.7;
-    pR(g, R(hipX-w), R(chestY+i), R(w*2), 1, i<1? shL : sh);
-  }
-  pR(g,R(hipX+(face>0?1.2:-4.2)),R(chestY+1),3,9,shD);          // the shaded side
-  pR(g,R(hipX-4.3),R(chestY),9,1,shL);                          // the shoulder line
-  pR(g,R(hipX-3.6),R(chestY+9),8,1,shade(sh,-0.35));            // the hem
-  // a collar, opened at the throat
-  pTri(g, hipX-0.4, chestY+3.6, hipX-2.6, chestY-0.4, hipX+1.8, chestY-0.4, skD);
-  pR(g,R(hipX)-3,R(chestY),2,2,shL); pR(g,R(hipX)+1,R(chestY),2,2,shL);
-  // a breast pocket on the lit side, and two fold lines
-  pR(g,R(hipX-3+(face>0?0:3)),R(chestY+3),3,3,shade(sh,-0.12));
-  pR(g,R(hipX-3+(face>0?0:3)),R(chestY+3),3,1,shL);
-  pR(g,R(hipX-2),R(chestY+6),1,3,shade(sh,-0.16));
-  pR(g,R(hipX+2),R(chestY+5),1,4,shade(sh,-0.16));
-  if(v.monk){
-    pTaper(g,hipX-4,chestY,hipX+4,chestY+9,3.4,7.4,'#e8923f');
-    pR(g,R(hipX-4),R(chestY+2),9,7,'#e8923f');
-    pR(g,R(hipX+2*face),R(chestY+2),3,7,'#b56a28');
-    pR(g,R(hipX-4),R(chestY+2),9,1,'#f4ac5e');
-  }
-  /* ผ้าขาวม้า — the checked cloth every farmer here has over one shoulder */
-  if(v.pakama){
-    const px=hipX-3.2*face;
-    for(let i=0;i<9;i++){
-      const c = (i%2)? v.pakama : shade(v.pakama,-0.3);
-      pR(g, R(px+face*i*0.35), R(chestY+i), 3, 1, c);
-    }
-    pR(g,R(px-1),R(chestY+9),4,4, v.pakama);
-    pR(g,R(px-1),R(chestY+11),4,1, shade(v.pakama,-0.3));
-  }
-
+  /* ---------- torso ----------
+     It used to be a straight-sided block nine pixels wide, which is a shirt
+     on a peg rather than a shirt on a person. It has shoulders now, a waist
+     that comes in under them, armholes with a seam, and a hem that sits
+     proud of the sarong. */
   /* ---------- arms ---------- */
   /* What the hands are doing. Most of the day that is a job — sweeping a
      yard, winnowing rice, stirring a pot, fanning yourself in the heat —
      and a person standing perfectly still with their arms down is the one
      thing a village never contains. */
   const jb = rk || ((v.jobOn && v.job && sp<3)? v.job : null);
-  for(let i=0;i<2;i++){
-    const back=i===0;
+  const drawArm = back => {
     let hx2,hy2;
     if(wai){ hx2=hipX+1.5*face; hy2=chestY-4; }
     else if(rk==='wave' && !back){ hx2=hipX+4.5*face; hy2=chestY-4+Math.sin(v.anim*13)*2.6; }
@@ -11521,20 +11545,77 @@ function drawVillager(g, v, o={}){
     else if(jb==='mend'){ hx2=hipX+(back?2.4:3.6)*face; hy2=chestY+4+Math.sin(v.anim*3.4+(back?1:0))*1.2; }
     else if(jb==='alms'){ hx2=hipX+(back?2.6:3.4)*face; hy2=chestY+3.2; }
     else if(v.carry && !back){ hx2=hipX+5*face; hy2=chestY+3; }
-    else { const ph=v.phase+(back?Math.PI:0); hx2=hipX+Math.cos(ph)*stride*0.7*face; hy2=chestY+10; }
+    else {
+      /* arms hang from the shoulder, not from the middle of the chest. Swung
+         from the centre they read as somebody holding their own stomach. */
+      const ph=v.phase+(back?Math.PI:0);
+      hx2=hipX+(back?-4.2:4.4)*face+Math.cos(ph)*stride*0.7*face; hy2=chestY+9.6;
+    }
     if(!back){ v._hx=hx2; v._hy=hy2; }
-    const sx=hipX+(back?-3.2:3.2)*face, sy=chestY+1.4;
+    const sx=hipX+(back?-3.4:3.4)*face, sy=chestY+1.4;
     const el=ik2(sx,sy,hx2,hy2,5,5,back?(face>0?-1:1):(face>0?1:-1));
+    // the cap of the sleeve, rounded over the shoulder
+    pEll(g,sx,sy-0.4,2.5,2.6, back?shD:sh);
+    if(!back) pEll(g,sx-0.6*face,sy-1.2,1.6,1.1, shL);
     // a short sleeve to just above the elbow, then bare arm
     pLimb(g,sx,sy,el.x,el.y,2.7, back?skD:sk);
     const mx=lerp(sx,el.x,0.62), my=lerp(sy,el.y,0.62);
     pLimb(g,sx,sy,mx,my,3.0, back?shD:sh);
     pR(g,R(mx)-1,R(my),3,1, back?shade(shD,-0.2):shade(sh,-0.22));
-    pLimb(g,el.x,el.y,hx2,hy2,2.4,back?skD:sk);
-    // a hand, with a thumb
-    pEll(g,hx2,hy2,1.7,1.8,back?skD:sk);
+    pLimb(g,el.x,el.y,hx2,hy2,2.1,back?skD:sk);
+    if(!back) pTaper(g,el.x-0.9*face,el.y,hx2-0.9*face,hy2,0.8,0.8,skD);   // the edge against the body
+    // a hand, with a thumb and knuckles
+    pEll(g,hx2,hy2,1.7,1.9,back?skD:sk);
     pR(g,R(hx2)+(face>0?1:-1),R(hy2)-1,1,1,back?skD:skL);
+    if(!back) pR(g,R(hx2)-1,R(hy2)+1,3,1,skD);
+  };
+  /* the far arm goes on first, so the shirt covers where it joins and the
+     man has a front and a back instead of two arms pasted on the front */
+  drawArm(true);
+  /* shoulders at the top, narrowest at the waist, a little back out at the hem */
+  const shirtW = i2 => 5.1 - Math.pow(clamp((i2-1)/6,0,1),0.75)*1.6 + (i2>7? 0.55:0);
+  // the body under the shirt, so the neck and the arm holes have something in them
+  pR(g,hipX-3.4,chestY+1,7,9,skD);
+  for(let i=0;i<10;i++){
+    const w=shirtW(i);
+    pR(g, R(hipX-w), R(chestY+i), R(w*2), 1, i<1? shL : sh);
   }
+  pR(g,R(hipX+(face>0?1.4:-4.4)),R(chestY+1),3,9,shD);          // the shaded side
+  pR(g,R(hipX-5.1),R(chestY),11,1,shL);                         // the shoulder line
+  pR(g,R(hipX-5.1),R(chestY+1),1,2,shL); pR(g,R(hipX+4.1),R(chestY+1),1,2,shD);
+  pR(g,R(hipX-4.2),R(chestY+9),9,1,shade(sh,-0.35));            // the hem
+  pR(g,R(hipX-4.2),R(chestY+10),9,1,shade(sh,-0.5));
+  // the seams the sleeves are set into
+  pR(g,R(hipX+3.2*face),R(chestY+1),1,6,shade(sh,-0.34));
+  pR(g,R(hipX-3.8*face),R(chestY+1),1,6,shade(shD,-0.2));
+  // a collar, opened at the throat
+  pTri(g, hipX-0.4, chestY+3.6, hipX-2.6, chestY-0.4, hipX+1.8, chestY-0.4, skD);
+  pR(g,R(hipX)-3,R(chestY),2,2,shL); pR(g,R(hipX)+1,R(chestY),2,2,shL);
+  pR(g,R(hipX)-1,R(chestY+3),2,1,shade(sh,-0.3));               // where the collar sits down
+  // a breast pocket on the lit side, and two fold lines
+  pR(g,R(hipX-3+(face>0?0:3)),R(chestY+3),3,3,shade(sh,-0.12));
+  pR(g,R(hipX-3+(face>0?0:3)),R(chestY+3),3,1,shL);
+  pR(g,R(hipX-2),R(chestY+6),1,3,shade(sh,-0.16));
+  pR(g,R(hipX+2),R(chestY+5),1,4,shade(sh,-0.16));
+  pR(g,R(hipX-1),R(chestY+8),3,1,shade(sh,-0.22));              // a crease over the belt
+  if(v.monk){
+    pTaper(g,hipX-4,chestY,hipX+4,chestY+9,3.4,7.4,'#e8923f');
+    pR(g,R(hipX-4),R(chestY+2),9,7,'#e8923f');
+    pR(g,R(hipX+2*face),R(chestY+2),3,7,'#b56a28');
+    pR(g,R(hipX-4),R(chestY+2),9,1,'#f4ac5e');
+  }
+  /* ผ้าขาวม้า — the checked cloth every farmer here has over one shoulder */
+  if(v.pakama){
+    const px=hipX-3.2*face;
+    for(let i=0;i<9;i++){
+      const c = (i%2)? v.pakama : shade(v.pakama,-0.3);
+      pR(g, R(px+face*i*0.35), R(chestY+i), 3, 1, c);
+    }
+    pR(g,R(px-1),R(chestY+9),4,4, v.pakama);
+    pR(g,R(px-1),R(chestY+11),4,1, shade(v.pakama,-0.3));
+  }
+
+  drawArm(false);
   if(wai){
     pEll(g,hipX+1.6*face,chestY-5,2.3,3.1,sk);
     pR(g,R(hipX+0.6*face),R(chestY-7),2,3,skD);
@@ -11578,30 +11659,38 @@ function drawVillager(g, v, o={}){
   pR(g,R(hipX-1.4),R(hy3+3.5),3,4,skD);
   pR(g,R(hipX-1.4),R(hy3+3.5),3,1,shade(skD,-0.24));
   // skull, then jaw, then the shaded side
-  pEll(g,hipX+hjx+0.5*face,hy3,5.0,5.0,sk);
-  pEll(g,hipX+hjx+0.9*face,hy3+2.1,4.0,3.4,sk);
-  pEll(g,hipX+hjx+2.9*face,hy3+0.6,2.4,4.0,skD);
+  pEll(g,hipX+hjx+0.5*face,hy3,5.3,5.2,sk);
+  pEll(g,hipX+hjx+0.9*face,hy3+2.3,4.2,3.6,sk);
+  pEll(g,hipX+hjx+3.1*face,hy3+0.8,2.5,4.2,skD);
   pEll(g,hipX+hjx-1.8*face,hy3-1.6,2.3,2.2,skL);          // the light on the temple
   // ear on the back side of the head
   pEll(g,hipX+hjx-3.4*face,hy3+0.6,1.3,1.7,skD);
   pR(g,R(hipX+hjx-3.4*face),R(hy3+0.6),1,1,shade(skD,-0.2));
   // brows
-  const browY = hy3-3 + (v.brow||0);
+  const browY = hy3-0.9 + (v.brow||0);
   const browC = shade(v.hairC||'#241c18', 0.22);
   /* the inner end of the near brow is the whole of an expression at this
      size: up is sorry, down is having none of it. */
   const tilt = v.browT||0;
-  pR(g,R(hipX+hjx+(1.8+look*0.5)*face),R(browY-tilt),3,1,browC);
-  pR(g,R(hipX+hjx+(-2.4+look*0.5)*face),R(browY+tilt*0.4),3,1,browC);
+  /* at ten pixels a head there is no room for a fringe, a brow, a gap and an
+     eye. The hair is the brow line most of the time; a brow bar only comes
+     out when the face is actually saying something with it. */
+  if(Math.abs(tilt)>0.12 || Math.abs(v.brow||0)>0.12){
+    pR(g,R(hipX+hjx+(1.9+look*0.5)*face),R(browY-tilt),3,1,browC);
+    pR(g,R(hipX+hjx+(-2.5+look*0.5)*face),R(browY+tilt*0.4),2,1,browC);
+  }
   if(tilt>0.8) pR(g,R(hipX+hjx+(1.8+look*0.5)*face),R(browY-tilt-1),2,1,browC);
   if(tilt<-0.8) pR(g,R(hipX+hjx+(2.8+look*0.5)*face),R(browY+1),2,1,browC);
   // eyes: white, pupil, and a lid that comes down when they blink
   /* the two eyes have to sit far enough apart to read as two. At three
      pixels wide and three and a half apart they merged into one dark band
      and every villager looked like they were wearing a mask. */
-  const eyeY=hy3-0.6, blink=(v.blink||0)>0;
+  const eyeY=hy3+0.7, blink=(v.blink||0)>0;
   const wide=clamp(v.eye||0,-1,1);            // surprise opens them, weariness shuts them
-  for(const ex of [2.6, -2.0]){
+  /* far enough apart to read as two. At three pixels wide and three and a
+     half apart they merged into one dark band and everybody wore a mask. */
+  pR(g,R(hipX+hjx+(0.3+look*0.6)*face),R(eyeY)-1,1,3,shade(skD,-0.06));   // the bridge between them
+  for(const ex of [3.0, -2.4]){
     const x2=R(hipX+hjx+(ex+look*0.6)*face);
     if(blink || wide<-0.5){ pR(g,x2-1,R(eyeY),3,1,shade(skD,-0.2)); continue; }
     /* a wide eye grows DOWNWARD. Grown upward it ran straight into the brow
@@ -11617,11 +11706,11 @@ function drawVillager(g, v, o={}){
     if(wide<-0.1) pR(g,x2-1,ey0,3,1,shade(skD,-0.08)); // and half down when tired
   }
   // nose and mouth
-  pR(g,R(hipX+hjx+2.4*face),R(hy3+1.2),1,2,skD);
-  pR(g,R(hipX+hjx+2.4*face),R(hy3+1.2),1,1,shade(skD,-0.14));
+  pR(g,R(hipX+hjx+2.6*face),R(hy3+2.6),1,2,skD);
+  pR(g,R(hipX+hjx+2.6*face),R(hy3+2.6),1,1,shade(skD,-0.14));
   const smile = v.mood===undefined? 1 : v.mood;
   const talk = clamp(v.talk||0,0,1);
-  const mx0=R(hipX+hjx+0.4*face), my0=R(hy3+3);
+  const mx0=R(hipX+hjx+0.4*face), my0=R(hy3+4.2);
   if(talk>0.05){
     /* an open mouth, and the dark inside it. Two pixels of shadow is the
        difference between somebody speaking and somebody with a line drawn
@@ -11634,7 +11723,7 @@ function drawVillager(g, v, o={}){
     pR(g,mx0,my0,3,1,'#9a5048'); pR(g,R(hipX+hjx+2.4*face),my0-1,1,1,'#9a5048');
     pR(g,R(hipX+hjx-1.2*face),my0-1,1,1,'#9a5048');
   } else if(smile>0){
-    pR(g,mx0,my0,2,1,'#9a5048'); pR(g,R(hipX+hjx+2.2*face),R(hy3+2.4),1,1,'#9a5048');
+    pR(g,mx0,my0,2,1,'#9a5048'); pR(g,R(hipX+hjx+2.2*face),R(hy3+3.6),1,1,'#9a5048');
   } else if(smile>-0.5){
     pR(g,R(hipX+hjx+0.2*face),my0,3,1,'#9a5048');
   } else {
@@ -11642,10 +11731,10 @@ function drawVillager(g, v, o={}){
     pR(g,R(hipX+hjx+2.2*face),my0-1,1,1,'#9a5048');
     pR(g,R(hipX+hjx-0.8*face),my0-1,1,1,'#9a5048');
   }
-  if(v.blush){ pR(g,R(hipX+hjx+3.2*face),R(hy3+1.6),2,1,'#d4737e');
-               pR(g,R(hipX+hjx-3.2*face),R(hy3+1.6),2,1,'#c26a76'); }
-  if(v.moust){ pR(g,R(hipX-0.4*face),R(hy3+1.9),4,1,v.hairC||'#4a4038');
-               pR(g,R(hipX-0.4*face),R(hy3+2.4),4,1,shade(v.hairC||'#4a4038',-0.2)); }
+  if(v.blush){ pR(g,R(hipX+hjx+3.4*face),R(hy3+2.6),2,1,'#d4737e');
+               pR(g,R(hipX+hjx-3.4*face),R(hy3+2.6),2,1,'#c26a76'); }
+  if(v.moust){ pR(g,R(hipX-0.4*face),R(hy3+3.1),4,1,v.hairC||'#4a4038');
+               pR(g,R(hipX-0.4*face),R(hy3+3.6),4,1,shade(v.hairC||'#4a4038',-0.2)); }
   if(v.glasses){
     pR(g,R(hipX+hjx+1*face),R(eyeY)-2,4,4,'rgba(220,240,255,0.18)');
     pR(g,R(hipX+hjx-2.4*face),R(eyeY)-2,4,4,'rgba(220,240,255,0.18)');
@@ -11657,31 +11746,31 @@ function drawVillager(g, v, o={}){
   /* ---------- hair ---------- */
   const hc=v.hairC||'#241c18', hcL=shade(hc,0.26);
   if(v.hair==='bald'){
-    pEll(g,hipX+hjx+0.5*face,hy3-2.2,4.1,2.2,skD);
-    pEll(g,hipX+hjx-0.8*face,hy3-3.0,2.2,1.2,skL);
+    pEll(g,hipX+hjx+0.5*face,hy3-2.7,4.2,2.2,skD);
+    pEll(g,hipX+hjx-0.8*face,hy3-3.4,2.2,1.2,skL);
   } else if(v.hair==='bun'){
-    pEll(g,hipX+hjx+0.5*face,hy3-2.6,4.5,2.9,hc);
-    pEll(g,hipX+hjx-0.6*face,hy3-3.4,2.4,1.2,hcL);
+    pEll(g,hipX+hjx+0.5*face,hy3-3.0,4.7,2.8,hc);
+    pEll(g,hipX+hjx-0.6*face,hy3-3.8,2.4,1.2,hcL);
     pEll(g,hipX+hjx-3.6*face,hy3-3.6,2.4,2.4,hc);
     pEll(g,hipX+hjx-4.2*face,hy3-4.1,1.2,1.0,hcL);
     pR(g,R(hipX+hjx-3.8*face),R(hy3-2.2),2,1,'#8a3a44');            // a red thread round it
   } else if(v.hair==='tails'){
-    pEll(g,hipX+hjx+0.5*face,hy3-2.5,4.5,2.9,hc);
-    pEll(g,hipX+hjx-0.6*face,hy3-3.3,2.2,1.1,hcL);
+    pEll(g,hipX+hjx+0.5*face,hy3-2.9,4.7,2.8,hc);
+    pEll(g,hipX+hjx-0.6*face,hy3-3.7,2.2,1.1,hcL);
     pR(g,R(hipX+hjx+1.2*face),R(hy3-3.4),1,2,hcL);                  // a parting
     for(const s of [-1,1]){
       pEll(g,hipX+hjx+s*4.7*face,hy3+0.6,1.7,2.9,hc);
       pR(g,R(hipX+hjx+s*4.7*face),R(hy3-1.2),1,1,'#d05a7a');
     }
   } else if(v.hair==='crop'){
-    pEll(g,hipX+hjx+0.5*face,hy3-2.3,4.3,2.5,hc);
+    pEll(g,hipX+hjx+0.5*face,hy3-2.8,4.5,2.5,hc);
     pR(g,R(hipX+hjx-3.8*face),R(hy3-2),2,3,hc);
-    pEll(g,hipX+hjx-0.8*face,hy3-3.1,2.0,1.0,hcL);
+    pEll(g,hipX+hjx-0.8*face,hy3-3.5,2.0,1.0,hcL);
   } else {
-    pEll(g,hipX+hjx+0.5*face,hy3-2.4,4.5,2.9,hc);
+    pEll(g,hipX+hjx+0.5*face,hy3-2.9,4.7,2.8,hc);
     pR(g,R(hipX+hjx-4*face),R(hy3-2),2,4,hc);
-    pEll(g,hipX+hjx-0.9*face,hy3-3.2,2.1,1.1,hcL);
-    pR(g,R(hipX+hjx+2.4*face),R(hy3-3.2),2,1,hc);                   // a fringe over the brow
+    pEll(g,hipX+hjx-0.9*face,hy3-3.6,2.1,1.1,hcL);
+    pR(g,R(hipX+hjx+2.6*face),R(hy3-3.4),2,1,hc);                   // a fringe over the brow
   }
   /* งอบ — the conical farming hat, worn pushed back off the face */
   if(v.hat==='ngob'){
@@ -13882,7 +13971,10 @@ function drawHintLine(g){
   const lh=lineStep(7);
   const picH = (HINT.pic&&HINT.pic.length)? 26 : 0;
   const bh=lines.length*lh+8+picH;
-  const y0=(GS._bar? H-40 : H-16) - bh;
+  /* with the stick and the buttons down there, a line across the bottom
+     runs straight through both thumbs. It sits above them instead. */
+  const pads = TOUCH.on && uiShowsPads();
+  const y0=(GS._bar? H-40 : pads? H-62 : H-16) - bh;
   const a=clamp(HINT.t/0.6,0,1)*clamp((HINT.max-HINT.t)*4,0,1);
   g.globalAlpha=a;
   const gr=g.createLinearGradient(0,y0-10,0,y0+bh+8);
@@ -15732,6 +15824,131 @@ function stepLife(dt){
   }
 }
 /* ============================================================
+   TRANSITIONS
+
+   The game used to cut. You pressed the ledger and the ledger
+   was simply there; you walked into a task and the field was
+   gone between one frame and the next; you slept and woke with
+   nothing in between. A cut is free and it reads as a bug.
+
+   Everything that changes what is on the screen goes through
+   one call now — wipeTo(fn, kind) — which covers, does the
+   thing at the darkest point, and uncovers. The covers are
+   drawn out of the same parts as the rest of the game: bands
+   of rice-field rows, a circle closing on wherever you are
+   standing, a paper curtain, and for the ledger a fold of the
+   same plank every panel is cut from.
+   ============================================================ */
+const WIPE = { on:false, t:0, dur:0, kind:'fade', fn:null, done:false, cx:W/2, cy:H/2 };
+const WIPE_DUR = { fade:0.30, iris:0.52, rows:0.44, page:0.26, gold:0.70, night:0.9 };
+
+/* cover, do the thing, uncover. Calling it again while one is running
+   replaces the pending job rather than stacking two covers. */
+function wipeTo(fn, kind, dur){
+  kind = kind||'fade';
+  if(WIPE.on && !WIPE.done){ WIPE.fn = fn||WIPE.fn; return; }
+  WIPE.on=true; WIPE.t=0; WIPE.kind=kind; WIPE.done=false;
+  WIPE.dur = dur || WIPE_DUR[kind] || 0.34;
+  WIPE.fn = fn||null;
+  /* an iris closes on the person it is about */
+  if(typeof P!=='undefined' && P && typeof GS!=='undefined'){
+    WIPE.cx = clamp(P.x-GS.camX, 24, W-24);
+    WIPE.cy = clamp(P.y-GS.camY-30, 24, H-24);
+  }
+}
+const wiping = ()=> WIPE.on;
+/* how covered the screen is, 0..1 */
+function wipeAmt(){
+  if(!WIPE.on) return 0;
+  const h=WIPE.dur*0.5;
+  return WIPE.t<h ? WIPE.t/h : clamp(1-(WIPE.t-h)/h,0,1);
+}
+function stepWipe(dt){
+  if(!WIPE.on) return;
+  WIPE.t+=dt;
+  if(!WIPE.done && WIPE.t>=WIPE.dur*0.5){
+    WIPE.done=true;
+    const f=WIPE.fn; WIPE.fn=null;
+    if(f) try{ f(); }catch(e){}
+  }
+  if(WIPE.t>=WIPE.dur){ WIPE.on=false; WIPE.t=0; WIPE.kind=null; }
+}
+/* ---------- the covers ---------- */
+function drawWipe(g){
+  if(!WIPE.on) return;
+  const a=wipeAmt(), k=WIPE.kind;
+  if(a<=0.001) return;
+  const closing = WIPE.t < WIPE.dur*0.5;
+  if(k==='fade' || k==='night'){
+    const col = k==='night'? '#080a1e' : '#0b0814';
+    g.fillStyle=rgba(col, k==='night'? a : a*0.96); g.fillRect(0,0,W,H);
+    if(k==='night'){
+      /* a few stars come through while it is dark, so the black is a sky
+         rather than a blank */
+      g.globalAlpha=clamp((a-0.6)/0.4,0,1)*0.8;
+      for(let i=0;i<26;i++){ const r2=mulberry(i*97+3);
+        pR(g, R(r2()*W), R(r2()*H*0.7), 1,1, i%3? '#f6f0dc':'#cfd8ff'); }
+      g.globalAlpha=1;
+    }
+    return;
+  }
+  if(k==='iris'){
+    /* a circle closing on wherever you are. Drawn as a ring of filled rows
+       rather than a canvas clip, so it lands on whole pixels like the rest. */
+    const maxR = Math.hypot(Math.max(WIPE.cx,W-WIPE.cx), Math.max(WIPE.cy,H-WIPE.cy))+8;
+    const r = maxR*(1-a);
+    g.fillStyle='#0b0814';
+    for(let y=0;y<H;y++){
+      const dy=y-WIPE.cy, t=r*r-dy*dy;
+      if(t<=0){ g.fillRect(0,y,W,1); continue; }
+      const half=Math.sqrt(t);
+      const x1=R(WIPE.cx-half), x2=R(WIPE.cx+half);
+      if(x1>0) g.fillRect(0,y,x1,1);
+      if(x2<W) g.fillRect(x2,y,W-x2,1);
+    }
+    // a warm rim on the hole, so it reads as light rather than a hole
+    if(r>2 && r<maxR-2){
+      g.globalAlpha=0.5;
+      for(let i=0;i<40;i++){ const an=i/40*TAU;
+        pR(g, R(WIPE.cx+Math.cos(an)*r), R(WIPE.cy+Math.sin(an)*r), 1,1, '#f2c14e'); }
+      g.globalAlpha=1;
+    }
+    return;
+  }
+  if(k==='rows'){
+    /* bands sliding in from alternate sides, the width of a paddy row */
+    const n=9, bh=Math.ceil(H/n);
+    for(let i=0;i<n;i++){
+      const lag = (i%2? (n-i) : i)/n*0.35;
+      const p = clamp((a-lag)/(1-lag),0,1);
+      const w2 = R(W*p);
+      if(w2<=0) continue;
+      const x = (i%2)? W-w2 : 0;
+      pR(g,x,i*bh,w2,bh,'#0b0814');
+      // a lit edge on the leading side
+      if(p<1) pR(g,(i%2)? x : x+w2-1, i*bh, 1, bh, '#3a2a5c');
+    }
+    return;
+  }
+  if(k==='page'){
+    /* the ledger is a book, so it turns a page over the screen */
+    const h2=R(H*a);
+    pR(g,0,0,W,h2,CL.body);
+    pR(g,0,h2-3,W,3,CL.woodL); pR(g,0,h2,W,1,CL.edge);
+    for(let i=0;i<4;i++) pR(g,0,R(h2-8-i*7),W,1,rgba(CL.under,0.5));
+    return;
+  }
+  if(k==='gold'){
+    /* the light. Used where something is being given to you. */
+    g.fillStyle=rgba('#fff6d2',a); g.fillRect(0,0,W,H);
+    g.globalAlpha=a*0.7;
+    for(let i=0;i<14;i++){ const an=i/14*TAU+GS.t*0.4;
+      pTaper(g, W/2, H/2, W/2+Math.cos(an)*260, H/2+Math.sin(an)*260, 10, 1, 'rgba(255,226,150,0.5)'); }
+    g.globalAlpha=1;
+    return;
+  }
+}
+/* ============================================================
    THE TITLE
 
    He used to stand on an empty road at night with a string of
@@ -16154,7 +16371,7 @@ function update(dt){
     f.y=f.hy+Math.cos(f.t*0.7)*10+Math.sin(f.t*0.53)*5;
   }
   if(typeof stepPig==='function') stepPig(dt);
-  if(press('mute')){ AU.toggle(); toast(AU.muted?'sound off':'sound on','#9ecbff'); }
+  if(typeof stepWipe==='function') stepWipe(dt);
   if(press('lang')){ toggleLang(); toast(LANG==='th'?'ภาษาไทย':'English','#9ecbff'); }
 
   switch(GS.state){
@@ -16165,10 +16382,10 @@ function update(dt){
         /* A save part-way through the first night has no merit in it yet —
            without the chapter in this test, quitting during the walk home
            started the whole night again. */
-        if(sv&&(sv.merit>0||(sv.st|0)>0||(sv.q&&sv.q.metPhra))) continueGame(sv); else newGame();
         AU.ding();
+        wipeTo(()=>{ if(sv&&(sv.merit>0||(sv.st|0)>0||(sv.q&&sv.q.metPhra))) continueGame(sv); else newGame(); }, 'rows');
       }
-      if(press('newgame')){ clearSave(); newGame(); AU.ding(); }
+      if(press('newgame')){ AU.ding(); wipeTo(()=>{ clearSave(); newGame(); },'rows'); }
       break;
     case 'memory': stepMem(dt); break;
     case 'play':{
@@ -16214,8 +16431,9 @@ function update(dt){
       if(BURST){ P.vx=0; PROMPT=null; SPOTS.length=0; }
       if(!DLG && !VIG && !BURST){
         checkInteract();
-        if(press('tree')||press('help')){ GS.state='tree'; TREE.tab=GS.seen.newmem?4:0; AU.sel(); }
-        if(press('map')){ GS.state='tree'; TREE.tab=3; AU.sel(); }
+        if(press('tree')||press('help')){ AU.sel();
+          wipeTo(()=>{ GS.state='tree'; TREE.tab=GS.seen.newmem?4:1; }, 'page'); }
+        if(press('map')){ AU.sel(); wipeTo(()=>{ GS.state='tree'; TREE.tab=3; }, 'page'); }
       }
       if(GS.ready && !GS.q.done && Math.abs(P.x-SHRINE_X)<44 && !DLG){ PROMPT=null; startCeremony(); }
       const gy=groundY(P.x);
@@ -16412,7 +16630,9 @@ function continueGame(sv){
 /* ============================================================
    BOOT
    ============================================================ */
-{ const sv=loadSaveRaw(); if(sv&&typeof sv.mute==='boolean') AU.muted=sv.mute; }
+/* the mute key is gone, so a save that happens to carry mute:true would
+   leave somebody with a silent game and no way to turn it back on */
+AU.muted=false;
 let _last=performance.now(), _acc=0;
 const STEP=1/60;
 function drawLoading(){
@@ -16442,6 +16662,8 @@ function frame(now){
   let n=0;
   while(_acc>=STEP && n<4){ update(STEP); _acc-=STEP; n++; }
   render();
+  /* the cover goes on last, over whatever the screen happens to be */
+  if(typeof drawWipe==='function'){ ctx.setTransform(SC,0,0,SC,0,0); drawWipe(ctx); }
   requestAnimationFrame(frame);
 }
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{});

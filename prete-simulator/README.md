@@ -11,9 +11,16 @@ somebody else's earth at a time. You do not know your name. You do not know
 what you did. You are a **prete** — a hungry ghost, tall as the palm trees and
 thin as a pole, ash-grey, with hands like palm leaves, a pot belly under a
 visible ribcage, a mouth the size of a needle's eye, one small orange nose, six
-hairs left, and two big wet eyes — a white, a gold-brown iris, a pupil, and a
-light caught in the corner of each — that have not closed properly since.
+hairs left, **no nose at all**, two pale ringed eyes that have not closed
+properly since, and a mouth that is a mosquito's: a fine proboscis held out in
+front of his face, with nothing behind it that food can get through.
 You cannot eat anything you cook. You're going to cook a great deal anyway.
+
+![what he looks like](screenshots/the-face.png)
+
+*Left to right: his face at rest, pleased, sorry, tired — and at the far right,
+what four turns in the light have made of him. The needle gets shorter every
+time, and by the end there is a mouth under it.*
 
 Far down the road there is one light on: a noodle cart with an old man behind
 it, open since four in the afternoon, selling to nobody. **He looks you up, and
@@ -137,8 +144,8 @@ for left and right.
 
 A keyboard still works if you have one: arrows walk, **space** jumps, **shift**
 runs, **E** confirms, **G** gives, **C** whistles, **Tab** opens the ledger,
-**Q** jumps to the map, **V** switches between English and Thai, **M** mutes,
-**Esc** goes back. Turn a phone sideways. Progress saves in the browser.
+**Q** jumps to the map, **V** switches between English and Thai, **Esc** goes
+back. Turn a phone sideways. Progress saves in the browser.
 
 | | |
 |---|---|
@@ -309,8 +316,9 @@ saying *slowly, slowly, it all goes in the same ground.*
 
 ## What a ghost can do that a farmer cannot
 
-The ledger has a fifth column now, **FIELD**, and every one of them makes *his*
-work quicker rather than yours easier:
+Four things only a body like yours can do, and every one of them makes *his*
+work quicker rather than yours easier. They come back to you in the twenties and
+thirties of merit, after the morning that teaches you to carry one jar:
 
 | Skill | What it does |
 |---|---|
@@ -527,7 +535,8 @@ tree, a sapling, a chicken, a roof that keeps the rain out.
 
 **A barn, and a water jar.** Seed comes out of a **ยุ้งข้าว** — a rice granary
 up on four posts, with a ladder and a hatch — and the tools you have earned hang
-on the wall of it, so the skill tree has somewhere in the world to show up.
+on the wall of it, so a tool you have earned shows up somewhere in the world
+rather than only in a list.
 Water comes out of the **โอ่ง**, and it is a trip rather than a click: the jar
 never runs dry, but you can only carry two waterings at a time until you go and
 earn a proper can.
@@ -818,40 +827,90 @@ descend, and the ledger is waiting where you left it.
 
 ## The Ledger and the map
 
-Five wooden tabs over a drifting sky: **skills**, **looks**, **friends**, the
-**past** — your recovered memories, one flat page each, blank and question-marked
-until they come back, with a red dot on the tab when there's one you haven't read
-— and the whole 7,200-pixel road drawn as a **map**: nine named zones along the top, every
-stove, shrine, workbench, pond and grove pinned on four tiers so nothing collides,
-your five ghost friends on their own row, a marker where you're standing, and one
-line at the bottom telling you what to do next.
+Four wooden tabs over a drifting sky: **looks**, **friends**, the **past** — your
+recovered memories, one flat page each, blank and question-marked until they come
+back, with a red dot on the tab when there's one you haven't read — and the whole
+7,200-pixel road drawn as a **map**: nine named zones along the top, every stove,
+shrine, workbench, pond and grove pinned on four tiers so nothing collides, your
+five ghost friends on their own row, a marker where you're standing, and one line
+at the bottom telling you what to do next.
 
 Every card is a tap target: tap it to read it, tap it again to choose it.
 
-The skill tree runs down four columns, and the last one is **tools**:
+### There used to be a fifth tab, and it was a skill tree
 
-| BODY | HANDS | HEART | TOOLS |
-|---|---|---|---|
-| Giant Stride | Steady Hands | Merit Magnet | Sickle |
-| Palm-Leaf Reach | Divine Tongue | Inner Eye | Watering Can |
-| Carrying Pole | Deft Weaving | Cool Heart | Bug Net |
-| Light Body | Two Hands | Loving-Kindness | Axe |
+It ran five columns wide with twenty things in it, each with a price, and it was
+the one screen in this game that asked you to do sums: is Inner Eye worth five
+merit, and is that better than a sarong. It is gone.
 
-**Tools are the cheapest column in the game on purpose** — two merit for the
-sickle — because the farm needs them to open up at all and nothing there should
-ever be a wall. Each one changes what your hands can do, and each one appears
-hanging on the barn wall once it's yours. And it is **Mae Posop** who meets you
-at the top of the climb when you ascend for one: the rice mother handing you a
-sickle is a different kind of blessing from a god handing you a virtue.
+**Merit goes into the piggy bank now and nowhere else.** Everything you used to
+buy in that tree arrives on its own as the total climbs — tools first, because
+the farm needs them to open up at all and nothing here should ever be a wall:
 
-**Inner Eye** is the one to save for: it shows a little thought-cloud over
-everybody's head with the thing they're quietly hoping for, so you never have to
-guess. There's also a wardrobe of five hand-woven sarongs, a garland, a sabai
-sash, 108 prayer beads and gold leaf — all simulated cloth, not swapped sprites.
+| at | what comes back |
+|---|---|
+| 2 · 5 · 12 · 24 | Sickle, Watering Can, Bug Net, Axe |
+| 8 · 16 | Merit Magnet, Inner Eye — the thought-cloud over everybody's head with the thing they are quietly hoping for |
+| 20 · 32 · 51 · 78 | Water Yoke, Ploughman, Seed Shot, Long Draught — the field skills, held back until after the morning that teaches you to carry one jar at a time |
+| 28 · 41 · 63 · 86 | Giant Stride, Palm-Leaf Reach, Carrying Pole, Light Body |
+| 36 · 46 · 70 · 94 | Steady Hands, Divine Tongue, Deft Weaving, Two Hands |
+| 57 · 102 | Cool Heart, Loving-Kindness |
+
+Each arrives as a mark in the air over your head and goes straight into your
+hands — a tool appears hanging on the barn wall the moment it is yours.
+
+**Four of them are still worth the whole ceremony.** The one that ends each
+branch — Light Body, Two Hands, Loving-Kindness, Long Draught — still takes you
+up through the cloud deck to a deva who has been waiting, and you hold the button
+while the blessing fills. Rare, late, and never in the middle of something. Every
+other one is a second and a half and back to work.
+
+The wardrobe stayed: five hand-woven sarongs, a garland, a sabai sash, 108 prayer
+beads and gold leaf — all simulated cloth, not swapped sprites.
 
 | | | |
 |---|---|---|
-| ![the skill tree](screenshots/the-ledger.png) | ![the map](screenshots/the-map.png) | ![the friends journal](screenshots/friends-journal.png) |
+| ![the wardrobe](screenshots/the-ledger.png) | ![the map](screenshots/the-map.png) | ![the friends journal](screenshots/friends-journal.png) |
+
+## A stick, and four buttons worth pressing
+
+The bottom-left corner is a **joystick**: a carved well with a gold knob in it,
+and a thumb on that is what this game wanted. Push it and he walks; push it all
+the way and he runs; shove it up and he jumps; pull it down and he steps off the
+plank he is standing on. Tapping the ground to walk somewhere still works — the
+stick just wins when both are asked at once.
+
+The buttons moved over to the right hand so one thumb can reach all four without
+stretching, and they are discs now rather than little square plaques: a rim, a
+bevel, a light on the top-left, a shadow underneath, and a real press that sinks
+the whole thing a pixel and takes the highlight off. Jump is the big gold one.
+The pictograms were redrawn to be readable at arm's length — an arrow coming off
+the ground, a heart, a mouth with the sound going out of it, a book.
+
+![the stick and the buttons](screenshots/the-controls.png)
+
+## Nothing cuts any more
+
+The game used to cut. You pressed the ledger and the ledger was simply there; you
+walked into a task and the field was gone between one frame and the next. A cut
+is free and it reads as a bug.
+
+Everything that changes what is on the screen goes through one call now, which
+covers, does the thing at the darkest point, and uncovers — and the covers are
+drawn out of the same parts as the rest of the game:
+
+- **rows** — nine bands the depth of a paddy row, sliding in from alternate sides
+  with a lit edge on the leading side. The title screen gives way in these.
+- **page** — the ledger is a book, so it turns a ruled page down over the screen.
+  So does the stall, and the giving screen.
+- **iris** — a circle closing on wherever you happen to be standing, with a warm
+  rim on the hole. Mini-games close in like this.
+- **night** — a dark blue with stars coming through it, so the black is a sky
+  rather than a blank.
+- **gold** — a flood of light with rays turning in it, for when something is
+  being given to you.
+
+![a cover, half way across](screenshots/a-transition.png)
 
 ## Everybody is friendly, including the frightening ones
 
