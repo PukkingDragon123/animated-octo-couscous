@@ -11,17 +11,29 @@ somebody else's earth at a time. You do not know your name. You do not know
 what you did. You are a **prete** — a hungry ghost, tall as the palm trees and
 thin as a pole, ash-grey, with hands like palm leaves, a pot belly under a
 visible ribcage, a mouth the size of a needle's eye, one small orange nose, six
-hairs left, **no nose at all**, two pale ringed eyes set in their sockets that
-have not closed properly since, and a **sea horse's snout** where a mouth goes:
-a long tapering ringed tube held out in front of his face with a hole at the end
-of it no wider than a straw. He can get the smell of a thing and nothing else.
+hairs left, **no nose at all**, two big soft eyes with a green iris and a light
+in the corner of each, a blush across the bridge of nothing, and — this is the
+folklore's own detail and the whole of him — **ปากเท่ารูเข็ม, a mouth the size of
+the eye of a needle**. He can get the smell of a thing and nothing else.
 You cannot eat anything you cook. You're going to cook a great deal anyway.
 
 ![what he looks like](screenshots/the-face.png)
 
 *Left to right: his face at rest, pleased, sorry, tired — and at the far right,
-what four turns in the light have made of him. The snout gets shorter every
-time, and by the end there is a mouth at the end of it.*
+what four turns in the light have made of him. The needle of a mouth widens a
+little every time, and by the end it is a mouth.*
+
+**He is drawn for a cozy game, on purpose.** Everything the folklore actually
+says is still there — tall as a palm, thin as a pole, a pot belly over a
+starved ribcage, almost no hair, a mouth like a needle's eye — and none of it
+has to be frightening. He went through a build with a sea horse's snout and
+claws for hands and a black outline, and he read as a monster. So: warm oatmeal
+instead of corpse grey, a soft brown line round him instead of a black one, a
+round head with no pointed jaw, three soft ribs instead of four hard ones, a
+proper neck, soft mitts with three short fingers instead of splayed claws, a
+tuft of hair that leans instead of a crown of spikes, and a blush. The
+silhouette is the same hungry ghost. The reading is somebody who has had a very
+long night.
 
 Far down the road there is one light on: a noodle cart with an old man behind
 it, open since four in the afternoon, selling to nobody. **He looks you up, and

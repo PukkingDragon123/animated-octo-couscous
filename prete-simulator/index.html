@@ -3366,10 +3366,15 @@ function drawPrete(g, p, o={}){
      the ghost turned down. */
   const hum = clamp(o.human!==undefined? o.human
             : (typeof humanAmt==='function'? humanAmt() : 0), 0, 1);
-  const BODY = gold?'#f0dfae':mix(PAL.pale, PAL.skin, hum*0.80);
-  const SHD  = gold?'#c9a45e':mix(PAL.paleD, PAL.skinD, hum*0.80);
-  const HI   = gold?'#fff6dc':mix(PAL.paleL, '#f2cda4', hum*0.75);
-  const OC   = gold?'#5c4418':mix('#2b2620','#4a3024',hum*0.55);   // one hard ink line all the way round
+  /* He is a hungry ghost out of a temple mural, and the mural is not trying
+     to frighten anybody either. Warm oatmeal rather than corpse grey, a soft
+     brown line round him rather than a black one, and a blush. Everything
+     that used to make him read as a monster was a colour choice. */
+  const BODY = gold?'#f0dfae':mix('#ded5c4', PAL.skin, hum*0.78);
+  const SHD  = gold?'#c9a45e':mix('#b6a894', PAL.skinD, hum*0.78);
+  const HI   = gold?'#fff6dc':mix('#f7f1e2', '#f2cda4', hum*0.72);
+  const OC   = gold?'#5c4418':mix('#5c4a3c','#4a3024',hum*0.55);   // a soft brown line, all the way round
+  const BLUSH= gold?'#e0b070':mix('#d89a90','#d4737e',hum*0.6);
   const alpha = o.alpha!==undefined?o.alpha:(p.alpha||1);
   if(alpha<1){ g.save(); g.globalAlpha=alpha; }
 
@@ -3447,9 +3452,11 @@ function drawPrete(g, p, o={}){
     /* sitting wants the knee ABOVE the line from hip to foot, which is the
        other bend from the one a walking leg takes */
     const knee=ik2(hx0,hipY,L.fx,L.fy-5,TH*sY,SN*sY, sit? (face>0?1:-1) : (face>0?1:-1));
-    iTaper(g,hx0,hipY-2,knee.x,knee.y,3.2,2.6,col,OC);        // thigh
-    iTaper(g,knee.x,knee.y,L.fx,L.fy-5,2.6,2.0,col,OC);       // shin, thinner still
-    iEll(g,knee.x,knee.y,2,2,col,OC);                         // a knob of a knee
+    /* thin, because that is the folklore, but not knobbly. A visible joint
+       at every hinge is a skeleton, and he is a hungry man, not a skeleton. */
+    iTaper(g,hx0,hipY-2,knee.x,knee.y,3.8,3.2,col,OC);        // thigh
+    iTaper(g,knee.x,knee.y,L.fx,L.fy-5,3.2,2.6,col,OC);       // shin, thinner still
+    pEll(g,knee.x,knee.y,2,2,col);                            // a soft knee
     // one long flat foot with a heel under the ankle
     const f0=L.fx-(face>0?4:9);
     pR(g,f0-1,L.fy-5,15,5,OC);
@@ -3518,25 +3525,28 @@ function drawPrete(g, p, o={}){
     const bend = (carry || (ACT&&ACT.k==='eat'))? (face>0?1:-1)
                  : (back?(face>0?1:-1):(face>0?-1:1));
     const el=ik2(sx0,shY,hx2,hy2,AU2,AL,bend);
-    iTaper(g,sx0,shY,el.x,el.y,2.8,2.4,col,OC);
-    iTaper(g,el.x,el.y,hx2,hy2,2.4,2.0,col,OC);
-    iEll(g,el.x,el.y,1.7,1.7,col,OC);
-    /* the hands: long splayed fingers, drawn as a fan. outline the whole
-       hand first, then fill it, or the rims eat the palm. */
+    iTaper(g,sx0,shY,el.x,el.y,3.4,3.0,col,OC);
+    iTaper(g,el.x,el.y,hx2,hy2,3.0,2.6,col,OC);
+    pEll(g,el.x,el.y,1.8,1.8,col);
+    /* the hands. They used to be four long splayed fingers on a fan, which
+       is a claw, and a claw is the single most frightening thing you can put
+       on a character. A soft round palm with three short fingers and a thumb
+       on it says the same thing about being tall and thin without it. */
     const ang=Math.atan2(hy2-el.y,hx2-el.x), cx2=Math.cos(ang), cy2=Math.sin(ang);
-    const px2=hx2+cx2*2.6, py2=hy2+cy2*2.6;
-    const spread=0.38, FL=8.6;
+    const px2=hx2+cx2*2.2, py2=hy2+cy2*2.2;
+    const spread=0.42, FL=4.6;
     const tips=[];
-    for(let f2=0;f2<4;f2++){ const fa=ang+(f2-1.5)*spread+Math.sin(p.swayT*1.7+f2)*0.03;
+    for(let f2=0;f2<3;f2++){ const fa=ang+(f2-1)*spread+Math.sin(p.swayT*1.7+f2)*0.03;
       tips.push({x:px2+Math.cos(fa)*FL, y:py2+Math.sin(fa)*FL}); }
-    const thx=px2-cx2*0.6-cy2*4.2*face, thy=py2-cy2*0.6+cx2*4.2*face;
-    for(const t of tips) pTaper(g,px2,py2,t.x,t.y,2.9,2.1,OC);
-    pTaper(g,px2,py2,thx,thy,2.7,2.0,OC);
-    pEll(g,px2,py2,4,4,OC);
-    pEll(g,px2,py2,2.9,2.9,col);
-    for(const t of tips) pTaper(g,px2,py2,t.x,t.y,1.8,1.2,col);
-    pTaper(g,px2,py2,thx,thy,1.7,1.1,col);
-    if(!back) pEll(g,px2-cx2*1.2,py2-cy2*1.2,1.4,1.4,HI);
+    const thx=px2-cx2*1.4-cy2*3.4*face, thy=py2-cy2*1.4+cx2*3.4*face;
+    pEll(g,px2,py2,4.6,4.6,OC);
+    for(const t of tips) pTaper(g,px2,py2,t.x,t.y,3.4,3.0,OC);
+    pTaper(g,px2,py2,thx,thy,3.2,2.8,OC);
+    pEll(g,px2,py2,3.5,3.5,col);
+    for(const t of tips){ pTaper(g,px2,py2,t.x,t.y,2.4,2.0,col); pEll(g,t.x,t.y,1,1,col); }
+    pTaper(g,px2,py2,thx,thy,2.2,1.9,col);
+    pEll(g,thx,thy,1,1,col);
+    if(!back) pEll(g,px2-cx2*1.4,py2-cy2*1.4,1.7,1.6,HI);
     return {x:px2,y:py2};
   }
 
@@ -3554,14 +3564,14 @@ function drawPrete(g, p, o={}){
   pEll(g, chestX, chestY, 5.4, 7.6, BODY);
   pEll(g, chestX+3*face, chestY+1, 2.6, 5.6, SHD);
   pEll(g, chestX-3.2*face, chestY-3, 2.4, 2.0, HI);
-  // the ribs, which he would rather you did not look at
-  for(let i=0;i<4;i++){
-    const ry2 = chestY-3.4+i*3.2, w2 = 5.6-Math.abs(i-1.4)*0.7;
-    pTaper(g, chestX-w2, ry2, chestX+w2, ry2+0.5*face, 1.1, 1.1,
-           mix(shade(BODY,-0.16), BODY, hum));     // they sink under it
+  /* three ribs, softly. Four hard ones read as a corpse; this reads as
+     somebody who has not eaten, which is the actual point. */
+  for(let i=0;i<3;i++){
+    const ry2 = chestY-2.6+i*3.4, w2 = 5.2-Math.abs(i-1)*0.8;
+    pTaper(g, chestX-w2, ry2, chestX+w2, ry2+0.4*face, 1, 1,
+           mix(shade(BODY,-0.10), BODY, hum));     // they sink under it
   }
-  pR(g, chestX-0.5, chestY-4, 1, 11, shade(BODY,-0.10));        // sternum
-  pR(g, chestX-6.2, chestY-5.6, 12.4, 1.4, shade(BODY,-0.14));  // collarbone
+  pR(g, chestX-6.0, chestY-5.4, 12.0, 1.2, shade(BODY,-0.09));  // collarbone
 
   // the belly — the whole point of a prete
   const belX = lerp(hipX,chestX,0.24) + p.bellyX;
@@ -3587,24 +3597,28 @@ function drawPrete(g, p, o={}){
   const eatLean = (ACT && ACT.k==='eat') ? clamp(au/0.30,0,1)*(au<0.82?1:1-(au-0.82)/0.18)*4.5 : 0;
   const headX = chestX + p.lean*2.2 + p.headLag + sway*0.8 + (o.headX||0) + carry*2.2*face + eatLean*face
               + (ACT && ACT.k!=='wai' ? abell*3*face : 0);
-  iTaper(g, chestX, chestY-5, headX, headY+9, 3.0, 2.6, shade(SHD,-0.08), OC);
-  const HRX=11.2, HRY=12.0;
-  // a lumpy skull, not an egg
-  pEll(g, headX, headY, HRX+2, HRY+2, OC);
-  pEll(g, headX-0.6*face, headY-7.2, HRX*0.86+2, 5.6, OC);
+  iTaper(g, chestX, chestY-5, headX, headY+8, 4.4, 4.0, SHD, OC);
+  const HRX=11.4, HRY=11.6;
+  /* round. It used to be a lumpy skull with a pointed jaw on it, which is a
+     drawing of a dead man; this is a drawing of somebody who has had a very
+     long night. */
+  pEll(g, headX, headY, HRX+1.6, HRY+1.6, OC);
   pEll(g, headX, headY, HRX, HRY, BODY);
-  pEll(g, headX-0.6*face, headY-7.2, HRX*0.86, 4.8, BODY);
-  pEll(g, headX+5*face, headY+1.4, HRX*0.5, HRY*0.66, SHD);   // the shaded side
-  pEll(g, headX-3.4*face, headY-6, 3.4, 2.2, HI);               // skull highlight
-  pEll(g, headX+1.2*face, headY+8.4, 4.6, 3.4, BODY);           // a small pointed jaw
-  pR(g, headX-10.6*face, headY+1.6, 2.6, 4.2, SHD);              // ear
-  pEll(g, headX-10.8*face, headY+2.2, 1.4, 1.8, OC);
-  // seven hairs, and not one more — until they start coming back
-  const nHair = 7 + R(hum*9), hCol = mix('#8a8176', '#3a3028', hum*0.85);
+  pEll(g, headX+4.6*face, headY+1.6, HRX*0.46, HRY*0.62, SHD);   // the shaded side
+  pEll(g, headX-3.6*face, headY-5.4, 4.2, 2.8, HI);              // the light on the temple
+  pEll(g, headX+1.0*face, headY+8.6, 4.0, 2.2, SHD);              // the soft shade under the chin
+  pEll(g, headX-10.4*face, headY+1.8, 1.9, 2.6, BODY);           // a little ear
+  pEll(g, headX-10.4*face, headY+1.8, 1.1, 1.6, SHD);
+  /* a few hairs — the folklore is specific about there being almost none —
+     but a sprout of them rather than a row of bristles */
+  const nHair = 5 + R(hum*7), hCol = mix('#9b8d7c', '#3a3028', hum*0.85);
   for(let i2=0;i2<nHair;i2++){
-    const hx3=headX+((i2/(nHair-1))-0.5)*(15+hum*5)*face;
-    const hh=(3+((i2*5)%4))*(1+hum*1.25);
-    pTaper(g, hx3, headY-11, hx3+Math.sin(p.swayT*1.6+i2)*1.8-0.8*face, headY-11-hh, 1.4+hum*0.5, 0.5, hCol);
+    const t2=nHair<2?0.5:i2/(nHair-1);
+    const hx3=headX+(t2-0.5)*(9+hum*8)*face - 1.2*face;
+    const hh=(4.2+((i2*5)%3))*(1+hum*1.1);
+    const cur=Math.sin(p.swayT*1.6+i2)*1.6 + (t2-0.5)*3.4;
+    pTaper(g, hx3, headY-10.4, hx3+cur-0.6*face, headY-10.4-hh, 1.6+hum*0.5, 0.7, hCol);
+    pEll(g, hx3+cur-0.6*face, headY-10.4-hh, 0.9, 0.9, shade(hCol,0.2));
   }
 
   /* ---- the eyes, which are the only big thing on him that is not a bone ----
@@ -3621,40 +3635,55 @@ function drawPrete(g, p, o={}){
      They still act: p.brow lifts them, p.eye opens them wide or shuts them
      to slits, and a blink shuts and opens inside the same eighth of a
      second rather than slamming and jumping back. */
-  const EYE='#f4f1e6', EYED='#d6d0c0', RING='#8f8a80', RINGD='#5e5a52', PUP='#211f26';
-  const ES = 0.72;                                   // smaller than the old pair
-  const ey = headY - 0.6 + (p.brow||0)*0.35;
-  const EK = (1 - hum*0.15) * ES;
-  const nearX = headX + 4.2*EK/ES*face, farX = headX - 5.0*EK/ES*face;
+  /* Two big soft eyes. The pair he woke up with were pale rings with a full
+     stop in each and they stared; these are the same size and shape with an
+     actual eye inside — a warm iris, a lid that rests a little over the top
+     of it the way a calm eye does, a light in the corner, and two lashes.
+     Nothing about the folklore said he had to look at you like that. */
+  const EYE='#faf6ec', EYED='#e2dccc', PUP=mix('#3a2e2a','#2a1f1c',hum*0.5);
+  const IR_D = mix('#5d7a62','#6a4f34', hum*0.8),
+        IR   = mix('#8fae8a','#a8804e', hum*0.8),
+        IR_L = mix('#c2d8b6','#d8b078', hum*0.8);
+  const LID  = shade(BODY,-0.13);
+  const ES = 0.72;
+  const ey = headY - 0.4 + (p.brow||0)*0.35;
+  const EK = (1 - hum*0.12) * ES;
+  const nearX = headX + 4.6*EK/ES*face, farX = headX - 5.6*EK/ES*face;
   const eOpen = clamp(1 + (p.eye||0)*0.30, 0.45, 1.42);
-  const wear  = clamp(-(p.eye||0), 0, 1);            // weariness shuts them
+  const wear  = clamp(-(p.eye||0), 0, 1);
   const blinkK= p.blink<0? Math.sin(clamp(-p.blink/0.12,0,1)*Math.PI) : 0;
   const lid   = clamp(Math.max(wear, blinkK), 0, 1);
-  const pr = 1 + clamp(p.eye||0,-0.6,1)*0.18;        // a startled pupil is small
-  /* A sea horse turns each eye on its own, and so does he: the two pupils
-     share a drift and then disagree about it by a fraction, which is the
-     cheapest thing in this whole file and the one that makes him look like
-     there is somebody in there. */
-  const drift = Math.sin(p.swayT*0.8)*0.35, bobp = Math.sin(p.anim*0.6)*0.4;
+  const pr = 1 + clamp(p.eye||0,-0.6,1)*0.16;
+  const drift = Math.sin(p.swayT*0.8)*0.3, bobp = Math.sin(p.anim*0.6)*0.35;
   const preteEye = (x, rx, ry, dx, dy, out)=>{
-    pEll(g, x, ey+0.4, rx+0.9, ry+0.9, RINGD);         // a socket to sit the ring in
-    pEll(g, x, ey, rx, ry, RING);
-    pEll(g, x, ey, rx-1.1, ry-1.1, EYED);
-    pEll(g, x, ey-ry*0.14, rx-1.5, ry-1.6, EYE);       // the white, brightest at the top
-    pEll(g, x+dx, ey+dy, 2.3*ES/pr, 2.4*ES/pr, PUP);
-    pEll(g, x+dx, ey+dy+0.6, 1.5*ES/pr, 1.2*ES/pr, '#3a3542');
-    pR(g, R(x+dx-1.5), R(ey+dy-1.6), 2, 2, '#fffdf6');  // the light in it
-    pR(g, R(x+dx+1.1), R(ey+dy+0.9), 1, 1, 'rgba(255,253,246,0.7)');
-    pTaper(g, x-rx*0.62*out, ey+ry*0.86, x+rx*0.62*out, ey+ry*0.78, 1, 0.8, shade(SHD,0.06));
+    pEll(g, x, ey+0.5, rx+1.1, ry+1.0, shade(SHD,-0.10));     // a socket to sit in
+    pEll(g, x, ey, rx, ry, EYED);
+    pEll(g, x, ey-ry*0.12, rx-0.8, ry-0.9, EYE);              // the white, brightest above
+    const ix=x+dx, iy=ey+dy+ry*0.10, ir=Math.min(rx,ry)*0.68;
+    pEll(g, ix, iy, ir, ir, IR_D);
+    pEll(g, ix, iy, ir-0.8, ir-0.8, IR);
+    pEll(g, ix, iy+ir*0.36, ir*0.62, ir*0.34, IR_L);          // light caught low in it
+    pEll(g, ix, iy, ir*0.52/pr, ir*0.52/pr, PUP);
+    pEll(g, ix-ir*0.42, iy-ir*0.46, ir*0.36, ir*0.30, '#fffdf6');
+    pR(g, R(ix+ir*0.34), R(iy+ir*0.36), 1, 1, 'rgba(255,253,246,0.75)');
+    /* the upper lid rests a shade over the iris. A circle with nothing on top
+       of it is a stare; one with a lid on it is a face. */
+    const shut = clamp(Math.max(lid, 0.07), 0, 1);
+    const drop = ry*(0.06 + shut*1.86);
+    pEll(g, x, ey-ry*1.28+drop, rx*1.10, ry*0.80, BODY);
+    pEll(g, x, ey-ry*1.28+drop+ry*0.68, rx*1.02, ry*0.14, LID);
+    // two lashes at the outer corner, and a warm line under the eye
+    pTaper(g, x+rx*out*0.82, ey-ry*0.34+drop-ry*0.26, x+rx*out*1.26, ey-ry*0.62+drop-ry*0.26, 1.1, 0.5, LID);
+    pTaper(g, x+rx*out*0.58, ey-ry*0.50+drop-ry*0.26, x+rx*out*0.94, ey-ry*0.86+drop-ry*0.26, 1.0, 0.5, LID);
+    pTaper(g, x-rx*0.70, ey+ry*0.92, x+rx*0.70, ey+ry*0.86, 1.0, 0.9, shade(SHD,0.12));
   };
-  preteEye(farX,  5.2*EK, 5.3*EK*eOpen, 0.7*face+drift*0.82, bobp,       -face);
-  preteEye(nearX, 6.1*EK, 6.2*EK*eOpen, 0.7*face+drift,      bobp*1.18,   face);
-  if(lid>0.05){
-    pEll(g, farX,  ey-4.6*EK*eOpen+lid*4.4*EK/ES*0.86, 4.6*EK, 2.6*lid*ES+0.7, BODY);
-    pEll(g, nearX, ey-5.4*EK*eOpen+lid*5.2*EK/ES*0.86, 5.4*EK, 3.0*lid*ES+0.7, BODY);
-    pEll(g, farX,  ey-4.6*EK*eOpen+lid*4.4*EK/ES*0.86+2.2*lid*ES, 4.4*EK, 0.6, shade(BODY,-0.12));
-    pEll(g, nearX, ey-5.4*EK*eOpen+lid*5.2*EK/ES*0.86+2.6*lid*ES, 5.2*EK, 0.6, shade(BODY,-0.12));
-  }
+  preteEye(farX,  5.2*EK, 5.2*EK*eOpen, 0.7*face+drift*0.84, bobp,      -face);
+  preteEye(nearX, 6.1*EK, 6.1*EK*eOpen, 0.7*face+drift,      bobp*1.15,  face);
+  // a blush across the bridge, which is the cheapest kindness in pixel art
+  g.globalAlpha=0.42;
+  pEll(g, headX+6.4*face, headY+3.6, 3.0, 1.6, BLUSH);
+  pEll(g, headX-6.8*face, headY+3.4, 2.5, 1.4, BLUSH);
+  g.globalAlpha=1;
   if(o.angry){ pR(g, farX-4.6, ey-5.4, 9.2, 1.6, PAL.ember); pR(g, nearX-5.4, ey-5.8, 10.8, 1.8, PAL.ember); }
   /* the brows. Two bones over two eyes, and the inner ends do the acting. */
   {
@@ -3669,61 +3698,35 @@ function drawPrete(g, p, o={}){
   }
   /* the blink used to be two skin-coloured discs slapped over the top. It is
      the same lid as everything else now, asked to come all the way down. */
-  /* No nose. There was a small orange one, and it was the one part of him
-     that looked like it belonged on something warm-blooded. */
-  /* Not a mosquito's needle in the end — a sea horse's. A long tapering
-     tube of a snout, ringed like something with a skeleton on the outside,
-     curving down off the face and hooking up at the tip, with a mouth at
-     the very end of it no wider than a straw. He can get the smell of a
-     thing and nothing else, which is the whole of him. It shortens every
-     time the light takes him. */
+  /* No nose — he never had one that belonged on something warm-blooded.
+     And the mouth is the folklore's own detail and nothing more: ปากเท่ารูเข็ม,
+     a mouth the size of the eye of a needle. Drawn small and soft and able to
+     turn up at the corners, rather than as a wound or a snout. It widens a
+     little every time the light takes him, and by the end it is a mouth. */
   let mo=clamp(o.mouth||0,0,1);
   if(ACT && ACT.k==='eat'){
     const up = au<0.30? 0 : au<0.78? (au-0.30)/0.48 : 1-(au-0.78)/0.22;
     mo = Math.max(mo, clamp(up,0,1)*0.42);
   }
   const ms=clamp(p.mouthS===undefined?0:p.mouthS,-1,1);
-  const mx0=headX+2.8*face, my0=ey+8.4;
-  const SN1=mix('#8a7a74','#a08a80',hum*0.5),      // the lit top of the tube
-        SN2=mix('#5c4850','#7a5f62',hum*0.5),      // its body
-        SN3='#33272e',                             // the shadow under it
-        SNM='#241a20';                             // the hole at the end
+  const mx0=headX+1.4*face, my0=ey+7.2;
+  const LIP=mix('#c08088','#c0707e',hum*0.5), LIPD=mix('#8a5560','#7a3f4a',hum*0.5);
   {
-    const len = (1 - hum*0.55);
-    /* five joints down the snout, each a little thinner than the last, on a
-       curve that drops away from the face and lifts again at the tip */
-    const N=5, pts=[];
-    for(let i=0;i<=N;i++){
-      const t=i/N;
-      const reach = (14.5 + mo*2.4) * len * t;
-      /* straight out and down, the way a sea horse holds it, with the last
-         joint turning back up. Drawn as a curve it read as a drooping noodle. */
-      let drop = t*8.2*len - ms*2.4*t;
-      if(t>0.70) drop -= (t-0.70)/0.30 * (3.0*len);
-      pts.push([mx0 + face*(0.5 + reach), my0 + drop]);
+    const w = 1.1 + mo*2.3 + hum*1.9;
+    const h = 0.9 + mo*1.9 + hum*1.1;
+    // the little round hole itself, and one pixel of lip under it
+    pEll(g, mx0, my0, w, h, LIPD);
+    if(mo>0.2||hum>0.25) pEll(g, mx0, my0+h*0.46, w*0.7, h*0.34, LIP);
+    // and the corners, which are the whole of what he is feeling
+    if(mo<0.35){
+      if(ms>0.15){
+        pTaper(g, mx0-w-0.6, my0+0.5-ms*0.4, mx0-w-2.2-ms*1.0, my0-0.7-ms*1.2, 1.1, 0.7, LIPD);
+        pTaper(g, mx0+w+0.6, my0+0.5-ms*0.4, mx0+w+2.2+ms*1.0, my0-0.7-ms*1.2, 1.1, 0.7, LIPD);
+      } else if(ms<-0.15){
+        pTaper(g, mx0-w-0.6, my0-0.4, mx0-w-2.0, my0+0.9-ms*1.0, 1.1, 0.7, LIPD);
+        pTaper(g, mx0+w+0.6, my0-0.4, mx0+w+2.0, my0+0.9-ms*1.0, 1.1, 0.7, LIPD);
+      }
     }
-    for(let i=0;i<N;i++){
-      const t=i/N, w1=lerp(3.6,1.7,t), w2=lerp(3.6,1.7,(i+1)/N);
-      pTaper(g, pts[i][0],pts[i][1], pts[i+1][0],pts[i+1][1], w1, w2, SN2);
-    }
-    // the ridge along the top, and the shadow along the bottom
-    for(let i=0;i<N;i++){
-      const t=i/N, w=lerp(1.3,0.6,t);
-      pTaper(g, pts[i][0],pts[i][1]-lerp(1.2,0.5,t), pts[i+1][0],pts[i+1][1]-lerp(1.2,0.5,(i+1)/N), w, w*0.8, SN1);
-      pTaper(g, pts[i][0],pts[i][1]+lerp(1.3,0.5,t), pts[i+1][0],pts[i+1][1]+lerp(1.3,0.5,(i+1)/N), w*0.8, w*0.6, SN3);
-    }
-    // the bony rings, which is what makes it a sea horse and not a hose
-    for(let i=2;i<N;i++){
-      const t=i/N, w=lerp(3.2,1.5,t);
-      pTaper(g, pts[i][0], pts[i][1]-w*0.46, pts[i][0]+face*0.5, pts[i][1]+w*0.46, 0.8, 0.8, SN3);
-    }
-    // where it leaves the face, and the mouth at the far end of it
-    pEll(g, mx0, my0, 2.6+mo*0.8, 2.2+mo*0.7, SN2);
-    pEll(g, mx0-0.8*face, my0-0.6, 1.7, 1.2, SN1);
-    const tip=pts[N];
-    pEll(g, tip[0], tip[1], 1.5+mo*1.1, 1.4+mo*1.1, SN2);
-    pEll(g, tip[0]+face*0.4, tip[1], 0.8+mo*0.9, 0.7+mo*0.9, SNM);
-    if(hum>0.3){ pEll(g, tip[0]+face*0.4, tip[1]+0.4, 0.6+hum*0.8, 0.4+hum*0.5, '#8a636e'); }
   }
   /* the bowl. Drawn after the head, because when he raises it the bowl is
      between you and his face — that is the shot. */
