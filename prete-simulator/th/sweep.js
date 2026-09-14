@@ -24,8 +24,16 @@ const PAGE = 'file://'+path.resolve(__dirname,'..','index.html');
   const ev=(f,a)=>pg.evaluate(f,a);
 
   await ev(()=>{
+    /* two hooks, because they catch different failures. L() catches a string
+       that went looking for a translation and did not find one. pTxt() catches
+       a string that never went looking at all — a hardcoded PRESS ENTER is
+       invisible to the first hook and is the whole problem for the second. */
     window.__seen=new Set(); const oL=L;
     window.L=function(s){ if(typeof s==='string') window.__seen.add(s); return oL(s); };
+    window.__drawn=new Set(); const oT=pTxt;
+    window.pTxt=function(g,s,...r){
+      if(typeof s==='string'||typeof s==='number') window.__drawn.add(String(s));
+      return oT(g,s,...r); };
     setLang('th');
   });
   // title
@@ -94,10 +102,20 @@ const PAGE = 'file://'+path.resolve(__dirname,'..','index.html');
       if(/^[a-z][a-zA-Z0-9_]*$/.test(s) && s.length<4) continue;
       miss.push(s);
     }
-    return { total: window.__seen.size, miss: miss.sort() };
+    /* and anything that actually reached the screen still in Latin */
+    const latin=[]; for(const s of window.__drawn){
+      if(!s) continue;
+      const t=L(s);
+      if(!/[A-Za-z]/.test(t)) continue;
+      latin.push(s===t? s : (s+'  ->  '+t));
+    }
+    return { total: window.__seen.size, painted: window.__drawn.size,
+             miss: miss.sort(), latin: latin.sort() };
   });
   console.log('strings drawn:', out.total, ' untranslated:', out.miss.length);
   for(const s of out.miss) console.log(JSON.stringify(s));
+  console.log('strings painted:', out.painted, ' still Latin in Thai:', out.latin.length);
+  for(const s of out.latin) console.log('  '+s);
   console.log(errs.length? 'ERRORS '+errs.slice(0,4).join(' | ') : 'no page errors');
   await b.close();
 })();

@@ -1,9 +1,12 @@
 # For the itch.io page
 
 Everything here is generated out of the game itself by
-[`th/../itch`](.) — the cover and the banner are the title screen with its
-lettering turned off and set again at the size each picture wants, so when
-the game changes the art changes with it. Nothing was drawn by hand.
+[`keyart.js`](keyart.js). The cover and the banner are **the game running with
+`GS.plate` set** — a flag that takes the purse, the clock, the prompts and the
+thumb controls off and leaves the village standing there — photographed at
+twenty past eight at night on the village road, with the lettering set over the
+top at the size each picture wants. Nothing was drawn by hand, and neither
+picture can go stale: change the game and re-run it.
 
 | file | what it is | where it goes on itch |
 |---|---|---|

@@ -871,8 +871,8 @@ const _thaiFace = ['"Noto Sans Thai"','"Noto Sans Thai UI"','"Leelawadee UI"','L
                    'Thonburi','"Sarabun"','"Sukhumvit Set"','"Tahoma"',THAI_STACK].join(',');
 const isThai = s => THAI_RE.test(s);
 const F5W=5, F5H=7, F3W=3, F3H=5;
-const F5={'A':[[14,17,17,31,17,17,17],0],'B':[[30,17,17,30,17,17,30],0],'C':[[14,17,16,16,16,17,14],0],'D':[[30,17,17,17,17,17,30],0],'E':[[31,16,16,30,16,16,31],0],'F':[[31,16,16,30,16,16,16],0],'G':[[14,17,16,23,17,17,14],0],'H':[[17,17,17,31,17,17,17],0],'I':[[14,4,4,4,4,4,14],0],'J':[[7,2,2,2,2,18,12],0],'K':[[17,18,20,24,20,18,17],0],'L':[[16,16,16,16,16,16,31],0],'M':[[17,27,21,21,17,17,17],0],'N':[[17,25,21,21,19,17,17],0],'O':[[14,17,17,17,17,17,14],0],'P':[[30,17,17,30,16,16,16],0],'Q':[[14,17,17,17,21,18,13],0],'R':[[30,17,17,30,20,18,17],0],'S':[[15,16,16,14,1,1,30],0],'T':[[31,4,4,4,4,4,4],0],'U':[[17,17,17,17,17,17,14],0],'V':[[17,17,17,17,17,10,4],0],'W':[[17,17,17,21,21,21,10],0],'X':[[17,17,10,4,10,17,17],0],'Y':[[17,17,10,4,4,4,4],0],'Z':[[31,1,2,4,8,16,31],0],'a':[[0,0,14,1,15,17,15],0],'b':[[16,16,30,17,17,17,30],0],'c':[[0,0,14,16,16,16,14],0],'d':[[1,1,15,17,17,17,15],0],'e':[[0,0,14,17,31,16,14],0],'f':[[6,8,8,30,8,8,8],0],'g':[[15,17,17,15,1,17,14],1],'h':[[16,16,30,17,17,17,17],0],'i':[[4,0,12,4,4,4,14],0],'j':[[2,0,6,2,2,18,12],1],'k':[[16,16,18,20,24,20,18],0],'l':[[12,4,4,4,4,4,14],0],'m':[[0,0,26,21,21,21,21],0],'n':[[0,0,30,17,17,17,17],0],'o':[[0,0,14,17,17,17,14],0],'p':[[30,17,17,30,16,16,16],1],'q':[[15,17,17,15,1,1,1],1],'r':[[0,0,22,24,16,16,16],0],'s':[[0,0,15,16,14,1,30],0],'t':[[8,8,30,8,8,9,6],0],'u':[[0,0,17,17,17,19,13],0],'v':[[0,0,17,17,17,10,4],0],'w':[[0,0,17,21,21,21,10],0],'x':[[0,0,17,10,4,10,17],0],'y':[[17,17,17,15,1,17,14],1],'z':[[0,0,31,2,4,8,31],0],'0':[[14,17,19,21,25,17,14],0],'1':[[4,12,4,4,4,4,14],0],'2':[[14,17,1,2,4,8,31],0],'3':[[30,1,1,14,1,1,30],0],'4':[[2,6,10,18,31,2,2],0],'5':[[31,16,30,1,1,17,14],0],'6':[[6,8,16,30,17,17,14],0],'7':[[31,1,2,4,4,8,8],0],'8':[[14,17,17,14,17,17,14],0],'9':[[14,17,17,15,1,2,12],0],' ':[[0,0,0,0,0,0,0],0],'.':[[0,0,0,0,0,12,12],0],',':[[0,0,0,0,12,12,8],0],'\'':[[8,8,0,0,0,0,0],0],'’':[[8,8,0,0,0,0,0],0],'→':[[0,4,2,31,2,4,0],0],'"':[[10,10,0,0,0,0,0],0],'!':[[4,4,4,4,4,0,4],0],'?':[[14,17,1,6,4,0,4],0],':':[[0,12,12,0,12,12,0],0],';':[[0,12,12,0,12,12,8],0],'-':[[0,0,0,31,0,0,0],0],'+':[[0,4,4,31,4,4,0],0],'/':[[1,1,2,4,8,16,16],0],'(':[[2,4,8,8,8,4,2],0],')':[[8,4,2,2,2,4,8],0],'%':[[25,26,4,8,19,5,9],0],'*':[[0,21,14,31,14,21,0],0],'=':[[0,0,31,0,31,0,0],0],'#':[[10,31,10,10,31,10,0],0],'&':[[12,18,20,8,21,18,13],0],'—':[[0,0,0,31,0,0,0],0],'·':[[0,0,0,4,0,0,0],0],'…':[[0,0,0,0,0,21,0],0],'฿':[[4,30,21,30,21,30,4],0]};
-const F3={'A':[[2,5,7,5,5],0],'B':[[6,5,6,5,6],0],'C':[[3,4,4,4,3],0],'D':[[6,5,5,5,6],0],'E':[[7,4,6,4,7],0],'F':[[7,4,6,4,4],0],'G':[[3,4,5,5,3],0],'H':[[5,5,7,5,5],0],'I':[[7,2,2,2,7],0],'J':[[1,1,1,5,2],0],'K':[[5,5,6,5,5],0],'L':[[4,4,4,4,7],0],'M':[[5,7,7,5,5],0],'N':[[5,7,7,7,5],0],'O':[[2,5,5,5,2],0],'P':[[6,5,6,4,4],0],'Q':[[2,5,5,6,3],0],'R':[[6,5,6,5,5],0],'S':[[3,4,2,1,6],0],'T':[[7,2,2,2,2],0],'U':[[5,5,5,5,3],0],'V':[[5,5,5,5,2],0],'W':[[5,5,7,7,5],0],'X':[[5,5,2,5,5],0],'Y':[[5,5,2,2,2],0],'Z':[[7,1,2,4,7],0],'a':[[2,5,7,5,5],0],'b':[[6,5,6,5,6],0],'c':[[3,4,4,4,3],0],'d':[[6,5,5,5,6],0],'e':[[7,4,6,4,7],0],'f':[[7,4,6,4,4],0],'g':[[3,4,5,5,3],0],'h':[[5,5,7,5,5],0],'i':[[7,2,2,2,7],0],'j':[[1,1,1,5,2],0],'k':[[5,5,6,5,5],0],'l':[[4,4,4,4,7],0],'m':[[5,7,7,5,5],0],'n':[[5,7,7,7,5],0],'o':[[2,5,5,5,2],0],'p':[[6,5,6,4,4],0],'q':[[2,5,5,6,3],0],'r':[[6,5,6,5,5],0],'s':[[3,4,2,1,6],0],'t':[[7,2,2,2,2],0],'u':[[5,5,5,5,3],0],'v':[[5,5,5,5,2],0],'w':[[5,5,7,7,5],0],'x':[[5,5,2,5,5],0],'y':[[5,5,2,2,2],0],'z':[[7,1,2,4,7],0],'0':[[2,5,5,5,2],0],'1':[[2,6,2,2,7],0],'2':[[6,1,2,4,7],0],'3':[[6,1,2,1,6],0],'4':[[5,5,7,1,1],0],'5':[[7,4,6,1,6],0],'6':[[3,4,6,5,2],0],'7':[[7,1,2,2,2],0],'8':[[2,5,2,5,2],0],'9':[[2,5,3,1,6],0],' ':[[0,0,0,0,0],0],'.':[[0,0,0,0,2],0],',':[[0,0,0,2,4],0],'\'':[[2,2,0,0,0],0],'’':[[2,2,0,0,0],0],'%':[[5,1,2,4,5],0],'→':[[0,1,7,1,0],0],'!':[[2,2,2,0,2],0],'?':[[6,1,2,0,2],0],':':[[0,2,0,2,0],0],'-':[[0,0,7,0,0],0],'/':[[1,1,2,4,4],0],'(':[[1,2,2,2,1],0],')':[[4,2,2,2,4],0],'+':[[0,2,7,2,0],0],'=':[[0,7,0,7,0],0],'—':[[0,0,7,0,0],0],'·':[[0,0,2,0,0],0],'…':[[0,0,0,0,5],0],'฿':[[2,7,7,7,2],0]};
+const F5={'A':[[14,17,17,31,17,17,17],0],'B':[[30,17,17,30,17,17,30],0],'C':[[14,17,16,16,16,17,14],0],'D':[[30,17,17,17,17,17,30],0],'E':[[31,16,16,30,16,16,31],0],'F':[[31,16,16,30,16,16,16],0],'G':[[14,17,16,23,17,17,14],0],'H':[[17,17,17,31,17,17,17],0],'I':[[14,4,4,4,4,4,14],0],'J':[[7,2,2,2,2,18,12],0],'K':[[17,18,20,24,20,18,17],0],'L':[[16,16,16,16,16,16,31],0],'M':[[17,27,21,21,17,17,17],0],'N':[[17,25,21,21,19,17,17],0],'O':[[14,17,17,17,17,17,14],0],'P':[[30,17,17,30,16,16,16],0],'Q':[[14,17,17,17,21,18,13],0],'R':[[30,17,17,30,20,18,17],0],'S':[[15,16,16,14,1,1,30],0],'T':[[31,4,4,4,4,4,4],0],'U':[[17,17,17,17,17,17,14],0],'V':[[17,17,17,17,17,10,4],0],'W':[[17,17,17,21,21,21,10],0],'X':[[17,17,10,4,10,17,17],0],'Y':[[17,17,10,4,4,4,4],0],'Z':[[31,1,2,4,8,16,31],0],'a':[[0,0,14,1,15,17,15],0],'b':[[16,16,30,17,17,17,30],0],'c':[[0,0,14,16,16,16,14],0],'d':[[1,1,15,17,17,17,15],0],'e':[[0,0,14,17,31,16,14],0],'f':[[6,8,8,30,8,8,8],0],'g':[[15,17,17,15,1,17,14],1],'h':[[16,16,30,17,17,17,17],0],'i':[[4,0,12,4,4,4,14],0],'j':[[2,0,6,2,2,18,12],1],'k':[[16,16,18,20,24,20,18],0],'l':[[12,4,4,4,4,4,14],0],'m':[[0,0,26,21,21,21,21],0],'n':[[0,0,30,17,17,17,17],0],'o':[[0,0,14,17,17,17,14],0],'p':[[30,17,17,30,16,16,16],1],'q':[[15,17,17,15,1,1,1],1],'r':[[0,0,22,24,16,16,16],0],'s':[[0,0,15,16,14,1,30],0],'t':[[8,8,30,8,8,9,6],0],'u':[[0,0,17,17,17,19,13],0],'v':[[0,0,17,17,17,10,4],0],'w':[[0,0,17,21,21,21,10],0],'x':[[0,0,17,10,4,10,17],0],'y':[[17,17,17,15,1,17,14],1],'z':[[0,0,31,2,4,8,31],0],'0':[[14,17,19,21,25,17,14],0],'1':[[4,12,4,4,4,4,14],0],'2':[[14,17,1,2,4,8,31],0],'3':[[30,1,1,14,1,1,30],0],'4':[[2,6,10,18,31,2,2],0],'5':[[31,16,30,1,1,17,14],0],'6':[[6,8,16,30,17,17,14],0],'7':[[31,1,2,4,4,8,8],0],'8':[[14,17,17,14,17,17,14],0],'9':[[14,17,17,15,1,2,12],0],' ':[[0,0,0,0,0,0,0],0],'.':[[0,0,0,0,0,12,12],0],',':[[0,0,0,0,12,12,8],0],'\'':[[8,8,0,0,0,0,0],0],'’':[[8,8,0,0,0,0,0],0],'→':[[0,4,2,31,2,4,0],0],'"':[[10,10,0,0,0,0,0],0],'!':[[4,4,4,4,4,0,4],0],'?':[[14,17,1,6,4,0,4],0],':':[[0,12,12,0,12,12,0],0],';':[[0,12,12,0,12,12,8],0],'-':[[0,0,0,31,0,0,0],0],'+':[[0,4,4,31,4,4,0],0],'/':[[1,1,2,4,8,16,16],0],'(':[[2,4,8,8,8,4,2],0],')':[[8,4,2,2,2,4,8],0],'%':[[25,26,4,8,19,5,9],0],'*':[[0,21,14,31,14,21,0],0],'×':[[0,0,17,10,4,10,17],0],'=':[[0,0,31,0,31,0,0],0],'#':[[10,31,10,10,31,10,0],0],'&':[[12,18,20,8,21,18,13],0],'—':[[0,0,0,31,0,0,0],0],'·':[[0,0,0,4,0,0,0],0],'…':[[0,0,0,0,0,21,0],0],'฿':[[4,30,21,30,21,30,4],0]};
+const F3={'A':[[2,5,7,5,5],0],'B':[[6,5,6,5,6],0],'C':[[3,4,4,4,3],0],'D':[[6,5,5,5,6],0],'E':[[7,4,6,4,7],0],'F':[[7,4,6,4,4],0],'G':[[3,4,5,5,3],0],'H':[[5,5,7,5,5],0],'I':[[7,2,2,2,7],0],'J':[[1,1,1,5,2],0],'K':[[5,5,6,5,5],0],'L':[[4,4,4,4,7],0],'M':[[5,7,7,5,5],0],'N':[[5,7,7,7,5],0],'O':[[2,5,5,5,2],0],'P':[[6,5,6,4,4],0],'Q':[[2,5,5,6,3],0],'R':[[6,5,6,5,5],0],'S':[[3,4,2,1,6],0],'T':[[7,2,2,2,2],0],'U':[[5,5,5,5,3],0],'V':[[5,5,5,5,2],0],'W':[[5,5,7,7,5],0],'X':[[5,5,2,5,5],0],'Y':[[5,5,2,2,2],0],'Z':[[7,1,2,4,7],0],'a':[[2,5,7,5,5],0],'b':[[6,5,6,5,6],0],'c':[[3,4,4,4,3],0],'d':[[6,5,5,5,6],0],'e':[[7,4,6,4,7],0],'f':[[7,4,6,4,4],0],'g':[[3,4,5,5,3],0],'h':[[5,5,7,5,5],0],'i':[[7,2,2,2,7],0],'j':[[1,1,1,5,2],0],'k':[[5,5,6,5,5],0],'l':[[4,4,4,4,7],0],'m':[[5,7,7,5,5],0],'n':[[5,7,7,7,5],0],'o':[[2,5,5,5,2],0],'p':[[6,5,6,4,4],0],'q':[[2,5,5,6,3],0],'r':[[6,5,6,5,5],0],'s':[[3,4,2,1,6],0],'t':[[7,2,2,2,2],0],'u':[[5,5,5,5,3],0],'v':[[5,5,5,5,2],0],'w':[[5,5,7,7,5],0],'x':[[5,5,2,5,5],0],'y':[[5,5,2,2,2],0],'z':[[7,1,2,4,7],0],'0':[[2,5,5,5,2],0],'1':[[2,6,2,2,7],0],'2':[[6,1,2,4,7],0],'3':[[6,1,2,1,6],0],'4':[[5,5,7,1,1],0],'5':[[7,4,6,1,6],0],'6':[[3,4,6,5,2],0],'7':[[7,1,2,2,2],0],'8':[[2,5,2,5,2],0],'9':[[2,5,3,1,6],0],' ':[[0,0,0,0,0],0],'.':[[0,0,0,0,2],0],',':[[0,0,0,2,4],0],'\'':[[2,2,0,0,0],0],'’':[[2,2,0,0,0],0],'%':[[5,1,2,4,5],0],'→':[[0,1,7,1,0],0],'!':[[2,2,2,0,2],0],'?':[[6,1,2,0,2],0],':':[[0,2,0,2,0],0],'-':[[0,0,7,0,0],0],'/':[[1,1,2,4,4],0],'(':[[1,2,2,2,1],0],')':[[4,2,2,2,4],0],'+':[[0,2,7,2,0],0],'×':[[0,5,2,5,0],0],'=':[[0,7,0,7,0],0],'—':[[0,0,7,0,0],0],'·':[[0,0,2,0,0],0],'…':[[0,0,0,0,5],0],'฿':[[2,7,7,7,2],0]};
 /* pick the font and the whole-number scale for a requested size */
 function fontPick(size){
   if(size<=6)  return {f:F3, w:F3W, h:F3H, s:1, gap:1};
@@ -1023,56 +1023,56 @@ function thaiMeasure(s,size){
   _thMeasure.font=thaiPx(size)+'px '+_thaiFace;
   return Math.ceil(_thMeasure.measureText(s).width);
 }
-/* ---------- Thai, rasterised to one bit properly ----------
-   The old pass drew Thai at the target size and kept any pixel over an
-   alpha of 110, which is thresholding an anti-aliased image: thin strokes
-   and tone marks came out broken and everything looked soft next to the
-   hand-drawn Latin.
+/* ---------- Thai, at the screen's own resolution ----------
+   Thai used to be rasterised onto the 480x270 game grid and thresholded to
+   one bit. That is the right thing to do to Latin at 5x7 and the wrong
+   thing to do to a script whose letters are told apart by a head-loop two
+   pixels across: at eleven pixels the loops closed up, the tone marks broke
+   off, and it read as a different and much worse font than the one the
+   device actually has.
 
-   This draws it three times oversized and then asks, for each real pixel,
-   how much of it the glyph actually covers — supersampled 1-bit
-   downsampling. Same pixel grid as the rest of the type, and the tone marks
-   survive.  */
-/* Four samples per pixel and a low coverage bar: Thai is full of one-stroke
-   detail — the little head-loops, the tone marks — and at a 0.40 bar those
-   were the first things to disappear, which is what made it look broken. */
-const THAI_SS = 4, THAI_COV = 0.31;
+   It is drawn at the display's real scale now — three or four times the
+   game grid, with the anti-aliasing left on — and blitted straight into the
+   backing store underneath the game's own nearest-neighbour upscale. The
+   layout does not move: every width is still measured in game pixels, so a
+   panel sized for Thai stays sized for Thai. Only the number of pixels
+   inside each letter goes up.  */
 function thaiSprite(s,size,col,shadow){
-  const key='T|'+s+'|'+size+'|'+col+'|'+(shadow||'');
+  const sc = (typeof SC==='number' && SC>0)? SC : 1;
+  const key='T|'+sc.toFixed(2)+'|'+s+'|'+size+'|'+col+'|'+(shadow||'');
   let c=_thai.get(key);
   if(c){ _thai.delete(key); _thai.set(key,c); return c; }
-  const px=thaiPx(size), SS=THAI_SS;
-  const w=Math.max(1,thaiMeasure(s,size)), h=px+px;
-  const bw=(w+2)*SS, bh=h*SS;
-  const src=mkCv(bw,bh), sg=src.getContext('2d');
-  sg.font=(px*SS)+'px '+_thaiFace; sg.textBaseline='alphabetic'; sg.fillStyle='#fff';
-  sg.fillText(s, SS, Math.round(px*1.32)*SS);
-  const d=sg.getImageData(0,0,bw,bh).data;
-  const need=THAI_COV*SS*SS;
-  c=mkCv(w+2+(shadow?1:0), h+(shadow?1:0));
-  const g=G2(c);
-  /* one pass over the big bitmap into a coverage count per output pixel,
-     then two stamps of the same mask for the shadow and the ink */
-  const on=new Uint8Array((w+2)*h);
-  for(let y=0;y<h;y++) for(let x=0;x<w+2;x++){
-    let cov=0;
-    for(let sy=0;sy<SS;sy++){
-      const row=(y*SS+sy)*bw;
-      for(let sx=0;sx<SS;sx++){
-        const px2=x*SS+sx;
-        if(px2<bw && d[(row+px2)*4+3]>90) cov++;
-      }
-    }
-    if(cov>=need) on[y*(w+2)+x]=1;
-  }
-  const stamp=(cc,ox,oy)=>{ g.fillStyle=cc;
-    for(let y=0;y<h;y++) for(let x=0;x<w+2;x++) if(on[y*(w+2)+x]) g.fillRect(x+ox,y+oy,1,1); };
-  if(shadow) stamp(shadow,1,1);
-  stamp(col,0,0);
-  c._base=Math.round(px*1.32);            // where the baseline sits inside the sprite
+  const px=thaiPx(size);
+  const w=Math.max(1,thaiMeasure(s,size));      // game pixels, as it always was
+  const pad=2;                                  // slack for marks that overhang
+  const base=Math.round(px*1.32)+pad;           // baseline, in game pixels
+  c=mkCv(Math.ceil((w+pad*2)*sc), Math.ceil((px*2+pad*2)*sc));
+  const g=c.getContext('2d');
+  g.textBaseline='alphabetic';
+  g.font=(px*sc)+'px '+_thaiFace;
+  if(shadow){ g.fillStyle=shadow; g.fillText(s, (pad+1)*sc, (base+1)*sc); }
+  g.fillStyle=col; g.fillText(s, pad*sc, base*sc);
+  c._base=base; c._pad=pad; c._sc=sc;
   _thai.set(key,c);
-  while(_thai.size>320) _thai.delete(_thai.keys().next().value);
+  while(_thai.size>240) _thai.delete(_thai.keys().next().value);
   return c;
+}
+/* Put a device-resolution sprite on the screen through whatever transform
+   the caller happens to be under, without letting that transform blow it up
+   again. x,y is the left baseline in game pixels, as everywhere else. */
+function thaiBlit(g,c,x,y){
+  const t = g.getTransform? g.getTransform() : null;
+  const gw = c.width/c._sc, gh = c.height/c._sc;    // its size in game pixels
+  if(!t || t.b || t.c){                             // skewed: no clean way down
+    g.drawImage(c, R(x)-c._pad, R(y)-c._base, gw, gh);
+    return;
+  }
+  g.save();
+  g.setTransform(1,0,0,1,0,0);
+  g.imageSmoothingEnabled=true;
+  g.drawImage(c, Math.round(t.e + (R(x)-c._pad)*t.a), Math.round(t.f + (R(y)-c._base)*t.d),
+                 gw*t.a, gh*t.d);
+  g.restore();
 }
 /* x,y is the LEFT BASELINE, as it always was */
 function pTxt(g,s,x,y,col,size=7,align='left',bold){
@@ -1089,16 +1089,14 @@ function pTxt(g,s,x,y,col,size=7,align='left',bold){
   }
   const runs=txtRuns(s);
   if(runs.length===1){
-    const c=thaiSprite(s,size,col,sh);
-    g.drawImage(c, R(x+dx), R(y-c._base));
+    thaiBlit(g, thaiSprite(s,size,col,sh), x+dx, y);
     return;
   }
   // mixed: each run to the face that owns it, all on the one baseline
   let cx=x+dx;
   for(const r of runs){
     if(r.th){
-      const c=thaiSprite(r.s,size,col,sh);
-      g.drawImage(c, R(cx), R(y-c._base));
+      thaiBlit(g, thaiSprite(r.s,size,col,sh), cx, y);
       cx += thaiMeasure(r.s,size);
     } else {
       g.drawImage(txtSprite(r.s,size,col,sh), R(cx), R(y-P.h*P.s));
@@ -1360,7 +1358,7 @@ const TH = {
   'Plough the five beds':'ไถแปลงทั้งห้า',
   'Water the beds from the โอ่ง':'ตักน้ำจากโอ่งมารดแปลง',
   'Sow the beds with him':'หยอดเมล็ดไปกับแก',
-  'tap to pull yourself out':'แตะเพื่อดึงตัวเองขึ้นมา',
+
   'tap to wake':'แตะเพื่อตื่น',
   'the field is waiting':'ไร่รออยู่',
   // --- coming up out of the ground ---
@@ -1588,7 +1586,7 @@ const TH = {
   'May this merit reach you. May the road home be short and lit.':'ขอบุญนี้ถึงเจ้า ขอให้ทางกลับบ้านสั้นและมีไฟส่อง',
   'Meow-Meow says thanks too. Short trees only from now on.':'เมี้ยวเมี้ยวก็ขอบคุณ ต่อไปขึ้นแต่ต้นเตี้ยๆ นะ',
   'Mist doesn\'t lift off an empty field.':'หมอกไม่ลอยขึ้นจากนาที่ว่างเปล่าหรอก',
-  'N — new night':'N — คืนใหม่',
+
   'Neighbours. Tonight we pour water for a friend of this village.':'พี่น้องทั้งหลาย คืนนี้เรากรวดน้ำให้เพื่อนของหมู่บ้านนี้',
   'Nine feet of you, ribs on the outside. There\'s a word for it. Prete.':'สูงสามวา ซี่โครงอยู่ข้างนอก มีคำเรียกอยู่ เปรต',
   'Nobody\'s hung one that straight in years. Thank you.':'ไม่มีใครแขวนได้ตรงขนาดนี้มาหลายปีแล้ว ขอบใจนะ',
@@ -1753,9 +1751,9 @@ const TH = {
   'pound it':'ตำ',
   'Pound it. Keep pounding. That\'s the whole secret.':'ตำไปเรื่อยๆ ตำต่อ เคล็ดลับมีแค่นั้น',
   'prayers received':'คำอธิษฐานที่ได้รับ',
-  'PRESS ENTER':'กด ENTER',
-  'ENTER — continue':'ENTER — เล่นต่อ',
-  'ENTER — a morning stroll':'ENTER — เดินเล่นยามเช้า',
+
+
+
   'recipes learned':'สูตรที่เรียนแล้ว',
   'road cleared':'เคลียร์ถนนแล้ว',
   'road, still blocked':'ถนน ยังมีของขวางอยู่',
@@ -1934,6 +1932,10 @@ const TH = {
   'Thirty years feeding this village. Never once eaten sitting down.':'เลี้ยงคนทั้งหมู่บ้านมาสามสิบปี ไม่เคยได้นั่งกินสักครั้ง',
   'Tied and dyed by hand. Somebody counted every knot.':'มัดย้อมด้วยมือ มีคนนับปมทุกปม',
   'Worn over one shoulder, the old way.':'พาดบ่าข้างเดียว แบบโบราณ',
+  'tap to begin':'แตะเพื่อเริ่ม',
+  'tap to carry on':'แตะเพื่อเล่นต่อ',
+  'tap to take a morning stroll':'แตะไปเดินเล่นยามเช้า',
+  'start a new night':'เริ่มคืนใหม่',
 };
 function L(s){
   if(LANG!=='th') return s;
@@ -8335,7 +8337,10 @@ function render(){
   ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
   if(typeof drawSneakUI==='function') drawSneakUI(ctx);
-  if(GS.state==='play' && !VIG){ drawPosopBubble(ctx); drawHintLine(ctx); drawHUD(); }
+  /* GS.plate strips the furniture off: no purse, no clock, no prompts, no
+     thumb controls. The store art is this game with its HUD taken out, not a
+     painting of it, so it is always a picture of the build it shipped with. */
+  if(GS.state==='play' && !VIG && !GS.plate){ drawPosopBubble(ctx); drawHintLine(ctx); drawHUD(); }
   if(typeof drawQTE==='function') drawQTE(ctx);
   if(GS.state==='plow') drawPlowUI(ctx);
   else if(GS.state==='task') drawTaskHUD(ctx);
@@ -8349,8 +8354,8 @@ function render(){
   if(GS.state==='ceremony') drawCeremonyUI(ctx);
   if(GS.state==='end') drawEnd(ctx);
   drawStoryUI(ctx);    // the chapter card, and the fade through the night
-  if(TOUCH.on && uiShowsPads() && !DAY.sleeping) drawPads(ctx);
-  drawDay(ctx);
+  if(TOUCH.on && uiShowsPads() && !DAY.sleeping && !GS.plate) drawPads(ctx);
+  if(!GS.plate) drawDay(ctx);
 }
 function uiShowsPads(){ return (GS.state==='play'&&!DLG&&!VIG&&!DAY.card)||GS.state==='task'; }
 function bubble(g,x,y,txt){
@@ -8764,7 +8769,7 @@ function drawGive(g){
     panel(g,x-24,86,48,58, sel?PAL.goldL:'rgba(90,84,104,0.5)');
     drawIcon(g,id,x,110,1.15);
     pTxt(g,ITEMS[id].n,x,132,sel?'#efe6d8':'#8a8098',6,'center');
-    pTxt(g,'x'+GS.bag[id],x,141,'#a89ec0',6,'center');
+    pTxt(g,'×'+GS.bag[id],x,141,'#a89ec0',6,'center');
   });
   if(has('eye') && t.wants && !GS.friends[t.id]){
     panel(g,W/2-90,158,180,22,PAL.jadeL);
@@ -10682,7 +10687,7 @@ function drawGive(g){
     else cloud(g,x-23,82,46,58,{seed:90+i,drop:1,top:'#e8e0cc',body:'#d8cdb4',under:'#bfb195',edge:'#9c8f76'});
     drawIcon(g,id,x,106,1.1);
     pTxt(g,ITEMS[id].n,x,128,sel?CL.ink:CL.ink2,6,'center');
-    pTxt(g,'x'+GS.bag[id],x,137,CL.ink3,6,'center');
+    pTxt(g,'×'+GS.bag[id],x,137,CL.ink3,6,'center');
   });
   if(has('eye') && t.wants && !GS.friends[t.id]){
     cloud(g,W/2-100,154,200,22,{seed:99,top:'#eef7e6',body:'#dcecd0',under:'#c2d6b4',edge:'#96ab88'});
@@ -12515,26 +12520,46 @@ const STORY = [
       for(let i=0;i<14;i++) part({k:'dust',x:GRAVE_X+rnd(-16,16),y:groundY(GRAVE_X)-rnd(0,8),
                                   vx:rnd(-46,46),vy:-rnd(20,90),life:rnd(0.4,0.9)});
       scatterBirds(GRAVE_X, 220);
-      /* Six cards in the first half minute of a game is a wall of reading
-         before anybody has touched anything. Two, spaced out, and the rest
-         of it is in the animation. */
-      const cards={ 1:'Something is pulling. It takes a moment to work out that it is you.',
-                    4:'The earth doesn\'t want to let go. The earth is outvoted.' };
-      if(cards[CH.dug]) chCard(cards[CH.dug], 2.6);
+      /* There is no writing in this scene at all now. Six cards went to two
+         and two went to none: a pair of hands coming up out of somebody
+         else's grave does not need a caption, and a wall of reading before
+         the player has touched anything is the worst place in a game to put
+         one. */
     }
   },
   ui(g){
     if(CH.t<1.6 || CH.climb>=1) return;
+    /* and no words in the prompt either. You are a pair of hands in the dark
+       and the only thing you can do is pull, so it draws a hand pulling and
+       two chevrons coming up out of the ground behind it. */
     const pu=0.5+0.5*Math.sin(GS.t*3.4);
-    const s=L('tap to pull yourself out');
-    const w2=txtW(s,7)+22;
-    g.globalAlpha=0.55+pu*0.45;
-    inkPanel(g, W/2-w2/2, H-40, w2, 16);
-    pTxt(g, s, W/2, H-29, '#e8e0f4', 7, 'center');
+    const cx=W/2, cy=H-42;
+    g.globalAlpha=0.30+0.22*pu;
+    pEll(g,cx,cy+2,21,15,'rgba(10,8,20,0.6)');
     g.globalAlpha=1;
+    for(let i=0;i<2;i++){
+      const ph=((GS.t*1.7 - i*0.36)%1.7);
+      if(ph>1) continue;
+      const a=Math.sin(ph*Math.PI);
+      const y=cy-13-i*7-a*3;
+      g.globalAlpha=a*0.85;
+      pTaper(g,cx-6,y+4,cx,y-1,2.4,2.4,PAL.gold);
+      pTaper(g,cx,y-1,cx+6,y+4,2.4,2.4,PAL.gold);
+      g.globalAlpha=1;
+    }
+    const hy=cy+7-pu*1.6;
+    pEll(g,cx,hy,5.2,5.4,'#ded5c0');
+    pEll(g,cx-1,hy-1,3.6,3.6,'#f2ebd8');
+    for(let i=0;i<4;i++){
+      const fx=cx-4.2+i*2.8, fl=7.4-Math.abs(i-1.4)*1.2, lean=(i-1.5)*0.7;
+      pTaper(g,fx,hy-2,fx+lean,hy-2-fl,2.2,1.5,'#e8dfcb');
+      pEll(g,fx+lean,hy-2-fl,1.1,1.1,'#f2ebd8');
+    }
+    pTaper(g,cx+5,hy+1,cx+8.6,hy-3.2,2.4,1.6,'#ded5c0');
     const bw=96;
-    pR(g,W/2-bw/2,H-18,bw,3,'rgba(20,16,30,0.7)');
-    pR(g,W/2-bw/2,H-18,bw*CH.climb,3,PAL.gold);
+    pR(g,cx-bw/2,H-18,bw,3,'rgba(20,16,30,0.7)');
+    pR(g,cx-bw/2,H-18,bw*CH.climb,3,PAL.gold);
+    pR(g,cx-bw/2,H-18,bw*CH.climb,1,'#ffeaa8');
   },
   fore(g){
     /* Everything below the grass line is redrawn on top of him, because he
@@ -13452,7 +13477,7 @@ function drawPlowUI(g){
   }
   const label = A.out>0? L('bed turned') : L('drive on the beat');
   pTxt(g,label, W/2, by+13, A.out>0? PAL.jadeL:'#a89ec0', 6,'center');
-  if(A.combo>1) pTxt(g, 'x'+A.combo, bx+bw+14, by+2, PAL.goldL, 8,'left');
+  if(A.combo>1) pTxt(g, '×'+A.combo, bx+bw+14, by+2, PAL.goldL, 8,'left');
   if(A.msgT>0){
     /* it lands over open field in daylight, so it needs its own dark behind it */
     g.globalAlpha=clamp(A.msgT/0.4,0,1);
@@ -14235,6 +14260,9 @@ function drawFloats(g){
    and a small picture at every landmark. Where you have not
    walked there is bare paper and a dotted line.
    ============================================================ */
+/* เหนือ, ตะวันตก, ตะวันออก — the short forms a Thai map uses */
+const COMPASS = { n:['N','น'], w:['W','ตก'], e:['E','ออก'] };
+function compass(k){ return COMPASS[k][LANG==='th'?1:0]; }
 const MAP_ROWS = 2;
 /* every name the map put down last time it drew, so a test can prove none of
    them landed on top of another one */
@@ -14456,16 +14484,19 @@ function drawMap(g,x0,y0,w,h){
     pR(g,R(mx-7),R(yB),5,1,'rgba(150,128,92,0.7)');
     pTri(g,mx-1,yB+0.5, mx-5,yB-2.5, mx-5,yB+3.5,'rgba(140,118,82,0.8)');
   }
-  /* west at the head of the road, east at its end */
-  pTxt(g,'W', mx-8, rowRy[0]-6, 'rgba(120,98,66,0.85)', 6,'center');
-  pTxt(g,'E', mx+mw+8, rowRy[MAP_ROWS-1]-6, 'rgba(120,98,66,0.85)', 6,'center');
+  /* west at the head of the road, east at its end.
+     These cannot go through the dictionary: a bare 'E' is also the letter on
+     the key you press to do things, and translating that to ออก would put
+     "exit" on the button that means "use". So the compass picks its own. */
+  pTxt(g, compass('w'), mx-8, rowRy[0]-6, 'rgba(120,98,66,0.85)', 6,'center');
+  pTxt(g, compass('e'), mx+mw+8, rowRy[MAP_ROWS-1]-6, 'rgba(120,98,66,0.85)', 6,'center');
   /* a compass rose and a scale bar, because it is a map */
   {
     const cx2=x0+w-26, cy2=y0+h-15;
     for(let i=0;i<4;i++){ const a=i*Math.PI/2-Math.PI/2;
       pTaper(g,cx2,cy2,cx2+Math.cos(a)*7,cy2+Math.sin(a)*7, i?1.6:2.4, 1, i?'#a88b5e':'#8f2a20'); }
     pEll(g,cx2,cy2,1.6,1.6,'#5a4632');
-    pTxt(g,'N',cx2,cy2-13,'#8f2a20',6,'center');
+    pTxt(g, compass('n'), cx2, cy2-13, '#8f2a20', 6,'center');
   }
   {
     const sx=x0+14, sy=y0+h-11, sw=40;
@@ -15120,7 +15151,7 @@ function spotShown(){
   /* the story's own prompts go through the same list — on the first night it
      is the only thing telling you what to do, so it shows during a story beat
      as well */
-  return GS.state==='play' && !DLG && !VIG && !P.act && !BURST
+  return GS.state==='play' && !GS.plate && !DLG && !VIG && !P.act && !BURST
       && !DAY.card && !DAY.sleeping && SPOTS.length>0;
 }
 /* A row of them above his head, left to right in the order the things
@@ -17586,13 +17617,26 @@ function drawTitle(){
   pTxt(g,'tap the ground to walk  ·  tap a thing to use it',tx,107,'rgba(74,71,96,0.7)',6,'center');
   const sv=loadSaveRaw();
   const hasSave=sv&&(sv.merit>0||(sv.q&&sv.q.metPhra));
+  /* These used to name a key — PRESS ENTER, N — new night — which is two
+     problems at once: there is no N on a phone, and a Thai screen with ENTER
+     across the middle of it is not a Thai screen. They say what you do with
+     your thumb instead, and the new night is a plaque you can hit. */
   g.globalAlpha=0.78+0.22*Math.sin(GS.t*4);
-  pTxt(g,hasSave?(sv.q&&sv.q.done?'ENTER — a morning stroll':'ENTER — continue'):'PRESS ENTER',
+  pTxt(g, hasSave? (sv.q&&sv.q.done? 'tap to take a morning stroll' : 'tap to carry on')
+                 : 'tap to begin',
        tx,123,'#fff8dc',11,'center');
   g.globalAlpha=1;
   if(hasSave && !(sv.q&&sv.q.done))
     pTxt(g, L('day')+' '+(sv.dy||1)+'  ·  '+(sv.merit|0)+' '+L('merit'), tx,135,'#ffeec8',7,'center');
-  if(hasSave) pTxt(g,'N — new night',tx,145,'#f0e2c0',7,'center');
+  TT.newBox=null;
+  if(hasSave){
+    const lbl=L('start a new night'), lw=txtW(lbl,7)+18, bx=tx-lw/2, by=142;
+    TT.newBox=[bx,by,bx+lw,by+13];
+    pR(g,bx,by,lw,13,'rgba(18,15,32,0.40)');
+    pR(g,bx,by,lw,1,'rgba(255,238,200,0.30)');
+    pR(g,bx,by+12,lw,1,'rgba(8,6,18,0.45)');
+    pTxt(g,lbl,tx,by+9,'#f0e2c0',7,'center');
+  }
 
 }
 /* ============================================================
@@ -17641,9 +17685,15 @@ function update(dt){
   if(press('lang')){ toggleLang(); toast(LANG==='th'?'ภาษาไทย':'English','#9ecbff'); }
 
   switch(GS.state){
-    case 'title':
+    case 'title':{
       TP.anim+=dt;
-      if(press('act')||press('tap')){
+      const tapped=press('tap'), acted=press('act'), newKey=press('newgame');
+      /* the new-night plaque only counts when a finger landed on it: a key
+         press has no position, and TAP still holds wherever the mouse was */
+      const b=TT.newBox;
+      const onNew = tapped && b && TAP.x>=b[0] && TAP.x<=b[2] && TAP.y>=b[1] && TAP.y<=b[3];
+      if(onNew || newKey){ AU.ding(); wipeTo(()=>{ clearSave(); newGame(); },'rows'); }
+      else if(tapped || acted){
         const sv=loadSaveRaw();
         /* A save part-way through the first night has no merit in it yet —
            without the chapter in this test, quitting during the walk home
@@ -17651,8 +17701,8 @@ function update(dt){
         AU.ding();
         wipeTo(()=>{ if(sv&&(sv.merit>0||(sv.st|0)>0||(sv.q&&sv.q.metPhra))) continueGame(sv); else newGame(); }, 'rows');
       }
-      if(press('newgame')){ AU.ding(); wipeTo(()=>{ clearSave(); newGame(); },'rows'); }
       break;
+    }
     case 'memory': stepMem(dt); break;
     case 'play':{
       stepDay(dt);

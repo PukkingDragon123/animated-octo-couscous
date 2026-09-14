@@ -91,6 +91,13 @@ the birds choose their own next perch.
 
 ![the title screen](screenshots/title.png)
 
+It stopped naming keys, too. It used to say **PRESS ENTER** across the middle
+and **N — new night** underneath, which is two problems in one line: there is no
+N on a phone, so the only way to start over was a key half the players do not
+have — and a Thai screen with ENTER written across it is not a Thai screen. It
+says what your thumb does now (*แตะเพื่อเริ่ม*, *tap to carry on*), and the new
+night is a small plaque you can actually hit. **N** still works if you have one.
+
 **Playtime:** an hour and a half or so · built for phones, fine on desktop · sound on if you can
 
 ## Play
@@ -217,18 +224,17 @@ page, and until the last one turns the ending will not start.
 The game opens with you under the ground, and the only control that does
 anything is *pull*.
 
+**There is not one written word in this scene.** There used to be eight: six
+narration cards spread through the digging and a line of instruction under
+them, which is a wall of reading in the first thirty seconds of a game, before
+anybody has touched anything. What is there instead is a pale hand and two gold
+chevrons coming up out of the dark, which every person alive reads without
+being told, and a bar that fills.
+
 **Tap, and a hand comes up through the soil.** Seven of them and you are out,
 kneeling in a burial field at three in the morning with your hands full of
-somebody else's earth. A line of narration a tap — no speaker, so no cloud,
-just the words low on the screen:
-
-> *The earth does not want to let go. The earth is outvoted.*
->
-> *There is a word for this, and you find you already know it. Prete. A hungry
-> ghost. Somebody is paying for something.*
-
-Then five more lines, and the last one is the whole of the tutorial: **far down
-the road, one light is on.**
+somebody else's earth. *Then* the words come, four of them, and the last one is
+the whole of the tutorial: **far down the road, one light is on.**
 
 | | |
 |---|---|
@@ -1132,8 +1138,8 @@ speaks.
 
 ## It speaks Thai, properly
 
-**It opens in Thai.** The village is Thai, so the game is, on a device that can
-draw it — and on one that cannot (a machine with no Thai face renders every Thai
+**It opens in Thai, and in Thai there is no English left.** The village is
+Thai, so the game is, on a device that can draw it — and on one that cannot (a machine with no Thai face renders every Thai
 codepoint as the same rectangle) it quietly falls back to English instead. There
 is a language key in the top right of the ledger. Press it — or **V** — and the
 whole interface, every place name, every item, every skill, every prompt and
@@ -1145,6 +1151,17 @@ English: the day-and-clock box in the corner takes the width its own two strings
 need, so "วันที่ ๖  11:05น." does not print on top of itself the way it did when
 that box was a fixed eighty-six pixels.
 
+**And the last of the English went.** A sweep that hooks the *drawing* rather
+than the lookup — because a hardcoded `PRESS ENTER` never asks for a
+translation and is therefore invisible to a lookup — found eight strings still
+arriving in Latin. The count on a stack of things is `×2` rather than `x2`. The
+compass says **น**, and the two ends of the road say **ตก** and **ออก**, drawn
+without going through the dictionary because a bare `E` is also the letter on
+the key you press to do things and translating that to ออก would have put
+"exit" on the button that means "use". And the title stopped naming keys
+altogether — see below. It reports zero now, and it runs every time the
+translation sweep does.
+
 Thai is genuinely hard to draw at this size: forty-four consonants, vowels that
 sit above, below, in front of and behind the consonant they belong to, and four
 tone marks that stack on top of the ones already up there.
@@ -1155,14 +1172,25 @@ the game actually uses, with the mark-stacking engine to go with them. At a
 small head-loop, and a loop two pixels across is a blob. Half the consonants
 came out as the same shape. So that got thrown away.
 
-What ships instead **rasterises the reader's own Thai face and downsamples it
-to one bit properly** — drawn four times oversized, then each real pixel is
-turned on if the glyph actually covers a third of it. Thresholding an
-anti-aliased render, which is what it used to do, ate exactly the strokes Thai
-cannot spare: the head-loops and the tone marks. It also draws Thai a third
-smaller than before, because the layouts are measured for a 5×7 Latin cell and
-Thai has to sit in the same box — at the old size every label in the ledger ran
-into the column beside it.
+What ships instead **rasterises the reader's own Thai face at the display's
+real resolution** — three or four times the game's own grid — and blits it
+straight into the backing store underneath the nearest-neighbour upscale
+everything else goes through.
+
+It spent a while trying to be a pixel font and it was never going to work. The
+first attempt thresholded an anti-aliased render; the second supersampled it
+properly and turned a pixel on when the glyph covered a third of it. Both are
+the right thing to do to a 5×7 Latin face, and both are the wrong thing to do
+to a script whose letters are told apart by a head-loop two pixels across. At
+eleven pixels the loops closed up and the tone marks broke off, and it read as
+a different and much worse font than the one the device actually has.
+
+So it does not fight it any more. The Latin is 1980 and the Thai is today, and
+side by side that reads as a game with a proper Thai localisation rather than a
+game with Thai-shaped damage in it. **Nothing about the layout moved**: every
+width is still measured in game pixels, so a panel sized for Thai is still
+sized for Thai and a line that fitted still fits. Only the number of pixels
+inside each letter went up.
 
 The art for the face that did not work is kept in [`th/glyphs.py`](th/glyphs.py)
 with a note on why, in case somebody wants to try it at a bigger cell.
@@ -1622,11 +1650,20 @@ with a fully stocked farm on screen.
 
 Everything the store page needs is in [`itch/`](itch): the game zipped with
 `index.html` at the root, a 630×500 cover, a 1920×620 banner, and the settings
-that matter (HTML project, 960×540 embed, mobile friendly). The cover and the
-banner are not drawn by hand — they are this game's own title screen with its
-lettering switched off and set again at the size each picture wants, rendered by
-[`itch/keyart.js`](itch/keyart.js), so when the game changes the store art
-changes with it.
+that matter (HTML project, 960×540 embed, mobile friendly).
+
+Neither picture is drawn by hand. Both are **the game running with `GS.plate`
+set** — a flag that takes the purse, the clock, the prompts and the thumb
+controls off and leaves the village standing there — with the lettering set over
+the top at the size each picture wants, by [`itch/keyart.js`](itch/keyart.js).
+Change the game and the store art changes with it; it can never be a picture of
+a build that no longer exists.
+
+The scene is the village road at twenty past eight at night: the noodle stall
+lit, a string of coloured lanterns across the wires, a power pole, two houses
+with their windows on, a cat in the tamarind, and nine feet of grey ghost
+standing in the middle of it that nobody is running from. That is the game in
+one frame, which the rice field — pretty as it is — was not.
 
 | | |
 |---|---|
