@@ -1043,6 +1043,27 @@ the first house, under the tamarind, the banana grove, the bus shelter, behind
 the bins on the town road — it barely fills at all. Walk a stretch past somebody
 without frightening them and it counts for something.
 
+### Most of the village is not a guard
+
+Everybody used to fill that eye at the same rate, which turned the road into a
+stealth level and the six people on it into patrols. They are not patrols.
+
+**Four of them are never going to mind.** Luang Pi has sat up all night with
+worse than you and has said so. Mali is seven, and to a seven-year-old you are
+simply a tall person who will play. Lung Somchai carried your dinner out to the
+step the first night you were above ground. And **anybody you have actually made
+friends with** stopped wondering what you were some while ago — two hearts is
+enough. Walk straight past any of them, upright, at midnight, and nothing
+happens at all. The first time you come near one each day a small **shut eye**
+shows over them and then leaves you alone, so you learn who is safe without
+being told.
+
+Yai Pen is eighty-one and those glasses are for reading: she notices you at
+thirty-six pixels and not a pixel further.
+
+That leaves two people in the whole village who will actually be startled, which
+is the right number.
+
 Twice the road makes a scene of it. **Headlights at the crossroad after dark**:
 a pickup comes up the road, its beams sweep along it, and you hold one button
 through a window to stay still. **The dogs at the edge of town**: one tap, in
@@ -1111,9 +1132,18 @@ speaks.
 
 ## It speaks Thai, properly
 
-There is a language key in the top right of the ledger. Press it — or **V** —
-and the whole interface, every place name, every item, every skill, every prompt
-and every thing a bed can be told to do turns over into Thai.
+**It opens in Thai.** The village is Thai, so the game is, on a device that can
+draw it — and on one that cannot (a machine with no Thai face renders every Thai
+codepoint as the same rectangle) it quietly falls back to English instead. There
+is a language key in the top right of the ledger. Press it — or **V** — and the
+whole interface, every place name, every item, every skill, every prompt and
+every thing a bed can be told to do turns over into English and back, and
+whichever you last chose is what it opens in next time.
+
+The panels are measured rather than positioned, because Thai sets wider than
+English: the day-and-clock box in the corner takes the width its own two strings
+need, so "วันที่ ๖  11:05น." does not print on top of itself the way it did when
+that box was a fixed eighty-six pixels.
 
 Thai is genuinely hard to draw at this size: forty-four consonants, vowels that
 sit above, below, in front of and behind the consonant they belong to, and four
@@ -1164,8 +1194,16 @@ as [`th/sweep.js`](th/sweep.js); it visits the title, all ten chapters of the
 first night, every panel of
 the ledger, the stall, the order board, the kitchen, the workbench, the give
 screen, the morning card, all four memories, the ceremony and the end card, and
-drives the prete the length of the map at four different hours. It reports 383
+drives the prete the length of the map at four different hours. It reports 430
 strings drawn and, as of this build, **nothing untranslated**.
+
+That number went up by forty-seven in one afternoon because the sweep had a bug
+of its own: it walked the ledger by moving `TREE.col`, which the ledger stopped
+having when it became four tabs of rows. So it had been drawing row zero of
+every tab for weeks, and nineteen strings behind row one — every villager's and
+every ghost's one-line biography, every wardrobe blurb, and the wish under
+somebody's card — had been quietly printing in English the whole time. The sweep
+walks every row of every tab now, with Inner Eye switched on.
 
 Anything glued together out of fragments had to be taken apart for that to be
 true: `'DAY ' + 8` and `cost + ' merit'` and `'road, still blocked' + ' · ' +
@@ -1196,6 +1234,24 @@ tells you plainly what to go and do:
 > **Yai Pen:** *Bring me 2 jasmine. Then we are square.*
 
 Feed them once and the first line changes for good.
+
+### And the lines keep getting shorter
+
+Every pass over this game cuts text, and this one cut a third of the guide.
+Fifty-one lines, 2,339 characters of them, down to 1,655 for the same fifty-one
+jobs: *Lift a jar, carry it over, tip it out* is **Lift, carry, tip**; *The
+board at the gate sells chickens, ducks, and one very large buffalo* is **The
+board at the gate sells livestock**; *Somebody is standing in the water. Longer
+than the farm has* is **Somebody is standing in the water**, because the second
+sentence was a thing you could not act on.
+
+Two lines went altogether because the game was saying them twice — Lung Somchai
+telling you to sleep off the road with the hint under him already saying *get
+off the road and sleep*, and a fourth line about the stove that folded into the
+third. And the opening now costs four cards instead of ten: climbing out of your
+own grave used to print six narration cards in the first thirty seconds, which
+is a wall of reading before anybody has touched anything. It prints two, and the
+rest of it is in the animation.
 
 ## Nothing announces itself
 
@@ -1308,7 +1364,7 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~700 KB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~860 KB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Parses and initialises in about a tenth of a second, has the whole
 road built inside half a second behind a loading screen, and holds 50–60 fps
 with a fully stocked farm on screen.
@@ -1545,6 +1601,35 @@ with a fully stocked farm on screen.
   through one lookup, so [`th/sweep.js`](th/sweep.js) hooks that lookup, walks
   the game through every screen it has, and prints whatever came past in
   English. 383 strings drawn, none untranslated.
+- **A state with nothing behind it is impossible.** Every screen here is a
+  state plus the object behind it, and each is supposed to clear both together.
+  If they ever came apart — a state left set with its object gone — the draw for
+  it read a field off null, threw every frame, and the canvas stopped for good.
+  A black screen that never comes back is the worst bug this game can have, so
+  it costs one check a frame to rule out: before update and before render, a
+  state whose object is missing falls back to play. A fuzz that puts the game
+  into all fifteen of its states with everything nulled found six of these and
+  now finds none.
+- **Two functions cannot quietly share a name.** Every part of the game is
+  concatenated into one script, so a duplicate name is not an error — the later
+  one silently wins and the earlier becomes dead code that still looks live.
+  That happened once, to a whole map screen. Twenty-eight names are shadowed on
+  purpose (later parts patching earlier ones) and the build knows all
+  twenty-eight; a twenty-ninth fails the build and says which two files.
 - Autosave, a friends journal, canvas-drawn touch controls, and a dawn ending.
+
+## Putting it on itch.io
+
+Everything the store page needs is in [`itch/`](itch): the game zipped with
+`index.html` at the root, a 630×500 cover, a 1920×620 banner, and the settings
+that matter (HTML project, 960×540 embed, mobile friendly). The cover and the
+banner are not drawn by hand — they are this game's own title screen with its
+lettering switched off and set again at the size each picture wants, rendered by
+[`itch/keyart.js`](itch/keyart.js), so when the game changes the store art
+changes with it.
+
+| | |
+|---|---|
+| ![the cover](itch/cover-630x500.png) | ![the banner](itch/banner-1920x620.png) |
 
 Made with rice and incense. May you go to a good place.

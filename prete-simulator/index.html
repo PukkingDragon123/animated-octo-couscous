@@ -1174,7 +1174,7 @@ const TH = {
   'give':'ให้', 'pet':'ลูบหัว', 'ring the bell':'ตีระฆัง',
   'say hello':'ทักทาย', 'speak to Phra Phum':'คุยกับพระภูมิ', 'pay respects':'ไหว้',
   'approach politely':'เข้าไปอย่างสุภาพ', 'talk':'คุยด้วย',
-  'plant a seed':'ปลูกเมล็ด', 'water it':'รดน้ำ', 'harvest it':'เก็บเกี่ยว',
+  'plant a seed':'ปลูกเมล็ด',  'harvest it':'เก็บเกี่ยว',
   'it is growing':'กำลังโต', 'it needs water':'ต้องการน้ำ',
   'lift the fallen tree':'ยกต้นไม้ที่ล้ม', 'reach up for the cat':'เอื้อมไปรับแมว',
   'reach the junction box':'เอื้อมถึงกล่องไฟ', 'hang the fallen garland':'แขวนพวงมาลัยที่ร่วง',
@@ -1277,7 +1277,7 @@ const TH = {
 
   'Nobody wrote it down. It counted anyway.':'ไม่มีใครจดไว้ แต่มันก็นับอยู่ดี',
   // --- the guide, on the field ---
-  'Now water it. Wet earth grows twice as fast.':'ทีนี้ก็รดน้ำ ดินชื้นโตเร็วเป็นสองเท่า',
+  'Water it. Wet earth is faster.':'ทีนี้ก็รดน้ำ ดินชื้นโตเร็วเป็นสองเท่า',
 
   /* ============ THE OPENING ============ */
 
@@ -1287,16 +1287,15 @@ const TH = {
      are the lines most often on screen, and they are the ones that most
      needed to stop being English. */
 
-  'No water left. The โอ่ง is the big jar by the house.':
+  'Out of water. The โอ่ง is by the house.':
     'น้ำหมดแล้ว โอ่งใบใหญ่อยู่ข้างบ้าน',
-  'You are carrying all you can.':'ถือได้เท่านี้แล้ว',
-  'You have seed. Put it in the ground.':'มีเมล็ดอยู่แล้ว เอาลงดินเถอะ',
-  'No seed left. The sack is in the barn, just inside the gate.':
+  'That is all you can carry.':'ถือได้เท่านี้แล้ว',
+  'Seed. Put it in the ground.':'มีเมล็ดอยู่แล้ว เอาลงดินเถอะ',
+  'No seed. The sack is in the barn.':
     'เมล็ดหมดแล้ว กระสอบอยู่ในยุ้งข้าว เลยประตูเข้าไป',
 
-  'Now water it. Wet earth grows twice as fast.':'ทีนี้ก็รดน้ำ ดินชื้นโตเร็วเป็นสองเท่า',
 
-  'The board at the gate sells chickens, ducks, and one very large buffalo.':
+  'The board at the gate sells livestock.':
     'ป้ายที่ประตูขายไก่ เป็ด และควายตัวใหญ่หนึ่งตัว',
 
   /* ============ WHAT THE TOOLS AND SKILLS DO ============ */
@@ -1366,10 +1365,8 @@ const TH = {
   'the field is waiting':'ไร่รออยู่',
   // --- coming up out of the ground ---
 
-  'Somebody buried this. Somebody said words over it.':
-    'มีคนฝังสิ่งนี้ไว้ มีคนสวดให้',
 
-  'One more.':'อีกครั้งเดียว',
+
 
   // --- the light down the road ---
 
@@ -1501,7 +1498,7 @@ const TH = {
   '+5 merit':'+5 บุญ',
   '+6 merit':'+6 บุญ',
   'a cozy Thai ghost-village life':'ชีวิตผีบ้านนาแบบอบอุ่น',
-  'A fed animal leaves you something. Look in the pen.':'สัตว์ที่กินอิ่มจะทิ้งอะไรไว้ให้ ไปดูในคอก',
+  'Feed them, then look in the pen.':'สัตว์ที่กินอิ่มจะทิ้งอะไรไว้ให้ ไปดูในคอก',
   'A friend. Worth more than the merit.':'เพื่อนคนหนึ่ง มีค่ากว่าบุญเสียอีก',
   'A hundred and eight, and one page still turning. Nearly there.':'ร้อยแปดแล้ว เหลืออีกหน้าเดียว ใกล้แล้ว',
   'A light of my very own. Finally.':'ไฟเป็นของฉันเองสักที',
@@ -1514,24 +1511,24 @@ const TH = {
   'Ah. A prete. And standing on my road, too.':'อ้าว เปรตนี่ แถมมายืนบนถนนข้าอีก',
   'Ah. Like that, is it. Well — the smell\'s half of it anyway.':'อ๋อ แบบนั้นเหรอ เอาเถอะ กลิ่นก็ครึ่งหนึ่งแล้ว',
   'Ah. One of the hungry ones. My grandmother fed one every Wan Phra.':'อ้อ พวกหิวโหยนี่เอง ยายข้าเคยให้ทุกวันพระ',
-  'All six. You paid attention to something that pays you nothing. Good.':'ครบหกแล้ว เจ้าใส่ใจสิ่งที่ไม่ให้อะไรตอบแทน ดีแล้ว',
+  'All six. Nobody asked you to. Good.':'ครบหกแล้ว เจ้าใส่ใจสิ่งที่ไม่ให้อะไรตอบแทน ดีแล้ว',
   'ASCENDING':'กำลังขึ้นสวรรค์',
   'At the end you argued with the scale. It didn\'t argue back.':'ตอนท้ายเจ้าเถียงกับตราชั่ง มันไม่เถียงกลับ',
-  'Bare hands? Ascend for a net — TOOLS, in your ledger.':'มือเปล่าเหรอ ขึ้นไปขอสวิงสิ อยู่ในหมวดเครื่องมือ',
+  'Bare hands? You want the net.':'มือเปล่าเหรอ ขึ้นไปขอสวิงสิ อยู่ในหมวดเครื่องมือ',
   'Be at peace. Tonight you\'re just a neighbour who\'s unusually large.':'ใจเย็นไว้ คืนนี้เจ้าก็แค่เพื่อนบ้านที่ตัวใหญ่ผิดปกติ',
   'BLESSED':'ได้รับพร',
   'Buy an animal first.':'ซื้อสัตว์มาก่อนสิ',
   'catch the ':'จับ',
   'clay pond':'สระดิน',
-  'Come back when it\'s up. Go and see the village, they\'re awake.':'กลับมาตอนแดดขึ้น ไปดูหมู่บ้านก่อน เขาตื่นกันแล้ว',
+  'Come back when it\'s up. The stove by the shop is anyone\'s.':'กลับมาตอนแดดขึ้น ไปดูหมู่บ้านก่อน เขาตื่นกันแล้ว',
   'Come on. West, past the hut. Bring those shoulders.':'มาเถอะ ไปทางตะวันตก เลยกระท่อมไป เอาไหล่นั่นมาด้วย',
   'Could YOU reach? You\'re very tall. Careful!':'พี่เอื้อมถึงไหม พี่สูงมากเลย ระวังนะ',
   'dark lamp':'เสาไฟดับ',
   'DAY ':'วันที่ ',
-  'Dead hands are still hands. They\'ll keep at it whether you watch or not.':'มือผีก็ยังเป็นมือ เขาทำต่อไม่ว่าเจ้าจะดูอยู่หรือเปล่า',
+  'Dead hands are still hands. They keep at it.':'มือผีก็ยังเป็นมือ เขาทำต่อไม่ว่าเจ้าจะดูอยู่หรือเปล่า',
   'Don\'t step on a fallen ear. Pick it up. Every one waited.':'อย่าเหยียบรวงที่ร่วง เก็บขึ้นมา ทุกรวงรอมานาน',
   'Drive the blade in on the beat.':'กดผาลลงให้ตรงจังหวะ',
-  'East. Somebody down there is still up.':'ทางตะวันออก ข้างล่างนั่นยังมีคนไม่นอน',
+  'East. One light still on.':'ทางตะวันออก ข้างล่างนั่นยังมีคนไม่นอน',
   'fallen tree':'ต้นไม้ล้ม',
   'Far down the road, one light is still on.':'สุดถนนนั่น ยังมีไฟดวงหนึ่งติดอยู่',
   'Five beds. Top\'s gone to brick — that wants breaking first.':'ห้าแปลง แปลงบนแข็งเป็นอิฐ ต้องพรวนก่อน',
@@ -1558,7 +1555,7 @@ const TH = {
   'Halo unlocked':'ปลดล็อกรัศมีแล้ว',
   'Haven\'t cooked that yet. Kitchen lists it anyway.':'ยังไม่เคยทำเมนูนั้น แต่ในครัวมีชื่ออยู่',
   'He sows from this end. Take the far one.':'เขาหว่านจากด้านนี้ เจ้าเอาด้านโน้น',
-  'He\'s up, and he\'s holding something.':'เขาตื่นแล้ว แล้วถืออะไรมาด้วย',
+  'He is up, holding something.':'เขาตื่นแล้ว แล้วถืออะไรมาด้วย',
   'Heavy, even for you. Walk it over and tip it out.':'หนักอยู่นะ แม้แต่สำหรับเจ้า ยกไปแล้วเทลง',
   'Here. Forty baht. Take it — a man who works gets paid.':'นี่ สี่สิบบาท รับไปเถอะ คนทำงานต้องได้ค่าแรง',
   'Hm. A cold wind… no. A hungry one.':'อืม ลมเย็น… ไม่สิ ลมหิว',
@@ -1578,13 +1575,13 @@ const TH = {
   'Jade Weave':'ผ้าทอหยก',
   'jade weave':'ผ้าทอหยก',
   'KARMA':'กรรม',
-  'Keep bran in the trough and they\'ll leave you something.':'เติมรำไว้ในราง เดี๋ยวมันก็ทิ้งอะไรไว้ให้',
+  'Bran in the trough. They pay you back.':'เติมรำไว้ในราง เดี๋ยวมันก็ทิ้งอะไรไว้ให้',
   'Kong Koi':'กองกอย',
   'Krahang':'กระหัง',
   'Krasue':'กระสือ',
   'learn ':'เรียน ',
   'learned ':'เรียนแล้ว ',
-  'Lift a jar, carry it over, tip it out.':'ยกโอ่ง แบกไป แล้วเทลง',
+  'Lift, carry, tip.':'ยกโอ่ง แบกไป แล้วเทลง',
   'Listen. I\'m in that field at first light. I\'m seventy-one. I won\'t manage it.':'ฟังนะ ข้าต้องลงนาตอนฟ้าสาง ข้าเจ็ดสิบเอ็ดแล้ว ข้าทำไม่ไหวหรอก',
   'M-Meow-Meow went too high. Even Papa\'s ladder is too short.':'เ-เมี้ยวเมี้ยวขึ้นไปสูงเกิน บันไดพ่อก็ยังสั้นไป',
   'Mae Thorani':'แม่ธรณี',
@@ -1597,9 +1594,9 @@ const TH = {
   'Nobody\'s hung one that straight in years. Thank you.':'ไม่มีใครแขวนได้ตรงขนาดนี้มาหลายปีแล้ว ขอบใจนะ',
   'NOISE':'เสียง',
   'not enough merit':'บุญไม่พอ',
-  'Nothing in your basket worth sending.':'ในตะกร้าไม่มีอะไรพอส่ง',
-  'Nothing left in you. Find a merit, or find a bed.':'เจ้าหมดแรงแล้ว ไปหาบุญ ไม่ก็ไปหาที่นอน',
-  'Nothing made in your basket yet. Cook something.':'ยังไม่มีของที่ทำเองในตะกร้า ไปทำอาหารก่อน',
+  'Nothing worth sending.':'ในตะกร้าไม่มีอะไรพอส่ง',
+  'Nothing left in you. Find a bed.':'เจ้าหมดแรงแล้ว ไปหาบุญ ไม่ก็ไปหาที่นอน',
+  'The basket is empty. Cook something.':'ยังไม่มีของที่ทำเองในตะกร้า ไปทำอาหารก่อน',
   'Now the hard part. It\'s dust down there. Water before seed.':'ทีนี้ส่วนยาก ข้างล่างเป็นฝุ่น รดน้ำก่อนหว่าน',
   'Oh — for me? ':'อ้าว ให้ข้าเหรอ ',
   'Oh! A new face. A very tall new face.':'อุ๊ย หน้าใหม่ หน้าใหม่ที่สูงมากด้วย',
@@ -1607,7 +1604,7 @@ const TH = {
   'one payment, and the land is yours to work':'จ่ายครั้งเดียว แล้วที่ดินก็เป็นของเจ้า',
   'Phi Pop':'ผีปอบ',
   'Phra In':'พระอินทร์',
-  'Planks. The board at the gate takes those.':'ไม้กระดาน กระดานที่ประตูรับของพวกนี้',
+  'Planks. The board wants those.':'ไม้กระดาน กระดานที่ประตูรับของพวกนี้',
   'Prayer Beads':'ลูกประคำ',
   'PRETE':'เปรต',
   'PRETE NO MORE':'ไม่เป็นเปรตอีกแล้ว',
@@ -1617,9 +1614,8 @@ const TH = {
   'Red Check':'ผ้าขาวม้า',
   'red check':'ผ้าขาวม้า',
   'Rhythm, not strength. You\'ve plenty of the second.':'เอาจังหวะ ไม่ใช่แรง แรงเจ้ามีเหลือเฟือ',
-  'Rice is slow and wants the water kept up.':'ข้าวมันช้า และต้องมีน้ำตลอด',
-  'Rice starts as seed too. The sack is in the barn.':'ข้าวก็เริ่มจากเมล็ดเหมือนกัน กระสอบอยู่ในยุ้ง',
-  'Rice starts as seed too. There\'s a sack of it in the barn.':'ข้าวก็เริ่มจากเมล็ด มีกระสอบหนึ่งอยู่ในยุ้ง',
+  'Rice is slow. Keep the water up.':'ข้าวมันช้า และต้องมีน้ำตลอด',
+  'Rice is seed too. In the barn.':'ข้าวก็เริ่มจากเมล็ดเหมือนกัน กระสอบอยู่ในยุ้ง',
   'Rice, and what\'s left in the pot. It\'s been that kind of month.':'ข้าว กับที่เหลือในหม้อ เดือนนี้มันเป็นแบบนี้แหละ',
   'Road east is open. The stall wants stock.':'ถนนตะวันออกเปิดแล้ว ร้านเขาอยากได้ของ',
   'ruined stupa':'เจดีย์ร้าง',
@@ -1632,36 +1628,36 @@ const TH = {
   'She\'s watching you think about leaving.':'นางกำลังมองเจ้าคิดเรื่องจะไป',
   'SIMULATOR':'ซิมูเลเตอร์',
   'Sit. No — you\'d go through the floor. Stand, then.':'นั่งสิ ไม่ เดี๋ยวพื้นทะลุ ยืนก็ได้',
-  'Sleep somewhere. Not the road. They\'re superstitious here.':'ไปนอนที่ไหนสักที่ อย่านอนกลางถนน แถวนี้เขาถือ',
-  'Some of what you cut goes back in the sack. A field keeps itself.':'ที่เกี่ยวได้ส่วนหนึ่งกลับเข้ากระสอบ นามันเลี้ยงตัวมันเอง',
-  'Somebody comes for it in the night. The coins are there in the morning.':'กลางคืนมีคนมารับไป ตอนเช้าเงินจะอยู่ตรงนั้น',
-  'Somebody is standing in the water. Longer than the farm has.':'มีใครยืนอยู่ในน้ำ นานกว่าที่ไร่นี้เคยมีเสียอีก',
+
+  'Some goes back in the sack. A field keeps itself.':'ที่เกี่ยวได้ส่วนหนึ่งกลับเข้ากระสอบ นามันเลี้ยงตัวมันเอง',
+  'Somebody takes it in the night. Coins by morning.':'กลางคืนมีคนมารับไป ตอนเช้าเงินจะอยู่ตรงนั้น',
+  'Somebody is standing in the water.':'มีใครยืนอยู่ในน้ำ นานกว่าที่ไร่นี้เคยมีเสียอีก',
   'spirit house':'ศาลพระภูมิ',
   'Stand next to somebody first.':'ไปยืนข้างใครสักคนก่อน',
   'stay for the morning':'อยู่ต่อจนเช้า',
   'step ':'ขั้นที่ ',
   'Still here? Good. Mornings suit you better.':'ยังอยู่อีกเหรอ ดีแล้ว ตอนเช้าเจ้าดูดีกว่า',
-  'Stove by the shop is anyone\'s. Cook what you grow.':'เตาข้างร้านใครใช้ก็ได้ เอาที่ปลูกมาทำกิน',
+
   'Strange wind tonight. Warm, though.':'คืนนี้ลมแปลกๆ แต่ก็อุ่นดี',
   'Tai Hong':'ตายโหง',
   'Take my low leaves whenever. They fold beautifully.':'เอาใบล่างของข้าไปได้เสมอ พับสวยนะ',
   'Take your time. The road isn\'t going anywhere.':'ค่อยๆ ไป ถนนมันไม่หนีไปไหนหรอก',
-  'Takes a while. A fruit tree\'s a promise, not a crop.':'ใช้เวลาหน่อย ต้นผลไม้คือคำสัญญา ไม่ใช่พืชไร่',
+  'A fruit tree is a promise, not a crop.':'ใช้เวลาหน่อย ต้นผลไม้คือคำสัญญา ไม่ใช่พืชไร่',
   'TAP LEFT AND RIGHT   ·   LEVEL THE SCALE':'แตะซ้ายขวา   ·   ทำให้ตราชั่งเสมอ',
   'tap on the mark  ·  ':'แตะตรงเครื่องหมาย  ·  ',
   'TAP THE FLOOR TO CREEP   ·   TAP THE COIN':'แตะพื้นเพื่อย่อง   ·   แตะเหรียญ',
   'tap the ground to walk  ·  tap a thing to use it':'แตะพื้นเพื่อเดิน  ·  แตะสิ่งของเพื่อใช้',
   'TAP TO DRINK   ·   AND AGAIN':'แตะเพื่อดื่ม   ·   แล้วแตะอีก',
   'TAP TO REACH FOR THE BOWL':'แตะเพื่อเอื้อมหยิบถ้วย',
-  'That is his stove, just there. Tap it.':'เตาของเขาอยู่ตรงนั้น แตะดูสิ',
+  'His stove, just there.':'เตาของเขาอยู่ตรงนั้น แตะดูสิ',
   'That\'s a crop. Road east is yours — the village eats what you cut.':'นั่นแหละผลผลิต ถนนตะวันออกเป็นของเจ้า หมู่บ้านกินสิ่งที่เจ้าเกี่ยว',
   'That\'s the field in. Two days, that\'d have taken me.':'นาลงเสร็จแล้ว ถ้าเป็นข้าคงสองวัน',
   'the basket by your gate does':'ตะกร้าหน้าประตูบ้านเจ้ารับ',
   'the bell hums':'ระฆังก้อง',
   'the cat':'แมว',
   'THE GATE':'ประตู',
-  'The house is finished. It\'s a better house than the one you had.':'บ้านเสร็จแล้ว ดีกว่าหลังที่เจ้าเคยมี',
-  'The jar\'s never empty. It\'s the walk that costs you.':'โอ่งไม่เคยแห้ง ที่เปลืองคือระยะทางต่างหาก',
+  'The house is finished. Better than the one you had.':'บ้านเสร็จแล้ว ดีกว่าหลังที่เจ้าเคยมี',
+  'The jar never empties. The walk costs you.':'โอ่งไม่เคยแห้ง ที่เปลืองคือระยะทางต่างหาก',
   'The junction box is too high for a ladder. Not for you.':'กล่องไฟสูงเกินบันได แต่ไม่เกินเจ้า',
   'The lamp dies. People hurry through this stretch.':'ไฟดับ คนเลยรีบเดินผ่านช่วงนี้',
   'The lamp hums awake. Behind you, somebody stops hurrying.':'ไฟติดขึ้นมาเบาๆ ข้างหลังเจ้า มีคนหยุดรีบ',
@@ -1670,24 +1666,24 @@ const TH = {
   'the paddy is spoken for. the rest of it\'s not.':'นาข้าวมีเจ้าของแล้ว ที่เหลือยังไม่มี',
   'the rag you woke in':'ผ้าที่เจ้าตื่นมาพร้อมกับมัน',
   'THE SCALE':'ตราชั่ง',
-  'The seed sack is in the barn, or three for nine baht at the stall.':'กระสอบเมล็ดอยู่ในยุ้ง หรือสามเมล็ดเก้าบาทที่ร้าน',
+  'Seed is in the barn. Or buy some at the stall.':'กระสอบเมล็ดอยู่ในยุ้ง หรือสามเมล็ดเก้าบาทที่ร้าน',
   'THE SHELF':'หิ้ง',
   'The village will still be there. Field first.':'หมู่บ้านไม่หนีไปไหน ลงนาก่อน',
   'The โอ่ง are by the hut. Don\'t try to carry them all. …Although.':'โอ่งอยู่ข้างกระท่อม อย่าคิดยกทีเดียวหมด …ถึงแม้ว่า',
   'Then it leans on your shin, which is as high as it can reach, and that\'s that.':'แล้วมันก็เอาตัวซบหน้าแข้งเจ้า สูงได้แค่นั้น แค่นั้นแหละ',
-  'There you are. Somebody walking on my field with no idea what it\'s for.':'นั่นไง มีคนเดินบนนาข้า โดยไม่รู้ว่ามันมีไว้ทำอะไร',
+  'There you are. Somebody on my field with no idea what it is for.':'นั่นไง มีคนเดินบนนาข้า โดยไม่รู้ว่ามันมีไว้ทำอะไร',
   'There\'s a word for what you are. Prete. Hungry ghost.':'สิ่งที่เจ้าเป็นมีคำเรียก เปรต ผีหิวโหย',
-  'There\'s nothing in the pen yet. The stall sells chickens.':'ในคอกยังไม่มีอะไร ที่ร้านขายไก่อยู่',
+  'The pen is empty. The stall sells chickens.':'ในคอกยังไม่มีอะไร ที่ร้านขายไก่อยู่',
   'These are better than my old ones.':'อันนี้ดีกว่าของเก่าข้าอีก',
   'they go back to their patch of road':'เขากลับไปยังถนนช่วงของเขา',
-  'They heard that. A prete\'s whistle is a hello with the volume stuck on.':'เขาได้ยินแล้ว เสียงหวีดของเปรตคือคำทักทายที่เร่งเสียงค้างไว้',
+  'They heard that. Everything heard that.':'เขาได้ยินแล้ว เสียงหวีดของเปรตคือคำทักทายที่เร่งเสียงค้างไว้',
   'They press something into your enormous hand: ':'เขายัดอะไรบางอย่างใส่มือยักษ์ของเจ้า: ',
   'They used to carry me out of the field like a bride. Now they use a machine.':'เมื่อก่อนเขาอุ้มข้าออกจากนาเหมือนเจ้าสาว เดี๋ยวนี้ใช้เครื่องจักร',
   'They\'ll see it. They\'ll slow down.':'เขาจะเห็น แล้วเขาจะชะลอ',
   'Things regrow. Take what you need.':'ของมันงอกใหม่ได้ เอาเท่าที่ต้องใช้',
   'Thirty years on this corner. Drunks, monks, two elephants once.':'สามสิบปีที่หัวมุมนี้ คนเมา พระ แล้วก็ช้างสองตัวครั้งหนึ่ง',
   'This is a plough. Older than me. Wait for the pull, then drive.':'นี่คือคันไถ เก่ากว่าข้าอีก รอจังหวะดึง แล้วค่อยกด',
-  'Under the house. There\'s room between the stilts.':'ใต้ถุนบ้าน มีที่ว่างระหว่างเสา',
+  'Under the house. Between the stilts.':'ใต้ถุนบ้าน มีที่ว่างระหว่างเสา',
   'unlocked: ':'ปลดล็อก: ',
   'Use my stove. It\'s lit all night anyway.':'ใช้เตาข้าเถอะ ยังไงมันก็ติดทั้งคืน',
   'wai and hold still':'ไหว้แล้วอยู่นิ่งๆ',
@@ -1706,16 +1702,16 @@ const TH = {
   'Work my field and I\'ll teach you all of it.':'ทำนาให้ข้า แล้วข้าจะสอนให้หมด',
   'Worn Garland':'พวงมาลัยเก่า',
   'You can\'t eat. Good. Then you won\'t keep any of it.':'เจ้ากินไม่ได้ ดีแล้ว งั้นเจ้าก็จะไม่เก็บไว้เอง',
-  'You could pull it apart and ruin it. Ascend for an axe.':'เจ้าจะรื้อมันจนพังก็ได้ ขึ้นไปขอขวานมาดีกว่า',
+  'You would only ruin it. Get an axe first.':'เจ้าจะรื้อมันจนพังก็ได้ ขึ้นไปขอขวานมาดีกว่า',
   'You drank what wasn\'t offered and laughed past the gate.':'เจ้าดื่มของที่ไม่มีใครยกให้ แล้วหัวเราะออกไปนอกประตู',
   'You grew what you can\'t eat and gave it away. That\'s the ledger.':'เจ้าปลูกสิ่งที่กินไม่ได้แล้วยกให้คนอื่น นั่นแหละสมุดบุญ',
   'You grew what you couldn\'t eat and gave it away. I\'ll keep the field. Go on.':'เจ้าปลูกสิ่งที่กินไม่ได้แล้วยกให้คนอื่น นาข้าดูแลเอง ไปเถอะ',
   'You handed it over. Both hands. Like a person.':'เจ้ายื่นให้ สองมือ เหมือนคน',
-  'You have had your share of that today.':'วันนี้เจ้าได้ส่วนของเจ้าไปแล้ว',
-  'You have no bran. Mill rice, or buy a sack at the stall.':'เจ้าไม่มีรำ ไปสีข้าว หรือซื้อกระสอบที่ร้าน',
-  'You have nothing for them to work yet.':'ยังไม่มีงานให้เขาทำ',
+  'That is your share for today.':'วันนี้เจ้าได้ส่วนของเจ้าไปแล้ว',
+  'No bran. Mill rice, or buy a sack.':'เจ้าไม่มีรำ ไปสีข้าว หรือซื้อกระสอบที่ร้าน',
+  'Nothing for them to work yet.':'ยังไม่มีงานให้เขาทำ',
   'You know that one. Kitchen\'s by the cart.':'เมนูนั้นเจ้าทำเป็น ครัวอยู่ข้างรถเข็น',
-  'You made something. Somebody will be glad.':'เจ้าทำอะไรขึ้นมาแล้ว จะมีคนดีใจ',
+  'Somebody will be glad of that.':'เจ้าทำอะไรขึ้นมาแล้ว จะมีคนดีใจ',
   'you need ':'ต้องมี ',
   'You reach for your name. Nothing there.':'เจ้าคว้าหาชื่อตัวเอง ไม่มีอะไรอยู่ตรงนั้น',
   'You set it in the ditch like a sack of rice. The road is a road again.':'เจ้าวางมันลงข้างทางเหมือนกระสอบข้าว ถนนกลับเป็นถนนอีกครั้ง',
@@ -1915,6 +1911,29 @@ const TH = {
   "half an hour's walk":'เดินราวครึ่งชั่วโมง',
   'the bus stop':'ป้ายรถเมล์',
   'the shop':'ร้านชำ',
+  'Something soft. No teeth, and touchy about it.':'ของนิ่มๆ ไม่ต้องเคี้ยว และอย่าพูดถึงเรื่องฟัน',
+  'New baskets. Woven properly, not market ones.':'กระด้งใหม่ สานให้ดีๆ ไม่เอาของตลาด',
+  'Something hot, from somebody who isn\'t backing off.':'ของร้อนๆ จากคนที่ไม่ถอยหนี',
+  'A lantern, to find the path back before sunrise.':'โคมสักดวง จะได้หาทางกลับก่อนฟ้าสาง',
+  'A small roadside shrine, so people know somebody was here.':'ศาลเล็กๆ ริมทาง ให้คนรู้ว่าเคยมีใครอยู่ตรงนี้',
+  'Blamed for every stomach ache in four villages. Just looks the part.':'โดนโทษทุกครั้งที่มีคนปวดท้องทั้งสี่หมู่บ้าน แค่หน้าตาดูน่ากลัวเฉยๆ',
+  'Died on this road a long time ago and stayed. Not angry. Just still here.':'ตายบนถนนสายนี้นานมาแล้ว แล้วก็อยู่ต่อ ไม่ได้โกรธใคร แค่ยังอยู่',
+  'Drove the rice truck forty years. Misses it loudly.':'ขับรถบรรทุกข้าวมาสี่สิบปี คิดถึงมันแบบเสียงดัง',
+  'Eighty-one, still climbs ladders. That\'s the problem.':'แปดสิบเอ็ดแล้วยังปีนบันได นั่นแหละปัญหา',
+  'Flies on two winnowing baskets. Came down hard. Both are kindling now.':'บินด้วยกระด้งสองใบ ตกลงมาแรง ตอนนี้เป็นฟืนทั้งคู่',
+  'Jasmine and marigold. It smells like being forgiven.':'มะลิกับดาวเรือง กลิ่นเหมือนได้รับการให้อภัย',
+  'Leaves her body in the forest each night and can\'t find it by dawn.':'ทิ้งร่างไว้ในป่าทุกคืน พอฟ้าสางก็หาไม่เจอ',
+  'Left on a fence to dry. Nobody came back for it.':'ตากไว้บนรั้ว ไม่มีใครกลับมาเอา',
+  'Not supposed to want anything. Would still like a krathong.':'ไม่ควรอยากได้อะไร แต่ก็ยังอยากได้กระทงอยู่ดี',
+  'One hundred and eight of them. You know the number now.':'หนึ่งร้อยแปดเม็ด ตอนนี้เจ้ารู้ตัวเลขนี้แล้ว',
+  'Pressed on square by square, the way people gild a Buddha.':'ปิดทีละแผ่น อย่างที่คนปิดทองพระ',
+  'Runs the stall. Knows everything, tells you most of it.':'ดูแลแผงลอย รู้ทุกเรื่อง เล่าให้ฟังเกือบหมด',
+  'Seven. Promised fried banana by three separate adults. Still waiting.':'เจ็ดขวบ ผู้ใหญ่สามคนสัญญาจะให้กล้วยทอด ยังรออยู่',
+  'Silk for a hungry ghost. Ridiculous. Wear it.':'ผ้าไหมสำหรับเปรต ตลกดี ใส่ไปเถอะ',
+  'The green of a banana grove at midnight.':'สีเขียวของดงกล้วยตอนเที่ยงคืน',
+  'Thirty years feeding this village. Never once eaten sitting down.':'เลี้ยงคนทั้งหมู่บ้านมาสามสิบปี ไม่เคยได้นั่งกินสักครั้ง',
+  'Tied and dyed by hand. Somebody counted every knot.':'มัดย้อมด้วยมือ มีคนนับปมทุกปม',
+  'Worn over one shoulder, the old way.':'พาดบ่าข้างเดียว แบบโบราณ',
 };
 function L(s){
   if(LANG!=='th') return s;
@@ -1934,7 +1953,14 @@ function setLang(l){
 }
 function toggleLang(){ setLang(LANG==='en'?'th':'en'); }
 const thaiAvailable = ()=> typeof thaiOK!=='function' || thaiOK();
-{ try{ const l=localStorage.getItem('prete-lang'); if(l==='th'||l==='en') LANG=l; }catch(e){} }
+/* The village is Thai and the game opens in Thai. A device with no Thai face
+   would draw every line as the same rectangle, so that one falls back to
+   English; and anybody who has touched the EN/TH switch keeps what they chose. */
+{ let l=null;
+  try{ l=localStorage.getItem('prete-lang'); }catch(e){}
+  if(l==='th'||l==='en') LANG=l;
+  else LANG = (typeof thaiOK==='function' && thaiOK())? 'th' : 'en';
+}
 /* ============================================================
    MORE OF THE VILLAGE — the cozy half
    ============================================================ */
@@ -4488,15 +4514,15 @@ P.coyote=0; P.buf=0; P.jumps=0; P.wailCd=0;
 
 const NPCS = [];
 function addNpc(o){ const v=makeVillager(o); v.y=groundY(v.x); v.home=v.x; NPCS.push(v); return v; }
-const MALI  = addNpc({id:'mali', x:TAMARIND_X+52, skin:'#e8bc92',skinD:'#c99a6e',shirt:'#e06a58',shirtD:'#b34a3c',legs:'#3f5878',hair:'tails',kid:1,name:'Mali',
+const MALI  = addNpc({id:'mali', x:TAMARIND_X+52, skin:'#e8bc92',skinD:'#c99a6e',shirt:'#e06a58',shirtD:'#b34a3c',legs:'#3f5878',hair:'tails',kid:1,calm:1,name:'Mali',
                       wants:'friedBanana', line:'Seven. Promised fried banana by three separate adults. Still waiting.'});
 const UNCLE = addNpc({id:'uncle',x:CART_X-26, skin:'#c9986f',skinD:'#a87c58',shirt:'#f0e8d2',shirtD:'#c4b89e',legs:'#5d4735',hair:'crop',hairC:'#8a8078',
-                      moust:1, pakama:'#b4443c', hat:'ngob', brow:0, name:'Lung Somchai',
+                      moust:1, pakama:'#b4443c', hat:'ngob', brow:0, calm:1, name:'Lung Somchai',
                       wants:'somtam', line:'Thirty years feeding this village. Never once eaten sitting down.'});
-const MONK  = addNpc({id:'monk', x:SALA_X+62, skin:'#d8a878',skinD:'#bf8f60',shirt:'#f09a42',shirtD:'#b56a28',legs:'#f09a42',hair:'bald',monk:1,name:'Luang Pi',
+const MONK  = addNpc({id:'monk', x:SALA_X+62, skin:'#d8a878',skinD:'#bf8f60',shirt:'#f09a42',shirtD:'#b56a28',legs:'#f09a42',hair:'bald',monk:1,calm:1,name:'Luang Pi',
                       wants:'krathong', line:'Not supposed to want anything. Would still like a krathong.'});
 const YAI   = addNpc({id:'yai',  x:1880, skin:'#dcae7e',skinD:'#bf8f60',shirt:'#b47ba8',shirtD:'#8a5580',legs:'#4a3550',skirt:1,skirtPat:'plaid',hair:'bun',hairC:'#c9c4be',
-                      glasses:1, earring:1, name:'Yai Pen',
+                      glasses:1, earring:1, dim:1, name:'Yai Pen',
                       wants:'garland', line:'Eighty-one, still climbs ladders. That\'s the problem.'});
 const NOK   = addNpc({id:'nok',  x:2380, skin:'#e8bc92',skinD:'#c69670',shirt:'#e8bc52',shirtD:'#b08c32',legs:'#7a3b50',skirt:1,skirtPat:'mudmee',hair:'short',
                       earring:1, name:"P'Nok",
@@ -4536,7 +4562,6 @@ const VOICE = {
           "Slow night. Slow week, if I'm honest.",
           "The boy rang at New Year. Two minutes. Very good line, though.",
           "Three chairs out the back. Nobody has needed three chairs in a while."],
-    warmExtra:["You come by more than anyone. I'm counting. I shouldn't count."],
     ask: ["I'd send the boy. The boy's thirty-one and lives in the city."] },
   monk: {
     cold:["Sit where you like. The step's cool at this hour.",
@@ -4887,7 +4912,7 @@ function stepPlayer(dt){
     for(const n of NPCS) if(Math.abs(n.x-P.x)<110){ n.mark={k:'call',t:1.6}; greeted++; }
     for(const s of SPIRITS) if(Math.abs(s.x-P.x)<130 && s.met){ s.wave=1.4; greeted++; }
     if(Math.abs(CAT.x-P.x)<110 && CAT.state==='wander'){ CAT.tx=P.x; AU.meow(); }
-    if(greeted && !GS.seen.greet){ GS.seen.greet=true; guideSay('They heard that. A prete\'s whistle is a hello with the volume stuck on.'); }
+    if(greeted && !GS.seen.greet){ GS.seen.greet=true; guideSay('They heard that. Everything heard that.'); }
   }
   if(P.wailT>0){ P.wailT-=dt; P.state='wail'; }
   else if(HT) P.state='reach';
@@ -5276,7 +5301,7 @@ function stepPen(dt){
 function penFull(){ const p=FARM.pen; return p.egg+p.degg+p.milk+p.dung; }
 function penCollect(){
   const p=FARM.pen;
-  if(!penHas()){ guideSay('There\'s nothing in the pen yet. The stall sells chickens.'); AU.blip(); return; }
+  if(!penHas()){ guideSay('The pen is empty. The stall sells chickens.'); AU.blip(); return; }
   if(!penFull()){
     guideSay(p.feed>0? 'Nothing yet. Give them an hour.' : 'They\'re hungry. Rice bran, from the stall.');
     AU.blip(); return;
@@ -5294,14 +5319,14 @@ function penCollect(){
 function penFeed(){
   const p=FARM.pen;
   if(!penHas()){ guideSay('Buy an animal first.'); AU.blip(); return; }
-  if(!bagHas('bran')){ guideSay('You have no bran. Mill rice, or buy a sack at the stall.'); AU.blip(); return; }
+  if(!bagHas('bran')){ guideSay('No bran. Mill rice, or buy a sack.'); AU.blip(); return; }
   preteAct('give', 0.9, ()=>{
     bagTake('bran',1);
     p.feed = Math.min(60, p.feed + 30);
     AU.step();
     for(let k=0;k<10;k++) part({k:'pop',x:PEN_X+rnd(-20,20),y:groundY(PEN_X)-8,vx:rnd(-14,14),vy:rnd(-24,-6),life:.6,c:'#d3b478'});
     toast(L('fed'),'#d3b478');
-    if(!GS.seen.fed){ GS.seen.fed=true; guideSay('A fed animal leaves you something. Look in the pen.',7); }
+    if(!GS.seen.fed){ GS.seen.fed=true; guideSay('Feed them, then look in the pen.',7); }
     saveGame();
   });
 }
@@ -5319,7 +5344,7 @@ function usePlot(pl){
   if(!canWork(cost)) return;
   P.face = pl.x < P.x ? -1 : 1;
   if(pl.stage===0){
-    if(!bagHas('seed')){ guideSay('No seed left. The sack is in the barn, just inside the gate.'); AU.blip(); return; }
+    if(!bagHas('seed')){ guideSay('No seed. The sack is in the barn.'); AU.blip(); return; }
     preteAct('plant', 1.05, ()=>{ spend(2);
       if(!bagTake('seed',1)) return;
       pl.stage=1; pl.t=0; pl.wet=0; pl.pop=1;
@@ -5329,7 +5354,7 @@ function usePlot(pl){
       for(let k=0;k<4;k++) part({k:'sp',x:pl.x+rnd(-4,4),y:groundY(pl.x)-6,vx:rnd(-8,8),vy:rnd(-14,-4),life:.6,c:'#c9a86a'});
       if(!GS.seen.sown){ GS.seen.sown=true;
         vignette('firstSeed');
-        guideSay('Now water it. Wet earth grows twice as fast.',7); }
+        guideSay('Water it. Wet earth is faster.',7); }
       saveGame();
     });
     return;
@@ -5371,7 +5396,7 @@ function usePaddy(pd){
   if(!canWork(3)) return;
   P.face = pd.x < P.x ? -1 : 1;
   if(pd.stage===0){
-    if(!bagHas('seed')){ guideSay('Rice starts as seed too. There\'s a sack of it in the barn.'); AU.blip(); return; }
+    if(!bagHas('seed')){ guideSay('Rice is seed too. In the barn.'); AU.blip(); return; }
     if(!waterTake(1)) return noWater();
     preteAct('plant', 1.2, ()=>{ spend(3);
       if(!bagTake('seed',1)) return;
@@ -5380,7 +5405,7 @@ function usePaddy(pd){
       for(let k=0;k<18;k++) part({k:'water',x:pd.x+rnd(-26,26),y:groundY(pd.x)-14,vx:rnd(-10,10),vy:rnd(10,40),life:.6});
       toast(L('flooded and sown'),'#8fc4e8');
       if(!GS.seen.paddy){ GS.seen.paddy=true;
-        guideSay('Rice is slow and wants the water kept up.',8); }
+        guideSay('Rice is slow. Keep the water up.',8); }
       posopCheck();
       saveGame();
     });
@@ -5948,7 +5973,7 @@ const farmActive = ()=> FARM.rented || FARM.rice;
 /* ---------- water you carry ---------- */
 const waterCap = ()=> has('can') ? 5 : 2;
 function waterFill(){
-  if(GS.water >= waterCap()){ guideSay('You are carrying all you can.'); AU.blip(); return; }
+  if(GS.water >= waterCap()){ guideSay('That is all you can carry.'); AU.blip(); return; }
   P.face = JAR_X < P.x ? -1 : 1;
   preteAct('water', 1.0, ()=>{
     GS.water = waterCap();
@@ -5956,7 +5981,7 @@ function waterFill(){
     for(let k=0;k<16;k++) part({k:'water',x:JAR_X+rnd(-5,5),y:groundY(JAR_X)-20,vx:rnd(-10,10),vy:rnd(14,44),life:.5});
     toast(L('water')+' '+GS.water+'/'+waterCap(),'#8fc4e8');
     if(!GS.seen.filled){ GS.seen.filled=true;
-      guideSay('The jar\'s never empty. It\'s the walk that costs you.',8); }
+      guideSay('The jar never empties. The walk costs you.',8); }
     posopCheck(); saveGame();
   });
 }
@@ -5965,7 +5990,7 @@ function waterTake(n){
   GS.water -= n; return true;
 }
 function noWater(){
-  guideSay('No water left. The โอ่ง is the big jar by the house.');
+  guideSay('Out of water. The โอ่ง is by the house.');
   AU.blip();
 }
 
@@ -5976,7 +6001,7 @@ function barnPrompt(){
   return (GS.bag.seed||0) > 0 ? 'the seed sack is full enough' : 'take seed from the barn';
 }
 function useBarn(){
-  if((GS.bag.seed||0) > 0){ guideSay('You have seed. Put it in the ground.'); AU.blip(); return; }
+  if((GS.bag.seed||0) > 0){ guideSay('Seed. Put it in the ground.'); AU.blip(); return; }
   P.face = BARN_X < P.x ? -1 : 1;
   preteAct('pick', 0.9, ()=>{
     bagAdd('seed', has('sickle')?3:2, true);
@@ -5984,7 +6009,7 @@ function useBarn(){
     pPop(BARN_X, groundY(BARN_X)-22, '#c9a86a');
     toast('+'+(has('sickle')?3:2)+' '+L('a handful of seed'),'#c9a86a');
     if(!GS.seen.barn){ GS.seen.barn=true;
-      guideSay('Some of what you cut goes back in the sack. A field keeps itself.',8); }
+      guideSay('Some goes back in the sack. A field keeps itself.',8); }
     posopCheck(); saveGame();
   });
 }
@@ -5998,7 +6023,7 @@ const HOUSE_STAGES = [
 const houseStage = ()=> Math.max(0, Math.min(3, Math.round(FARM.house)));
 function buildHouse(){
   const st = houseStage();
-  if(st >= 3){ guideSay('The house is finished. It\'s a better house than the one you had.'); return; }
+  if(st >= 3){ guideSay('The house is finished. Better than the one you had.'); return; }
   const s = HOUSE_STAGES[st];
   if(!bagHas('wood', s.wood)){ toast(L('you need')+' '+s.wood+' '+L('planks'),'#a8392c'); AU.blip(); return; }
   if((GS.baht|0) < s.cost) return tooPoor(s.cost);
@@ -6080,7 +6105,7 @@ function posopSay(t, d=7){ POSOP.bub=L(t); POSOP.bubT=d; POSOP.bubMax=d; AU.blip
 function talkPosop(){
   if(!POSOP.met){
     POSOP.met=true; GS.rice0=0; saveGame();
-    say([{e:'calm', w:'Mae Posop',t:'There you are. Somebody walking on my field with no idea what it\'s for.'},
+    say([{e:'calm', w:'Mae Posop',t:'There you are. Somebody on my field with no idea what it is for.'},
          {e:'cross', w:'Mae Posop',t:'I\'m Mae Posop. Rice is mine, and this paddy has stood empty two years.'},
          {e:'warm', w:'Mae Posop',t:'You can\'t eat. Good. Then you won\'t keep any of it.'},
          {e:'warm', w:'Mae Posop',t:'Work my field and I\'ll teach you all of it.'}],
@@ -6122,7 +6147,7 @@ function stepPosop(dt){
   POSOP.face = P.x < POSOP.x ? -1 : 1;
   if(!POSOP.met && Math.abs(P.x-POSOP.x)<190 && !DLG && !VIG && GS.state==='play'){
     if(!GS.seen.posopSpotted){ GS.seen.posopSpotted=true;
-      guideSay('Somebody is standing in the water. Longer than the farm has.',8); }
+      guideSay('Somebody is standing in the water.',8); }
   }
   if(Math.random() < dt*2.2){
     part({k:'sp', x:POSOP.x+rnd(-16,16), y:POSOP.y+rnd(-18,10),
@@ -6540,7 +6565,7 @@ function bugPrompt(b){
 }
 function useBug(b){
   if(!has('net')){
-    guideSay('Bare hands? Ascend for a net — TOOLS, in your ledger.',8);
+    guideSay('Bare hands? You want the net.',8);
     AU.blip(); return;
   }
   startTask('bug', b.x, b);
@@ -6559,7 +6584,7 @@ function bugCaught(b){
   else if(BUG_IDS.every(k=>GS.seen['bug_'+k]) && !GS.seen.allBugs){
     GS.seen.allBugs=true; addMerit(6);
     toast(L('+6 merit')+' · '+L('every one of them'), PAL.goldL);
-    guideSay('All six. You paid attention to something that pays you nothing. Good.',8);
+    guideSay('All six. Nobody asked you to. Good.',8);
   }
   saveGame();
 }
@@ -6744,7 +6769,7 @@ function chopDone(t){
   toast('+'+n+' '+L('planks'), '#cfa878');
   AU.fix();
   GS.state='play'; HT=null;
-  if(GS.q.chopped===1) guideSay('Planks. The board at the gate takes those.',8);
+  if(GS.q.chopped===1) guideSay('Planks. The board wants those.',8);
   saveGame();
 }
 /* the net and the axe, drawn in the world, held by the big pale hand */
@@ -6872,7 +6897,7 @@ function checkNewFixed(set, taken){
     set(LOG_X+22, groundY(LOG_X)-30,
         has('axe')? 'chop some planks' : 'you would need an axe',
         ()=>{ if(has('axe')) startTask('chop', LOG_X);
-              else { guideSay('You could pull it apart and ruin it. Ascend for an axe.',8); AU.blip(); } });
+              else { guideSay('You would only ruin it. Get an axe first.',8); AU.blip(); } });
   if(!taken() && farmActive() && near(POSOP.x,20))
     set(POSOP.x, POSOP.y-42, POSOP.met? L('talk to')+' '+L('Mae Posop') : 'speak to her', talkPosop, 'give', '@posop');
 }
@@ -7141,7 +7166,7 @@ function openBoard(){
             hole.crop=k; hole.grow=0; hole.fruit=0; hole.pop=1;
             AU.ranat(560,0,0.05); toast(L('planted'),PAL.jadeL);
             if(!GS.seen.sapling){ GS.seen.sapling=true;
-              guideSay('Takes a while. A fruit tree\'s a promise, not a crop.',8); }
+              guideSay('A fruit tree is a promise, not a crop.',8); }
             saveGame(); } });
       }
       for(const k in STOCK_COST){
@@ -7153,7 +7178,7 @@ function openBoard(){
             FARM.pen[k]++; FARM.pen.feed=Math.max(FARM.pen.feed,20);
             AU.ranat(760,0,0.05); toast(L('welcome to the pen'),PAL.jadeL);
             if(!GS.seen.stock){ GS.seen.stock=true;
-              guideSay('Keep bran in the trough and they\'ll leave you something.',8); }
+              guideSay('Bran in the trough. They pay you back.',8); }
             saveGame(); } });
       }
       /* your hands are listed here too, so a ghost standing on a bed is never
@@ -7292,7 +7317,7 @@ function handOf(sid){ return FARM.hands[sid]||null; }
 function handCount(){ return Object.keys(FARM.hands).length; }
 function jobTaken(j){ for(const k in FARM.hands) if(FARM.hands[k]===j) return k; return null; }
 function hireHand(s, job){
-  if(!FARM.rented){ guideSay('You have nothing for them to work yet.'); return; }
+  if(!FARM.rented){ guideSay('Nothing for them to work yet.'); return; }
   const other=jobTaken(job);
   if(other && other!==s.id) delete FARM.hands[other];
   FARM.hands[s.id]=job;
@@ -7300,7 +7325,7 @@ function hireHand(s, job){
   AU.metta(); pSpark(s.x,s.y-30,12,PAL.goldL);
   toast(L(s.name)+' '+L('comes to the farm'), PAL.jadeL);
   if(!GS.seen.hand){ GS.seen.hand=true;
-    guideSay('Dead hands are still hands. They\'ll keep at it whether you watch or not.',8); }
+    guideSay('Dead hands are still hands. They keep at it.',8); }
   saveGame();
 }
 function dismissHand(s){
@@ -7918,7 +7943,7 @@ function finishActivity(){
   const word = q>0.85? 'perfect' : q>0.55? 'good' : 'edible';
   toast(L(r.n)+' · '+L(word), q>0.85?PAL.goldL:PAL.gold, r.out);
   if(A.first) toast('+3', PAL.gold, 'merit');
-  if(A.first) guideSay('You made something. Somebody will be glad.');
+  if(A.first) guideSay('Somebody will be glad of that.');
 }
 
 /* ============================================================
@@ -7937,7 +7962,7 @@ function gather(nd){
 let GIVE=null;
 function openGive(target){
   const list=Object.keys(GS.bag).filter(id=>ITEMS[id] && (ITEMS[id].k==='dish'||ITEMS[id].k==='craft') && GS.bag[id]>0);
-  if(!list.length){ guideSay('Nothing made in your basket yet. Cook something.'); return; }
+  if(!list.length){ guideSay('The basket is empty. Cook something.'); return; }
   GIVE={target, list, i:0};
   AU.sel(); if(typeof wipeTo==='function') wipeTo(()=>{ GS.state='give'; },'page'); else GS.state='give';
 }
@@ -8163,6 +8188,7 @@ function drawLanternString(g){
    RENDER
    ============================================================ */
 function render(){
+  guardState();
   ctx.setTransform(SC,0,0,SC,0,0);
   ctx.imageSmoothingEnabled=false;
   if(GS.state==='title'){ drawTitle(); return; }
@@ -8922,7 +8948,7 @@ function checkInteract(){
     set(FARM_GATE, groundY(FARM_GATE)-56, FARM.rented? 'read the farm board' : 'read the notice', openBoard);
   if(FARM.rented && near(PEN_X,30)){
     const p=FARM.pen;
-    if(!penHas()) set(PEN_X, groundY(PEN_X)-38, 'the pen is empty', ()=>guideSay('The board at the gate sells chickens, ducks, and one very large buffalo.'));
+    if(!penHas()) set(PEN_X, groundY(PEN_X)-38, 'the pen is empty', ()=>guideSay('The board at the gate sells livestock.'));
     else if(penFull()) set(PEN_X, groundY(PEN_X)-40, 'take what they left you', penCollect, 'feed');
     else set(PEN_X, groundY(PEN_X)-38, p.feed>0? 'the animals are settled' : 'the animals want feeding', penFeed);
   }
@@ -8931,14 +8957,14 @@ function checkInteract(){
     if(pl && near(pl.x,15)){
       const t=plotPrompt(pl);
       if(t==='the bed is empty')
-        set(pl.x, groundY(pl.x)-30, t, ()=>guideSay('The seed sack is in the barn, or three for nine baht at the stall.'));
+        set(pl.x, groundY(pl.x)-30, t, ()=>guideSay('Seed is in the barn. Or buy some at the stall.'));
       else set(pl.x, groundY(pl.x)-30, t, ()=>usePlot(pl));
     }
   }
   if(true){
     const pd=paddyAt(P.x);
     if(pd) set(pd.x, groundY(pd.x)-28, paddyPrompt(pd), ()=>{
-      if(pd.stage===0 && !bagHas('seed')) guideSay('Rice starts as seed too. The sack is in the barn.');
+      if(pd.stage===0 && !bagHas('seed')) guideSay('Rice is seed too. In the barn.');
       else usePaddy(pd);
     });
   }
@@ -9165,7 +9191,7 @@ function talkUncle(){
          {e:'warm', w:'Lung Somchai',t:"Grandmother's rule: feed the ones you can't see. Extra bowl's on the end."},
          {e:'happy',w:'Lung Somchai',t:"Use my stove. It's lit all night anyway."}],
       ()=>{ if(!offering) offering={x:CART_X+40,y:groundY(CART_X+40),t:0};
-        guideSay('That is his stove, just there. Tap it.'); });
+        guideSay('His stove, just there.'); });
   } else talkVillager(UNCLE);
 }
 
@@ -10660,7 +10686,7 @@ function drawGive(g){
   });
   if(has('eye') && t.wants && !GS.friends[t.id]){
     cloud(g,W/2-100,154,200,22,{seed:99,top:'#eef7e6',body:'#dcecd0',under:'#c2d6b4',edge:'#96ab88'});
-    pTxt(g,'Inner Eye — hoping for '+ITEMS[t.wants].n, W/2, 169,'#3a4a30',6,'center');
+    pTxt(g,L('Inner Eye — hoping for ')+L(ITEMS[t.wants].n), W/2, 169,'#3a4a30',6,'center');
     drawIcon(g,t.wants,W/2+86,165,0.5);
   }
   pTxt(g,'tap to pick, tap again to give', W/2, H-22,'#e8e0d0',6,'center');
@@ -10739,7 +10765,9 @@ function drawLedger(g){
       } else { pCirc(g,x+18,y+19,10,owned?PAL.gold:'#a89e8c'); pCirc(g,x+18,y+19,6,'#fffdf2');
         cosBadge(g,c.slot,x+18,y+19,owned?'#8f6a1e':'#6a6478'); }
       pTxt(g,c.n,x+33,y+15,owned?CL.ink:CL.ink3,7);
-      pTxt(g,owned?(worn?'worn':'wear'):(c.cost+' '+L('merit')),x+33,y+33,owned?(worn?'#3f6a2c':CL.ink2):'#8f6a1e',6);
+      /* Thai drops a tail below the baseline; at y+33 in a 38-tall card the
+         tail of บุญ hung over the edge */
+      pTxt(g,owned?(worn?'worn':'wear'):(c.cost+' '+L('merit')),x+33,y+30,owned?(worn?'#3f6a2c':CL.ink2):'#8f6a1e',6);
       hitAdd(x,y,104,38,()=>{ const same=TREE.row===i;
         TREE.row=i; if(same) PRESS.act=true; else AU.blip(); });
     });
@@ -11750,7 +11778,7 @@ function stepPlayer(dt){
     for(const s of SPIRITS) if(Math.abs(s.x-P.x)<130 && s.met){ s.wave=1.4; greeted++; }
     if(Math.abs(CAT.x-P.x)<110 && CAT.state==='wander'){ CAT.tx=P.x; AU.meow(); }
     if(typeof scatterBirds==='function') scatterBirds(P.x, 150);
-    if(greeted && !GS.seen.greet){ GS.seen.greet=true; guideSay('They heard that. A prete\'s whistle is a hello with the volume stuck on.'); }
+    if(greeted && !GS.seen.greet){ GS.seen.greet=true; guideSay('They heard that. Everything heard that.'); }
   }
   if(P.wailT>0){ P.wailT-=dt; P.state='wail'; }
   else if(HT) P.state='reach';
@@ -12487,13 +12515,12 @@ const STORY = [
       for(let i=0;i<14;i++) part({k:'dust',x:GRAVE_X+rnd(-16,16),y:groundY(GRAVE_X)-rnd(0,8),
                                   vx:rnd(-46,46),vy:-rnd(20,90),life:rnd(0.4,0.9)});
       scatterBirds(GRAVE_X, 220);
-      const lines=[ 'Something is pulling. It takes you a moment to work out that it\'s you.',
-                    'A hand comes up through the soil. Then you realise it is yours.',
-                    'The earth doesn\'t want to let go. The earth is outvoted.',
-                    'Somebody buried this. Somebody said words over it.',
-                    'Your shoulders come free. You\'re much, much taller than you remember being.',
-                    'One more.' ];
-      if(CH.dug<=lines.length) chCard(lines[CH.dug-1], 2.8);
+      /* Six cards in the first half minute of a game is a wall of reading
+         before anybody has touched anything. Two, spaced out, and the rest
+         of it is in the animation. */
+      const cards={ 1:'Something is pulling. It takes a moment to work out that it is you.',
+                    4:'The earth doesn\'t want to let go. The earth is outvoted.' };
+      if(cards[CH.dug]) chCard(cards[CH.dug], 2.6);
     }
   },
   ui(g){
@@ -12552,7 +12579,7 @@ const STORY = [
   enter(){
     LUNG.x=STALL2_X+16; LUNG.y=groundY(LUNG.x); LUNG.face=-1; LUNG.state='idle'; LUNG.home=LUNG.x;
     CH.walk=false;
-    guideSay('East. Somebody down there is still up.', 7);
+    guideSay('East. One light still on.', 7);
   },
   step(dt){
     onceAt('smell', STALL2_X+150, 150, ()=>chCard('Star anise. Charcoal. Somebody\'s stock has been on since four in the afternoon.', 3.4));
@@ -12603,11 +12630,10 @@ const STORY = [
         {e:'warm', w:'Lung Somchai', t:'Ah. Like that, is it. Well — the smell\'s half of it anyway.'},
         {e:'tired', w:'Lung Somchai', t:'Listen. I\'m in that field at first light. I\'m seventy-one. I won\'t manage it.'},
         {e:'happy', w:'Lung Somchai', t:'You\'re big and you\'re not busy. Come hold the other end.'},
-          {e:'warm', w:'Lung Somchai', t:'Sleep somewhere. Not the road. They\'re superstitious here.'},
       ], ()=>{
         addMerit(4); toast('+4 '+L('merit')+' · '+L('he was not afraid of you'));
         LUNG.face=1; lungSay('Night, tall one.',3);
-        guideSay('Under the house. There\'s room between the stilts.',8);
+        guideSay('Under the house. Between the stilts.',8);
         chNext();
       });
     }
@@ -12640,7 +12666,7 @@ const STORY = [
   enter(){
     LUNG.x=HOME_X-26; LUNG.y=groundY(LUNG.x); LUNG.face=-1; LUNG.state='idle'; CH.walk=false;
     CH.gave=0;
-    guideSay('He\'s up, and he\'s holding something.',7);
+    guideSay('He is up, holding something.',7);
   },
   step(dt){
     stepLung(dt);
@@ -12687,7 +12713,7 @@ const STORY = [
 /* ---------- 7 · the jars ---------- */
 { id:'water',
   enter(){ chCard('Water the beds from the โอ่ง', 3.2);
-           guideSay('Lift a jar, carry it over, tip it out.',8); },
+           guideSay('Lift, carry, tip.',8); },
   step(dt){
     stepLung(dt);
     if(wateredCount()>=PLOTS.length && !DLG && !CH.said.done){
@@ -12729,8 +12755,7 @@ const STORY = [
       say([
         {e:'happy', w:'Lung Somchai', t:'That\'s the field in. Two days, that\'d have taken me.'},
         {e:'fond', w:'Lung Somchai', t:'Here. Forty baht. Take it — a man who works gets paid.'},
-        {e:'warm', w:'Lung Somchai', t:'Come back when it\'s up. Go and see the village, they\'re awake.'},
-        {e:'calm', w:'Lung Somchai', t:'Stove by the shop is anyone\'s. Cook what you grow.'},
+        {e:'warm', w:'Lung Somchai', t:'Come back when it\'s up. The stove by the shop is anyone\'s.'},
       ], ()=>{
         FARM.rented=true; FARM.rice=true; FARM.paddies=Math.max(1,FARM.paddies);
         FARM.beds=Math.max(FARM.beds, PLOTS.length);
@@ -14636,7 +14661,7 @@ function canWork(n){
   if(GS.en===undefined) GS.en=enMax();
   if(GS.en >= n) return true;
   GS.enFlash=1.2; AU.blip();
-  guideSay('Nothing left in you. Find a merit, or find a bed.', 5);
+  guideSay('Nothing left in you. Find a bed.', 5);
   return false;
 }
 function feed(n){          // merit is what a hungry ghost runs on
@@ -14777,7 +14802,7 @@ function shipPut(id,n){
 function shippable(){ return Object.keys(GS.bag).filter(id=>GS.bag[id]>0 && canSell(id)); }
 function tipTheBasket(){
   const list=shippable();
-  if(!list.length){ guideSay('Nothing in your basket worth sending.',5); AU.blip(); return; }
+  if(!list.length){ guideSay('Nothing worth sending.',5); AU.blip(); return; }
   P.face = SHIP_X<P.x? -1:1;
   preteAct('give', 0.9, ()=>{
     let n=0,v=0;
@@ -14785,7 +14810,7 @@ function tipTheBasket(){
     AU.ranat(700,0,0.05); AU.ranat(930,0.09,0.04);
     floatUp('+'+n+' '+L('in the basket'), '#c9a86a', SHIP_X, groundY(SHIP_X)-30);
     if(!GS.seen.shipped){ GS.seen.shipped=true;
-      guideSay('Somebody comes for it in the night. The coins are there in the morning.',7); }
+      guideSay('Somebody takes it in the night. Coins by morning.',7); }
     saveGame();
   });
 }
@@ -14905,7 +14930,7 @@ function paddyPrompt(pd){
 
 /* ---------- the incense at the spirit house: a rest stop ---------- */
 function burnIncense(){
-  if(GS.incense){ guideSay('You have had your share of that today.',5); AU.blip(); return; }
+  if(GS.incense){ guideSay('That is your share for today.',5); AU.blip(); return; }
   GS.incense=1;
   preteAct('wai', 1.4, ()=>{
     feed(30); AU.chant();
@@ -14934,16 +14959,24 @@ function stepDay(dt){
 }
 /* the clock, the day and the bar, in the corner where the purse was */
 function drawDayHUD(g){
-  const bx=W-92, by=6;
-  cloud(g,bx,by,86,32,{seed:412});
-  pTxt(g,L('day')+' '+DAY.n, bx+8, by+12, CL.ink2, 6);
-  pTxt(g, clockText(), bx+78, by+13, DAY.min>22*60? '#a8392c' : CL.ink, 8, 'right');
+  /* This was a fixed eighty-six pixels with the day at the left edge and the
+     clock at the right, which is the right size for "day 6" and "11:05am" and
+     the wrong size for "วันที่ ๖" and "11:05น." — in Thai the two printed on
+     top of each other. It takes the width it needs now and keeps its right
+     edge where it always was. */
+  const dtxt=L('day')+' '+DAY.n, ctxt=clockText();
+  const w = clamp(24 + txtW(dtxt,6) + txtW(ctxt,8), 86, 156);
+  const bx = W-6-w, by=6;
+  cloud(g,bx,by,w,32,{seed:412});
+  pTxt(g, dtxt, bx+8, by+12, CL.ink2, 6);
+  pTxt(g, ctxt, bx+w-8, by+13, DAY.min>22*60? '#a8392c' : CL.ink, 8, 'right');
   // energy
+  const bw=w-16;
   const e=clamp((GS.en===undefined?enMax():GS.en)/enMax(),0,1);
-  pR(g,bx+8,by+18,70,7,'#c2ab84'); pR(g,bx+8,by+18,70,1,'#a8906a');
+  pR(g,bx+8,by+18,bw,7,'#c2ab84'); pR(g,bx+8,by+18,bw,1,'#a8906a');
   const col = e>0.5? '#6fae5c' : e>0.22? '#e8b13c' : '#c0392f';
-  pR(g,bx+8,by+18,70*e,7, (GS.enFlash>0 && Math.sin(GS.t*30)>0)? '#fff0b0' : col);
-  pR(g,bx+8,by+18,70*e,1,'#fffdf6');
+  pR(g,bx+8,by+18,bw*e,7, (GS.enFlash>0 && Math.sin(GS.t*30)>0)? '#fff0b0' : col);
+  pR(g,bx+8,by+18,bw*e,1,'#fffdf6');
 }
 function drawDay(g){
   if(DAY.card) drawDayCard(g);
@@ -16465,15 +16498,34 @@ const HIDES = [
 function inHide(x){ for(const h of HIDES) if(x>h[0] && x<h[1]) return h; return null; }
 function sneakSpeed(){ return SNEAK.on? 0.42 : 1; }
 
+/* ---------- who is actually frightened of you ----------
+   Everybody in this village used to fill the same little eye at the same
+   rate, which turned the road into a stealth level and the people on it into
+   guards. They are not guards. They are six people, and most of them know
+   you.
+
+   Luang Pi has sat up all night with worse than you and said so. Mali is
+   seven, and to a seven-year-old you are simply a tall person who will play.
+   Lung Somchai carried your dinner out to the step the first night you were
+   above ground. And anybody you have actually made friends with stopped
+   wondering what you were some while ago. */
+function calmAbout(n){
+  if(n.calm) return true;
+  if(typeof GS!=='undefined' && GS.friends && GS.friends[n.id]) return true;
+  if(typeof heartsOf==='function' && heartsOf(n.id)>=2) return true;
+  return false;
+}
+/* and Yai Pen is eighty-one; those glasses are for reading */
+function sightOf(n){ return n.dim? 36 : 92; }
 /* who can see you, and how well */
 function watchers(){
   const out=[];
   if(typeof NPCS==='undefined') return out;
   for(const n of NPCS){
     const d=n.x-P.x, ad=Math.abs(d);
-    if(ad>96) continue;
+    if(ad>sightOf(n)) continue;
     const infront = (n.face>0) === (d<0);          // are you on the side they face
-    out.push({n, d, ad, infront});
+    out.push({n, d, ad, infront, calm:calmAbout(n)});
   }
   return out;
 }
@@ -16490,14 +16542,23 @@ function stepSneak(dt){
   for(const w of watchers()){
     const n=w.n;
     n.see = n.see||0;
+    if(w.calm){
+      /* nothing fills. The first time you come near them each day they look
+         up, and go back to what they were doing. */
+      n.see = Math.max(0, n.see - dt*1.8);
+      if(w.ad<62 && n.calmDay!==DAY.n){ n.calmDay=DAY.n; n.calmShow=2.2; }
+      if(n.calmShow>0) n.calmShow-=dt;
+      continue;
+    }
     const lit = 1 - 0.45*(typeof TOD!=='undefined'? clamp(1-TOD.v,0,1)*0.8 : 0);
-    const rate = (SNEAK.on? 0.10 : 0.85) * (hid? 0.05 : 1) * (w.infront? 1 : 0.25)
-               * clamp(1-(w.ad-28)/70, 0.1, 1) * lit;
-    if(w.ad<92 && !n.met2) n.see = clamp(n.see + rate*dt, 0, 1);
-    else n.see = Math.max(0, n.see - dt*0.7);
+    const rate = (SNEAK.on? 0.09 : 0.62) * (hid? 0.05 : 1) * (w.infront? 1 : 0.22)
+               * clamp(1-(w.ad-26)/66, 0.1, 1) * lit;
+    n.see = clamp(n.see + rate*dt, 0, 1);
     if(n.see>worstV){ worstV=n.see; worst=n; }
   }
-  for(const n of NPCS) if(Math.abs(n.x-P.x)>=96) n.see=Math.max(0,(n.see||0)-dt*0.9);
+  for(const n of NPCS){
+    if(Math.abs(n.x-P.x)>=sightOf(n)){ n.see=Math.max(0,(n.see||0)-dt*1.1); n.calmShow=0; }
+  }
   SNEAK.heat = worstV; SNEAK.seenBy = worst;
   if(worst && worstV>=1 && !worst.spooked){
     worst.spooked=3.2; worst.react={k:'back',t:2.2,dur:2.2}; worst.face = P.x<worst.x? -1:1;
@@ -16519,14 +16580,40 @@ function stepSneak(dt){
   } else if(!worst) SNEAK.quiet=0;
   if(SNEAK.praise>0) SNEAK.praise-=dt;
 }
-/* ---------- what it looks like ---------- */
+/* ---------- what it looks like ----------
+   Inner Eye hangs a thought bubble over anybody with a wish, and it takes
+   the twenty pixels from y-66 to y-46. These marks sat at y-46 and were
+   half under it, so they move up out of the way when there is one. */
+function markUp(n){
+  const wishing = typeof has==='function' && has('eye') && n.wants
+               && !(typeof GS!=='undefined' && GS.friends && GS.friends[n.id]);
+  return wishing? 78 : 50;
+}
 function drawSneakUI(g){
   if(GS.state!=='play') return;
-  /* a small eye over anybody who is starting to notice you */
+  /* a shut eye over the ones who are not going to mind, so you learn who
+     you can walk straight past. It shows once a day and then leaves you alone. */
   for(const w of watchers()){
+    if(!w.calm) continue;
+    const n=w.n, a=clamp(n.calmShow||0,0,1);
+    if(a<=0.02) continue;
+    const x=n.x-GS.camX, y=n.y-GS.camY-markUp(n);
+    if(x<-20||x>W+20) continue;
+    g.globalAlpha=a;
+    pEll(g,x,y,7,4.4,'rgba(20,16,30,0.45)');
+    pEll(g,x,y,5.6,3.2,'#f4ecd6');
+    /* a closed lid and two lashes: this one is not looking for you */
+    pR(g,R(x-3),R(y),7,1,'#54452f');
+    pR(g,R(x-3),R(y+1),2,1,'#54452f'); pR(g,R(x+2),R(y+1),2,1,'#54452f');
+    if(typeof GS!=='undefined' && GS.friends && GS.friends[n.id]) icoHeart(g,x+7,y-3,0.5,'#c05a78');
+    g.globalAlpha=1;
+  }
+  /* and a small eye over anybody who is starting to notice you */
+  for(const w of watchers()){
+    if(w.calm) continue;
     const n=w.n, v=n.see||0;
     if(v<=0.02) continue;
-    const x=n.x-GS.camX, y=n.y-GS.camY-46;
+    const x=n.x-GS.camX, y=n.y-GS.camY-markUp(n);
     if(x<-20||x>W+20) continue;
     const c = v>=1? '#e05a48' : v>0.6? '#f2c14e' : '#cfc4ae';
     g.globalAlpha=clamp(v*1.4,0,1);
@@ -17485,6 +17572,10 @@ function drawTitle(){
     g.fillStyle=`rgba(255,240,190,${0.5*bl})`; g.fillRect(R(fx),R(fy),1,1);
   }
 
+  /* The cover and the banner for the store page are this same picture with
+     the type set at their own size, so they can ask for the plate without
+     the lettering on it rather than being painted by hand somewhere else. */
+  if(TT.plate) return;
   /* the lettering, out over the water where there is nothing behind it */
   /* all of it above the far bund, so no line of it ever has to be read off a
      field of rice */
@@ -17507,7 +17598,26 @@ function drawTitle(){
 /* ============================================================
    UPDATE
    ============================================================ */
+/* ---------- the seatbelt ----------
+   Every screen in this game is a state plus the object behind it, and each
+   one is supposed to clear both together. If they ever come apart — a state
+   left set with its object gone — the draw for it reads a field off null,
+   throws every frame, and the canvas stops for good. A black screen that
+   never comes back is the worst bug this game can have, so it costs one
+   check a frame to make it impossible. */
+function stateOK(){
+  switch(GS.state){
+    case 'give':   return !!(typeof GIVE!=='undefined' && GIVE);
+    case 'act':    return !!(typeof ACT !=='undefined' && ACT);
+    case 'shop':   return !!(typeof CNT !=='undefined' && CNT);
+    case 'ascend': return !!(typeof ASC !=='undefined' && ASC);
+    default:       return true;
+  }
+}
+function guardState(){ if(!stateOK()) GS.state='play'; }
+
 function update(dt){
+  guardState();
   GS.t+=dt;
   stepTOD(dt);
   AU.tick(dt);

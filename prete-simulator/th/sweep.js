@@ -54,8 +54,14 @@ const PAGE = 'file://'+path.resolve(__dirname,'..','index.html');
   // every panel
   await ev(()=>{
     const draw=n=>{ for(let i=0;i<n;i++){ update(1/60); render(); } };
-    for(let t=0;t<5;t++){ GS.state='tree'; TREE.tab=t; TREE.col=0; draw(4);
-      TREE.col=1; draw(2); TREE.col=2; draw(2); TREE.col=3; draw(2); }
+    /* Every row of every tab, with Inner Eye on: the wish under a villager's
+       card only appears with the eye, and it was printing in English for
+       weeks because this loop was moving TREE.col, which the ledger stopped
+       using when it became four tabs of rows. */
+    if(GS.skills) GS.skills.eye=1;
+    for(let t=1;t<=4;t++){ GS.state='tree'; TREE.tab=t;
+      for(let r=0;r<14;r++){ TREE.row=r; draw(2); }
+      TREE.row=0; }
     GS.state='play';
     openStall(); draw(4); GS.state='play'; CNT=null;
     openOrderBoard(); draw(4); GS.state='play'; CNT=null;
