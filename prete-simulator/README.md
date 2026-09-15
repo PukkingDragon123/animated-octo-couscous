@@ -1172,25 +1172,28 @@ the game actually uses, with the mark-stacking engine to go with them. At a
 small head-loop, and a loop two pixels across is a blob. Half the consonants
 came out as the same shape. So that got thrown away.
 
-What ships instead **rasterises the reader's own Thai face at the display's
-real resolution** — three or four times the game's own grid — and blits it
-straight into the backing store underneath the nearest-neighbour upscale
-everything else goes through.
+What ships instead **rasterises the reader's own Thai face onto a pixel grid
+twice as fine as the game's**, and thresholds it hard.
 
-It spent a while trying to be a pixel font and it was never going to work. The
-first attempt thresholded an anti-aliased render; the second supersampled it
-properly and turned a pixel on when the glyph covered a third of it. Both are
-the right thing to do to a 5×7 Latin face, and both are the wrong thing to do
-to a script whose letters are told apart by a head-loop two pixels across. At
-eleven pixels the loops closed up and the tone marks broke off, and it read as
-a different and much worse font than the one the device actually has.
+Thai has to be two things at once here and the two pull against each other. It
+has to stay pixel art — square pixels, hard edges, sitting next to a 5×7
+hand-drawn Latin face — and it has to be legible, which at eleven pixels it is
+not, because the head-loops that tell one Thai consonant from another close up
+and the tone marks snap off.
 
-So it does not fight it any more. The Latin is 1980 and the Thai is today, and
-side by side that reads as a game with a proper Thai localisation rather than a
-game with Thai-shaped damage in it. **Nothing about the layout moved**: every
-width is still measured in game pixels, so a panel sized for Thai is still
-sized for Thai and a line that fitted still fits. Only the number of pixels
-inside each letter went up.
+It took four goes. Thresholding an anti-aliased render broke it. Supersampling
+onto the game's own grid properly broke it slightly less. Drawing it
+anti-aliased at the display's full resolution fixed the legibility and put a
+modern UI font in the middle of a pixel game. What works is to keep the hard
+threshold and give it a finer grid to be hard on: every Thai pixel is a square
+half a game pixel across, which is four times the area to draw a head-loop in
+and not one soft edge anywhere. The mask is built once and blitted with
+smoothing off, so it sharpens with the display instead of being pinned to one
+scale.
+
+**Nothing about the layout moved** at any point: every width is still measured
+in game pixels, so a panel sized for Thai is still sized for Thai and a line
+that fitted still fits.
 
 The art for the face that did not work is kept in [`th/glyphs.py`](th/glyphs.py)
 with a note on why, in case somebody wants to try it at a bigger cell.
@@ -1222,16 +1225,36 @@ as [`th/sweep.js`](th/sweep.js); it visits the title, all ten chapters of the
 first night, every panel of
 the ledger, the stall, the order board, the kitchen, the workbench, the give
 screen, the morning card, all four memories, the ceremony and the end card, and
-drives the prete the length of the map at four different hours. It reports 430
-strings drawn and, as of this build, **nothing untranslated**.
+drives the prete the length of the map at four different hours, and talks to
+every person and every ghost in the village. It reports 591 strings drawn and,
+as of this build, **nothing untranslated and nothing still in Latin**.
 
-That number went up by forty-seven in one afternoon because the sweep had a bug
-of its own: it walked the ledger by moving `TREE.col`, which the ledger stopped
-having when it became four tabs of rows. So it had been drawing row zero of
-every tab for weeks, and nineteen strings behind row one — every villager's and
-every ghost's one-line biography, every wardrobe blurb, and the wish under
-somebody's card — had been quietly printing in English the whole time. The sweep
-walks every row of every tab now, with Inner Eye switched on.
+That number has gone up by a hundred and sixty in two days, and every one of
+them was a hole in the sweep rather than a new line of prose.
+
+First the ledger: it was walked by moving `TREE.col`, which the ledger stopped
+having when it became four tabs of rows, so it had been drawing row zero of
+every tab and nineteen strings behind row one — every villager's and every
+ghost's biography, every wardrobe blurb, every wish — were quietly printing in
+English.
+
+Then the big one. **The sweep had never opened a conversation.** It walked the
+panels and the story beats and the cutscenes and never once stood in front of a
+villager and talked to them, so the whole of `VOICE` — the way each of the six
+of them speaks to a stranger, to somebody who has fed them, and when they are
+asking for something, sixty-five lines of it — had been in English since the
+day it was written. It talks to everybody now, in all three registers, and
+because `pick()` takes one line at random out of each list it also reads the
+tables directly: three passes over a conversation prove nothing about the
+fourth line in an array of five.
+
+There are two nets under it now. The sweep hooks the *lookup*, which catches a
+string that went looking for a translation and did not find one, and the
+*drawing*, which catches a string that never went looking — a hardcoded
+`PRESS ENTER` is invisible to the first and is the whole problem for the
+second. And the test suite has its own copy that walks the dialogue tables
+without a browser, so a new line of prose with no Thai behind it fails the
+build rather than waiting to be noticed by somebody playing in Thai.
 
 Anything glued together out of fragments had to be taken apart for that to be
 true: `'DAY ' + 8` and `cost + ' merit'` and `'road, still blocked' + ' · ' +

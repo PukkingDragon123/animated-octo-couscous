@@ -1023,55 +1023,82 @@ function thaiMeasure(s,size){
   _thMeasure.font=thaiPx(size)+'px '+_thaiFace;
   return Math.ceil(_thMeasure.measureText(s).width);
 }
-/* ---------- Thai, at the screen's own resolution ----------
-   Thai used to be rasterised onto the 480x270 game grid and thresholded to
-   one bit. That is the right thing to do to Latin at 5x7 and the wrong
-   thing to do to a script whose letters are told apart by a head-loop two
-   pixels across: at eleven pixels the loops closed up, the tone marks broke
-   off, and it read as a different and much worse font than the one the
-   device actually has.
+/* ---------- Thai, on a finer pixel grid ----------
+   Thai has been through three of these. It was thresholded onto the game's
+   own 480x270 grid; then supersampled onto it properly; then drawn with the
+   anti-aliasing left on at the display's full resolution. The first two broke
+   it — at eleven pixels the head-loops that tell one Thai letter from another
+   close up and the tone marks snap off — and the third fixed the legibility
+   by making it smooth, which put a modern UI font in the middle of a pixel
+   game.
 
-   It is drawn at the display's real scale now — three or four times the
-   game grid, with the anti-aliasing left on — and blitted straight into the
-   backing store underneath the game's own nearest-neighbour upscale. The
-   layout does not move: every width is still measured in game pixels, so a
-   panel sized for Thai stays sized for Thai. Only the number of pixels
-   inside each letter goes up.  */
+   This is the answer to both. The glyph is rasterised onto a grid TWICE AS
+   FINE as the game's and thresholded hard, so every Thai pixel is a square
+   with a sharp edge, half a game pixel across. Four times the area to draw a
+   head-loop in, and not one soft edge anywhere.
+
+   The mask is built once at that resolution and blitted with smoothing off,
+   so it sharpens up with the display rather than being locked to one scale.  */
+const THAI_SUB = 2;      // Thai pixels per game pixel
+const THAI_OS  = 3;      // and how many samples per Thai pixel, for coverage
+const THAI_COV = 0.30;   // how much of one has to be covered before it is on
 function thaiSprite(s,size,col,shadow){
-  const sc = (typeof SC==='number' && SC>0)? SC : 1;
-  const key='T|'+sc.toFixed(2)+'|'+s+'|'+size+'|'+col+'|'+(shadow||'');
+  const key='T|'+s+'|'+size+'|'+col+'|'+(shadow||'');
   let c=_thai.get(key);
   if(c){ _thai.delete(key); _thai.set(key,c); return c; }
   const px=thaiPx(size);
   const w=Math.max(1,thaiMeasure(s,size));      // game pixels, as it always was
   const pad=2;                                  // slack for marks that overhang
   const base=Math.round(px*1.32)+pad;           // baseline, in game pixels
-  c=mkCv(Math.ceil((w+pad*2)*sc), Math.ceil((px*2+pad*2)*sc));
-  const g=c.getContext('2d');
-  g.textBaseline='alphabetic';
-  g.font=(px*sc)+'px '+_thaiFace;
-  if(shadow){ g.fillStyle=shadow; g.fillText(s, (pad+1)*sc, (base+1)*sc); }
-  g.fillStyle=col; g.fillText(s, pad*sc, base*sc);
-  c._base=base; c._pad=pad; c._sc=sc;
+  const SUB=THAI_SUB, OS=THAI_OS;
+  const mw=(w+pad*2)*SUB, mh=(px*2+pad*2)*SUB;  // the mask, in Thai pixels
+  /* draw it OS times oversized, then ask each Thai pixel how much of it the
+     glyph actually covers. Thresholding an anti-aliased render instead eats
+     exactly the one-sample strokes Thai cannot spare. */
+  const bw=mw*OS, bh=mh*OS;
+  const src=mkCv(bw,bh), sg=src.getContext('2d');
+  sg.font=(px*SUB*OS)+'px '+_thaiFace; sg.textBaseline='alphabetic'; sg.fillStyle='#fff';
+  sg.fillText(s, pad*SUB*OS, base*SUB*OS);
+  const d=sg.getImageData(0,0,bw,bh).data;
+  const need=THAI_COV*OS*OS;
+  const on=new Uint8Array(mw*mh);
+  for(let y=0;y<mh;y++) for(let x=0;x<mw;x++){
+    let cov=0;
+    for(let sy=0;sy<OS;sy++){
+      const row=(y*OS+sy)*bw;
+      for(let sx=0;sx<OS;sx++) if(d[(row+x*OS+sx)*4+3]>96) cov++;
+    }
+    if(cov>=need) on[y*mw+x]=1;
+  }
+  c=mkCv(mw+(shadow?SUB:0), mh+(shadow?SUB:0));
+  const g=G2(c);
+  const stamp=(cc,ox,oy)=>{ g.fillStyle=cc;
+    for(let y=0;y<mh;y++){ let run=0;
+      for(let x=0;x<=mw;x++){
+        if(x<mw && on[y*mw+x]) run++;
+        else if(run){ g.fillRect(x-run+ox, y+oy, run, 1); run=0; }
+      } } };
+  if(shadow) stamp(shadow,SUB,SUB);
+  stamp(col,0,0);
+  c._base=base; c._pad=pad; c._sub=SUB;
   _thai.set(key,c);
-  while(_thai.size>240) _thai.delete(_thai.keys().next().value);
+  while(_thai.size>260) _thai.delete(_thai.keys().next().value);
   return c;
 }
-/* Put a device-resolution sprite on the screen through whatever transform
-   the caller happens to be under, without letting that transform blow it up
-   again. x,y is the left baseline in game pixels, as everywhere else. */
+/* Put the mask on the screen through whatever transform the caller is under,
+   as hard squares. x,y is the left baseline in game pixels, as everywhere. */
 function thaiBlit(g,c,x,y){
   const t = g.getTransform? g.getTransform() : null;
-  const gw = c.width/c._sc, gh = c.height/c._sc;    // its size in game pixels
-  if(!t || t.b || t.c){                             // skewed: no clean way down
+  const gw = c.width/c._sub, gh = c.height/c._sub;   // its size in game pixels
+  if(!t || t.b || t.c){                              // skewed: no clean way down
     g.drawImage(c, R(x)-c._pad, R(y)-c._base, gw, gh);
     return;
   }
   g.save();
   g.setTransform(1,0,0,1,0,0);
-  g.imageSmoothingEnabled=true;
+  g.imageSmoothingEnabled=false;
   g.drawImage(c, Math.round(t.e + (R(x)-c._pad)*t.a), Math.round(t.f + (R(y)-c._base)*t.d),
-                 gw*t.a, gh*t.d);
+                 Math.round(gw*t.a), Math.round(gh*t.d));
   g.restore();
 }
 /* x,y is the LEFT BASELINE, as it always was */
@@ -1936,6 +1963,66 @@ const TH = {
   'tap to carry on':'แตะเพื่อเล่นต่อ',
   'tap to take a morning stroll':'แตะไปเดินเล่นยามเช้า',
   'start a new night':'เริ่มคืนใหม่',
+  'Anything you need, tall one, I know who\'s got it.':'อยากได้อะไรบอกพี่ ยัยตัวสูง พี่รู้ว่าใครมี',
+  'Ask my son, it takes a week. Ask you, it\'s done tonight.':'วานลูกชาย รอเป็นอาทิตย์ วานเจ้า เสร็จคืนนี้',
+  'Bring me anything. I\'ll find someone who wants it.':'เอาอะไรมาก็ได้ เดี๋ยวพี่หาคนที่อยากได้ให้',
+  'Come round when the pot\'s on. Bring an appetite, nothing else.':'แวะมาตอนหม้อเดือดนะ เอาแค่ความหิวมาก็พอ',
+  'Don\'t laugh. I\'ve had a difficult evening.':'อย่าหัวเราะ คืนนี้ข้าเจอมาหนักพอแล้ว',
+  'Don\'t tell me about the west road. I built the west road.':'อย่ามาเล่าเรื่องถนนฝั่งตะวันตก ลุงเป็นคนทำถนนนั้นเอง',
+  'Eighty-one. Still climb a ladder. That\'s what worries them.':'แปดสิบเอ็ด ยังปีนบันไดได้ นั่นแหละที่ทำให้เขาเป็นห่วง',
+  'Field wants water. A field always wants water.':'นาต้องการน้ำ นามันต้องการน้ำอยู่เสมอ',
+  'Forty years driving rice. Then they gave me a chair.':'ขับรถขนข้าวมาสี่สิบปี แล้ววันหนึ่งเขาก็ยื่นเก้าอี้ให้',
+  'I can hold my breath for eleven. Want to count?':'หนูกลั้นหายใจได้ตั้งสิบเอ็ด อยากนับด้วยกันไหม',
+  'I could get it myself. I\'m not going to. That\'s neighbours.':'ยายไปเอาเองก็ได้ แต่ยายจะไม่ไป นี่แหละเพื่อนบ้าน',
+  'I told everyone at school about you. Nobody believed me.':'หนูเล่าเรื่องลุงให้ทั้งโรงเรียนฟัง ไม่มีใครเชื่อสักคน',
+  'I\'d send the boy. The boy\'s thirty-one and lives in the city.':'ลุงจะใช้ลูกชายก็ได้ แต่มันสามสิบเอ็ดแล้วและอยู่ในเมือง',
+  'I\'ll fly over your house sometimes. As a courtesy.':'ข้าจะบินผ่านบ้านเจ้าบ้าง ถือเป็นมารยาท',
+  'I\'ll remember that. I\'ve a very long time.':'ข้าจะจำไว้ ข้ามีเวลาอีกยาวนาน',
+  'I\'m not allowed to ask grown-ups for things. You\'re not a grown-up.':'หนูขอของจากผู้ใหญ่ไม่ได้ แต่ลุงไม่ใช่ผู้ใหญ่นี่',
+  'I\'m not supposed to want things. Here we are.':'อาตมาไม่ควรอยากได้อะไร แต่ก็นี่แหละ',
+  'I\'m seven. Papa says seven\'s old enough to carry things. It isn\'t.':'หนูเจ็ดขวบ พ่อบอกเจ็ดขวบยกของได้แล้ว ไม่จริงเลย',
+  'Koi… koi…? Oh! You\'re dead too! Hello. Hello.':'กอย… กอย…? อ้าว เจ้าก็ตายเหมือนกัน สวัสดี สวัสดี',
+  'Meow-Meow sleeps on my feet now. Both feet.':'เหมียวเหมียวมานอนบนเท้าหนูแล้ว ทั้งสองข้างเลย',
+  'Merit isn\'t a score. People like the number going up, though.':'บุญไม่ใช่คะแนน แต่คนก็ชอบเห็นตัวเลขขึ้นอยู่ดี',
+  'Mind the chillies. They\'re drying.':'ระวังพริกด้วย กำลังตากอยู่',
+  'My knees tell the weather. Rain by Thursday.':'เข่ายายบอกอากาศได้ พฤหัสฯ ฝนมาแน่',
+  'My legs are done. My mouth\'s fine. So I\'m asking.':'ขายายไม่ไหวแล้ว แต่ปากยังดี ยายเลยขอ',
+  'My son rings on Sundays. Two minutes. Busy man.':'ลูกชายโทรมาทุกวันอาทิตย์ สองนาที คนมันงานยุ่ง',
+  'Need gossip, tall one? I hear everything.':'อยากฟังเรื่องซุบซิบไหม ยัยตัวสูง พี่ได้ยินมาหมด',
+  'Nobody\'s been afraid of you all week. You may not have noticed.':'ทั้งอาทิตย์ไม่มีใครกลัวเจ้าเลย เจ้าอาจไม่ทันสังเกต',
+  'Nobody\'s cooked for me in a hundred and forty years.':'ไม่มีใครทำกับข้าวให้ข้ากินมาร้อยสี่สิบปีแล้ว',
+  'Oh good, someone tall. Have you seen a body? Mine, specifically.':'ดีเลย มีคนตัวสูง เห็นร่างไหม ร่างของข้าน่ะ',
+  'Papa says don\'t talk to ghosts. You\'re not a ghost, you\'re you.':'พ่อบอกว่าอย่าคุยกับผี แต่ลุงไม่ใช่ผี ลุงก็คือลุง',
+  'People come to my stall just to ask about you. I let them.':'คนมาที่แผงพี่แค่เพื่อถามเรื่องเจ้า พี่ก็ปล่อยให้ถาม',
+  'Rain coming. My awning knows before I do.':'ฝนจะมาแล้ว ผ้าใบลุงรู้ก่อนลุงอีก',
+  'Sat here since six. Best seat in the village.':'นั่งตรงนี้ตั้งแต่หกโมง ที่นั่งดีที่สุดในหมู่บ้าน',
+  'Sit down. Lower. There — now we\'re nearly the same.':'นั่งลงสิ ต่ำกว่านั้นอีก นั่นแหละ ทีนี้เราเกือบเท่ากันแล้ว',
+  'Sit if you like. Nobody ever sits.':'จะนั่งก็นั่งนะ ไม่เคยมีใครนั่งเลย',
+  'Sit where you like. The step\'s cool at this hour.':'นั่งตรงไหนก็ได้ ชั่วโมงนี้บันไดเย็นดี',
+  'Slow night. Slow week, if I\'m honest.':'คืนนี้เงียบ ทั้งอาทิตย์ก็เงียบ ถ้าจะให้พูดตรงๆ',
+  'Somebody\'s been leaving rice for the cats. I won\'t stop them.':'มีใครเอาข้าวมาให้แมวทุกวัน อาตมาไม่ห้ามหรอก',
+  'Somebody\'s buying a lot of chilli. I have theories.':'มีคนซื้อพริกไปเยอะมาก พี่มีทฤษฎีอยู่',
+  'Speak up. And stop stooping, you\'ll get a back like mine.':'พูดดังๆ หน่อย แล้วอย่าก้ม เดี๋ยวหลังจะเหมือนยาย',
+  'Stall\'s open, gossip\'s free, mind the step.':'แผงเปิดแล้ว เรื่องซุบซิบแถมฟรี ระวังขั้นบันไดด้วย',
+  'Stock\'s been on since four. It\'s never ready.':'ต้มน้ำซุปมาตั้งแต่บ่ายสี่ ยังไม่เคยได้ที่สักที',
+  'Sweeping. Always sweeping. Leaves don\'t take a holiday.':'กวาดอยู่นั่นแหละ ใบไม้มันไม่เคยหยุดพัก',
+  'Take some fruit. No. Take it.':'เอาผลไม้ไปสิ ไม่เอาไม่ได้ เอาไปเถอะ',
+  'That engine\'s wrong. Not my truck. Still wrong.':'เสียงเครื่องนั่นไม่ถูก ไม่ใช่รถลุงหรอก แต่ก็ยังไม่ถูกอยู่ดี',
+  'That\'s all it ever was.':'มันก็มีแค่นั้นมาตลอด',
+  'The bell wants ringing at dusk. It doesn\'t mind by whom.':'ระฆังอยากถูกตีตอนพลบค่ำ มันไม่เกี่ยงว่าใครตี',
+  'There\'s a bowl with your name on it. No, you can\'t pay.':'มีชามหนึ่งที่เขียนชื่อเจ้าไว้ ไม่ต้องจ่าย',
+  'Thirty years on this corner. Ask anyone where the noodles are.':'อยู่หัวมุมนี้มาสามสิบปี ถามใครก็ได้ว่าร้านก๋วยเตี๋ยวอยู่ไหน',
+  'Used to be quiet here. Now it\'s quiet and there\'s a ghost.':'แถวนี้เคยเงียบ ตอนนี้ก็ยังเงียบ แต่มีผีเพิ่มมาตนหนึ่ง',
+  'You can see it, can\'t you. The thing I want.':'เจ้าเห็นใช่ไหม สิ่งที่ข้าอยากได้น่ะ',
+  'You can see me. Nobody\'s seen me in a long while.':'เจ้าเห็นข้า ไม่มีใครเห็นข้ามานานแล้ว',
+  'You keep the road busy at night. Good for business.':'เจ้าทำให้ถนนคึกคักตอนกลางคืน ดีต่อการค้า',
+  'You lifted that tree like a broom handle. Still thinking about it.':'เจ้ายกต้นไม้นั่นเหมือนยกด้ามไม้กวาด ลุงยังคิดถึงภาพนั้นอยู่',
+  'You want to know something about this village? No — everything.':'อยากรู้สักเรื่องเกี่ยวกับหมู่บ้านนี้ไหม ไม่สิ — ทุกเรื่องเลย',
+  'You\'re a good one. I\'ve been wrong before, but not often.':'เจ้าเป็นคนดี ยายเคยดูคนผิดมาก่อน แต่ไม่บ่อย',
+  'You\'re not running. Everyone runs. Have you actually looked at me?':'เจ้าไม่วิ่งหนี ใครๆ ก็วิ่งหนี เจ้ามองข้าดีๆ แล้วหรือยัง',
+  'You\'re taller than the shop. Do you duck under the wires?':'ลุงสูงกว่าร้านค้าอีก ลุงต้องก้มลอดสายไฟไหม',
+  'You\'ve been busy. The village says so, which is louder than you do.':'เจ้าขยันมาก หมู่บ้านเขาว่ากันอย่างนั้น ซึ่งดังกว่าที่เจ้าพูดเอง',
+  '. Not that I would ever ask.':' นะ แต่คงไม่ขอหรอก',
 };
 function L(s){
   if(LANG!=='th') return s;
@@ -9106,7 +9193,8 @@ function talkVillager(v){
     lines.push({w:v.name, t: pick(V.ask||['I need something, if you have a moment.'])});
     lines.push({w:v.name, t: ask});
   } else if(!warm){
-    lines.push({w:v.name, t:'What I would really like is '+L(ITEMS[v.wants].n)+'. Not that I would ever ask.'});
+    lines.push({w:v.name, t:L('What I would really like is ')+L(ITEMS[v.wants].n)
+                        +L('. Not that I would ever ask.')});
   } else {
     npcReact(v,'wai',1.6);
     lines.push({w:v.name, t: pick(V.chat||['The rice is doing what rice does.'])});

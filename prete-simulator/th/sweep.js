@@ -88,6 +88,47 @@ const PAGE = 'file://'+path.resolve(__dirname,'..','index.html');
     for(const m of MEMS){ if(typeof startMem==='function'){ startMem(m.id); draw(8); } }
     GS.state='play'; IN=null;
   });
+  /* Every conversation in the village, in every state it has.
+     This was the hole: the sweep walked the panels and the story beats and
+     never once opened a conversation, so the whole of VOICE — the way each
+     person talks to a stranger, to somebody who has fed them, and when they
+     are asking for something — sat there untranslated in plain sight. */
+  await ev(()=>{
+    const runAll=fn=>{ DLG=null; try{ fn(); }catch(e){}
+      if(DLG){ const ls=DLG.lines.slice();
+        for(const l of ls){ DLG={lines:[l],i:0,ch:9999,done:null,lt:0,hold:0,blip:0,said:0};
+          try{ render(); }catch(e){} } }
+      DLG=null; VIG=null; };
+    GS.state='play'; GS.tut=99;
+    for(const pass of [0,1,2]){
+      for(const v of NPCS){
+        GS.friends[v.id] = pass? 1 : 0;
+        if(pass===2){ GS.q.req = null; }
+        P.x=v.x-20; P.y=groundY(P.x);
+        runAll(()=>talkVillager(v));
+      }
+      for(const id of ['mali','phra','tani','monk','uncle']){
+        const f = window['talk'+id[0].toUpperCase()+id.slice(1)];
+        if(typeof f==='function') runAll(f);
+      }
+    }
+    for(const sp of SPIRITS){
+      sp.met=false; sp.friend=false; runAll(()=>talkSpirit(sp));
+      sp.met=true;  sp.friend=false; runAll(()=>talkSpirit(sp));
+      sp.friend=true;               runAll(()=>talkSpirit(sp));
+      sp.friend=false;
+    }
+    for(const v of NPCS) GS.friends[v.id]=0;
+    /* pick() takes one line out of each list at random, so walking the
+       conversations three times proves nothing about the fourth line in an
+       array of five. Read the tables themselves as well. */
+    const eat=o=>{ if(typeof o==='string'){ L(o); return; }
+      if(o && typeof o==='object') for(const k of Object.keys(o)) try{ eat(o[k]); }catch(e){} };
+    eat(VOICE);
+    for(const sp of SPIRITS) eat([sp.hi, sp.about, sp.wish, sp.thanks, sp.line, sp.name]);
+    for(const v of NPCS) eat([v.line, v.name]);
+    GS.state='play';
+  });
   // every hint the guide can say, and every tutorial step
   await ev(()=>{ for(const s of TUT){ guideSay(s.say,2); render(); } });
   // and the title screen again, this time with a farm behind it
@@ -102,14 +143,18 @@ const PAGE = 'file://'+path.resolve(__dirname,'..','index.html');
       if(/^[a-z][a-zA-Z0-9_]*$/.test(s) && s.length<4) continue;
       miss.push(s);
     }
-    /* and anything that actually reached the screen still in Latin */
-    const latin=[]; for(const s of window.__drawn){
+    /* Anything still in Latin once it has been through the dictionary. Both
+       sets: pTxt catches a hardcoded string that never asked for a
+       translation, and the lookup set catches everything the chat renderer
+       draws through its own typewriter rather than through pTxt. */
+    const all=new Set([...window.__drawn, ...window.__seen]);
+    const latin=[]; for(const s of all){
       if(!s) continue;
       const t=L(s);
       if(!/[A-Za-z]/.test(t)) continue;
       latin.push(s===t? s : (s+'  ->  '+t));
     }
-    return { total: window.__seen.size, painted: window.__drawn.size,
+    return { total: window.__seen.size, painted: all.size,
              miss: miss.sort(), latin: latin.sort() };
   });
   console.log('strings drawn:', out.total, ' untranslated:', out.miss.length);
