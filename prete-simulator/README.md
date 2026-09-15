@@ -50,8 +50,8 @@ it hadn't.
 
 **Nothing in this game fights.** There are no enemies, no health bar and no way
 to lose. There is a burial field, a road, a village, a derelict farm nobody has
-worked in years, a stove, a weaving mat, seven miles of country, and eleven
-people — five of them dead — who each quietly want one small thing.
+worked in years, a stove, a weaving mat, seven miles of country, and fourteen
+people — eight of them dead — who each quietly want one small thing.
 
 **It starts with one night and one old man.** The first twenty minutes are a
 walk home in the dark, a meal you cannot eat, a few hours under somebody's
@@ -578,6 +578,30 @@ durian, mangosteen, rambutan take eight nights to come up and then bear every
 second night for the rest of the game. A durian is worth thirty-six baht on its
 own, which is most of a bed's whole crop.
 
+**Something got into it.** From the sixth night on, things start arriving in the
+beds overnight — a **grasshopper**, a **cutworm**, or a **golden apple snail**,
+each drawn on the soil of the bed it is in, so you find it by looking at your
+field in the morning rather than by reading a message about it. A bed with
+something in it does not grow that night, and if it is still there the night
+after, the crop goes *backwards* a stage. The odds get worse the more of the
+field is already infested, which is the whole argument for dealing with it
+today.
+
+The answer is the **ถังพ่นยา** — a tank on your back and a lance, twenty-six
+merit, the one tool in the game that does not make you faster at anything. It
+holds six charges, it refills at the water jar, and the meter for it sits up in
+the corner next to the basket. Walk up to a bed with something in it, spray, and
+the mist goes over the row.
+
+Two things soften it. It never happens in the first working week, so nothing eats
+your crop before you can afford the answer to it; and the night one arrives it
+only sits there — growth for that night is worked out first — so you always get a
+morning to find it and a day to do something before it costs you anything. **And
+a cat that lives with you halves it**, because a cat sleeps in the crop and the
+things that eat crops do not care for that.
+
+![something in the chilli, and the tank on your back](screenshots/something-in-the-crop.png)
+
 **A pen.** Chickens, ducks and one very large water buffalo. Keep rice bran in
 the trough and they leave you eggs, duck eggs, buffalo milk and manure every
 little while. Stop feeding them and they simply stop — nothing on this farm can
@@ -682,11 +706,28 @@ about for a few seconds, and come back to *near enough* the twig they left,
 which is the whole charm of a bird. Whistle and you clear a hundred and fifty
 pixels of them at once. Turn a bed over and they come down for the worms.
 
-**Dogs** — three of them, and they have opinions about you at two in the morning.
-One barks, the others answer, and the rest of the road stays asleep through it.
-Hold out a hand and it will smell it for a long moment, the way a dog does when
-it is making a decision about you; then it leans on your shin, which is as high
-as it can reach, and after that it is your dog and you can scratch its ear.
+**Dogs** — three of them out on the road, and they have opinions about you at two
+in the morning. One barks, the others answer, and the rest of the road stays
+asleep through it. Hold out a hand and it will smell it for a long moment, the
+way a dog does when it is making a decision about you; then it leans on your
+shin, which is as high as it can reach, and after that it is your dog and you can
+scratch its ear.
+
+**And fourteen more, with names.** Seven cats and seven dogs live the length of
+the map — under the stall, on the temple wall, asleep in the shade of the shop,
+in the long grass behind the farm. Every one of them can be sat with **once a
+day**: he folds all the way down, they lean into it, a heart comes up, and that
+is a point of merit for a kindness that nothing in the village was going to
+notice. Three of those and the animal has decided about you.
+
+Then you can **ask one along**. It walks a little behind you the whole way down
+the road, sits when you stop, and catches up when you get too far ahead — and it
+is not only decoration. **A dog makes people less nervous of you**, so the eye
+over a villager's head fills at about half speed while it is with you; **a cat
+halves what gets into the crop** overnight. One at a time, and you can leave it
+wherever you like and ask another.
+
+![the animals](screenshots/the-animals.png)
 
 **Chickens** peck and scratch under the houses and scatter when you get close,
 and roost when it is dark. **Frogs** sit at the pond and out in the flooded
@@ -992,7 +1033,7 @@ architecture. They march the whole way and out into the far paddies.
 It used to open with the whole seven miles on it, every zone named and every pin
 already placed, which is a map somebody else drew for you. The paper is blank
 now. Zones appear when you have walked them, pins when you have been past them,
-the road is inked behind you and dotted ahead, your five ghost friends are not
+the road is inked behind you and dotted ahead, your ghost friends are not
 on it until you have met them where they stand, and the corner tells you what
 percentage of the road you have actually seen.
 
@@ -1003,25 +1044,25 @@ percentage of the road you have actually seen.
 There used to be a seven-pixel strip of blue at the foot of the farm with grass
 either side of it, which is a puddle.
 
-There are now **four terraces of flooded paddy stepping away from you** behind
-the farm — water from one bund to the next rather than three thin sheets with
-the country showing between them, rice standing in every one of them at its own
-height and its own green, long still ripples across the water, and four egrets
-out in it, which is the thing that tells you it is water at all.
+There are now **four terraces of standing rice stepping away from you** behind
+the farm — one field running into the next rather than three thin sheets with
+the country showing between them, the crop at its own height and its own green
+on every step, long slow waves going across it in the wind, and four egrets out
+in it.
 
-The water at your own feet is a cross-section of a flooded field: bright at the
-surface with the sky in it, darkening fast into silt, rice growing up out of it
-in two rows and throwing a green smear back down through it, and low earth bunds
-crossing it every hundred pixels or so — the ridges you actually walk along.
+**And there is no water lying at your feet any more.** A flooded paddy is a
+thing that happens for about three weeks of the year; the rest of the time a
+rice field is earth, and a field you are about to plant is bare turned earth
+with the harrow lines still in it. That is what is under you now: dark wet soil
+combed into rows, drying paler along the tops of the ridges, with the crop
+standing behind it. The blue is gone from the near field entirely.
 
-**And it is only in the rice fields.** It used to run under the village houses
-and across the road, which is not a paddy, it is a flood; and the hills in the
-far distance used to fill straight down to the bottom of the frame in ridge
-blue, so from anywhere without trees in front of it the middle distance read as
-a lake lying across the whole country. Behind the village there is land now — a
-hazy green plain with hedgerows and clumps of palm lying across it — and the
-standing water is exactly two paddy plots, the ground the rice spirit is
-standing on, and the far paddies past the town.
+It used to be much worse than that. Water ran under the village houses and
+across the road, which is not a paddy, it is a flood; and the hills in the far
+distance filled straight down to the bottom of the frame in ridge blue, so from
+anywhere without trees in front of it the middle distance read as a lake lying
+across the whole country. Behind the village there is land now — a hazy green
+plain with hedgerows and clumps of palm lying across it.
 
 ## Pounding som tam
 
@@ -1034,6 +1075,22 @@ cleanly and the juice comes over the rim.
 
 ![the mortar](screenshots/pounding-som-tam.png)
 
+## And the wok
+
+Neither is stir-frying. A กระทะ over a gas ring is a **rock**, not a beat: the
+pan swings left, swings right, and the moment you want is the far end of the
+swing — at a quarter and at three quarters of it, where the food is at the top of
+its arc and the toss is free. Hit it and the whole panful goes up and comes back
+down. Miss and it just slides.
+
+**And it gets quicker.** Every hit speeds the rock up by about a sixth, so the
+five tosses that make a plate of **ผัดกะเพรา** start comfortable and end as fast
+as you are. The window is drawn as two lit bands on the meter rather than one, so
+you can see that there are two chances a swing before you learn it the hard way.
+Green curry uses it too, after the boil.
+
+![the wok](screenshots/the-wok.png)
+
 ## Keeping out of sight
 
 Nine feet of grey ghost walking up a village road at two in the morning is a
@@ -1043,11 +1100,20 @@ round that now.
 **Hold down** — or pull the stick down — and he folds almost in half and moves
 at a crawl. Standing upright inside somebody's view while they are facing you
 fills a small eye over their head; when it fills, they see you, and whatever
-they were doing is over. Crouched it fills at a tenth of the rate, and in one of
-the six **hiding places** — the ditch west of the farm gate, the long grass by
-the first house, under the tamarind, the banana grove, the bus shelter, behind
-the bins on the town road — it barely fills at all. Walk a stretch past somebody
-without frightening them and it counts for something.
+they were doing is over. Crouched it fills at a tenth of the rate, and in a
+**hiding place** it barely fills at all. Walk a stretch past somebody without
+frightening them and it counts for something.
+
+There used to be six of those, hand-placed: the ditch west of the farm gate, the
+long grass by the first house, under the tamarind, the banana grove, the bus
+shelter, behind the bins on the town road. **Every palm on the map is one now** —
+fifteen of them, standing the length of the road, each with a strip of cover on
+its far side. Six places to hide is a stealth level with six answers in it;
+twenty-one is a road you can actually get down, and the thing you do is drift
+from trunk to trunk while somebody comes the other way. A word fades in over his
+head when he is properly out of sight, so you know without guessing.
+
+![out of sight behind a palm](screenshots/in-the-palms.png)
 
 ### Most of the village is not a guard
 
@@ -1090,11 +1156,22 @@ neighbour with a small problem:
 | **Phi Pop** | blamed for every stomach ache in four villages | has never possessed anybody. Wants a hot bowl of tom yum, handed over by somebody who isn't backing away while they do it |
 | **Krasue** | a floating head trailing her own glowing entrails | leaves her body in the forest each night and can never find it again. Cheerful about it. Needs a lantern |
 | **Tai Hong** | died badly on this road and simply stayed | not angry. Not anything. Just still there, waiting to be noticed. Wants a small shrine so people know somebody was here |
+| **Kuman Thong** | the golden child in the glass cabinet, who is supposed to make you rich | six years old, and has been for eighty. Lives behind the stall with a red Fanta in front of him. Wants something sweet, handed over by somebody who isn't frightened |
+| **Mae Ya Nang** | the lady who lives inside the engine, who every truck on the road has one of | rode forty years in the cab and nobody once said thank you. The garland on the mirror went brown in the first week. Wants a fresh one |
+| **Mae Nak** | the most famous ghost in the country: the wife who would not accept that her husband had gone | waiting on the step of a house at the far end of the paddies for somebody who is not coming. Everybody knows the story; nobody has told her. Wants a light left burning |
 
-![the five of them](screenshots/the-ghosts.png)
+![the eight of them](screenshots/the-ghosts.png)
+
+The three new ones are spread down the length of the map rather than gathered
+with the others — the golden child behind the village stall, the engine lady out
+at the crossroad where the trucks go past, and Mae Nak alone at the far end of
+the paddies, one arm reaching a good deal further than an arm goes for a lime
+lying on the ground.
+
+![Mae Nak at the far end of the paddies](screenshots/mae-nak.png)
 
 Plus five villagers, a monk who isn't supposed to want anything and would still
-like a leaf float, and a cat.
+like a leaf float, and — as of this version — fourteen cats and dogs.
 
 ### They are drawn like cartoons, on purpose
 
@@ -1415,7 +1492,7 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~860 KB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~910 KB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Parses and initialises in about a tenth of a second, has the whole
 road built inside half a second behind a loading screen, and holds 50–60 fps
 with a fully stocked farm on screen.
@@ -1633,6 +1710,29 @@ with a fully stocked farm on screen.
   two things ask to sit at the back rather than be left out — the water jar
   standing where the bed is, after dark — and a stable sort keeps everything
   else where it was.
+- **And then the thing you are standing on wins.** Written order is a good
+  default and a bad rule. People are checked before plants, which is right when
+  a ghost and a papaya bush are both an arm's length away — but a person is
+  noticed from forty pixels and a bush from twenty-two, so Krahang, who happens
+  to stand twenty-five pixels from a clay pit, answered for the pit from every
+  position it was possible to stand in. Distance now breaks the tie, rounded
+  into sixteen-pixel bands first, so two things at the same spot keep the
+  written order and only a real step decides anything. Flavour — a scarecrow, a
+  bell, an animal that follows you about and is therefore always underfoot —
+  goes to the back outright rather than merely last in the list, because being
+  nearest is enough to win the key now. A test walks the prete onto all
+  thirty-four plants and all fourteen people in turn and checks he gets the one
+  he is standing on.
+- **Adding a ninth ghost must not need a ninth edit.** The five the game shipped
+  with were given a home, a ground line and an animation phase in one loop at
+  load, and indexed by name in the next line. Three more were added later, in a
+  file of their own, further down the same script — they drew fine, walked fine
+  and talked fine, and the index knew nothing about them, so a saved game
+  forgot every one of them and the journal drew the wrong face. The setup loop
+  skips whoever already has a home and the index is rebuilt rather than added
+  to, so both are now write-once; a test asserts every ghost in the list can be
+  found by name, and that a new one is still your friend after you put the game
+  down.
 - **Carrying is a pose, not an attachment.** The water jar used to float beside
   the hip; now it is drawn inside the prete, between his two arms, so the back
   hand is behind it and the front hand closes over the rim. Both elbows are
@@ -1650,8 +1750,12 @@ with a fully stocked farm on screen.
   always exactly what you left at dusk.
 - **Translation is checked, not believed.** Every string reaches the screen
   through one lookup, so [`th/sweep.js`](th/sweep.js) hooks that lookup, walks
-  the game through every screen it has, and prints whatever came past in
-  English. 383 strings drawn, none untranslated.
+  the game through every screen it has — and opens every conversation in three
+  registers, because the lines a stranger gets are not the lines a friend gets —
+  and prints whatever came past in English. It hooks the *drawing* as well as
+  the lookup, which is how a string that was glued together after translation
+  gets caught. 645 strings drawn, none untranslated, none still in Latin
+  letters in Thai mode.
 - **A state with nothing behind it is impossible.** Every screen here is a
   state plus the object behind it, and each is supposed to clear both together.
   If they ever came apart — a state left set with its object gone — the draw for

@@ -127,6 +127,7 @@ const PAGE = 'file://'+path.resolve(__dirname,'..','index.html');
     eat(VOICE);
     for(const sp of SPIRITS) eat([sp.hi, sp.about, sp.wish, sp.thanks, sp.line, sp.name]);
     for(const v of NPCS) eat([v.line, v.name]);
+    eat(CHATTER); eat(GREET);   /* the bubbles people say at each other */
     GS.state='play';
   });
   // every hint the guide can say, and every tutorial step
