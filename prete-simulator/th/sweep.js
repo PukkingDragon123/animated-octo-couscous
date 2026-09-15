@@ -1,9 +1,16 @@
 /* ============================================================
    THE TRANSLATION SWEEP
 
-   Every string the game draws goes through L() on its way to the
-   screen. So: hook L, walk the game through every screen there is,
-   and print whatever came past without a Thai entry.
+   Three passes, because each one catches what the others cannot.
+
+   1. Hook L(), walk the game through every screen there is, and print
+      whatever came past without a Thai entry.
+   2. Hook pTxt() as well, and print anything that was still in Latin
+      letters by the time it was drawn — which catches a hardcoded
+      string that never asked for a translation at all.
+   3. Then ignore the walk entirely and read the game's own tables,
+      every one of them, all the way down. A line the walk never
+      happened to trigger is still a line somebody will read.
 
      node th/sweep.js          (needs playwright-core and a chromium)
 
@@ -11,9 +18,17 @@
    with no translation. Zero is the number to aim for.
    ============================================================ */
 const {chromium}=require('playwright-core');
+const fs=require('fs');
 const path=require('path');
 const EXE  = process.env.CHROMIUM || '/opt/pw-browsers/chromium';
-const PAGE = 'file://'+path.resolve(__dirname,'..','index.html');
+const FILE = path.resolve(__dirname,'..','index.html');
+const PAGE = 'file://'+FILE;
+/* Every table the game declares at the top level, by name, read out of the
+   source text. The game's data is script-scoped `const`s, not properties of
+   window, so there is no other way to enumerate it — and enumerating it is
+   the whole point of the third pass below. */
+const TABLES = [...new Set([...fs.readFileSync(FILE,'utf8')
+  .matchAll(/^(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*[\[{]/gm)].map(m=>m[1]))];
 (async()=>{
   const b=await chromium.launch({executablePath:EXE,args:['--no-sandbox']});
   const pg=await b.newPage({viewport:{width:960,height:540}});
@@ -137,6 +152,37 @@ const PAGE = 'file://'+path.resolve(__dirname,'..','index.html');
     GS.state='title'; for(let i=0;i<6;i++){ update(1/60); render(); }
     GS.q.done=true; saveGame(); for(let i=0;i<6;i++){ update(1/60); render(); }
     GS.q.done=false; GS.state='play'; });
+  /* ---- the third pass: walk the DATA, not the code ----
+     The two hooks above only ever see a string the walk managed to put on
+     the screen. Twenty-eight lines of the things-that-answer sat in English
+     for a month because the walk triggered each of them once and every one
+     of those tables holds a second line for the second time you ask. This
+     pass does not care what was reached: it opens every table the game
+     declares, follows it all the way down, and asks the dictionary about
+     every piece of prose it finds. */
+  const tables = await ev((NAMES)=>{
+    const bad=new Map(), seenObj=new Set(); let n=0, reach=0;
+    const prose = s => /[A-Za-z]{2}/.test(s) && (/\s/.test(s) || /[.?!]$/.test(s)) && s.length>3;
+    const walk=(v,where,d)=>{
+      if(d>7 || v==null) return;
+      if(typeof v==='string'){ if(!prose(v)) return; n++;
+        if(L(v)===v && !bad.has(v)) bad.set(v,where); return; }
+      if(typeof v!=='object' || seenObj.has(v)) return;
+      seenObj.add(v);
+      if(v instanceof Node || ArrayBuffer.isView(v)) return;
+      if(Array.isArray(v)){ for(let i=0;i<Math.min(v.length,400);i++) walk(v[i],where+'['+i+']',d+1); return; }
+      if(v.constructor && v.constructor!==Object) return;
+      for(const k in v){ let x; try{ x=v[k]; }catch(e){ continue; } walk(x,where+'.'+k,d+1); }
+    };
+    for(const k of NAMES){
+      let v; try{ v=eval(k); }catch(e){ continue; }
+      if(!v || typeof v!=='object') continue;
+      if(v instanceof Node || v instanceof Window) continue;
+      reach++; walk(v,k,0);
+    }
+    return { n, reach, bad:[...bad.entries()].map(([s,w])=>w+'  ::  '+s).sort() };
+  }, TABLES);
+
   const out = await ev(()=>{
     const miss=[]; for(const s of window.__seen){
       if(!s || TH[s]!==undefined) continue;
@@ -162,6 +208,9 @@ const PAGE = 'file://'+path.resolve(__dirname,'..','index.html');
   for(const s of out.miss) console.log(JSON.stringify(s));
   console.log('strings painted:', out.painted, ' still Latin in Thai:', out.latin.length);
   for(const s of out.latin) console.log('  '+s);
+  console.log('prose in the tables:', tables.n, ' untranslated:', tables.bad.length,
+              ' ('+tables.reach+'/'+TABLES.length+' tables reachable)');
+  for(const s of tables.bad) console.log('  '+s);
   console.log(errs.length? 'ERRORS '+errs.slice(0,4).join(' | ') : 'no page errors');
   await b.close();
 })();

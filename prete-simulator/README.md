@@ -1492,7 +1492,7 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~910 KB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~930 KB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Parses and initialises in about a tenth of a second, has the whole
 road built inside half a second behind a loading screen, and holds 50–60 fps
 with a fully stocked farm on screen.
@@ -1710,6 +1710,14 @@ with a fully stocked farm on screen.
   two things ask to sit at the back rather than be left out — the water jar
   standing where the bed is, after dark — and a stable sort keeps everything
   else where it was.
+- **Two clouds cannot occupy the same sky.** Two villagers standing close
+  enough to talk to each other are standing close enough for their speech
+  bubbles to overlap, and the second was drawn straight over the first — which
+  nobody noticed while the lines were English and short, and which happened
+  every time once they were Thai and wider. Each frame's clouds are remembered;
+  one that would collide is lifted clear of the others, and because its tail
+  can no longer reach its speaker without ruling a line through somebody else's
+  cloud, it gets a stub and you join the two up by where they are.
 - **And then the thing you are standing on wins.** Written order is a good
   default and a bad rule. People are checked before plants, which is right when
   a ghost and a papaya bush are both an arm's length away — but a person is
@@ -1748,14 +1756,27 @@ with a fully stocked farm on screen.
   over the farm, called once, that returns the card you wake up to. Nothing
   else in the game is allowed to advance a crop, which is why the field is
   always exactly what you left at dusk.
-- **Translation is checked, not believed.** Every string reaches the screen
-  through one lookup, so [`th/sweep.js`](th/sweep.js) hooks that lookup, walks
-  the game through every screen it has — and opens every conversation in three
-  registers, because the lines a stranger gets are not the lines a friend gets —
-  and prints whatever came past in English. It hooks the *drawing* as well as
-  the lookup, which is how a string that was glued together after translation
-  gets caught. 645 strings drawn, none untranslated, none still in Latin
-  letters in Thai mode.
+- **Translation is checked three ways, because two were not enough.** Every
+  string reaches the screen through one lookup, so [`th/sweep.js`](th/sweep.js)
+  hooks that lookup and walks the game through every screen it has — opening
+  every conversation in three registers, because the lines a stranger gets are
+  not the lines a friend gets. It hooks the *drawing* as well, which catches a
+  string that never asked for a translation at all, and one glued together
+  after it was translated.
+
+  Both of those only ever see a line the walk managed to trigger, and that is
+  a hole you can drive a village through: **twenty-eight of the things that
+  answer sat in English for a month** because each of those tables holds a
+  second line for the second time you ask, and the walk asked once. Somebody
+  playing in Thai hit a bicycle bell twice and got *Ting.* So the third pass
+  ignores the walk entirely: it reads the game's own tables — every top-level
+  table there is, found by name in the source, followed all the way down — and
+  asks the dictionary about every piece of prose it finds, whether or not
+  anything ever drew it. It found a hundred and fifty lines the first time it
+  ran: every dish description, every tool, every blessing, every friendship
+  line, every loading caption. 942 strings drawn and 591 in the tables, none
+  untranslated, none still in Latin letters in Thai mode — and the same table
+  walk is a test now, so the next table cannot arrive in English.
 - **A state with nothing behind it is impossible.** Every screen here is a
   state plus the object behind it, and each is supposed to clear both together.
   If they ever came apart — a state left set with its object gone — the draw for
