@@ -11,6 +11,10 @@
    3. Then ignore the walk entirely and read the game's own tables,
       every one of them, all the way down. A line the walk never
       happened to trigger is still a line somebody will read.
+   4. And then ignore the running game too: tokenise the source and
+      check every string literal that reads like speech, wherever it
+      lives. Lines inside functions, behind a chapter and a spot on
+      the road, are invisible to all three of the above.
 
      node th/sweep.js          (needs playwright-core and a chromium)
 
@@ -175,6 +179,7 @@ const TABLES = [...new Set([...fs.readFileSync(FILE,'utf8')
       for(const k in v){ let x; try{ x=v[k]; }catch(e){ continue; } walk(x,where+'.'+k,d+1); }
     };
     for(const k of NAMES){
+      if(k==='TH') continue;        // the dictionary is the answer, not the question
       let v; try{ v=eval(k); }catch(e){ continue; }
       if(!v || typeof v!=='object') continue;
       if(v instanceof Node || v instanceof Window) continue;
@@ -211,6 +216,18 @@ const TABLES = [...new Set([...fs.readFileSync(FILE,'utf8')
   console.log('prose in the tables:', tables.n, ' untranslated:', tables.bad.length,
               ' ('+tables.reach+'/'+TABLES.length+' tables reachable)');
   for(const s of tables.bad) console.log('  '+s);
+  /* ---- and the fourth: read the source, not the run ----
+     A line inside a function, behind a chapter and a spot on the road, is
+     invisible to a walk that never gets there and to a table scan that only
+     looks in tables. "That's my field. Two seasons, nobody's turned it." was
+     both, and somebody read it in English. So tokenise the whole script and
+     ask about every string literal in it that reads like speech. */
+  const lit = await ev(C=>{ setLang('th');
+    const vals=new Set(Object.values(TH));       // a translation is not untranslated
+    return C.filter(s=>L(s)===s && !vals.has(s)).sort(); }, require('./prose.js').candidates);
+  console.log('prose in the source:', require('./prose.js').candidates.length,
+              ' untranslated:', lit.length);
+  for(const s of lit) console.log('  '+JSON.stringify(s));
   console.log(errs.length? 'ERRORS '+errs.slice(0,4).join(' | ') : 'no page errors');
   await b.close();
 })();

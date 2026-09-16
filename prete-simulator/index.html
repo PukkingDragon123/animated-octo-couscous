@@ -2260,6 +2260,182 @@ const TH = {
   'something is coming up the road':'มีอะไรกำลังมาตามถนน',
   'the dogs have your number':'หมารู้ทันเจ้าแล้ว',
 
+
+  /* ---------------------------------------------------------------
+     THE FOURTH NET
+
+     A line that lives inside a function, behind a chapter and a spot
+     on the road, is invisible to a walk that never gets there and to
+     a table scan that never looks in functions. "That's my field.
+     Two seasons, nobody's turned it." was both. So the whole script
+     gets tokenised now and every string literal in it that reads
+     like something a person says is checked. These are what that
+     found.
+     --------------------------------------------------------------- */
+
+  /* the first night, walking home behind him */
+  'That\'s my field. Two seasons, nobody\'s turned it.':'นั่นนาข้า สองฤดูแล้ว ไม่มีใครไถมันเลย',
+  'That\'s Daeng. Barks at me too. Thirty years.':'นั่นไอ้แดง เห่าลุงเหมือนกัน สามสิบปีแล้ว',
+  'A window goes dark as you pass. Somebody has decided not to watch.':'หน้าต่างบานหนึ่งดับลงตอนเจ้าเดินผ่าน มีคนตัดสินใจว่าจะไม่มอง',
+  'Don\'t take it personally. They sleep through the temple drum.':'อย่าไปคิดมาก กลองวัดตียังไม่ตื่นเลย',
+  'Mind the step. It\'s not a step, it\'s a rock.':'ระวังขั้นบันได มันไม่ใช่บันได มันคือก้อนหิน',
+  'Night, tall one.':'ราตรีสวัสดิ์ เจ้าตัวสูง',
+
+  /* the pen, the basket, the board */
+  'Nothing yet. Give them an hour.':'ยังไม่มีอะไร รออีกสักชั่วโมง',
+  'They\'re hungry. Rice bran, from the stall.':'มันหิวแล้ว รำข้าว ซื้อที่แผงลอย',
+  'tip the basket in (':'เทตะกร้าลง (',
+  'the shipping basket':'ตะกร้าส่งของ',
+  'the incense is burnt down':'ธูปไหม้หมดแล้ว',
+  'the beds, the pen, the orchard and the shack come with it':'ได้แปลงผัก คอกสัตว์ สวน กับกระท่อมมาด้วย',
+  'everything you add here stays added':'ทุกอย่างที่เติมลงไปตรงนี้ อยู่ถาวร',
+  'one job each, and they keep at it while you\'re away':'คนละหนึ่งงาน แล้วเขาทำต่อแม้เจ้าไม่อยู่',
+  'watered for tonight':'รดน้ำสำหรับคืนนี้แล้ว',
+
+  /* what somebody says when you hand them a thing */
+  'It smells like the inside of a temple.':'กลิ่นเหมือนในโบสถ์เลย',
+  'This is exactly what I wanted and I never said so out loud.':'นี่คือสิ่งที่อยากได้พอดีเลย ทั้งที่ไม่เคยพูดออกมา',
+  'Oh! That\'s very kind. I can\'t really… but I\'ll keep it. Thank you, honestly.':'โอ๊ะ ใจดีจัง อาตมารับไม่ได้จริงๆ… แต่จะเก็บไว้ ขอบใจมากจริงๆ',
+  'Ah, thank you! I\'ll find someone to share it with.':'อ้าว ขอบใจนะ เดี๋ยวหาคนมาแบ่งกันกิน',
+
+  /* the little jobs, and how your hands do them */
+  'the streetlight':'เสาไฟถนน',
+  'splice the streetlight':'ต่อสายไฟถนน',
+  'cat up a tree':'แมวติดบนต้นไม้',
+  'lift the cat down':'อุ้มแมวลงมา',
+  'clear the fallen tree':'ยกต้นไม้ที่ล้มออก',
+  'hang the garland':'แขวนพวงมาลัย',
+  'grip the live end (E), bring it to the socket, hold steady':'จับปลายสายที่มีไฟ (E) เอาเข้าขั้ว แล้วนิ่งไว้',
+  'move SLOWLY. she isn\'t afraid of big — she\'s afraid of sudden.':'ช้าๆ นะ มันไม่ได้กลัวตัวใหญ่ มันกลัวอะไรที่มาเร็ว',
+  'hold to lift, and keep it level':'กดค้างเพื่อยก แล้วประคองให้ได้ระดับ',
+  'ease the loop onto the hook and hold still':'ค่อยๆ คล้องห่วงเข้าตะขอ แล้วอยู่นิ่งๆ',
+  'the net':'สวิง',
+  'catch it':'จับให้ได้',
+  'the log':'ท่อนซุง',
+  'four planks out of it':'ได้ไม้กระดานสี่แผ่น',
+  'get the hoop over it, then close the net (E)':'ครอบห่วงลงไป แล้วหุบสวิง (E)',
+  'line up on the wedge, hold to wind up, let go to strike':'เล็งให้ตรงร่อง กดค้างเพื่อเงื้อ ปล่อยเพื่อฟัน',
+
+  /* what the village asks of you */
+  'I need something, if you have a moment.':'มีเรื่องจะขอหน่อย ถ้าพอมีเวลา',
+  'The rice is doing what rice does.':'ข้าวก็ทำสิ่งที่ข้าวทำ',
+  'That lamp\'s been out a month. Nobody\'s got a tall enough ladder.':'ไฟดวงนั้นดับมาเดือนหนึ่งแล้ว ไม่มีใครมีบันไดสูงพอ',
+  'A tree\'s down across the west road. The cart can\'t get by.':'ต้นไม้ล้มขวางถนนฝั่งตะวันตก รถเข็นผ่านไม่ได้',
+  'That child\'s been crying under the tamarind for an hour. Something about a cat.':'เด็กคนนั้นร้องไห้อยู่ใต้ต้นมะขามมาชั่วโมงหนึ่งแล้ว เรื่องแมวอะไรสักอย่าง',
+  'My garland fell. I\'d hang it myself, but I\'m eight inches tall.':'พวงมาลัยข้าหล่น ข้าจะแขวนเองก็ได้ แต่ข้าสูงแค่คืบเดียว',
+
+  /* and what she tells you when you are standing still too long */
+  'There\'s a place out west nobody\'s worked in years. Notice is still on the gate.':'ทางตะวันตกมีที่ผืนหนึ่งไม่มีใครทำมาหลายปี ใบประกาศยังติดอยู่ที่ประตู',
+  'A farm with no paddy is a garden. Build a dike when you can.':'ไร่ที่ไม่มีนาก็คือสวน ถ้าทำได้ก็ก่อคันนาเสีย',
+  'Your dead friends have hands and nothing to do. Ask them.':'เพื่อนที่ตายแล้วของเจ้ามีมือ แล้วก็ไม่มีอะไรทำ ลองวานดู',
+  'Merit for wandering souls means you. Stand here when somebody prays.':'บุญที่อุทิศให้สัมภเวสีก็คือเจ้านั่นแหละ เวลามีคนไหว้ ก็มายืนตรงนี้',
+  'Get Inner Eye when you can. Then you see what people are hoping for.':'ถ้าได้ตาในเมื่อไหร่ก็รีบเอา แล้วเจ้าจะเห็นว่าคนเขาหวังอะไร',
+  'Cook at the stove by the cart. Weave at the mat by the stall.':'ทำกับข้าวที่เตาข้างรถเข็น สานของที่เสื่อข้างแผงลอย',
+  'The fireflies like you. They think you\'re a slow lamppost.':'หิ่งห้อยชอบเจ้า มันนึกว่าเจ้าเป็นเสาไฟที่เดินช้าๆ',
+
+  /* the title screen and the hours of the night */
+  'ENTER — a morning stroll':'ENTER — เดินเล่นยามเช้า',
+  'ENTER — continue':'ENTER — เล่นต่อ',
+  'PRESS ENTER':'กด ENTER',
+  'N — new night':'N — คืนใหม่',
+  'deep night':'ดึกสงัด',
+  'small hours':'ตีสาม',
+  'first light':'ฟ้าสาง',
+  'early morning':'เช้าตรู่',
+  'it is not dark yet':'ยังไม่มืดเลย',
+  'you go out like a lamp':'เจ้าดับวูบเหมือนตะเกียง',
+
+
+  /* ---------------------------------------------------------------
+     FAVOURS, THE KIDS IN THE LANE, AND THE ANIMALS
+     --------------------------------------------------------------- */
+  'a dog collar':'ปลอกคอหมา',
+  'kick it back':'เตะกลับไป',
+  'watch the match':'ดูเขาแข่งกัน',
+
+  'Flowers for the day':'ดอกไม้สำหรับวันพระ',
+  'Three flowers for the shrine. It is a day for it.':'ดอกไม้สามดอกไปไว้ที่ศาล วันนี้เป็นวันพระ',
+  'It is a merit day and the shrine is bare. Three flowers, if you pass any.':'วันนี้วันพระ แต่ศาลว่างเปล่า ถ้าเจ้าเดินผ่านดอกไม้ ขอสักสามดอก',
+  'Anything that grew. It does not have to be fine.':'อะไรที่ขึ้นเองก็ได้ ไม่ต้องสวยหรอก',
+  'That is the shrine dressed. Sit with it a moment if you like.':'ศาลมีดอกไม้แล้ว ถ้าอยากนั่งเป็นเพื่อนสักครู่ก็ได้',
+
+  'Som tam for Yai Pen':'ส้มตำให้ยายเพ็ญ',
+  'She wants som tam and will not admit she cannot pound it any more.':'ยายอยากกินส้มตำ แต่ไม่ยอมบอกว่าตำเองไม่ไหวแล้ว',
+  'My arm is not what it was. If somebody happened to make som tam, I would eat it.':'แขนยายไม่เหมือนเก่าแล้ว ถ้าบังเอิญมีใครตำส้มตำ ยายก็จะกิน',
+  'Not too sweet. I am not a tourist.':'อย่าหวานนัก ยายไม่ใช่นักท่องเที่ยว',
+  'Hm. Better than mine. Do not repeat that.':'อืม อร่อยกว่าของยาย อย่าไปบอกใครนะ',
+
+  'Poles for the stall':'ไม้ค้ำแผงลอย',
+  'Four lengths of bamboo. The awning has been leaning since the rain.':'ไม้ไผ่สี่ลำ กันสาดเอียงมาตั้งแต่ฝนตกแล้ว',
+  'The awning leans more every week. Four good bamboo and I will sort it myself.':'กันสาดเอียงลงทุกอาทิตย์ ขอไม้ไผ่ดีๆ สี่ลำ เดี๋ยวฉันจัดการเอง',
+  'Cut long. I can always cut it shorter.':'ตัดยาวๆ ไว้ ถ้าเกินค่อยตัดทีหลังได้',
+  'Now it is a stall again instead of a lean-to.':'ทีนี้มันกลับมาเป็นแผงลอย ไม่ใช่เพิงเอียงๆ แล้ว',
+
+  'Two krathong':'กระทงสองใบ',
+  'Mali wants to float one and needs a spare, for reasons she will not give.':'มะลิอยากลอยกระทง แล้วขออีกใบ โดยไม่ยอมบอกว่าทำไม',
+  'Can you make a krathong? Make two. The second one is not for me.':'ทำกระทงเป็นไหม ทำสองใบนะ ใบที่สองไม่ใช่ของหนู',
+  'The second one is for my mother. She is not here. That is all.':'ใบที่สองของแม่ แม่ไม่อยู่ แค่นั้นแหละ',
+  'One each. You float yours where you like.':'คนละใบ ของเธอจะลอยตรงไหนก็ได้',
+
+  'Gohan had a family':'โกฮังเคยมีเจ้าของ',
+  'His collar is somewhere in the long grass past the crossroad.':'ปลอกคอมันอยู่ในดงหญ้าเลยสี่แยกไป',
+  'That white dog had people once. Collar came off in the grass out east. He would want it back.':'ไอ้หมาขาวตัวนั้นเคยมีคนเลี้ยง ปลอกคอหลุดอยู่ในหญ้าทางตะวันออก มันคงอยากได้คืน',
+  'You will know it. Blue, with a bell on it that does not ring any more.':'เห็นแล้วจะรู้เอง สีฟ้า มีกระดิ่งที่ไม่ดังแล้ว',
+  'Put it on him, then. He will pretend not to care.':'ใส่ให้มันเลย เดี๋ยวมันก็ทำเป็นไม่สนใจ',
+
+  'Two bowls, one stall':'สองชาม คนขายคนเดียว',
+  'Somebody ordered two tom yum and he is on his own tonight.':'มีคนสั่งต้มยำสองชาม แต่คืนนี้ลุงอยู่คนเดียว',
+  'Two tom yum, and I am one person. You have hands like winnowing fans. Help.':'ต้มยำสองชาม ลุงมีคนเดียว มือเอ็งเท่ากระด้ง ช่วยหน่อย',
+  'Hot. They asked for hot. They will regret it and I will not.':'เผ็ดนะ เขาสั่งเผ็ด เดี๋ยวเขาก็เสียใจ แต่ลุงไม่',
+  'Two bowls out on time. Thirty years and that has never once happened.':'สองชามออกทันเวลา สามสิบปีไม่เคยมีสักครั้ง',
+
+  'they will ask again tomorrow either way':'ยังไงพรุ่งนี้เขาก็ถามใหม่',
+  'yes, I will':'เอาสิ เดี๋ยวจัดให้',
+  'taken on':'รับปากแล้ว',
+  'not today':'วันนี้ยังก่อน',
+  'no hard feelings':'ไม่ถือสากันหรอก',
+  'something in the grass':'มีอะไรอยู่ในหญ้า',
+  'Blue, with a bell on it that does not ring any more.':'สีฟ้า มีกระดิ่งที่ไม่ดังอีกแล้ว',
+  'hand it over':'ยื่นให้เขา',
+  'they want a word':'เขามีเรื่องจะคุยด้วย',
+
+
+  /* what two neighbours say to each other, sorted by what is true now */
+  'You are up before the birds again.':'ตื่นก่อนไก่อีกแล้วนะ',
+  'The birds are lazy. I have said so for years.':'ไก่มันขี้เกียจ ฉันพูดมาตั้งนานแล้ว',
+  'Did you hear the monk go past?':'ได้ยินหลวงพี่เดินผ่านไหม',
+  'I heard the dogs hear the monk go past.':'ได้ยินหมาได้ยินหลวงพี่เดินผ่าน',
+  'Too hot to stand in.':'ร้อนจนยืนไม่ไหว',
+  'Too hot to sit in. I am doing it anyway.':'ร้อนจนนั่งไม่ไหว แต่ก็นั่งอยู่ดี',
+  'Even the dogs have given up.':'ขนาดหมายังยอมแพ้เลย',
+  'The dogs gave up first. The dogs are the clever ones.':'หมายอมแพ้ก่อนเพื่อน หมามันฉลาดกว่า',
+  'Smell that. Somebody is frying chilli.':'ได้กลิ่นไหม มีคนผัดพริกอยู่',
+  'Somebody is frying chilli badly.':'มีคนผัดพริกไม่เป็นอยู่',
+  'Kids are still out on the road.':'เด็กยังเล่นอยู่บนถนนเลย',
+  'They will come in when they are hungry. Not before.':'หิวเมื่อไหร่ก็เข้าบ้านเอง ก่อนหน้านั้นไม่มีทาง',
+  'Quiet tonight.':'คืนนี้เงียบดีนะ',
+  'You say that and then a motorbike.':'พูดปุ๊บ มอเตอร์ไซค์มาปั๊บ',
+  'Whoever is working that field is not sleeping.':'ใครก็ตามที่ทำนาผืนนั้น คงไม่ได้นอน',
+  'Whoever it is, they are not the sleeping kind.':'ใครก็ช่าง คงไม่ใช่พวกที่ต้องนอน',
+  'Somebody has been putting things on the shrine.':'มีคนเอาของมาวางที่ศาลเรื่อยๆ',
+  'It is not me. I assumed it was you.':'ไม่ใช่ฉันนะ ฉันนึกว่าเป็นเธอ',
+  'Things get done round here that nobody claims.':'แถวนี้มีเรื่องที่ทำเสร็จโดยไม่มีใครรับ',
+  'Leave it. Do not go looking into it.':'ช่างเถอะ อย่าไปสืบเลย',
+  'I asked for a favour and I think I am getting it.':'ฉันวานเรื่องหนึ่งไว้ ท่าทางจะได้จริง',
+  'From who?':'วานใคร',
+  'Something is being seen to.':'มีเรื่องหนึ่งกำลังถูกจัดการอยู่',
+  'Do not ask. It is being seen to.':'อย่าถาม มันกำลังถูกจัดการอยู่',
+
+
+  /* หมูปิ้ง, over charcoal */
+  'grilled skewers':'หมูปิ้ง',
+  'Grilled Skewers':'หมูปิ้ง',
+  'Over charcoal, turned by hand, eaten walking.':'ย่างบนเตาถ่าน พลิกเอง กินไปเดินไป',
+  'fan it, and turn them':'พัดไฟ แล้วพลิกไม้',
+  'too hot':'ไฟแรงไป',
+  'hold it there':'คุมไว้ตรงนั้น',
+  'and turn them when they catch':'พอเริ่มไหม้ก็พลิก',
+
 };
 function L(s){
   if(LANG!=='th') return s;
@@ -3947,25 +4123,71 @@ function drawPrete(g, p, o={}){
     iTaper(g,sx0,shY,el.x,el.y,3.4,3.0,col,OC);
     iTaper(g,el.x,el.y,hx2,hy2,3.0,2.6,col,OC);
     pEll(g,el.x,el.y,1.8,1.8,col);
-    /* the hands. They used to be four long splayed fingers on a fan, which
-       is a claw, and a claw is the single most frightening thing you can put
-       on a character. A soft round palm with three short fingers and a thumb
-       on it says the same thing about being tall and thin without it. */
+    /* ---------------------------------------------------------------
+       THE HANDS — four long fingers and a thumb, and they move.
+
+       They were four splayed spikes on a fan once, which is a claw, and a
+       claw is the most frightening thing you can put on a cozy character;
+       then they were three stubs, which is safe and says nothing. Long is
+       the point of him — he is a man stretched — so they are long again,
+       but jointed rather than straight, rounded at the ends rather than
+       pointed, and curled rather than spread. A hand with a knuckle in it
+       reads as a hand. A hand that never moves reads as a glove.
+
+       Each finger is two segments with one knuckle. `curl` closes them all
+       — nearly shut on something carried, open when he is reaching into
+       the soil — and each one carries its own phase so the four of them
+       ripple instead of moving as a block, which is the whole difference
+       between a hand and a mitten.
+       --------------------------------------------------------------- */
     const ang=Math.atan2(hy2-el.y,hx2-el.x), cx2=Math.cos(ang), cy2=Math.sin(ang);
-    const px2=hx2+cx2*2.2, py2=hy2+cy2*2.2;
-    const spread=0.42, FL=4.6;
+    const px2=hx2+cx2*1.8, py2=hy2+cy2*1.8;
+    /* how shut the hand is, 0 open, 1 closed */
+    const baseCurl = carry? 0.82
+                   : (ACT && (ACT.k==='water'||ACT.k==='plant'||ACT.k==='pick'))? 0.10
+                   : (ACT && ACT.k==='wai')? 0.06
+                   : p.state==='block'? 0.62
+                   : 0.17;
+    const curl = lerp(baseCurl, baseCurl, 1);
+    const wag = p.onGround? Math.abs(p.vx)/140 : 0.35;    // walking stirs them
+    const SEG1=5.4, SEG2=4.4, FAN=0.34;   // 0.34 per gap: a 58-degree splay, not a bundle   // 0.34 per gap: a 58-degree splay, not a bundle
     const tips=[];
-    for(let f2=0;f2<3;f2++){ const fa=ang+(f2-1)*spread+Math.sin(p.swayT*1.7+f2)*0.03;
-      tips.push({x:px2+Math.cos(fa)*FL, y:py2+Math.sin(fa)*FL}); }
-    const thx=px2-cx2*1.4-cy2*3.4*face, thy=py2-cy2*1.4+cx2*3.4*face;
-    pEll(g,px2,py2,4.6,4.6,OC);
-    for(const t of tips) pTaper(g,px2,py2,t.x,t.y,3.4,3.0,OC);
-    pTaper(g,px2,py2,thx,thy,3.2,2.8,OC);
-    pEll(g,px2,py2,3.5,3.5,col);
-    for(const t of tips){ pTaper(g,px2,py2,t.x,t.y,2.4,2.0,col); pEll(g,t.x,t.y,1,1,col); }
-    pTaper(g,px2,py2,thx,thy,2.2,1.9,col);
-    pEll(g,thx,thy,1,1,col);
-    if(!back) pEll(g,px2-cx2*1.4,py2-cy2*1.4,1.7,1.6,HI);
+    for(let f2=0;f2<4;f2++){
+      /* middle fingers longest, little finger shortest and set back */
+      const long = [0.92,1.06,1.0,0.82][f2];
+      const ripple = Math.sin(p.swayT*2.1 - f2*0.7)*(0.05+wag*0.16);
+      const c = clamp(curl + ripple*0.5 + f2*0.02, 0, 1);
+      const fa = ang + (f2-1.5)*FAN*(1-c*0.45) + ripple*0.5;
+      const kx = px2+Math.cos(fa)*SEG1*long, ky = py2+Math.sin(fa)*SEG1*long;
+      /* the second segment folds toward the palm, which is what a curl is */
+      const fb = fa + c*1.45*face*(cy2>=0?1:1);
+      const tx = kx+Math.cos(fb)*SEG2*long, ty = ky+Math.sin(fb)*SEG2*long;
+      tips.push({kx,ky,tx,ty,long});
+    }
+    /* the thumb sits across the palm, and closes first */
+    const tc = clamp(curl*1.15,0,1);
+    const tha = ang - (1.15 - tc*0.55)*face;
+    const thkx = px2+Math.cos(tha)*3.4, thky = py2+Math.sin(tha)*3.4;
+    const thb = tha + tc*1.5*face;
+    const thx = thkx+Math.cos(thb)*2.8, thy = thky+Math.sin(thb)*2.8;
+
+    const ink=(a,b,c2,d2,w1,w2)=>pTaper(g,a,b,c2,d2,w1,w2,OC);
+    pEll(g,px2,py2,4.4,4.4,OC);                       // the palm, outlined
+    for(const t of tips){ ink(px2,py2,t.kx,t.ky,3.2,2.9); ink(t.kx,t.ky,t.tx,t.ty,2.9,2.5);
+      pEll(g,t.tx,t.ty,1.4,1.4,OC); }
+    ink(px2,py2,thkx,thky,3.1,2.8); ink(thkx,thky,thx,thy,2.8,2.4);
+    pEll(g,thx,thy,1.4,1.4,OC);
+    pEll(g,px2,py2,3.3,3.3,col);                      // and filled
+    for(const t of tips){
+      pTaper(g,px2,py2,t.kx,t.ky,2.2,1.9,col);
+      pTaper(g,t.kx,t.ky,t.tx,t.ty,1.9,1.6,col);
+      pEll(g,t.tx,t.ty,0.9,0.9,col);
+      pEll(g,t.kx,t.ky,1.0,1.0,col);                  // the knuckle
+    }
+    pTaper(g,px2,py2,thkx,thky,2.1,1.8,col);
+    pTaper(g,thkx,thky,thx,thy,1.8,1.5,col);
+    pEll(g,thx,thy,0.9,0.9,col);
+    if(!back) pEll(g,px2-cx2*1.2,py2-cy2*1.2,1.6,1.5,HI);
     return {x:px2,y:py2};
   }
 
@@ -4241,6 +4463,17 @@ function drawVillager(g, v, o={}){
   const chestY=hipY-8;
   pR(g,hipX-4,chestY,8,9,sh); pR(g,hipX+(face>0?1:-4),chestY,3,9,shD);
   pR(g,hipX-4,chestY,8,1,shade(sh,0.15));
+  /* A football shirt, which on a village kid is a market copy two sizes too
+     big with somebody's number on it. Stripes run the way the real one does
+     and the number sits between the shoulder blades. */
+  if(v.kit){
+    const k=v.kit;
+    if(k.bars==='v'){ for(let i=0;i<3;i++) pR(g,hipX-3+i*3,chestY,1.6,9,k.c2); }
+    else if(k.bars==='h'){ for(let i=0;i<3;i++) pR(g,hipX-4,chestY+1+i*3,8,1.4,k.c2); }
+    else if(k.bars==='sash') pTaper(g,hipX-4,chestY+1,hipX+4,chestY+7,2.4,2.4,k.c2);
+    pR(g,hipX-4,chestY,8,1.4,k.c2);                       // the collar
+    if(k.n!==undefined) pTxt(g,String(k.n), hipX+(face>0?-2:2), chestY+7, k.c2, 5, 'center');
+  }
   // arms
   for(let i=0;i<2;i++){
     const back=i===0;
@@ -4622,6 +4855,7 @@ const GS = {
   camX:0, camY:0, wind:0, toasts:[], zoneName:0, tut:0,
   water:0, rice0:0, chops:0,
   en:undefined, hearts:{}, talked:{}, gifted:{}, incense:0,
+  quests:{}, pet:null, petH:{},
   ch:0,                       // which beat of the first night we are on
   seenX:{},                   // which stretches of road you have actually walked
 };
@@ -4671,6 +4905,8 @@ const bagHas=(id,n=1)=>(GS.bag[id]||0)>=n;
 
 /* ---------- what the village is made of ---------- */
 const ITEMS = {
+  collar:    {n:'a dog collar',  c:'#4a7a9e', k:'thing'},
+  mooping:   {n:'grilled skewers',c:'#c2703a', k:'dish'},
   rice:      {n:'sticky rice',   c:'#f2ecd8', k:'grain'},
   banana:    {n:'banana',        c:'#e8c15c', k:'fruit'},
   mango:     {n:'mango',         c:'#e8a13c', k:'fruit'},
@@ -4740,6 +4976,7 @@ const RECIPES = {
   durianRice:  {out:'durianRice',  need:{durian:1,rice:1,coconut:1},          steps:['steam','plate'],n:'Durian Sticky Rice',d:'Half the village will come. The other half will leave.'},
   sangkhaya:   {out:'sangkhaya',   need:{pandan:2,egg:2,coconut:1},           steps:['steam','pour'], n:'Pandan Custard',    d:'Steamed soft and green. Eat it with anything.'},
   ruamMit:     {out:'ruamMit',     need:{mangosteen:1,rambutan:1,coconut:1},  steps:['plate','pour'], n:'Fruit in Coconut',  d:'Whatever the orchard gave you, in sweet coconut milk.'},
+  mooping:     {out:'mooping',     need:{rice:1,herb:1,coconut:1},            steps:['grill','plate'],n:'Grilled Skewers',   d:'Over charcoal, turned by hand, eaten walking.'},
 };
 const CRAFTS = {
   garland:  {out:'garland',  need:{flower:3},                 steps:['thread','tie'],  n:'Jasmine Garland', d:'Thread it, tie it, hang it where it shows.'},
@@ -8117,6 +8354,11 @@ const STEP_KIND = {
      gets quicker every time you catch it, the way a wok that is going
      well goes faster. */
   wok:{t:'wok',n:5,v:'toss',h:'lift on the swing'},
+  /* หมูปิ้ง. Charcoal is not a dial: it goes out if you leave it and it
+     flares if you fan it, so the game is holding a heat, not hitting a
+     beat. Fan to bring it up, stop to let it fall, keep it in the band,
+     and turn the skewers whenever they start to catch. */
+  grill:{t:'grill',dur:6.5,v:'fan',h:'fan it, and turn them'},
   pound:{t:'timing',n:5,v:'pound',h:'pound it'},        fry:{t:'timing',n:3,v:'fry',h:'flip when golden'},
   pin:{t:'timing',n:3,v:'pin',h:'pin the folds'},       split:{t:'timing',n:4,v:'split',h:'split the bamboo'},
   light:{t:'timing',n:2,v:'light',h:'catch the wick'},
@@ -8232,6 +8474,36 @@ function stepAct(dt){
       if(A.hits>=A.need) nextStep();
     }
     if(A.fly>0) A.fly-=dt*2.1;
+  }
+  else if(k.t==='grill'){
+    /* heat rises while you fan and falls when you do not, faster the hotter
+       it already is — which is charcoal, and which means you cannot just
+       hold the button */
+    if(A.heat===undefined){ A.heat=0.3; A.band=[0.52,0.78]; A.turn=0; A.turnCd=1.6;
+      A.burn=0; A.good=0; A.t2=0; }
+    const fanning = K.act || K.tap;
+    A.heat += (fanning? 0.62 : -0.30 - A.heat*0.22)*dt;
+    A.heat = clamp(A.heat, 0, 1.15);
+    const inBand = A.heat>=A.band[0] && A.heat<=A.band[1];
+    A.t2 += dt;
+    if(inBand) A.good += dt; else if(A.heat>A.band[1]) A.burn += dt*1.4;
+    /* and every so often a skewer starts to catch and wants turning */
+    A.turnCd -= dt;
+    if(A.turnCd<=0 && !A.turnWant){ A.turnWant=1.5; AU.blip(); }
+    if(A.turnWant>0){
+      A.turnWant-=dt;
+      if(press('left')||press('right')){
+        A.turn++; A.turnWant=0; A.turnCd=rnd(1.4,2.4);
+        A.stepScore += 1; A.perfect=1; A.flash=0.2;
+        AU.noise(0.09,0.03,300,2600);
+      } else if(A.turnWant<=0){ A.burn += 0.5; A.perfect=-1; A.flash=0.3; AU.whiff();
+        A.turnCd=rnd(1.6,2.6); }
+    }
+    if(A.t2 >= k.dur){
+      /* the score is how long it sat right, less what you scorched */
+      A.stepScore = clamp(A.good/(k.dur*0.62) - A.burn*0.5, 0, 1) * 3 + A.turn*0.5;
+      nextStep();
+    }
   }
   else if(k.t==='rhythm'){
     // alternate left and right, in time with the beat
@@ -8553,6 +8825,10 @@ function render(){
   if(typeof bubbleFrame==='function') bubbleFrame();   // bubbles stack, per frame
   ctx.setTransform(SC,0,0,SC,0,0);
   ctx.imageSmoothingEnabled=false;
+  /* the opening is the world with the camera moved by hand, so it draws the
+     ordinary world pass and then crops into it on the way out */
+  let _intro=false;
+  if(GS.state==='intro'){ _intro=true; GS.state='play'; }
   if(GS.state==='title'){ drawTitle(); return; }
   if(GS.state==='memory'){ drawMem(); return; }
   if(GS.state==='ascend'){ drawAscend(ctx); return; }
@@ -8593,10 +8869,13 @@ function render(){
   drawFarm(ctx);
   drawNew(ctx);        // the barn, the jar, the log, and her
   drawBuilds(ctx);     // what you have put up, and what is still string and stakes
+  if(typeof drawKids==='function')  drawKids(ctx);    // the lane at five o'clock
   if(typeof drawPests==='function') drawPests(ctx);   // and what got into the crop
   if(typeof drawPets==='function')  drawPets(ctx);    // and everything asleep in the road
   drawBuff(ctx);       // ควาย
-  if(typeof drawTraffic==='function') drawTraffic(ctx);   // what is on the road east
+  if(typeof drawAnthem==='function')  drawAnthem(ctx);    // eight o'clock, and six
+  if(typeof drawParked==='function')  drawParked(ctx);    // one under every house
+  if(typeof drawTraffic==='function') drawTraffic(ctx);   // and what is out on the road
   if(typeof drawStealthScene==='function') drawStealthScene(ctx);
   if(GS.state==='play') drawNavMark(ctx);
   // gatherable plants
@@ -8618,7 +8897,16 @@ function render(){
   for(const n of NPCS){
     if(n.x-cx<-40||n.x-cx>W+40) continue;
     drawVillager(ctx,n,{dt:1/60,wind:GS.wind});
-    if(n.mark){ const my=n.y-30-Math.sin(GS.t*5)*2;
+    const qm = (typeof questMark==='function')? questMark(n) : null;
+    if(qm){
+      /* a favour waiting, a favour running, a favour you can hand in: three
+         pictures, no words, the same vocabulary as everything else */
+      const my=n.y-30-Math.sin(GS.t*5)*2;
+      if(qm==='offer')      icoCall(ctx,n.x,my,0.85,PAL.gold);
+      else if(qm==='ready') icoStar(ctx,n.x,my,1.05,'#8fd6a0');
+      else { ctx.globalAlpha=0.55; icoCall(ctx,n.x,my,0.7,'#cfc4ae'); ctx.globalAlpha=1; }
+    }
+    else if(n.mark){ const my=n.y-30-Math.sin(GS.t*5)*2;
       if(n.mark.k==='call') icoCall(ctx,n.x,my,0.8,PAL.gold); else icoStar(ctx,n.x,my,1,PAL.gold); }
     if(n.bub) bubble(ctx,n.x,n.y-32,n.bub.txt);
     wishBubble(ctx,n,n.y-34);
@@ -8699,6 +8987,7 @@ function render(){
   ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
   if(typeof drawSprayHUD==='function') drawSprayHUD(ctx);
+  if(typeof drawQuestCard==='function') drawQuestCard(ctx);   // what you said yes to
   if(typeof drawSneakUI==='function') drawSneakUI(ctx);
   /* GS.plate strips the furniture off: no purse, no clock, no prompts, no
      thumb controls. The store art is this game with its HUD taken out, not a
@@ -8719,6 +9008,7 @@ function render(){
   drawStoryUI(ctx);    // the chapter card, and the fade through the night
   if(TOUCH.on && uiShowsPads() && !DAY.sleeping && !GS.plate) drawPads(ctx);
   if(!GS.plate) drawDay(ctx);
+  if(_intro){ GS.state='intro'; if(typeof introOverlay==='function') introOverlay(); }
 }
 function uiShowsPads(){ return (GS.state==='play'&&!DLG&&!VIG&&!DAY.card)||GS.state==='task'; }
 function bubble(g,x,y,txt){
@@ -9399,6 +9689,8 @@ function checkInteract(){
   /* the things that stand still and can wait: a staked-out plot, and an animal
      that weighs half a ton and is not going anywhere. Neither of them may take
      a prompt off a bed, a tree or a pen. */
+  if(typeof questInteract==='function') questInteract(set, ()=>false);
+  if(typeof kidsInteract==='function') kidsInteract(set, ()=>false);
   if(typeof pestInteract==='function') pestInteract(set, ()=>false);
   buildInteract(set, ()=>false);
   buffInteract(set, ()=>false);
@@ -10946,7 +11238,67 @@ function drawAct(g){
   pTxt(g,'step '+(A.step+1)+'/'+r.steps.length+' · '+k.h, W/2, 63,CL.ink2,6,'center');
 
   const cxp=W/2, cyp=132;
-  if(k.t==='wok'){
+  if(k.t==='grill'){
+    /* เตาถ่าน. A clay bucket stove, a grate, six skewers, and a fan of
+       woven palm. The coals are the meter: they brighten when you fan and
+       go grey when you stop, and they are also the only way to read the
+       heat, because you are supposed to be looking at the food. */
+    const heat = A.heat===undefined? 0.3 : A.heat;
+    const hot = clamp(heat,0,1.15);
+    // the stove
+    pR(g,cxp-44,cyp+16,88,26,'#8a5638'); pR(g,cxp-44,cyp+16,88,3,'#a36b48');
+    pR(g,cxp-40,cyp+38,80,6,'#6b4029');
+    pEll(g,cxp,cyp+16,45,7,'#6b4029');
+    // the coals, glowing with the heat
+    for(let i=0;i<13;i++){
+      const bx=cxp-38+i*6.2, by=cyp+14+((i*7)%3);
+      const gl = clamp(hot*1.1 - ((i*13)%5)*0.06, 0, 1);
+      pEll(g,bx,by,3.2,2.2, mix('#3a3430', gl>0.75? '#ff8a3c' : '#c8532a', gl));
+      if(gl>0.55) pEll(g,bx,by-0.6,1.8,1.1, mix('#c8532a','#ffd8a0',(gl-0.55)/0.45));
+    }
+    // heat shimmer and smoke, more of it the hotter it is
+    for(let i=0;i<6;i++){
+      const a=clamp(hot-0.25,0,1)*0.5;
+      if(a<=0.02) continue;
+      g.globalAlpha=a*(0.6+0.4*Math.sin(GS.t*5+i));
+      pEll(g, cxp-30+i*12+Math.sin(GS.t*2+i)*3, cyp+2-((GS.t*14+i*9)%26), 3,5, '#e8dcc8');
+      g.globalAlpha=1;
+    }
+    if(hot>0.95){   // and it flares when you overdo it
+      for(let i=0;i<5;i++)
+        pTaper(g, cxp-24+i*12, cyp+14, cxp-24+i*12+rnd(-3,3), cyp+14-rnd(8,20), 4,1,
+               'rgba(255,140,50,0.55)');
+    }
+    // the grate and the skewers
+    for(let i=0;i<6;i++){
+      const sy=cyp+8, sx=cxp-34+i*13.6;
+      const turned = (A.turn||0) > i;
+      const done = clamp((A.good||0)/3,0,1);
+      pTaper(g,sx-2,sy+4,sx-2,sy-16,1.4,1.4,'#c9b085');            // the stick
+      for(let k2=0;k2<3;k2++){
+        const col = (A.burn>1.2 && i<2)? '#4a3024'
+                  : mix('#e0b088', turned? '#8a4a24':'#b4702e', done*0.8);
+        pEll(g,sx-2,sy-2-k2*4.4, 4.2,2.6, col);
+        pEll(g,sx-3,sy-3-k2*4.4, 2.0,1.1, shade(col,0.22));
+      }
+    }
+    pR(g,cxp-44,cyp+9,88,1.6,'#5f5a52'); pR(g,cxp-44,cyp+4,88,1.2,'#4a453e');
+    // the fan, which moves when you are fanning
+    const fanning = (typeof K!=='undefined') && (K.act||K.tap);
+    const fa = fanning? Math.sin(GS.t*17)*0.5 : -0.25;
+    g.save(); g.translate(cxp+58, cyp+6); g.rotate(fa);
+    pTaper(g,0,10,0,-6,3,3,'#8a6a44');
+    pEll(g,0,-14,11,13,'#d8c08a'); pEll(g,0,-14,9,11,'#e8d4a4');
+    for(let i=0;i<5;i++) pTaper(g,0,-4,(i-2)*6,-24,1,1,'#b89a68');
+    g.restore();
+    // and the one thing you must not miss: a skewer catching
+    if(A.turnWant>0){
+      g.globalAlpha=0.5+0.5*Math.sin(GS.t*12);
+      icoCall(g, cxp, cyp-34, 1.0, '#ff9a3c');
+      g.globalAlpha=1;
+    }
+  }
+  else if(k.t==='wok'){
     /* a กระทะ over a gas ring, rocking. The food leaves the pan when you
        catch the swing, which is the only way anybody has ever known a toss
        went well. */
@@ -11068,6 +11420,19 @@ function drawAct(g){
     pR(g,mx+mw*A.m-1,my-3,3,14, A.flash>0? (A.perfect>0?'#2f8f4c':A.perfect<0?'#a8392c':'#8f6a1e') : '#3b3128');
     pTxt(g, A.hits+'/'+A.need, W/2, my+18,CL.ink,7,'center');
     pTxt(g,'it gets quicker',W/2,my+27,CL.ink3,6,'center');
+  } else if(k.t==='grill'){
+    cloud(g,mx-10,my-14,mw+20,50,{seed:76});
+    /* a heat gauge with a band in it, and the marker is the fire itself */
+    const heat=clamp(A.heat===undefined?0.3:A.heat,0,1.15)/1.15;
+    const b0=(A.band?A.band[0]:0.52)/1.15, b1=(A.band?A.band[1]:0.78)/1.15;
+    pR(g,mx,my,mw,8,'#cbbfa6');
+    pR(g,mx+mw*b0,my,mw*(b1-b0),8,'rgba(90,180,110,0.45)');
+    pR(g,mx+mw*b0+mw*(b1-b0)*0.25,my,mw*(b1-b0)*0.5,8,'rgba(140,235,160,0.7)');
+    const over = heat>b1;
+    pR(g,mx+mw*heat-1,my-3,3,14, over? '#c8532a' : (heat>=b0? '#2f8f4c' : '#8f6a1e'));
+    pTxt(g, over? L('too hot') : (heat<b0? L('fan it') : L('hold it there')),
+         W/2, my+18, over? '#a8392c' : CL.ink, 7, 'center');
+    pTxt(g, L('and turn them when they catch'), W/2, my+27, CL.ink3, 6, 'center');
   } else if(k.t==='krok'){
     cloud(g,mx-10,my-14,mw+20,50,{seed:73});
     const strike=(A.hits%2)===0, pulse=1-Math.abs(A.m-0.5)*2;
@@ -15844,10 +16209,11 @@ for(const s of SPIRITS) SPIRIT_BY_ID[s.id]=s;
    slower to be startled by somebody a dog is walking with.
    ============================================================ */
 const PETS = [];
-function addPet(kind, x, name, th){
-  PETS.push({ id:kind+'_'+PETS.length, kind, x, home:x, name, th,
+function addPet(kind, x, name, th, coat){
+  PETS.push({ id:kind+'_'+PETS.length, kind, x, home:x, name, th, coat:coat||null,
               y:groundY(x), face:1, vx:0, anim:rnd(9), phase:rnd(TAU),
-              st:'idle', t:rnd(1,5), tx:x, purr:0, pop:0 });
+              st:'idle', t:rnd(1,5), tx:x, purr:0, pop:0,
+              mood:null, moodT:0, with:null, socialCd:rnd(4,20) });
 }
 /* cats keep to the warm places people are; dogs keep to the road */
 addPet('cat', 1560, 'Meow-Meow',  'เหมียวเหมียว');
@@ -15864,6 +16230,10 @@ addPet('dog', 3420, 'Lucky',      'ลักกี้');
 addPet('dog', 4740, 'Boss',       'บอส');
 addPet('dog', 7420, 'Crossroad',  'สี่แยก');
 addPet('dog', 8760, 'Nine',       'เก้า');
+/* and Gohan, who is not a soi dog: long white coat, plumed tail carried over
+   his back, a ruff like a collar. Somebody's dog once — he still sits when
+   people walk past, out of an old habit nobody reinforces any more. */
+addPet('dog', 6180, 'Gohan',      'โกฮัง', 'fluffy');
 
 const petById  = id => PETS.find(p=>p.id===id) || null;
 const myPet    = () => GS.pet? petById(GS.pet) : null;
@@ -15890,22 +16260,85 @@ function stepPets(dt){
       p.y = groundY(p.x);
       continue;
     }
-    /* everybody else keeps to their own patch and their own hours */
+    /* ---- everybody else has a day ----
+       A village animal is not a wander with a radius on it. A cat is asleep
+       in the shade from nine until four and then owns the place until dawn;
+       a dog is flat out on the warm concrete at noon, up and shouting at
+       three in the morning, and only ever really busy at dusk, when the
+       cooking starts. So the hour picks the behaviour, and the behaviour
+       picks how far it will go and how fast. */
+    p.moodT -= dt; if(p.moodT<=0) p.mood=null;
+    p.socialCd -= dt;
+    const w = petHour(p, h, night);
     p.t -= dt;
     if(p.t<=0){
-      p.t = rnd(3,9);
-      const sleepy = p.kind==='cat'? !night : night;      // cats work nights
-      if(sleepy && Math.random()<0.6){ p.st='sit'; p.tx=p.x; }
-      else { p.st='walk'; p.tx = clamp(p.home + rnd(-46,46), p.home-60, p.home+60); }
+      p.t = rnd(w.pause[0], w.pause[1]);
+      if(Math.random() < w.rest){ p.st = w.deep? 'sleep':'sit'; p.tx=p.x; }
+      else { p.st='walk'; p.tx = clamp(p.home + rnd(-w.range,w.range), 40, WORLD_W-40); }
     }
     if(p.st==='walk'){
       const d=p.tx-p.x;
       if(Math.abs(d)<3){ p.st='sit'; p.vx=0; }
-      else { p.vx = clamp(d*1.6, -26, 26); p.face = p.vx<0?-1:1; }
+      else { p.vx = clamp(d*1.6, -w.speed, w.speed); p.face = p.vx<0?-1:1; }
     } else p.vx *= 0.8;
     p.x += p.vx*dt;
     p.phase += Math.abs(p.vx)*dt*0.34;
     p.y = groundY(p.x);
+  }
+  stepPetSocial(dt);
+}
+/* what an animal is doing at this hour of the day */
+function petHour(p, h, night){
+  if(p.kind==='cat'){
+    if(h>=9 && h<16)  return {rest:0.94, deep:true,  range:14, speed:16, pause:[6,14]};  // asleep in the shade
+    if(h>=16 && h<19) return {rest:0.35, deep:false, range:48, speed:26, pause:[3,7]};   // up for the cooking
+    if(night)         return {rest:0.14, deep:false, range:96, speed:34, pause:[2,5]};   // and out all night
+    return {rest:0.7, deep:true, range:20, speed:18, pause:[5,11]};                      // home at dawn
+  }
+  if(h>=10 && h<15)   return {rest:0.92, deep:true,  range:12, speed:18, pause:[6,14]};  // flat on the concrete
+  if(h>=15 && h<20)   return {rest:0.30, deep:false, range:64, speed:38, pause:[3,7]};   // the social hour
+  if(h>=5 && h<10)    return {rest:0.45, deep:false, range:52, speed:34, pause:[3,8]};   // the alms round
+  return {rest:0.55, deep:false, range:74, speed:30, pause:[4,9]};                       // and the night shift
+}
+/* ---- and they have opinions about each other ----
+   Two animals that meet do something. Dogs sniff and then either play or
+   settle down together; cats groom a friend and freeze at a stranger; and a
+   dog meeting a cat is the oldest scene in the village. None of it is
+   written down anywhere — it is a picture over their heads and a change in
+   what they are doing, which is how you read an animal in life too. */
+const PET_MOOD_T = 3.2;
+function petMeet(a,b){
+  a.socialCd = b.socialCd = rnd(14,34);
+  a.face = b.x<a.x? -1:1; b.face = a.x<b.x? -1:1;
+  a.st='sit'; b.st='sit'; a.vx=b.vx=0;
+  const cat = a.kind==='cat', both = a.kind===b.kind;
+  if(both && a.kind==='dog'){
+    if(Math.random()<0.5){ a.mood='play'; b.mood='play';       // a play bow, then a lap
+      a.st='walk'; b.st='walk';
+      a.tx = a.x + rnd(40,80)*(Math.random()<0.5?-1:1); b.tx = a.tx + rnd(-14,14);
+    } else { a.mood='rest'; b.mood='rest'; a.st='sleep'; b.st='sleep'; }
+  } else if(both){
+    if(Math.random()<0.45){ a.mood='love'; b.mood='love'; }     // grooming
+    else { a.mood='stare'; b.mood='stare';                      // or neither of them blinking
+      a.t=b.t=rnd(3,6); }
+  } else {
+    const c = cat? a:b, d = cat? b:a;
+    c.mood='hiss'; d.mood='woof';
+    c.st='walk'; c.tx = c.x + 70*(d.x<c.x? 1:-1);               // the cat leaves
+    d.t = rnd(2,4);
+  }
+  a.moodT = b.moodT = PET_MOOD_T;
+}
+function stepPetSocial(dt){
+  for(let i=0;i<PETS.length;i++){
+    const a=PETS[i];
+    if(a.socialCd>0 || a.st==='sleep' || a.id===GS.pet) continue;
+    for(let j=i+1;j<PETS.length;j++){
+      const b=PETS[j];
+      if(b.socialCd>0 || b.st==='sleep' || b.id===GS.pet) continue;
+      if(Math.abs(a.x-b.x)>22) continue;
+      petMeet(a,b); break;
+    }
   }
 }
 function petNear(x){
@@ -15951,10 +16384,14 @@ function drawPets(g){
     if(p.kind==='cat'){
       drawCat(g,{x:p.x, y:p.y-lift, face:p.face, anim:p.anim, phase:p.phase,
                  state: p.st==='walk'? 'walk':'sit', walking:p.st==='walk'});
+    } else if(p.coat==='fluffy'){
+      drawFluffyDog(g,{x:p.x, y:p.y-lift, face:p.face, t:p.anim,
+                       st: p.st==='sleep'? 'sleep' : p.st==='walk'? 'walk':'sit'});
     } else {
-      drawRoadDog(g,{x:p.x, face:p.face, st: p.st==='sit'? 'sleep':'up',
-                     t:p.anim, step:Math.sin(p.phase)*3});
+      drawRoadDog(g,{x:p.x, face:p.face, st: (p.st==='sit'||p.st==='sleep')? 'sleep':'up',
+                     t:p.anim, step:Math.sin(p.phase)*3, sp:p.st==='walk'});
     }
+    if(p.mood) petMoodIcon(g, p);
     if(p.purr>0){
       const a=clamp(p.purr/2.4,0,1);
       g.globalAlpha=a*0.9;
@@ -15968,6 +16405,77 @@ function drawPets(g){
     }
   }
 }
+/* ---------- Gohan ----------
+   The soi dogs are short-haired, lean and the colour of the road. He is
+   none of that: a thick white coat that moves a beat behind him, a ruff
+   round the neck, and a plumed tail carried up over his back. He is
+   somebody's dog who stopped having a somebody, and he still sits when a
+   person walks past out of a habit nobody rewards any more. */
+function drawFluffyDog(g,d){
+  const x=d.x, gy=d.y!==undefined? d.y : groundY(x), f=d.face, t=d.t;
+  const W1='#f4efe4', W2='#ded5c4', W3='#bdb3a0', INK='#6b6153';
+  const sleep = d.st==='sleep', walk = d.st==='walk';
+  const step = walk? Math.sin(t*7)*2.4 : 0;
+  const puff = (cx,cy,rx,ry,c)=>pEll(g,cx,cy,rx,ry,c);
+  pEll(g,x,gy-1, sleep?14:12, sleep?4:3.2,'rgba(10,8,20,0.28)');
+  if(sleep){
+    puff(x,gy-5,12,5,W2); puff(x,gy-6.6,10,3.6,W1);
+    for(let i=0;i<5;i++) puff(x-9+i*4.6, gy-8.4+Math.sin(i*1.7)*0.8, 3.0,2.0, i%2?W1:W2);
+    /* the head is out on the ground in front of him, chin down, which is
+       the shape that says asleep rather than a bread roll */
+    puff(x-12.5*f,gy-5.4,5.0,4.0,W2); puff(x-13.5*f,gy-6.4,4.0,3.0,W1);
+    pTri(g,x-15*f,gy-10.4,x-17*f,gy-5.6,x-12*f,gy-6.4,W2);          // ear
+    pTri(g,x-14.4*f,gy-9.6,x-16*f,gy-6,x-12.6*f,gy-6.6,W1);
+    puff(x-16.4*f,gy-4.2,2.4,1.8,W1);                               // muzzle on the dirt
+    pR(g,R(x-17.4*f),R(gy-4.6),2,1,'#c2857f');
+    pR(g,R(x-14.2*f),R(gy-6.2),2,1,INK);                            // a shut eye
+    puff(x+11*f,gy-6,5.4,3.4,W1); puff(x+13*f,gy-7,3.6,2.6,W2);     // the tail over him
+    return;
+  }
+  const bob = walk? Math.abs(Math.sin(t*7))*1.0 : 0;
+  const by = gy-9-bob;
+  /* the coat: a body, then a row of overlapping puffs along the back */
+  puff(x,by,9.4,5.0,W2); puff(x,by-1.4,8.0,3.8,W1);
+  for(let i=0;i<6;i++) puff(x-8+i*3.4, by-4.2+Math.sin(t*2+i)*0.5, 3.0,2.2, i%2?W1:W2);
+  puff(x-2*f,by+2.4,7.0,3.0,W3);                                    // the chest shadow
+  /* the ruff, then the head sitting in it */
+  puff(x+6.6*f,by-2.2,5.4,5.2,W2); puff(x+6.2*f,by-2.6,4.4,4.2,W1);
+  const hx2=x+9.4*f, hy2=by-5.4;
+  puff(hx2,hy2,4.6,4.0,W1); puff(hx2+1*f,hy2+0.6,3.6,3.0,W2);
+  pTri(g,hx2+0.6*f,hy2-7,hx2-1.6*f,hy2-2.4,hx2+3.2*f,hy2-2.8,W2);   // ears, pricked
+  pTri(g,hx2+1.2*f,hy2-6,hx2-0.4*f,hy2-2.8,hx2+2.6*f,hy2-3.2,W1);
+  pTri(g,hx2+4.6*f,hy2-6.4,hx2+2.8*f,hy2-2.6,hx2+6.6*f,hy2-3.0,W2);
+  pR(g,R(hx2+1.4*f),R(hy2-1),1,1,INK);                              // eye
+  puff(hx2+4.2*f,hy2+1.4,2.6,2.0,W1);                               // muzzle
+  pR(g,R(hx2+5.6*f),R(hy2+0.6),2,1,'#c2857f');                      // and a pink nose
+  /* the plume, carried up and over */
+  for(let i=0;i<5;i++){
+    const a=-0.55-i*0.34 + Math.sin(t*3)*0.10;
+    puff(x-8*f+Math.cos(a)*i*2.4*-f, by-1+Math.sin(a)*i*2.2, 3.4-i*0.28, 2.8-i*0.22, i%2?W1:W2);
+  }
+  for(let i=0;i<2;i++){
+    const sx2=x+(i?4:-4)*f;
+    pLimb(g,sx2,by+3.6,sx2+(i?step:-step),gy-1,2.6,i?W2:W3);
+    puff(sx2+(i?step:-step),gy-1.6,2.2,1.6,W1);                     // feathered feet
+  }
+}
+/* ---------- what an animal is thinking, as a picture ---------- */
+function petMoodIcon(g,p){
+  const a=clamp(p.moodT/PET_MOOD_T,0,1);
+  const y=p.y-24-(PET_MOOD_T-p.moodT)*2;
+  g.globalAlpha=a;
+  switch(p.mood){
+    case 'love':  icoHeart(g,p.x,y,0.7,'#e8829e'); break;
+    case 'play':  icoStar(g,p.x,y,0.8,'#8fd6a0'); break;
+    case 'rest':  pTxt(g,'z',p.x,y,'#cfc4ae',6,'center'); break;
+    case 'stare': for(let i=0;i<3;i++) pEll(g,p.x-4+i*4,y,1,1,'#cfc4ae'); break;
+    case 'hiss':  pTri(g,p.x,y-4,p.x-3.4,y+2,p.x+3.4,y+2,'#e8b45c');
+                  pR(g,R(p.x),R(y-2),1,3,'#4a3a22'); break;
+    case 'woof':  icoCall(g,p.x,y,0.75,'#e8d48c'); break;
+  }
+  g.globalAlpha=1;
+}
+
 /* ---------- the icon when you are next to one ---------- */
 function petsInteract(set, taken){
   const p=petNear(P.x);
@@ -15977,6 +16485,507 @@ function petsInteract(set, taken){
   else if(tame)            set(p.x, p.y-24, 'ask it along',  ()=>petTake(p), null, 'pet');
   else                     set(p.x, p.y-24, p.kind==='cat'? 'scratch its ears' : 'say hello to the dog',
                                ()=>petIt(p), null, 'pet');
+}
+/* ============================================================
+   THE KIDS
+
+   Between four and half past six, every lane in rural Thailand
+   fills with children who have just got out of school and have
+   not yet been called in for dinner. They play two things.
+
+   เตะบอล — football, in the flat bit of road outside somebody's
+   house, with two sandals for a goal, in a market-copy shirt of
+   whichever European club their uncle supports. Nobody keeps
+   score and everybody argues about the score.
+
+   เบย์เบลด — spinning tops, in a plastic washing-up bowl, which
+   has been the playground currency here for twenty years and
+   comes back round every time the cartoon is rerun. Three-two-one
+   and they let go together; the loser's top goes over the rim.
+
+   They are not a cutscene. They run their own afternoon, and the
+   ball comes to you if you stand in the wrong place, which is
+   the only invitation a Thai child needs.
+   ============================================================ */
+/* Both of these sit in clear ground on purpose: a plastic bowl behind a
+   chilli bush is a plastic bowl nobody can see. */
+/* the flat swept ground in front of the temple, which is where village kids
+   play football in real life and is the only stretch of the map wide enough
+   for a pitch without a broken streetlight or a well in the middle of it */
+const PITCH_X = 4400;
+const BOWL_X  = 1740;      // and the shade two houses down
+
+/* market-copy shirts. The colours are the ones you actually see on a
+   village pitch: two English clubs, the national side, and one nobody
+   can identify any more because it has been washed four hundred times. */
+const KITS = [
+  {c:'#c8102e', c2:'#f0e8d2', bars:null,  n:7},    // red, white trim
+  {c:'#0a4595', c2:'#f0e8d2', bars:'v',   n:10},   // blue with a stripe
+  {c:'#e8b300', c2:'#1a2f6b', bars:'h',   n:9},    // the national side
+  {c:'#1f7a4d', c2:'#f4f0e0', bars:'sash',n:4},
+  {c:'#6b3fa0', c2:'#e8d48c', bars:null,  n:23},
+  {c:'#e86a2c', c2:'#2c2c34', bars:'h',   n:11},
+];
+const KID_SKINS=[['#e8bc92','#c99a6e'],['#d8a878','#b3855a'],['#c9986f','#a87c58'],['#f0cba4','#cfa376']];
+
+const KIDS=[];
+function addKid(i, x, hair){
+  const sk=KID_SKINS[i%KID_SKINS.length], kit=KITS[i%KITS.length];
+  const k=makeVillager({ id:'kid'+i, x, kid:1, calm:1,
+    skin:sk[0], skinD:sk[1], shirt:kit.c, shirtD:shade(kit.c,-0.3),
+    legs:'#3a3a44', hair, hairC:'#241c18', kit });
+  k.y=groundY(x); k.home=x; k.tx=x; k.st='idle'; k.t=rnd(0,3);
+  k.cheer=0; k.game=null;
+  KIDS.push(k); return k;
+}
+for(let i=0;i<4;i++) addKid(i, PITCH_X-42+i*28, i%2? 'tails':'crop');
+for(let i=4;i<7;i++) addKid(i, BOWL_X-26+(i-4)*22, i===5? 'tails':'crop');
+
+/* ---------- the ball ---------- */
+const BALL={x:PITCH_X, y:0, vx:0, vy:0, spin:0, out:false};
+BALL.y=groundY(BALL.x)-3;
+/* two sandals, which is what a goal is */
+const PITCH_GOAL=[PITCH_X-64, PITCH_X+64];
+
+/* ---------- the tops ---------- */
+const TOPS=[
+  {a:0, r:0, spin:0, life:0, col:'#c8102e', rim:'#f0e8d2'},
+  {a:Math.PI, r:0, spin:0, life:0, col:'#0a4595', rim:'#e8b300'},
+];
+const BEY={t:0, phase:'wait', count:0, winner:-1, cheer:0};
+
+function kidsOut(){
+  const h=DAY.min/60;
+  return h>=15.5 && h<18.8 && !storyBusy();      // out of school, not yet called in
+}
+function beyWeather(){ const h=DAY.min/60; return h>=10 && h<15.5; }   // too hot for the pitch
+
+/* ============================================================ */
+function stepKids(dt){
+  const out = kidsOut(), bey = beyWeather();
+  for(const k of KIDS){
+    k.anim+=dt; if(k.cheer>0) k.cheer-=dt;
+    k.game = out? (k.id<'kid4'? 'ball':'ball') : (bey? 'bey' : null);
+  }
+  /* before four they are at school and after seven they are eating: either
+     way the lane is empty, and an empty lane at the wrong hour is the thing
+     that makes the full one mean something */
+  if(!out && !bey){ for(const k of KIDS){ k.st='gone'; } return; }
+  if(bey && !out){ stepBey(dt); return; }
+  stepFootball(dt);
+}
+
+/* ---------- football ---------- */
+function stepFootball(dt){
+  const team=KIDS.slice(0,4);
+  for(const k of team) k.st='play';
+  for(const k of KIDS.slice(4)){ k.st='play'; }     // the bowl crowd come and watch
+  /* the ball is a bouncing thing with drag, and it is the only thing on the
+     pitch anybody is actually looking at */
+  BALL.vy += 360*dt;
+  BALL.x += BALL.vx*dt; BALL.y += BALL.vy*dt;
+  BALL.spin += BALL.vx*dt*0.12;
+  const gy=groundY(BALL.x)-3;
+  if(BALL.y>gy){ BALL.y=gy; BALL.vy*=-0.42; BALL.vx*=0.84;
+    if(Math.abs(BALL.vy)<24) BALL.vy=0; }
+  BALL.vx *= (1 - 0.7*dt);
+  if(BALL.x<PITCH_GOAL[0]-26){ BALL.x=PITCH_GOAL[0]-26; BALL.vx=Math.abs(BALL.vx)*0.5; }
+  if(BALL.x>PITCH_GOAL[1]+26){ BALL.x=PITCH_GOAL[1]+26; BALL.vx=-Math.abs(BALL.vx)*0.5; }
+
+  /* whoever is nearest chases it; when they get there they belt it at
+     somebody else, which is the whole of village football */
+  let chaser=null, cd=1e9;
+  for(const k of team){ const d=Math.abs(k.x-BALL.x); if(d<cd){ cd=d; chaser=k; } }
+  for(const k of team){
+    if(k===chaser){
+      const d=BALL.x-k.x;
+      if(Math.abs(d)>9){ k.vx=clamp(d*3.2,-58,58); k.face=k.vx<0?-1:1; }
+      else if(Math.abs(BALL.vx)<30 && BALL.y>gy-4){
+        const others=team.filter(o=>o!==k);
+        const to=others[(Math.random()*others.length)|0];
+        BALL.vx = clamp((to.x-BALL.x)*1.5, -150, 150) + rnd(-20,20);
+        BALL.vy = -rnd(90,170);
+        k.cheer=0.5; AU.blip();
+        for(const o of team) if(Math.random()<0.4) o.cheer=0.5;
+      } else k.vx*=0.7;
+    } else {
+      /* everybody else drifts toward where it is going, badly */
+      const want = clamp(BALL.x + (k.x<BALL.x? -34:34), PITCH_GOAL[0]-40, PITCH_GOAL[1]+40);
+      const d=want-k.x;
+      if(Math.abs(d)>12){ k.vx=clamp(d*1.2,-34,34); k.face=k.vx<0?-1:1; }
+      else k.vx*=0.8;
+    }
+    k.x += k.vx*dt; k.y=groundY(k.x);
+    k.phase += Math.abs(k.vx)*dt*0.26;
+  }
+  /* and the prete, who is nine feet tall and standing in the middle of it */
+  if(Math.abs(P.x-BALL.x)<16 && Math.abs(BALL.vx)<40){
+    BALL.vx = clamp((P.x<BALL.x? 1:-1)*rnd(90,150), -160,160);
+    BALL.vy = -rnd(120,190); AU.blip();
+    for(const k of team) k.cheer=0.9;
+    if(!GS.seen['ball_'+DAY.n]){ GS.seen['ball_'+DAY.n]=true; addMerit(1,true); }
+  }
+}
+
+/* ---------- เบย์เบลด ---------- */
+function stepBey(dt){
+  const crowd=KIDS.slice(4);
+  for(const k of KIDS.slice(0,4)) k.st='gone';
+  for(const k of crowd){
+    k.st='play'; k.vx=0;
+    /* the one nearest the bowl is the one shouting about it */
+    if(k.id==='kid5' && BEY.phase==='spin' && !k.react) k.react={k:'clap',t:0.9,dur:0.9};
+    const want = BOWL_X + (k.id==='kid4'? -20 : k.id==='kid5'? 0 : 20);
+    k.x += (want-k.x)*Math.min(1,dt*4); k.y=groundY(k.x);
+    k.face = k.x<BOWL_X? 1:-1;
+  }
+  BEY.t+=dt;
+  if(BEY.phase==='wait'){
+    if(BEY.t>1.6){ BEY.phase='count'; BEY.t=0; BEY.count=3; }
+  } else if(BEY.phase==='count'){
+    if(BEY.t>0.6){ BEY.t=0; BEY.count--;
+      AU.blip();
+      if(BEY.count<=0){ BEY.phase='spin';
+        for(let i=0;i<TOPS.length;i++){
+          TOPS[i].spin=rnd(22,30); TOPS[i].life=rnd(6,11);
+          TOPS[i].r=rnd(5,9); TOPS[i].a=i*Math.PI+rnd(0,1);
+        }
+        AU.ranat(880,0,0.05);
+      }
+    }
+  } else if(BEY.phase==='spin'){
+    let alive=0;
+    for(const t of TOPS){
+      if(t.life<=0) continue;
+      alive++;
+      t.life-=dt; t.spin*=(1-0.06*dt);
+      t.a += t.spin*dt*(t===TOPS[0]?1:-1)*0.5;
+      t.r += Math.sin(BEY.t*3+t.a)*dt*6;
+      t.r = clamp(t.r, 3, 11);
+    }
+    /* when they touch, one of them takes it badly */
+    const [a,b]=TOPS;
+    if(a.life>0 && b.life>0){
+      const ax=Math.cos(a.a)*a.r, bx=Math.cos(b.a)*b.r;
+      if(Math.abs(ax-bx)<3.5 && Math.random()<dt*3){
+        AU.tick? AU.tick(dt) : null; AU.blip();
+        const loser = Math.random()<0.5? a:b;
+        loser.life -= rnd(1.5,3.5); loser.r += 3;
+        for(const k of crowd) k.cheer=0.7;
+      }
+    }
+    if(alive<=1){ BEY.phase='done'; BEY.t=0; BEY.winner = TOPS[0].life>0? 0:1;
+      for(const k of crowd) k.cheer=1.2; AU.ding(); }
+  } else if(BEY.phase==='done'){
+    if(BEY.t>2.4){ BEY.phase='wait'; BEY.t=0; }
+  }
+}
+
+/* ============================================================
+   DRAWING
+   ============================================================ */
+function drawKids(g){
+  const out=kidsOut(), bey=beyWeather();
+  if(!out && !bey) return;
+  if(out){
+    /* the goal: two sandals, set down where they came off */
+    for(const gx of PITCH_GOAL){
+      const gy=groundY(gx);
+      pEll(g,gx,gy-1,5,2,'#3f5878'); pEll(g,gx,gy-2,4,1.6,'#5a7ba8');
+      pR(g,R(gx-1),R(gy-3),2,1,'#e8dfc8');
+    }
+  }
+  if(bey && !out) drawBey(g);
+  for(const k of KIDS){
+    if(k.st==='gone') continue;
+    if(k.x-GS.camX<-40||k.x-GS.camX>W+40) continue;
+    drawVillager(g,k,{dt:1/60, wind:GS.wind});
+    if(k.cheer>0){
+      g.globalAlpha=clamp(k.cheer,0,1);
+      icoStar(g,k.x+4*k.face,k.y-34,0.7,'#ffe089');
+      g.globalAlpha=1;
+    }
+  }
+  if(out) drawBall(g);
+}
+function drawBall(g){
+  const x=BALL.x, y=BALL.y, gy=groundY(x);
+  const sh=clamp(1-(gy-y)/60,0.2,1);
+  pEll(g,x,gy-1,4*sh,1.6*sh,'rgba(10,8,20,0.3)');
+  pEll(g,x,y,4,4,'#f4f0e4');
+  /* the black panels, turning with it, which is the whole read on a ball
+     this size: without them it is a white dot and it never looks like it
+     is rolling */
+  for(let i=0;i<3;i++){
+    const a=BALL.spin+i*2.1;
+    pEll(g, x+Math.cos(a)*1.9, y+Math.sin(a*0.7)*1.9, 1.3,1.3, '#2c2c34');
+  }
+  pEll(g,x-1.4,y-1.4,1,0.9,'#ffffff');
+}
+function drawBey(g){
+  const gy=groundY(BOWL_X);
+  /* the stadium, which is a red plastic washing-up bowl */
+  pEll(g,BOWL_X,gy-1,16,4,'rgba(10,8,20,0.28)');
+  pEll(g,BOWL_X,gy-4,15,5,'#b8342c');
+  pEll(g,BOWL_X,gy-5,13,4,'#8e241e');
+  pEll(g,BOWL_X,gy-5.4,11,3,'#6b1a15');
+  pEll(g,BOWL_X,gy-8,15.4,2,'#d8443a');
+  for(const t of TOPS){
+    if(t.life<=0) continue;
+    const x=BOWL_X+Math.cos(t.a)*t.r, y=gy-6+Math.sin(t.a)*1.6;
+    const wob=Math.sin(t.a*7)*0.6*(t.life<2?1:0.3);
+    pEll(g,x,y+2,3.4,1.2,'rgba(10,8,20,0.3)');
+    pTri(g,x+wob,y+2.4, x-3,y-1, x+3,y-1, t.col);
+    pEll(g,x+wob*0.5,y-1.4,3.4,1.6,t.rim);
+    pEll(g,x+wob*0.5,y-2,2.2,1.1,t.col);
+    /* the blur ring, which is the only way a top reads as spinning */
+    g.globalAlpha=0.30+0.16*Math.sin(GS.t*22);
+    pEll(g,x,y-1.6,4.6,1.9,t.rim);
+    g.globalAlpha=1;
+  }
+  if(BEY.phase==='count'){
+    for(let i=0;i<BEY.count;i++) pEll(g,BOWL_X-5+i*5,gy-22,1.8,1.8,'#ffe089');
+  }
+  if(BEY.phase==='done'){
+    const t=TOPS[BEY.winner];
+    if(t) icoStar(g,BOWL_X,gy-24,1.0,t.col);
+  }
+}
+/* ---------- and you can stand in it ---------- */
+function kidsInteract(set, taken){
+  if(!kidsOut() && !beyWeather()) return;
+  if(kidsOut() && Math.abs(P.x-BALL.x)<30)
+    set(BALL.x, BALL.y-14, 'kick it back', ()=>{
+      BALL.vx = clamp((P.face||1)*rnd(110,170),-170,170); BALL.vy=-rnd(140,200);
+      AU.blip(); for(const k of KIDS) k.cheer=1.0;
+      if(!GS.seen['ball_'+DAY.n]){ GS.seen['ball_'+DAY.n]=true; addMerit(2,true);
+        toast('+2', PAL.gold, 'merit'); }
+    }, null, 'play');
+  if(beyWeather() && !kidsOut() && Math.abs(P.x-BOWL_X)<30)
+    set(BOWL_X, groundY(BOWL_X)-20, 'watch the match', ()=>{
+      for(const k of KIDS.slice(4)) k.cheer=1.2;
+      if(!GS.seen['bey_'+DAY.n]){ GS.seen['bey_'+DAY.n]=true; addMerit(1,true);
+        toast('+1', PAL.gold, 'merit'); }
+      AU.ding();
+    }, null, 'play');
+}
+/* ============================================================
+   THINGS PEOPLE ASK YOU FOR
+
+   The village had orders — cook this, bring it here, get paid —
+   and that is a job, not a favour. A favour is somebody telling
+   you a small problem and you deciding whether it is yours.
+
+   So: six of them, each from a person who has a reason to ask,
+   each earning merit rather than baht, and each visible while it
+   is running. A quest you accepted and cannot see is a quest you
+   will forget, so there is a card down the left with what you
+   said yes to, how far along it is, and nothing else.
+
+   You are never given one. You are offered one and you can say
+   no, and saying no is not held against you — they ask again
+   tomorrow, because that is what neighbours do.
+   ============================================================ */
+
+/* every quest: who asks, what it is, how to tell it is done */
+const QUESTS = {
+  lotus: {
+    who:'monk', icon:'give', need:3,
+    t:'Flowers for the day',
+    d:'Three flowers for the shrine. It is a day for it.',
+    ask:'It is a merit day and the shrine is bare. Three flowers, if you pass any.',
+    yes:'Anything that grew. It does not have to be fine.',
+    got:'That is the shrine dressed. Sit with it a moment if you like.',
+    have(){ return (GS.bag.flower||0); },
+    take(){ bagTake('flower',3); },
+    merit:6, heart:'monk',
+  },
+  somtam: {
+    who:'yai', icon:'cook', need:1,
+    t:'Som tam for Yai Pen',
+    d:'She wants som tam and will not admit she cannot pound it any more.',
+    ask:'My arm is not what it was. If somebody happened to make som tam, I would eat it.',
+    yes:'Not too sweet. I am not a tourist.',
+    got:'Hm. Better than mine. Do not repeat that.',
+    have(){ return (GS.bag.somtam||0); },
+    take(){ bagTake('somtam',1); },
+    merit:5, heart:'yai',
+  },
+  bamboo: {
+    who:'nok', icon:'lift', need:4,
+    t:'Poles for the stall',
+    d:'Four lengths of bamboo. The awning has been leaning since the rain.',
+    ask:'The awning leans more every week. Four good bamboo and I will sort it myself.',
+    yes:'Cut long. I can always cut it shorter.',
+    got:'Now it is a stall again instead of a lean-to.',
+    have(){ return (GS.bag.bamboo||0); },
+    take(){ bagTake('bamboo',4); },
+    merit:5, heart:'nok',
+  },
+  krathong: {
+    who:'mali', icon:'give', need:2,
+    t:'Two krathong',
+    d:'Mali wants to float one and needs a spare, for reasons she will not give.',
+    ask:'Can you make a krathong? Make two. The second one is not for me.',
+    yes:'The second one is for my mother. She is not here. That is all.',
+    got:'One each. You float yours where you like.',
+    have(){ return (GS.bag.krathong||0); },
+    take(){ bagTake('krathong',2); },
+    merit:8, heart:'mali',
+  },
+  collar: {
+    who:'dam', icon:'pet', need:1,
+    t:'Gohan had a family',
+    d:'His collar is somewhere in the long grass past the crossroad.',
+    ask:'That white dog had people once. Collar came off in the grass out east. He would want it back.',
+    yes:'You will know it. Blue, with a bell on it that does not ring any more.',
+    got:'Put it on him, then. He will pretend not to care.',
+    have(){ return (GS.bag.collar||0); },
+    take(){ bagTake('collar',1); },
+    merit:9, heart:'dam',
+  },
+  tomyum: {
+    who:'uncle', icon:'cook', need:2,
+    t:'Two bowls, one stall',
+    d:'Somebody ordered two tom yum and he is on his own tonight.',
+    ask:'Two tom yum, and I am one person. You have hands like winnowing fans. Help.',
+    yes:'Hot. They asked for hot. They will regret it and I will not.',
+    got:'Two bowls out on time. Thirty years and that has never once happened.',
+    merit:7, heart:'uncle',
+    have(){ return (GS.bag.tomyum||0); },
+    take(){ bagTake('tomyum',2); },
+  },
+};
+const QUEST_IDS = Object.keys(QUESTS);
+
+/* state lives in the save: 0 not offered, 'open' taken, 'done' finished */
+function questState(id){ return (GS.quests && GS.quests[id]) || null; }
+function questSet(id,v){ GS.quests = GS.quests||{}; GS.quests[id]=v; saveGame(); }
+const questOpen = ()=> QUEST_IDS.filter(id=>questState(id)==='open');
+const questDone = id => questState(id)==='done';
+/* what somebody has for you today, if anything */
+function questFor(npcId){
+  for(const id of QUEST_IDS){
+    const q=QUESTS[id];
+    if(q.who!==npcId) continue;
+    const st=questState(id);
+    if(st==='done') continue;
+    return {id, q, st};
+  }
+  return null;
+}
+/* quests unlock with the day, so the village does not hand you six at once */
+const QUEST_DAY = {lotus:3, somtam:4, bamboo:5, krathong:7, tomyum:6, collar:8};
+function questReady(id){ return DAY.n >= (QUEST_DAY[id]||1); }
+
+/* ---------- being asked ---------- */
+function offerQuest(id){
+  const q=QUESTS[id];
+  const npc = NPCS.find(n=>n.id===q.who);
+  say([{w:npc? npc.name : '', t:q.ask, e:'ask'}], ()=>{
+    /* a favour you cannot refuse is an errand; this one you can */
+    openCounter({
+      title:q.t, sub:q.d, note:'they will ask again tomorrow either way',
+      rows(){ return [
+        {n:L('yes, I will'), sub:L(q.yes), icon:q.icon, cost:0, ok:true,
+         fn(){ questSet(id,'open'); GS.state='play'; CNT=null; AU.ding();
+               toast(L('taken on'), PAL.jadeL, 'give');
+               say([{w:npc? npc.name:'', t:q.yes, e:'glad'}]); }},
+        {n:L('not today'), sub:L('no hard feelings'), icon:'walk', cost:0, ok:true,
+         fn(){ GS.state='play'; CNT=null; AU.blip(); }},
+      ]; }
+    });
+  });
+}
+/* ---------- handing it in ---------- */
+function questTurnIn(id){
+  const q=QUESTS[id];
+  const npc = NPCS.find(n=>n.id===q.who);
+  q.take();
+  questSet(id,'done');
+  addMerit(q.merit);
+  toast('+'+q.merit, PAL.gold, 'merit');
+  if(q.heart) heartAdd(q.heart, HEART_PTS, NPCS.find(n=>n.id===q.heart));
+  AU.bigDing();
+  for(let i=0;i<10;i++) part({k:'sp', x:(npc?npc.x:P.x)+rnd(-10,10), y:(npc?npc.y:P.y)-20,
+                              vx:rnd(-20,20), vy:-rnd(14,42), life:rnd(.6,1.1), c:PAL.goldL});
+  say([{w:npc? npc.name:'', t:q.got, e:'glad'}]);
+}
+/* ---------- the icon over their head while they are waiting ---------- */
+function questMark(n){
+  const f=questFor(n.id);
+  if(!f || !questReady(f.id)) return null;
+  if(f.st==='open') return QUESTS[f.id].have() >= QUESTS[f.id].need ? 'ready' : 'doing';
+  return 'offer';
+}
+/* ---------- the one thing that is not in anybody's hands ----------
+   Gohan's collar is not bought and not grown: it is lying in the long grass
+   a hundred paces east of the crossroad, where it came off, and it is only
+   there at all once somebody has told you to look for it. */
+const COLLAR_X = 7860;
+function questInteract(set, taken){
+  if(questState('collar')==='open' && !bagHas('collar') && Math.abs(P.x-COLLAR_X)<26)
+    set(COLLAR_X, groundY(COLLAR_X)-14, 'something in the grass', ()=>{
+      bagAdd('collar',1,true); AU.ding();
+      for(let i=0;i<8;i++) part({k:'sp',x:COLLAR_X+rnd(-8,8),y:groundY(COLLAR_X)-6,
+                                 vx:rnd(-14,14),vy:-rnd(10,30),life:rnd(.5,.9),c:'#7fb0d8'});
+      say([{w:'',t:'Blue, with a bell on it that does not ring any more.'}]);
+    }, null, 'pick');
+  for(const n of NPCS){
+    if(Math.abs(P.x-n.x)>30) continue;
+    const f=questFor(n.id);
+    if(!f || !questReady(f.id)) continue;
+    const q=f.q;
+    if(f.st==='open'){
+      if(q.have() >= q.need)
+        set(n.x, n.y-40, 'hand it over', ()=>questTurnIn(f.id), null, 'give');
+    } else {
+      set(n.x, n.y-40, 'they want a word', ()=>offerQuest(f.id), null, 'read');
+    }
+  }
+}
+
+/* ============================================================
+   THE CARD
+
+   Down the left, under the purse. One line a quest: the picture
+   of what it wants, the name of it, and a row of dots that fill
+   as you collect. No numbers, no percentages, no log to open.
+   ============================================================ */
+function drawQuestCard(g){
+  if(GS.state!=='play' || GS.plate || DLG || VIG || BURST) return;
+  if(DAY.card || DAY.sleeping) return;
+  const open=questOpen().filter(questReady);
+  if(!open.length) return;
+  const rows=open.slice(0,3);
+  const lh=14;
+  /* the card is cut to fit the longest line in it plus its dots, because a
+     fixed width is a guess and Thai and English are not the same length */
+  let w=60;
+  for(const id of rows){
+    const q=QUESTS[id];
+    w = Math.max(w, 19 + txtW(L(q.t),6) + 6 + Math.min(q.need,6)*5 + 5);
+  }
+  w=Math.min(w, 168);
+  const h=rows.length*lh+9;
+  const x=4, y=(GS._hudRow||30)+4;
+  cloud(g,x,y,w,h,{seed:71, body:'#f0e6c8'});
+  rows.forEach((id,i)=>{
+    const q=QUESTS[id], ry=y+8+i*lh;
+    const got=Math.min(q.have(), q.need), full=got>=q.need;
+    const shown=Math.round(got/q.need*Math.min(q.need,6));
+    spotGlyph(g, q.icon, x+9, ry+2, full? '#2f7a4a' : CL.ink);
+    const nm=L(q.t);
+    pTxt(g, nm, x+17, ry+5, full? '#2f7a4a' : CL.ink, 6);
+    /* the dots, right-aligned, one a thing */
+    const nd=Math.min(q.need,6);
+    for(let k=0;k<nd;k++){
+      const dx=x+w-6-(nd-1-k)*5;
+      if(k<shown) pEll(g,dx,ry+2,2,2,full? '#2f7a4a' : PAL.goldD);
+      else { pEll(g,dx,ry+2,2,2,'#c4b89e'); pEll(g,dx,ry+2,1,1,'#f0e6c8'); }
+    }
+  });
+  GS._questH = h+4;
 }
 /* ============================================================
    THINGS IN REACH
@@ -17323,22 +18332,46 @@ function paintEast(){
 /* ============================================================
    WHAT MOVES ON IT
    ============================================================ */
-const TRAFFIC=[], ROAD_DOGS=[];
-const VEH = ['moto','moto','moto','pickup','songthaew','moto'];
+const TRAFFIC=[], ROAD_DOGS=[], PARKED=[];
+/* Almost everything on a village road is a motorbike, so almost everything
+   here is a motorbike. The rest is what a motorbike cannot carry. */
+const VEH = ['moto','moto','moto','moto','family','sidecar','moto','pickup','songthaew','moto','delivery'];
+/* The road is the whole map now, not the stretch past the crossroad. A lane
+   with nothing on it between the farm and the shop made the village feel
+   like a diorama with one working corner. */
+const ROAD_W = 620, ROAD_E = 10400;
 function seedTraffic(){
-  for(let i=0;i<7;i++){
+  for(let i=0;i<18;i++){
     const dir = Math.random()<0.5? -1 : 1;
-    TRAFFIC.push({ kind:pick(VEH), x:rnd(6980,9040), dir,
-                   sp:rnd(52,128), t:rnd(9), horn:0 });
+    TRAFFIC.push({ kind:pick(VEH), x:rnd(ROAD_W,ROAD_E), dir,
+                   sp:rnd(46,124), t:rnd(9), horn:0, seed:(Math.random()*997)|0 });
   }
   for(const x of [7290, 8060, 8820]) ROAD_DOGS.push({x, hx:x, t:rnd(9), st:'sleep', sp:0, face:1, wake:0});
+  /* and the ones that are not going anywhere: every house has one leaning
+     under it, and there is a row of them outside the shop */
+  const spots=[1210,1340,1690,1960,2300,2560,2830,3150,4110,4160,5280,6220,7460,8140,8190,8240,9020];
+  for(const x of spots) PARKED.push({x, seed:(x*7)%991, lean:(x%3)-1});
+}
+/* how much of it is out at this hour: the school run and the evening market
+   are a wall of two-strokes; three in the morning is one dog and the moon */
+function trafficBusy(){
+  const h=DAY.min/60;
+  if(h>=6 && h<8.5)  return 1.0;
+  if(h>=16 && h<19)  return 1.0;
+  if(h>=8.5 && h<16) return 0.62;
+  if(h>=19 && h<22)  return 0.45;
+  return 0.16;
 }
 function stepTraffic(dt){
-  for(const v of TRAFFIC){
+  const busy=trafficBusy();
+  for(let i=0;i<TRAFFIC.length;i++){
+    const v=TRAFFIC[i];
+    v.out = (i/TRAFFIC.length) < busy;       // the rest are parked up somewhere
+    if(!v.out) continue;
     v.t+=dt;
     v.x += v.dir*v.sp*dt;
-    if(v.x<6900){ v.x=9100; }
-    if(v.x>9100){ v.x=6900; }
+    if(v.x<ROAD_W){ v.x=ROAD_E; }
+    if(v.x>ROAD_E){ v.x=ROAD_W; }
     /* it slows for a dog in the road, which is the correct behaviour and
        also the only reason the dog is still alive */
     for(const d of ROAD_DOGS) if(Math.abs(d.x-v.x)<40 && d.st==='sleep'){ v.horn=0.5; }
@@ -17388,6 +18421,59 @@ function drawVehicle(g,v){
     pR(g,x-18*f,gy-20+bob,13,7,shade(c1,-0.2));      // the tray, with sacks in it
     pR(g,x-16*f,gy-24+bob,4,5,'#9a8a6c'); pR(g,x-11*f,gy-23+bob,4,4,'#8a7a5c');
     pR(g,x+17*f,gy-11+bob,3,2,'#f2e0a0');
+  } else if(v.kind==='family'){
+    /* four on a bike, nobody in a helmet, the smallest one standing on the
+       footwell holding the mirror. Every single day, everywhere. */
+    const c1=['#c0392f','#3f6b4a','#2c5a7a'][(R(x)%3)];
+    pCirc(g,x-7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x-7*f,gy-4+bob,2,'#7a7a84');
+    pCirc(g,x+7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x+7*f,gy-4+bob,2,'#7a7a84');
+    pR(g,x-8*f,gy-10+bob,16,5,c1); pR(g,x-8*f,gy-10+bob,16,1,shade(c1,0.3));
+    pR(g,x-4*f,gy-14+bob,12,5,'#3a3630');
+    pTaper(g,x+6*f,gy-13+bob,x+10*f,gy-10+bob,2,1,'#9a9aa4');
+    const ry=gy-16+bob;
+    /* the little one out front, standing up, hands on the bars */
+    pR(g,x+4*f,ry-4,4,6,'#f2c14e'); pEll(g,x+5*f,ry-6,3,3,'#e8bc92');
+    pEll(g,x+5*f,ry-7.2,3.2,2.4,'#241c18');
+    /* the one riding, and two more behind */
+    pR(g,x-1*f,ry-8,6,10,'#e8dfc8'); pEll(g,x+1*f,ry-11,4,4,'#d8a878');
+    pEll(g,x+1*f,ry-12.4,4.2,3.2,'#241c18');
+    pR(g,x-7*f,ry-7,6,9,'#b47ba8'); pEll(g,x-5*f,ry-10,3.8,3.8,'#e8bc92');
+    pEll(g,x-5*f,ry-11.4,4,3,'#241c18');
+    pR(g,x-12*f,ry-5,5,7,'#4a7a9e'); pEll(g,x-10*f,ry-8,3.2,3.2,'#d8a878');
+    pEll(g,x-10*f,ry-9.2,3.4,2.6,'#241c18');
+  } else if(v.kind==='sidecar'){
+    /* รถพ่วง — the bike with a whole kitchen bolted to the side of it, a
+       glass case and a gas bottle and a bell */
+    const c1='#c8443a';
+    pCirc(g,x-6*f,gy-4+bob,4.2,'#2c2c30'); pCirc(g,x+8*f,gy-4+bob,4.2,'#2c2c30');
+    pCirc(g,x-16*f,gy-4+bob,3.6,'#2c2c30');
+    pR(g,x-6*f,gy-10+bob,14,5,'#3f6b4a');
+    pR(g,x-2*f,gy-14+bob,8,5,'#3a3630');
+    pTaper(g,x+7*f,gy-13+bob,x+11*f,gy-10+bob,2,1,'#9a9aa4');
+    /* the cart */
+    pR(g,x-24*f,gy-12+bob,20,8,c1); pR(g,x-24*f,gy-12+bob,20,1,shade(c1,0.3));
+    pR(g,x-23*f,gy-20+bob,18,8,'#e8e4da'); pR(g,x-22*f,gy-19+bob,16,6,'#c8d4d8');
+    for(let i=0;i<3;i++) pR(g,x-(21-i*5)*f,gy-17+bob,3,3,['#d8b04a','#c0392f','#57a869'][i]);
+    pR(g,x-25*f,gy-24+bob,22,4,'#d8552f'); pR(g,x-25*f,gy-24+bob,22,1,'#f07a4c');
+    for(const px of [-25,-5]) pR(g,x+px*f,gy-24+bob,1.6,5,'#9a9aa4');
+    pR(g,x-14*f,gy-27+bob,2,3,'#f2c14e');                       // the bell
+    const ry=gy-16+bob;
+    pR(g,x-1*f,ry-8,6,10,'#e8dfc8'); pEll(g,x+1*f,ry-11,4,4,'#d8a878');
+    pEll(g,x+1*f,ry-12.4,4.4,3.4,'#8a6a44');                    // a sun hat
+  } else if(v.kind==='delivery'){
+    /* the one with three gas bottles and a rack of eggs on the back */
+    const c1='#2c5a7a';
+    pCirc(g,x-7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x-7*f,gy-4+bob,2,'#7a7a84');
+    pCirc(g,x+7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x+7*f,gy-4+bob,2,'#7a7a84');
+    pR(g,x-8*f,gy-10+bob,16,5,c1); pR(g,x-8*f,gy-10+bob,16,1,shade(c1,0.3));
+    pR(g,x-2*f,gy-14+bob,8,5,'#3a3630');
+    pTaper(g,x+6*f,gy-13+bob,x+10*f,gy-10+bob,2,1,'#9a9aa4');
+    /* the load, stacked far higher than is reasonable */
+    for(let i=0;i<3;i++) pR(g,x-(13+i*4)*f,gy-22+bob-i*1,5,11,i%2?'#d8b04a':'#c0392f');
+    pR(g,x-20*f,gy-26+bob,12,5,'#e8dfc8'); pR(g,x-20*f,gy-26+bob,12,1,'#ffffff');
+    const ry=gy-16+bob;
+    pR(g,x-1*f,ry-8,6,10,'#f0e8d2'); pEll(g,x+1*f,ry-11,4,4,'#c9986f');
+    pEll(g,x+1*f,ry-12.4,4.4,3.4,'#2c5a7a');
   } else {
     const c1='#2b6a8a';
     pCirc(g,x-14*f,gy-5+bob,5.4,'#2c2c30'); pCirc(g,x-14*f,gy-5+bob,2.4,'#7a7a84');
@@ -17426,8 +18512,30 @@ function drawRoadDog(g,d){
   }
 }
 function drawTraffic(g){
-  for(const v of TRAFFIC){ if(v.x-GS.camX<-70||v.x-GS.camX>W+70) continue; drawVehicle(g,v); }
+  for(const v of TRAFFIC){ if(!v.out) continue;
+    if(v.x-GS.camX<-70||v.x-GS.camX>W+70) continue; drawVehicle(g,v); }
   for(const d of ROAD_DOGS){ if(d.x-GS.camX<-40||d.x-GS.camX>W+40) continue; drawRoadDog(g,d); }
+}
+/* the ones leaning under every house, which is most of them */
+function drawParked(g){
+  for(const m of PARKED){
+    if(m.x-GS.camX<-40||m.x-GS.camX>W+40) continue;
+    drawParkedMoto(g,m.x,groundY(m.x),m.seed,m.lean);
+  }
+}
+function drawParkedMoto(g,x,gy,seed,lean){
+  const c1=['#c0392f','#2c5a7a','#3f6b4a','#d8b04a','#e8e4da','#8a6a44'][seed%6];
+  const f = lean<0? -1:1;
+  pEll(g,x,gy+1,13,2.6,'rgba(10,8,20,0.26)');
+  pCirc(g,x-6*f,gy-4,4.0,'#2c2c30'); pCirc(g,x-6*f,gy-4,1.8,'#7a7a84');
+  pCirc(g,x+6*f,gy-4,4.0,'#2c2c30'); pCirc(g,x+6*f,gy-4,1.8,'#7a7a84');
+  pR(g,x-7*f,gy-9,14,4,c1); pR(g,x-7*f,gy-9,14,1,shade(c1,0.3));
+  pR(g,x-2*f,gy-12,7,4,'#3a3630');                    // the seat
+  pTaper(g,x+5*f,gy-11,x+9*f,gy-8,2,1,'#9a9aa4');     // and the bars
+  pR(g,R(x+8*f),R(gy-12),2,3,'#9a9aa4');
+  pTaper(g,x-7*f,gy-6,x-9*f,gy-1,1.6,1,'#8a8a94');    // the stand it is leaning on
+  if(seed%3===0){ pR(g,x-9*f,gy-14,6,6,'#9a8a6c'); pR(g,x-9*f,gy-14,6,1,'#b8a888'); }  // a crate
+  if(seed%4===0) pEll(g,x+1*f,gy-15,3.2,2.4,['#c0392f','#2c5a7a','#f2c14e'][seed%3]);  // a helmet on the seat
 }
 BUILD_STEPS.push(['grading the road east', paintEast]);
 BUILD_STEPS.push(['letting the traffic out', seedTraffic]);
@@ -17777,18 +18885,33 @@ function drawStealthScene(g){
    their hands up, and by the end they wai.
    ============================================================ */
 
-/* where each of them is at a given hour, and what their hands are doing */
+/* Where each of them is at a given hour, and what their hands are doing.
+   A day in a village is not eight hours of work and sixteen of nothing: it
+   is up before light, the hardest part done before the heat, four hours of
+   sitting very still in the shade, and then everything else crammed into
+   the cool of the evening. That shape is what these rows are.
+
+   999 is the shade under the tamarind and 997 is the stall, which is where
+   the village actually happens. There was a third — the shop out on the
+   town road — and it was four thousand pixels away, so a villager sent
+   there at six spent the entire game walking to it and was standing in the
+   middle of somebody else's job for most of the day. A daily routine has
+   to fit inside a day's walking. */
 const NPC_DAY = {
-  yai:  [ [5.5, 8.5, -22, 'sweep'],  [8.5, 11, 6, 'winnow'], [11, 15, 999, 'fan'],
-          [15, 18.5, -14, 'winnow'], [18.5, 21, 0, null],    [21, 29, 0, 'in'] ],
-  nok:  [ [5.5, 7, 0, null],         [7, 19.5, 0, 'stir'],   [19.5, 21.5, 0, null],
+  yai:  [ [5.0, 6.2, -22, 'sweep'],   [6.2, 7.2, 997, null],   /* out for breakfast */
+          [7.2, 8.5, -22, 'sweep'],   [8.5, 11, 6, 'winnow'],  [11, 15.2, 999, 'fan'],
+          [15.2, 17, -14, 'winnow'],  [17, 18.6, 997, null],   /* and the evening market */
+          [18.6, 21, 0, null],        [21, 29, 0, 'in'] ],
+  nok:  [ [4.8, 6, 0, 'stir'],        [6, 19.5, 0, 'stir'],    [19.5, 20.6, 997, null],
+          [20.6, 21.8, 0, null],      [21.8, 29, 0, 'in'] ],
+  dam:  [ [5.2, 8.8, -120, null],     [8.8, 11.5, -40, 'mend'],[11.5, 15.2, 999, 'fan'],
+          [15.2, 17.4, -30, 'mend'],  [17.4, 19, 997, null],   [19, 21.5, -110, null],
           [21.5, 29, 0, 'in'] ],
-  dam:  [ [5.5, 9, -120, null],      [9, 11.5, -40, 'mend'], [11.5, 15, 999, 'fan'],
-          [15, 18, -30, 'mend'],     [18, 21.5, -110, null], [21.5, 29, 0, 'in'] ],
-  mali: [ [6.5, 11, 40, null],       [11, 15, 999, null],    [15, 18.5, -30, null],
-          [18.5, 29, 0, 'in'] ],
-  uncle:[ [5.5, 22, 0, 'stir'],      [22, 29, 0, 'in'] ],
-  monk: [ [5.5, 9.5, 0, 'alms'],     [9.5, 29, 0, null] ],
+  mali: [ [6.4, 7.4, 997, null],      [7.4, 11, 40, null],     [11, 15.4, 999, null],
+          [15.4, 18.6, -30, null],    [18.6, 29, 0, 'in'] ],
+  uncle:[ [5.2, 6.4, 997, null],      [6.4, 22, 0, 'stir'],    [22, 29, 0, 'in'] ],
+  monk: [ [5.5, 9.5, 0, 'alms'],      [9.5, 16, 0, null],      [16, 18, -40, 'sweep'],
+          [18, 29, 0, null] ],
 };
 const SHADE_X = TAMARIND_X + 6;          // where everybody goes at one o'clock
 
@@ -17798,11 +18921,17 @@ function npcPlan(v){
   if(!rows) return null;
   for(const r of rows){
     const a=r[0], b=r[1];
-    if(h>=a && h<b) return { x: r[2]===999? SHADE_X : v.home+r[2], job: r[3] };
-    if(a>b && (h>=a || h<b)) return { x: r[2]===999? SHADE_X : v.home+r[2], job: r[3] };
+    if(h>=a && h<b) return { x: planX(v,r[2]), job: r[3] };
+    if(a>b && (h>=a || h<b)) return { x: planX(v,r[2]), job: r[3] };
   }
   const last=rows[rows.length-1];
-  return { x: v.home+last[2], job: last[3] };
+  return { x: planX(v,last[2]), job: last[3] };
+}
+/* the three shared places, and everywhere else measured from their own door */
+function planX(v, off){
+  if(off===999) return SHADE_X;
+  if(off===997) return STALL_X + ((v.id.charCodeAt(0)%3)-1)*20;
+  return v.home+off;
 }
 /* what the wander code asks for when it wants somewhere to go */
 function npcWant(v){
@@ -17894,15 +19023,56 @@ function stepNotice(dt){
    the whole of this file's prose sat in English for weeks because it was
    built out of array literals nobody was walking. */
 const GREET = ['sawatdee ka','you again ~','morning'];
-/* ---------- two people, standing next to each other ---------- */
+/* ---------- two people, standing next to each other ----------
+   The pool used to be six lines picked at random, which is a radio, not a
+   conversation: you heard about the mended lamp on the morning you mended
+   it and again a week later. They are sorted by what is true now — the
+   hour, the weather, what you have actually done, what somebody has asked
+   you for — and the general ones are only the fallback. */
 const CHATTER = [
   ['Rain by Friday, they say.', 'They said that last week.'],
   ['Your beds are further on than mine.', 'I water them at four. That is all it is.'],
   ['Did you hear about the tall one?', 'I have eyes. I have seen the tall one.'],
   ['Somchai is still out with that cart.', 'He will be out with that cart when we are gone.'],
-  ['The lamp on the corner is mended.', 'Somebody did that. Nobody says who.'],
   ['Eighty-one and up a ladder again.', 'Let her. She will only do it when you leave.'],
 ];
+const CHAT_DAWN = [
+  ['You are up before the birds again.', 'The birds are lazy. I have said so for years.'],
+  ['Did you hear the monk go past?', 'I heard the dogs hear the monk go past.'],
+];
+const CHAT_HOT = [
+  ['Too hot to stand in.', 'Too hot to sit in. I am doing it anyway.'],
+  ['Even the dogs have given up.', 'The dogs gave up first. The dogs are the clever ones.'],
+];
+const CHAT_DUSK = [
+  ['Smell that. Somebody is frying chilli.', 'Somebody is frying chilli badly.'],
+  ['Kids are still out on the road.', 'They will come in when they are hungry. Not before.'],
+];
+const CHAT_NIGHT = [
+  ['Quiet tonight.', 'You say that and then a motorbike.'],
+  ['The lamp on the corner is mended.', 'Somebody did that. Nobody says who.'],
+];
+const CHAT_YOU = [
+  ['Whoever is working that field is not sleeping.', 'Whoever it is, they are not the sleeping kind.'],
+  ['Somebody has been putting things on the shrine.', 'It is not me. I assumed it was you.'],
+  ['Things get done round here that nobody claims.', 'Leave it. Do not go looking into it.'],
+];
+const CHAT_QUEST = [
+  ['I asked for a favour and I think I am getting it.', 'From who?'],
+  ['Something is being seen to.', 'Do not ask. It is being seen to.'],
+];
+function chatPool(){
+  const h=DAY.min/60;
+  const out=[];
+  if(h>=5 && h<8)    out.push(...CHAT_DAWN);
+  if(h>=11 && h<15.5)out.push(...CHAT_HOT);
+  if(h>=16 && h<19.5)out.push(...CHAT_DUSK);
+  if(h>=20 || h<5)   out.push(...CHAT_NIGHT);
+  /* they have noticed you, without ever having met you */
+  if(GS.merit>18 || FARM.rented) out.push(...CHAT_YOU);
+  if(typeof questOpen==='function' && questOpen().length) out.push(...CHAT_QUEST);
+  return out.length? out.concat(CHATTER) : CHATTER;
+}
 let chatCd = 9;
 function stepChatter(dt){
   chatCd -= dt;
@@ -17912,7 +19082,7 @@ function stepChatter(dt){
   for(let i=0;i<idle.length;i++) for(let j=i+1;j<idle.length;j++){
     const a=idle[i], b2=idle[j];
     if(Math.abs(a.x-b2.x)>40) continue;
-    const line = pick(CHATTER);
+    const line = pick(chatPool());
     a.face = b2.x<a.x? -1:1; b2.face = a.x<b2.x? -1:1;
     a.bub={t:3.0,txt:line[0]};
     setTimeout(()=>{ if(b2) b2.bub={t:3.0,txt:line[1]}; }, 1500);
@@ -18047,6 +19217,63 @@ function stepSpiritLife(dt){
   }
 }
 
+/* ---------- เพลงชาติ ----------
+   Eight in the morning and six in the evening, the loudspeaker on the pole
+   plays the national anthem and the entire country stops where it is
+   standing and faces it, for one minute, every single day. It is the most
+   ordinary thing in Thailand and the strangest thing to watch if you have
+   never seen it. Nobody explains it to you; the village simply stops, and
+   you work out that you are the only thing still moving. */
+const ANTHEM = { on:false, t:0, at:0 };
+const ANTHEM_X = SALA_X - 40;              // the pole with the horn on it
+function stepAnthem(dt){
+  const h=DAY.min/60;
+  const due = (h>=8 && h<8.03) || (h>=18 && h<18.03);
+  if(due && !ANTHEM.on && !storyBusy()){
+    ANTHEM.on=true; ANTHEM.t=0; ANTHEM.at=DAY.n*100+Math.floor(h);
+    AU.gong(196,0,0.05);
+  }
+  if(!ANTHEM.on) return;
+  ANTHEM.t += dt;
+  if(ANTHEM.t > 26){ ANTHEM.on=false; return; }
+  /* everybody stops and faces the pole. The kids stop too, which is the
+     detail that sells it — they hate it and they stop anyway. */
+  for(const n of NPCS){
+    if(n.inside) continue;
+    n.state='idle'; n.vx=0; n.routine=false; n.jobOn=false;
+    n.face = ANTHEM_X < n.x ? -1 : 1;
+  }
+  if(typeof KIDS!=='undefined') for(const k of KIDS){
+    if(k.st==='gone') continue;
+    k.st='stand'; k.vx=0; k.face = ANTHEM_X < k.x ? -1 : 1;
+  }
+  if(typeof BALL!=='undefined'){ BALL.vx*=0.9; }
+  /* a few notes out of the horn, every couple of seconds */
+  if(Math.floor(ANTHEM.t*0.5) !== Math.floor((ANTHEM.t-dt)*0.5))
+    AU.ranat([392,440,494,523,587][Math.floor(ANTHEM.t/2)%5], 0, 0.028);
+  /* and standing still for it is worth something, once a day */
+  if(ANTHEM.t>6 && Math.abs(P.vx)<4 && !GS.seen['anthem_'+ANTHEM.at]){
+    GS.seen['anthem_'+ANTHEM.at]=true;
+    addMerit(2,true); toast('+2', PAL.gold, 'merit');
+  }
+}
+function drawAnthem(g){
+  if(!ANTHEM.on) return;
+  const x=ANTHEM_X-GS.camX;
+  if(x<-30||x>W+30) return;
+  const gy=groundY(ANTHEM_X)-GS.camY;
+  /* the horn on the pole, and the sound coming out of it */
+  pR(g,R(x-1),R(gy-74),3,50,'#8b8fa3');
+  pTri(g,x+2,gy-78, x+10,gy-84, x+10,gy-70,'#9a9aa4');
+  pEll(g,x+1,gy-76,2.4,3.4,'#5f6472');
+  for(let i=0;i<3;i++){
+    const a=clamp(Math.sin(GS.t*4-i)*0.5+0.4,0,1);
+    g.globalAlpha=a*0.8;
+    pEll(g, x+13+i*4, gy-77-i*1.5, 1.4+i*0.5, 3+i, 'rgba(242,193,78,0.5)');
+    g.globalAlpha=1;
+  }
+}
+
 function stepLife(dt){
   /* nobody walks off to sweep a yard in the middle of being spoken to — and
      nobody has a routine at all on the first night, when the story is driving
@@ -18054,6 +19281,8 @@ function stepLife(dt){
      his pot in the middle of sowing his own field is not a daily rhythm, it is
      a bug with a schedule. */
   if(GS.state!=='play' || DLG || storyBusy()) return;
+  stepAnthem(dt);
+  if(ANTHEM.on) return;          // the village is standing still
   stepAlms(dt);
   stepNotice(dt);
   stepChatter(dt);
@@ -18098,6 +19327,8 @@ const WIPE_DUR = { fade:0.30, iris:0.52, rows:0.44, page:0.26, gold:0.70, night:
 
 /* cover, do the thing, uncover. Calling it again while one is running
    replaces the pending job rather than stacking two covers. */
+/* a new game must not inherit somebody else's half-finished transition */
+function wipeCancel(){ WIPE.on=false; WIPE.done=true; WIPE.t=0; WIPE.fn=null; WIPE.kind=null; }
 function wipeTo(fn, kind, dur){
   kind = kind||'fade';
   if(WIPE.on && !WIPE.done){ WIPE.fn = fn||WIPE.fn; return; }
@@ -18124,6 +19355,12 @@ function stepWipe(dt){
     WIPE.done=true;
     const f=WIPE.fn; WIPE.fn=null;
     if(f) try{ f(); }catch(e){}
+    /* A wipe fires halfway through, which is AFTER the frame's state guard
+       has already run — so a callback that sets a state whose object has
+       been cleared since the wipe started (a new game, a cancelled kitchen)
+       gets a whole frame of drawing a screen with nothing behind it, which
+       is the black-screen-for-good bug. Check it again here. */
+    if(typeof guardState==='function') guardState();
   }
   if(WIPE.t>=WIPE.dur){ WIPE.on=false; WIPE.t=0; WIPE.kind=null; }
 }
@@ -18626,6 +19863,131 @@ function drawTitle(){
 
 }
 /* ============================================================
+   THE OPENING
+
+   Before the title there is a minute of the village at three in
+   the morning, and you are not in it.
+
+   It is not a painted sequence — there is no such thing in this
+   game. It is the world itself, with the interface taken off and
+   the camera moved by hand: down the road past the shuttered
+   stall, over the parked bikes and the sleeping dogs, along the
+   wires, through the temple, and out to the burial ground, where
+   it stops on one patch of turned earth and pushes in until the
+   earth is all there is. Then the title.
+
+   Which means it can never go stale. Add a house and the house
+   is in the opening. Move the tamarind and the camera pans past
+   the new one.
+
+   Any key skips it, and it only plays once per visit — the
+   second time you open the game you want to be playing it.
+   ============================================================ */
+const INTRO = { on:false, t:0, i:0, done:false, fade:0, skip:0, idle:0 };
+/* It runs off the title, not in front of it. Five seconds of nobody
+   touching anything and the camera goes for a walk; the first key or tap
+   brings the title back. That is an attract screen, and it is the right
+   shape for this: somebody who came to play is playing inside a second,
+   and somebody who put the phone down gets the village at three a.m. */
+const INTRO_IDLE = 5.0;
+function introTick(dt){
+  if(INTRO.on) return;
+  if(anyPress()){ INTRO.idle=0; return; }
+  INTRO.idle += dt;
+  if(INTRO.idle >= INTRO_IDLE) introStart();
+}
+
+/* Where the camera goes, how long it lingers, and how far in it is.
+   z is a crop: 1 is the whole 480x270 frame, 0.6 is a push-in. ty is where
+   in the frame that crop is taken from — 0.5 is the middle, and the middle
+   of this game is sky, so most of these sit lower than that. */
+const INTRO_SHOTS = [
+  { x: 8180, t: 5.0, z: 0.80, pan:  34, ty: 0.62 },  // the shop, the only light on the road
+  { x: 7420, t: 4.6, z: 0.92, pan: -40, ty: 0.58 },  // the crossroad, a dog asleep in it
+  { x: 4080, t: 5.2, z: 0.74, pan:  26, ty: 0.44 },  // the temple: the chedi wants headroom
+  { x: 2790, t: 5.0, z: 0.86, pan: -34, ty: 0.60 },  // the stall, shuttered, one lamp lit
+  { x: 1180, t: 4.4, z: 0.90, pan:  30, ty: 0.60 },  // the houses, everybody asleep
+  { x:  430, t: 6.0, z: 0.50, pan:   8, ty: 0.80 },  // and the burial ground, pushing in
+];
+const INTRO_LEN = INTRO_SHOTS.reduce((a,s)=>a+s.t,0);
+
+function introStart(){
+  INTRO.on=true; INTRO.t=0; INTRO.i=0; INTRO.fade=1; INTRO.skip=0; INTRO.done=false;
+  INTRO.wasState=GS.state; GS.state='intro';
+  /* three in the morning, the village asleep, nothing of the HUD showing */
+  DAY.n=1; DAY.min=3*60; setTOD(todFromClock(DAY.min),true);
+  GS.plate=1; DLG=null; VIG=null; BURST=null; HINT=null;
+  P.x=-4000;                       // he is not in this. he is still under the ground.
+  clearPress();
+}
+function introEnd(){
+  INTRO.on=false; INTRO.done=true; INTRO.idle=0; GS.plate=0;
+  P.x=300; P.y=groundY(300);
+  GS.state='title'; clearPress();
+}
+function introShot(){
+  let t=INTRO.t;
+  for(const s of INTRO_SHOTS){ if(t<s.t) return {s, u:t/s.t}; t-=s.t; }
+  const last=INTRO_SHOTS[INTRO_SHOTS.length-1];
+  return {s:last, u:1};
+}
+function stepIntro(dt){
+  INTRO.t += dt;
+  if(INTRO.fade>0) INTRO.fade=Math.max(0,INTRO.fade-dt*1.6);
+  /* the world keeps running underneath: the lanterns swing, a bike goes
+     past, a dog gets up. A still photograph would look like a loading screen */
+  if(typeof stepTraffic==='function') stepTraffic(dt);
+  if(typeof stepPets==='function')    stepPets(dt);
+  if(typeof stepCritters==='function')stepCritters(dt);
+  GS.t += dt; GS.wind = Math.sin(GS.t*0.31)*0.6 + Math.sin(GS.t*0.13)*0.4;
+  const {s,u} = introShot();
+  GS.camX = clamp(s.x - W/2 + s.pan*(u-0.5)*2, 0, WORLD_W-W);
+  GS.camY = 0;
+  if(anyPress()){ INTRO.skip += 1; }
+  if(INTRO.skip>0 || INTRO.t>=INTRO_LEN){ clearPress(); introEnd(); }
+}
+/* called at the end of the ordinary render pass, with the world already on
+   the canvas: crop into it, letterbox it, and fade it */
+function introOverlay(){
+  const g=ctx;
+  const {s,u} = introShot();
+  const z = lerp(s.z, s.z*0.94, ease(u));
+  if(z<0.999){
+    const cw=Math.round(W*z), ch=Math.round(H*z);
+    const cx=Math.round((W-cw)/2);
+    const cy=Math.round(clamp((s.ty===undefined?0.5:s.ty)*H - ch/2, 0, H-ch));
+    const tmp=introBuf(cw,ch);
+    const tg=G2(tmp);
+    tg.drawImage(cv, Math.round(cx*SC), Math.round(cy*SC), Math.round(cw*SC), Math.round(ch*SC),
+                     0,0, cw, ch);
+    g.save(); g.setTransform(SC,0,0,SC,0,0); g.imageSmoothingEnabled=false;
+    g.drawImage(tmp, 0,0,cw,ch, 0,0,W,H);
+    g.restore();
+  }
+  /* a wide letterbox, which is the whole language of "this is a film" */
+  const bar = 30;
+  pR(g,0,0,W,bar,'#07060f'); pR(g,0,H-bar,W,bar,'#07060f');
+  /* a fade from black at the top of each shot, and out at the very end */
+  let dark = INTRO.fade;
+  if(u<0.10) dark=Math.max(dark, (0.10-u)/0.10*0.85);
+  if(u>0.93) dark=Math.max(dark, (u-0.93)/0.07*0.85);
+  if(INTRO.t>INTRO_LEN-0.7) dark=Math.max(dark, 1-(INTRO_LEN-INTRO.t)/0.7);
+  if(dark>0){ g.globalAlpha=clamp(dark,0,1); pR(g,0,0,W,H,'#07060f'); g.globalAlpha=1; }
+  /* and the one piece of furniture: a dot per shot, bottom right, so you can
+     see it is going somewhere and how much is left */
+  let idx=0, t=INTRO.t;
+  for(let i=0;i<INTRO_SHOTS.length;i++){ if(t<INTRO_SHOTS[i].t){ idx=i; break; } t-=INTRO_SHOTS[i].t; idx=i; }
+  for(let i=0;i<INTRO_SHOTS.length;i++)
+    pEll(g, W-10-(INTRO_SHOTS.length-1-i)*5, H-bar-8, 1.6,1.6,
+         i<=idx? 'rgba(242,230,200,0.85)' : 'rgba(242,230,200,0.25)');
+}
+let _introBuf=null;
+function introBuf(w,h){
+  if(!_introBuf || _introBuf.width!==w || _introBuf.height!==h) _introBuf=mkCv(w,h);
+  return _introBuf;
+}
+const ease = u => u<0.5? 2*u*u : 1-Math.pow(-2*u+2,2)/2;
+/* ============================================================
    UPDATE
    ============================================================ */
 /* ---------- the seatbelt ----------
@@ -18665,6 +20027,7 @@ function update(dt){
   if(typeof stepTraffic==='function' && GS.state==='play') stepTraffic(dt);
   if(typeof stepQTE==='function') stepQTE(dt);
   if(typeof stepPets==='function' && GS.state==='play') stepPets(dt);
+  if(typeof stepKids==='function' && GS.state==='play') stepKids(dt);
   if(typeof stepSneak==='function') stepSneak(dt);
   if(typeof stepStealth==='function') stepStealth(dt);
   /* while a quick-time is up he does not go anywhere */
@@ -18672,8 +20035,12 @@ function update(dt){
   if(press('lang')){ toggleLang(); toast(LANG==='th'?'ภาษาไทย':'English','#9ecbff'); }
 
   switch(GS.state){
+    case 'intro': stepIntro(dt); break;
     case 'title':{
       TP.anim+=dt;
+      /* nobody has touched it for five seconds: go for a walk */
+      if(typeof introTick==='function' && !loadSaveRaw()) introTick(dt);
+      if(GS.state!=='title') break;
       const tapped=press('tap'), acted=press('act'), newKey=press('newgame');
       /* the new-night plaque only counts when a finger landed on it: a key
          press has no position, and TAP still holds wherever the mouse was */
@@ -18788,6 +20155,8 @@ function saveGame(){
       dy:DAY.n|0, dm:Math.round(DAY.min), shp:DAY.ship.map(o=>({i:o.id,n:o.n})),
       en:Math.round(GS.en===undefined?enMax():GS.en),
       ht:GS.hearts, tk:GS.talked, gf:GS.gifted, inc:GS.incense|0,
+      /* what you said yes to, and which animal is walking with you */
+      qs:GS.quests||{}, pet:GS.pet||null, ph:GS.petH||{},
       /* the first night: which beat, where the two carry-jars ended up,
          and what time it had got to */
       st:GS.ch|0, tod:+(TOD.to.toFixed(3)),
@@ -18840,6 +20209,7 @@ function newGame(){
   GS.learned={}; GS.tut=0; GS.dawn=0; GS.ready=false; GS.mem={}; GS.human=0; GS.bankDue=0; BURST=null;
   GS.baht=0; GS.water=0; GS.rice0=0; GS.chops=0; HINT=null;
   GS.hearts={}; GS.talked={}; GS.gifted={}; GS.incense=0; GS.en=undefined;
+  GS.quests={}; GS.pet=null; GS.petH={};
   DAY.n=1; DAY.min=DAY_START; DAY.ship.length=0; DAY.sleeping=0; DAY.card=null; DAY.meritT=0;
   GS.ch=0;
   resetFarm();
@@ -18851,6 +20221,11 @@ function newGame(){
   BUGS.length=0; bugCool=6;
   ORDERS.length=0; orderCool=14;
   P.carry=null; P.gulp=0; P.plat=null; SEEDS.length=0;
+  /* and nothing half-finished left over: a new game that starts with an
+     old cooking session still in ACT is a state with nothing behind it,
+     which is the one bug that turns the screen black for good */
+  ACT=null; CNT=null; HT=null; QTE=null; PROMPT=null; SPOTS.length=0;
+  if(typeof wipeCancel==='function') wipeCancel();
   P.x=GRAVE_X; P.y=groundY(GRAVE_X); P.vx=0; P.vy=0; P.rise=0; P.act=null; VIG=null;
   resetWorld();
   GS.camX=clamp(P.x-W/2,0,WORLD_W-W); GS.camY=0;
@@ -18918,6 +20293,8 @@ function continueGame(sv){
     ORDERS.push({who:o.w,dish:o.d,n:o.n|0||1,got:o.g|0,pay:o.p|0,merit:o.m|0});
   }
   resetWorld();
+  GS.quests = sv.qs || {};
+  GS.pet = sv.pet || null; GS.petH = sv.ph || {};
   if(sv.met)  for(const id of sv.met){ const s=SPIRIT_BY_ID[id]; if(s) s.met=true; }
   if(sv.pals) for(const id of sv.pals){ const s=SPIRIT_BY_ID[id]; if(s){ s.friend=true; s.met=true; } }
   if(GS.q.lamp){ const bl=LIGHTS.find(l=>l.broken); if(bl) bl.on=true; }

@@ -100,6 +100,21 @@ night is a small plaque you can actually hit. **N** still works if you have one.
 
 **Playtime:** an hour and a half or so · built for phones, fine on desktop · sound on if you can
 
+## Before you play
+
+Leave the title screen alone for five seconds and the camera goes for a walk.
+
+Not a painted sequence — there is no such thing in this game. It is the world
+itself at three in the morning with the interface taken off: the shop, the only
+light left on the road; the crossroad with a dog asleep in the middle of it; the
+temple; the shuttered stall with one lamp swinging; the houses with everybody in
+them; and then the burial ground, pushing slowly in on one patch of turned
+earth. Thirty seconds, letterboxed, and any key brings the title back.
+
+Which means it can never go stale. Add a house and the house is in the opening.
+
+![the village at three in the morning](screenshots/the-opening.png)
+
 ## Play
 
 Open `index.html` in any browser. One self-contained file — no build, no assets,
@@ -616,6 +631,28 @@ Every one of those is a *gesture*, not a menu tick: he folds ninety pixels of
 leg into a crouch, reaches both long arms down to the soil, and the thing
 happens at the moment his hands actually get there.
 
+## Almost everything on the road is a motorbike
+
+Because almost everything on a village road is a motorbike. There were seven
+vehicles, all of them on the stretch past the crossroad, which made the rest of
+the map a diorama with one working corner. There are eighteen now and they run
+the **whole length of it**, and about half of them are two-stroke:
+
+- the ordinary one, one rider, helmet optional
+- **four on a bike**, nobody in a helmet, the smallest one standing on the
+  footwell holding the mirror — every day, everywhere
+- a **รถพ่วง**, the bike with a whole kitchen bolted to its side: a glass case,
+  a gas bottle, an awning and a bell
+- the **delivery**, with three gas bottles and a rack of eggs stacked far higher
+  than is reasonable
+- and the pickup and the สองแถว, for what a motorbike cannot carry
+
+How many are out depends on the hour: the school run and the evening market are
+a wall of them, and three in the morning is one dog and the moon. **And there is
+one leaning under every house** — seventeen parked, with a crate on the back or
+a helmet left on the seat, because that is what the ground floor of a Thai house
+is for.
+
 ## A village with a day in it
 
 Everybody used to do the same thing at three in the morning as at three in the
@@ -694,6 +731,45 @@ long grass. Catch all six and the ledger notices.
 
 ![catching a firefly](screenshots/the-net.png)
 
+## Half past four, and the lane fills with children
+
+Between four and half past six every lane in rural Thailand fills with children
+who have just got out of school and have not yet been called in for dinner.
+They play two things, and now so do these.
+
+**เตะบอล.** Four of them, a ball, and **two sandals for a goal** — which is what
+a goal is. Whoever is nearest chases it and belts it at somebody else, which is
+the whole of village football; everybody else drifts toward where it is going,
+badly. They are wearing **market-copy shirts**: two English clubs, the national
+side, and three nobody can identify any more, each with somebody's number on the
+back. Stand in the middle of it and the ball comes to you, because a nine-foot
+ghost standing in the road is the only invitation a Thai child needs. Kick it
+back and that is worth something.
+
+**เบย์เบลด.** Too hot for the pitch between ten and half past three, so they are
+in the shade with a **plastic washing-up bowl** and two spinning tops, which has
+been the playground currency here for twenty years and comes back round every
+time the cartoon is rerun. Three — two — one, and they let go together; the tops
+circle, clash, and one of them goes over the rim. You can stand and watch, and
+watching is worth something too.
+
+| | |
+|---|---|
+| ![football in the lane](screenshots/the-kids.png) | ![spinning tops in a washing-up bowl](screenshots/beyblade.png) |
+
+## Eight in the morning, and six at night
+
+The loudspeaker on the pole plays the national anthem twice a day and the entire
+country stops where it is standing and faces it, for one minute, every single
+day. It is the most ordinary thing in Thailand and the strangest thing to watch
+if you have never seen it.
+
+Nobody explains it to you. The village simply stops — the villagers, the kids,
+the ball — and you work out that you are the only thing still moving. Stand
+still for it and that is worth something, once a day.
+
+![the whole village facing the same way](screenshots/the-anthem.png)
+
 ## And everything else that lives here
 
 A village at night is not empty and a village in the morning is extremely not
@@ -728,6 +804,29 @@ halves what gets into the crop** overnight. One at a time, and you can leave it
 wherever you like and ask another.
 
 ![the animals](screenshots/the-animals.png)
+
+**And they have a day of their own.** A village animal is not a wander with a
+radius on it. A cat is flat out in the shade from nine until four and then owns
+the place until dawn; a dog is asleep on the warm concrete at noon, up and
+shouting at three in the morning, and only really busy at dusk when the cooking
+starts. The hour picks the behaviour and the behaviour picks how far it will go
+and how fast.
+
+**And they have opinions about each other.** Two that meet do something about
+it: two dogs sniff and then either play a lap of the road or lie down together;
+two cats groom a friend or freeze at a stranger, neither of them blinking; and a
+dog meeting a cat is the oldest scene in the village. None of it is written down
+anywhere — it is a picture over their heads and a change in what they are doing,
+which is how you read an animal in life too.
+
+**Gohan.** Fifteen now, because one of them is not a soi dog. The others are
+short-haired, lean and the colour of the road; he has a thick white coat that
+moves a beat behind him, a ruff round his neck and a plumed tail carried up over
+his back. He is somebody's dog who stopped having a somebody, and he still sits
+when a person walks past, out of a habit nobody rewards any more. Loong Dam will
+tell you where the collar came off.
+
+![Gohan, out past the crossroad](screenshots/gohan.png)
 
 **Chickens** peck and scratch under the houses and scatter when you get close,
 and roost when it is dark. **Frogs** sit at the pond and out in the flooded
@@ -1075,6 +1174,34 @@ cleanly and the juice comes over the rim.
 
 ![the mortar](screenshots/pounding-som-tam.png)
 
+## Six favours, and a card that remembers them
+
+The village had orders — cook this, bring it here, get paid — and that is a job,
+not a favour. A favour is somebody telling you a small problem and you deciding
+whether it is yours.
+
+| Who asks | What they want | Why |
+|---|---|---|
+| **Luang Pi** | three flowers | it is a merit day and the shrine is bare |
+| **Yai Pen** | som tam | her arm is not what it was, and she will not say so |
+| **P'Nok** | four bamboo | the awning has leaned since the rain |
+| **Mali** | two krathong | the second one is for her mother, who is not here |
+| **Lung Somchai** | two tom yum | somebody ordered two and he is one person |
+| **Loong Dam** | Gohan's collar | it came off in the long grass past the crossroad |
+
+They arrive one at a time as the days go on, so nobody hands you six at once.
+**You are never given one** — you are offered one, and you can say no, and saying
+no is not held against you: they ask again tomorrow, because that is what
+neighbours do. Each pays merit rather than baht, and a heart.
+
+A picture over their head says which it is — a call sign to be asked, a grey one
+while it is running, a green star when you are carrying what they wanted. And
+what you said yes to sits down the left under the purse: the picture of the
+thing, its name, and a row of dots that fill as you collect. No numbers, no
+percentages, no log to open.
+
+![what you said yes to](screenshots/a-favour.png)
+
 ## And the wok
 
 Neither is stir-frying. A กระทะ over a gas ring is a **rock**, not a beat: the
@@ -1090,6 +1217,21 @@ you can see that there are two chances a swing before you learn it the hard way.
 Green curry uses it too, after the boil.
 
 ![the wok](screenshots/the-wok.png)
+
+## And the charcoal
+
+**หมูปิ้ง.** Charcoal is not a dial. It goes out if you leave it and it flares if
+you fan it, so this one is not a beat at all — it is a **heat you have to hold**.
+Fan to bring it up, stop to let it fall (faster the hotter it already is, which
+is charcoal), and keep it inside the band while six skewers cook. Too cold and
+nothing happens; too hot and it flares and you can see the ends go black.
+
+And every so often a skewer starts to catch and wants turning, and you turn it
+with a flick left or right, and if you do not, it burns. The coals are the meter
+as well as the picture: they brighten when you fan and go grey when you stop,
+which means you can play the whole thing looking at the food.
+
+![หมูปิ้ง over a clay stove](screenshots/the-grill.png)
 
 ## Keeping out of sight
 
@@ -1492,7 +1634,7 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~930 KB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~1.0 MB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Parses and initialises in about a tenth of a second, has the whole
 road built inside half a second behind a loading screen, and holds 50–60 fps
 with a fully stocked farm on screen.
@@ -1504,6 +1646,16 @@ with a fully stocked farm on screen.
   prete is drawn cartoon-first: one hard ink line all the way round, flat colour
   inside it, forty-two pixels of leg on 3px-wide bones, arms that hang past the
   hip, and a head far too big for either.
+- **Four long fingers and a thumb, and they move.** They were four splayed
+  spikes on a fan once, which is a claw, and a claw is the most frightening
+  thing you can put on a cozy character; then they were three stubs, which is
+  safe and says nothing. Long is the point of him — he is a man stretched — so
+  they are long again, but each one is **two segments with a knuckle**, rounded
+  at the end rather than pointed, and curled rather than spread. One number
+  closes the whole hand: nearly shut on a water jar, wide open reaching into
+  the soil, and each finger carries its own phase off the sway clock so the
+  four of them ripple instead of moving as a block. That is the difference
+  between a hand and a mitten.
 - **A planted foot does not move.** The walk cycle is split into a stance half
   and a swing half rather than driven by a cosine: through stance the foot
   tracks straight backwards at exactly his walking speed, which is the only
@@ -1710,6 +1862,14 @@ with a fully stocked farm on screen.
   two things ask to sit at the back rather than be left out — the water jar
   standing where the bed is, after dark — and a stable sort keeps everything
   else where it was.
+- **A pending transition can set a state after the guard has run.** Every
+  screen here is a state plus the object behind it, and a frame checks the two
+  agree before it updates and before it draws. A wipe fires its callback
+  *halfway through itself* — which is neither of those moments — so a callback
+  that sets a state whose object has been cleared since the wipe began got a
+  whole frame of drawing a screen with nothing behind it, and that is the
+  black-screen-for-good bug. The check runs again the instant a callback
+  returns, and starting a new game cancels any transition still in flight.
 - **Two clouds cannot occupy the same sky.** Two villagers standing close
   enough to talk to each other are standing close enough for their speech
   bubbles to overlap, and the second was drawn straight over the first — which
@@ -1774,9 +1934,17 @@ with a fully stocked farm on screen.
   asks the dictionary about every piece of prose it finds, whether or not
   anything ever drew it. It found a hundred and fifty lines the first time it
   ran: every dish description, every tool, every blessing, every friendship
-  line, every loading caption. 942 strings drawn and 591 in the tables, none
-  untranslated, none still in Latin letters in Thai mode — and the same table
-  walk is a test now, so the next table cannot arrive in English.
+  line, every loading caption.
+
+  And then somebody sent a screenshot of Lung Somchai saying *That's my field.
+  Two seasons, nobody's turned it.* in English. That line is not in a table —
+  it is a string literal inside a function, behind a chapter and a position on
+  the road, and all three passes were blind to it. So there is a fourth, and it
+  does not run the game at all: it **tokenises the whole built script**, takes
+  every string literal in it, keeps the ones that read like something a person
+  says, and asks the dictionary about each. Sixty more. All four are tests now.
+  1,030 literals read as prose and 593 in the tables, none untranslated, none
+  still in Latin letters in Thai mode.
 - **A state with nothing behind it is impossible.** Every screen here is a
   state plus the object behind it, and each is supposed to clear both together.
   If they ever came apart — a state left set with its object gone — the draw for
