@@ -1327,6 +1327,61 @@ it is brakes, a long look, and the road again faster than before.
 
 ![the headlights, and one button](screenshots/keeping-out-of-sight.png)
 
+## One person, drawn one way
+
+There used to be nine or ten different people in this game, in the sense that
+there were nine or ten different pieces of code that each had their own idea of
+what a person was. The villagers had a face, a two-bone leg and a sandal. The
+girl on the till in the shop was a stack of striped rectangles. The monks on the
+alms round were a robe and two dots. The crowd at the หมอลำ stage, the kids at
+the Songkran barrel, the ones kneeling with a tray — each of them was somebody's
+ellipses, and each of them was a different height, with the eyes in a different
+place.
+
+Now there is one figure. `drawVillager` is the whole of it, and `drawPerson`
+lets a scene ask for one without having to build a villager: a place, a shirt,
+a haircut, and a pose.
+
+```js
+drawPerson(g, { x, y, face, skin, shirt, hair:'bun', pose:'kneel' });
+```
+
+The poses are hand targets the same IK solves: `reach` over a counter, `hold` a
+bowl at the waist, `pour`, `point`, `dance` for รำวง with both hands over the
+head, and `kneel` and `sit`, which fold the legs under and bring the whole
+figure down. Everything else — the ชฎา on a dancer, ประแป้ง on a Songkran
+cheek, a flowered shirt, a monk's robe, an apron, a งอบ — is a flag on the same
+figure.
+
+A scene that is drawn closer than the world is passes a `scale`. That does not
+scale the canvas, which would turn every rounded rectangle soft: the figure is
+drawn once at 1× into a scratch canvas and blitted up with smoothing off, so a
+person in the shop is the same person as a person on the road, only nearer.
+
+### Taller, and cuter with it
+
+The old one was twenty-six pixels. This one is thirty-six, and **all ten of the
+extra pixels went into the legs** — a longer torso just makes somebody look
+heavy, long legs make them look tall. The head stayed generous, which is where
+the cute comes from, and the eyes grew a round pupil with a light in the top of
+it. Everybody has a little colour in the cheek now, mixed off their own skin, so
+that a face drawn dark in a backlit crowd doesn't end up with two pink dots on
+it.
+
+The crowd at the stage is the same figure with its eye-whites and lips dimmed,
+which is what a person standing in front of a stack of stage lights actually
+looks like.
+
+The test for all of this does not read the code. It draws a person onto a blank
+canvas, finds the topmost pixel that isn't transparent, and asserts the
+silhouette is as tall as `VILL_H` says — then does it again for a sarong, a
+monk, a flowered shirt and a reaching pose and asserts they all come out within
+a pixel of each other. Then it hooks `drawVillager`, draws the shop, the stage,
+the alms round and Songkran, and counts: if a scene ever goes back to rolling
+its own person, the count drops and the suite says so.
+
+![the village](screenshots/village-people.png)
+
 ## Everybody is friendly, including the frightening ones
 
 Thai folklore's most feared night spirits live here, and every one of them is a

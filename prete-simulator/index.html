@@ -4556,78 +4556,95 @@ function makeVillager(cfg){
   return Object.assign({ x:0,y:0,vx:0,face:1,phase:0,anim:rnd(9),state:'idle',
     cloth:makeCloth(4,9), bob:0 }, cfg);
 }
-function drawVillager(g, v, o={}){
-  const sk=v.skin||PAL.skin, skD=v.skinD||PAL.skinD;
-  const sh=v.shirt||'#4a7a9e', shD=v.shirtD||shade(v.shirt||'#4a7a9e',-0.25);
-  const face=v.face, sp=Math.abs(v.vx);
-  const LEG=9, TH=5, SN=5;
-  const stride=clamp(sp*0.2,0,4.6), lift=clamp(sp*0.1,0,2.4);
-  const bob = Math.abs(Math.sin(v.phase*2))*clamp(sp*0.03,0,1);
-  const hipY=v.y-LEG-bob, hipX=v.x;
-  const rk  = v.react ? v.react.k : null;
-  const wai = v.state==='wai' || o.wai || rk==='wai';
-  // legs
-  for(let i=0;i<2;i++){
-    const ph=v.phase+i*Math.PI, c=Math.cos(ph), s=Math.sin(ph);
-    // same rule as the prete: the planted foot slides back while cos falls, so
-    // the lift belongs on the rising half or the villagers moonwalk too
-    const fx=v.x+c*stride*face, fy=v.y+(s<0? -Math.abs(s)*lift : 0);
-    const knee=ik2(hipX+(i?1:-1),hipY,fx,fy-1,TH,SN,face>0?1:-1);
-    const col=i===0? (v.skirt? shade(v.legs||'#3a3a44',-0.25):shade(v.legs||'#3a3a44',-0.2)) : (v.legs||'#3a3a44');
-    if(!v.skirt){ pLimb(g,hipX+(i?1:-1),hipY,knee.x,knee.y,3,col); pLimb(g,knee.x,knee.y,fx,fy-1,2.5,col); }
-    pR(g,fx-2,fy-2,4,2,'#3a2c26');
+/* ============================================================
+   EVERYBODY
+
+   One figure, and everything that is a person in this game goes
+   through it: the villagers, the monks, the kids, the girl on the
+   till, the dancers on the stage, the ones kneeling with a tray.
+   They used to be nine or ten different hand-rolled sets of
+   ellipses and it showed — every scene had its own idea of how
+   tall a person was and where their eyes went.
+
+   Taller than it was, and cuter with it: long legs, a narrow
+   torso, a generous head, and eyes with a light in them.
+   ============================================================ */
+const VILL_H   = 36;                 // heel to the top of the head
+const VILL_LEG = 14, VILL_TH = 7.5, VILL_SN = 7.5;
+const VILL_CH  = 9;                  // how tall the torso is — the legs get the rest
+const villTop  = v => (v.y||0) - VILL_H;
+
+/* poses beyond walking. Everything here is a hand target, so the same
+   IK that swings an arm also reaches, pours and holds a bowl. */
+const POSE = {
+  reach: { fx: 11, fy: -1, bx:  6, by:  2 },   // over the counter
+  hold:  { fx:  5, fy:  4, bx: -4, by:  4 },   // a bowl at the waist
+  pour:  { fx:  9, fy: -3, bx:  3, by:  1 },
+  dance: { fx:  9, fy:-23, bx: -8, by:-20 },   // รำวง, both hands over the head
+  point: { fx: 10, fy: -6, bx: -3, by:  5 },
+};
+
+/* drawVillager itself lives in ppeople.js, which loads after this file and
+   wins the name. What lives here is what every caller needs to agree on:
+   how tall a person is, and the hand targets for the poses. */
+
+/* the same person, for callers that have a place and a look but no
+   villager object: the shop, the stage, the lane at first light.
+
+   Some of those scenes are drawn closer than the world is, so this takes a
+   scale. It cannot just scale the context — the figure is built out of
+   rounded rectangles and a fractional transform turns every one of them
+   soft. So a scaled person is drawn once at 1x into a scratch canvas and
+   blitted up with smoothing off, which keeps the pixels square. */
+const _PCV_W = 52, _PCV_H = 56, _PCV_FX = 26, _PCV_FY = 52;
+let _pcv=null, _pcg=null;
+function _personCv(){
+  if(!_pcv){ _pcv=mkCv(_PCV_W,_PCV_H); _pcg=G2(_pcv); }
+  return _pcv;
+}
+/* villagers keep their blink and glance on the object, so a caller that
+   wants a face that is alive hands one in and we keep it for them */
+const _pKeep = new Map();
+function _personObj(o){
+  let v = o.keep!==undefined? _pKeep.get(o.keep) : null;
+  if(!v){ v={}; if(o.keep!==undefined) _pKeep.set(o.keep, v); }
+  v.x=o.x; v.y=o.y; v.face=o.face===undefined?1:o.face;
+  v.vx=o.vx||0; v.phase=o.phase||0; v.anim=o.anim||0;
+  v.skin=o.skin||PAL.skin; v.skinD=o.skinD||shade(o.skin||PAL.skin,-0.22);
+  v.shirt=o.shirt||'#4a7a9e'; v.shirtD=o.shirtD; v.legs=o.legs;
+  v.hair=o.hair||'crop'; v.hairC=o.hairC; v.hat=o.hat;
+  v.crown=o.crown; v.chalk=o.chalk; v.monk=o.monk; v.kit=o.kit;
+  v.apron=o.apron; v.carry=o.carry; v.pakama=o.pakama;
+  v.skirt=!!o.skirt; v.skirtPat=o.skirtPat; v.pose=o.pose;
+  v.glasses=o.glasses; v.moust=o.moust; v.blush=o.blush; v.earring=o.earring;
+  v.mood=o.mood; v.talk=o.talk; v.nod=o.nod||0; v.headX=o.headX||0;
+  v.eyeW=o.eyeW; v.pupil=o.pupil; v.gleam=o.gleam; v.lip=o.lip;
+  v.flowers=o.flowers;
+  v.state=o.wai?'wai':'idle';
+  /* a caller that asks for a job means it: the villager's own rule only
+     picks a job up when the person is standing still, and a monk on an
+     alms round is walking and still holding the bowl. */
+  v.react = o.job? {k:o.job} : null;
+  v.jobOn=!!o.job; v.job=o.job||null;
+  if(v.skirt && !v.cloth) v.cloth=makeCloth(4,9);
+  return v;
+}
+function drawPerson(g, o){
+  const k=o.scale||1;
+  if(k===1){
+    const v=_personObj(o);
+    drawVillager(g, v, {dt:o.dt||1/60, wind:o.wind||0, wai:!!o.wai, lookAt:o.lookAt});
+    return v;
   }
-  if(v.skirt){   // sarong on the women, as in any village
-    stepCloth(v.cloth,hipX,hipY-1,9,o.dt||0.016,o.wind||0,v.vx);
-    drawCloth(g,v.cloth,v.skirtPat||'plaid',face,{flare:4});
-  }
-  // torso
-  const chestY=hipY-8;
-  pR(g,hipX-4,chestY,8,9,sh); pR(g,hipX+(face>0?1:-4),chestY,3,9,shD);
-  pR(g,hipX-4,chestY,8,1,shade(sh,0.15));
-  /* A football shirt, which on a village kid is a market copy two sizes too
-     big with somebody's number on it. Stripes run the way the real one does
-     and the number sits between the shoulder blades. */
-  if(v.kit){
-    const k=v.kit;
-    if(k.bars==='v'){ for(let i=0;i<3;i++) pR(g,hipX-3+i*3,chestY,1.6,9,k.c2); }
-    else if(k.bars==='h'){ for(let i=0;i<3;i++) pR(g,hipX-4,chestY+1+i*3,8,1.4,k.c2); }
-    else if(k.bars==='sash') pTaper(g,hipX-4,chestY+1,hipX+4,chestY+7,2.4,2.4,k.c2);
-    pR(g,hipX-4,chestY,8,1.4,k.c2);                       // the collar
-    if(k.n!==undefined) pTxt(g,String(k.n), hipX+(face>0?-2:2), chestY+7, k.c2, 5, 'center');
-  }
-  // arms
-  for(let i=0;i<2;i++){
-    const back=i===0;
-    let hx2,hy2;
-    if(wai){ hx2=hipX+1.5*face; hy2=chestY-4; }
-    else if(rk==='wave' && !back){ hx2=hipX+4.5*face; hy2=chestY-4+Math.sin(v.anim*13)*2.6; }
-    else if(rk==='clap'){ hx2=hipX+(back?1.2:3.2)*face; hy2=chestY+1-Math.abs(Math.sin(v.anim*11))*2.4; }
-    else if(v.carry && !back){ hx2=hipX+5*face; hy2=chestY+3; }
-    else { const ph=v.phase+(back?Math.PI:0); hx2=hipX+Math.cos(ph)*stride*0.7*face; hy2=chestY+9; }
-    const el=ik2(hipX+(back?-3:3)*face,chestY+1,hx2,hy2,5,5,back?(face>0?-1:1):(face>0?1:-1));
-    pLimb(g,hipX+(back?-3:3)*face,chestY+1,el.x,el.y,2.6,back?shD:sh);
-    pLimb(g,el.x,el.y,hx2,hy2,2.4,back?skD:sk);
-    pEll(g,hx2,hy2,1.6,1.6,back?skD:sk);
-  }
-  if(wai){ pEll(g,hipX+1.6*face,chestY-5,2.2,3,sk); pR(g,hipX+0.6*face,chestY-7,2,3,skD); }
-  // head
-  const hy3=chestY-6;
-  pEll(g,hipX+0.5*face,hy3,4.2,4.6,sk);
-  pEll(g,hipX+2.4*face,hy3+0.4,2.4,3.6,skD);
-  pR(g,hipX+2*face,hy3-1,1,1,'#2c2020'); pR(g,hipX-1*face,hy3-1,1,1,'#2c2020');
-  // hair
-  const hc=v.hairC||'#241c18';
-  if(v.hair==='bald'){ pEll(g,hipX+0.5*face,hy3-2,4,2,skD); }
-  else if(v.hair==='bun'){ pEll(g,hipX+0.5*face,hy3-2.6,4.3,2.6,hc); pEll(g,hipX-3.4*face,hy3-3.6,2.2,2.2,hc); }
-  else if(v.hair==='tails'){ pEll(g,hipX+0.5*face,hy3-2.4,4.3,2.6,hc); pEll(g,hipX-4.6*face,hy3+1,1.6,2.6,hc); pEll(g,hipX+4.6*face,hy3+1,1.6,2.6,hc); }
-  else { pEll(g,hipX+0.5*face,hy3-2.4,4.4,2.8,hc); pR(g,hipX-4*face,hy3-2,2,3,hc); }
-  if(v.hat){ pEll(g,hipX+0.5*face,hy3-4,7,1.6,v.hat); pEll(g,hipX+0.5*face,hy3-5,3.4,2,v.hat); }
-  if(v.monk){  // the robe over one shoulder
-    pTaper(g,hipX-4,chestY,hipX+4,chestY+9,3,7,'#e8923f');
-    pR(g,hipX-4,chestY+2,9,7,'#e8923f'); pR(g,hipX+2*face,chestY+2,3,7,'#b56a28');
-  }
-  if(v.carry) pEll(g,hipX+7*face,chestY+2,3.4,2.6,'#f5ead8');
+  const cv=_personCv(), cg=_pcg;
+  cg.clearRect(0,0,_PCV_W,_PCV_H);
+  const v=_personObj({...o, x:_PCV_FX, y:_PCV_FY});
+  drawVillager(cg, v, {dt:o.dt||1/60, wind:o.wind||0, wai:!!o.wai});
+  const sm=g.imageSmoothingEnabled; g.imageSmoothingEnabled=false;
+  g.drawImage(cv, R(o.x-_PCV_FX*k), R(o.y-_PCV_FY*k), R(_PCV_W*k), R(_PCV_H*k));
+  g.imageSmoothingEnabled=sm;
+  v.x=o.x; v.y=o.y;
+  return v;
 }
 
 /* ============================================================
@@ -9031,15 +9048,15 @@ function render(){
     if(qm){
       /* a favour waiting, a favour running, a favour you can hand in: three
          pictures, no words, the same vocabulary as everything else */
-      const my=n.y-30-Math.sin(GS.t*5)*2;
+      const my=n.y-VILL_H+1-Math.sin(GS.t*5)*2;
       if(qm==='offer')      icoCall(ctx,n.x,my,0.85,PAL.gold);
       else if(qm==='ready') icoStar(ctx,n.x,my,1.05,'#8fd6a0');
       else { ctx.globalAlpha=0.55; icoCall(ctx,n.x,my,0.7,'#cfc4ae'); ctx.globalAlpha=1; }
     }
-    else if(n.mark){ const my=n.y-30-Math.sin(GS.t*5)*2;
+    else if(n.mark){ const my=n.y-VILL_H+1-Math.sin(GS.t*5)*2;
       if(n.mark.k==='call') icoCall(ctx,n.x,my,0.8,PAL.gold); else icoStar(ctx,n.x,my,1,PAL.gold); }
-    if(n.bub) bubble(ctx,n.x,n.y-32,n.bub.txt);
-    wishBubble(ctx,n,n.y-34);
+    if(n.bub) bubble(ctx,n.x,n.y-VILL_H+1,n.bub.txt);
+    wishBubble(ctx,n,n.y-VILL_H-1);
   }
   if(CAT.state!=='tree'){ drawCat(ctx,{x:CAT.x,y:CAT.y,face:CAT.face,anim:CAT.anim,phase:CAT.phase,state:CAT.walking?'walk':'sit'}); }
   else drawCat(ctx,{x:CAT.x,y:CAT.y,face:-1,anim:CAT.anim,state:'tree'});
@@ -9790,11 +9807,11 @@ function checkInteract(){
   if(near(KITCHEN_X,34)) set(KITCHEN_X, groundY(KITCHEN_X)-64,'cook something', ()=>startActivity('cook'));
   if(near(CRAFT_X,34))   set(CRAFT_X,   groundY(CRAFT_X)-52,'sit and make something', ()=>startActivity('craft'));
   if(near(TANI.x,36)) set(TANI.x,TANI.y-40,L('talk to')+' '+L('Tani'), talkTani, null, '@tani');
-  if(near(MONK.x,30)) set(MONK.x,MONK.y-30,'approach politely', talkMonk, 'give', '@monk');
-  if(near(UNCLE.x,28)) set(UNCLE.x,UNCLE.y-30,'talk', talkUncle, 'give', '@uncle');
-  if(near(MALI.x,26))  set(MALI.x,MALI.y-26,L('talk to')+' '+L('Mali'), talkMali, 'give', '@mali');
+  if(near(MONK.x,30)) set(MONK.x,MONK.y-VILL_H-2,'approach politely', talkMonk, 'give', '@monk');
+  if(near(UNCLE.x,28)) set(UNCLE.x,UNCLE.y-VILL_H-2,'talk', talkUncle, 'give', '@uncle');
+  if(near(MALI.x,26))  set(MALI.x,MALI.y-VILL_H-2,L('talk to')+' '+L('Mali'), talkMali, 'give', '@mali');
   for(const v of VILLAGERS) if(near(v.x,26))
-    set(v.x,v.y-28, L('talk to')+' '+L(v.name), ()=>talkVillager(v), 'give', '@'+v.id);
+    set(v.x,v.y-VILL_H-2, L('talk to')+' '+L(v.name), ()=>talkVillager(v), 'give', '@'+v.id);
   if(!GS.q.cat && GS.q.maliMet && near(TAMARIND_X+16,50))
     set(TAMARIND_X+16,groundY(TAMARIND_X)-118,'reach up for the cat', ()=>startTask('cat',TAMARIND_X));
   if(GS.q.cat && CAT.state==='wander' && near(CAT.x,20)) set(CAT.x,CAT.y-20,'pet',()=>{
@@ -12757,9 +12774,17 @@ function drawVillager(g, v, o={}){
   stepFace(v, o.dt||1/60);
   const sk=v.skin||PAL.skin, skD=v.skinD||PAL.skinD;
   const skL=shade(sk,0.16);
+  /* a person standing in front of a stage is a shape, and a shape does not
+     have two bright white eyes in it. Anything drawn backlit dims its own. */
+  const eyeW=v.eyeW||'#fbf4e6', pupil=v.pupil||'#1e1820',
+        gleam=v.gleam||'#f2ecf4', lipC=v.lip||'#9a5048';
   const sh=v.shirt||'#4a7a9e', shD=v.shirtD||shade(sh,-0.25), shL=shade(sh,0.16);
   const face=v.face, sp=Math.abs(v.vx);
-  const LEG=10, TH=5.5, SN=5.5;
+  /* Taller than they were. All of the extra goes into the legs — a longer
+     torso just makes a person look heavy, long legs make them look tall,
+     and the head stays generous, which is where the cute comes from. */
+  const fold = (v.pose==='kneel')? 0.50 : (v.pose==='sit')? 0.42 : 1;
+  const LEG=VILL_LEG*fold, TH=VILL_TH*fold, SN=VILL_SN*fold;
   const stride=clamp(sp*0.2,0,4.6), lift=clamp(sp*0.1,0,2.4);
   const bob = Math.abs(Math.sin(v.phase*2))*clamp(sp*0.03,0,1);
   const breathe = sp<4 ? Math.sin(v.breath)*0.35 : 0;
@@ -12770,7 +12795,15 @@ function drawVillager(g, v, o={}){
   const chestY=hipY-9+breathe;
 
   /* ---------- legs and sandals ---------- */
-  for(let i=0;i<2;i++){
+  /* kneeling and sitting: the shins go flat and the thighs come forward,
+     which is what a person with a tray in front of them actually does */
+  if(v.pose==='kneel' || v.pose==='sit'){
+    const kx=hipX+6*face, ankle=v.y-2;
+    pLimb(g,hipX-1,hipY+1,kx,ankle-0.5,3.2,shade(legC,-0.2));
+    pLimb(g,kx,ankle-0.5,hipX-5*face,ankle+0.5,2.8,legC);
+    pR(g,R(hipX-8*face),R(v.y-2),6,2,'#4a3a2c');
+    pR(g,R(hipX-8*face),R(v.y-1),6,1,'#33281e');
+  } else for(let i=0;i<2;i++){
     const ph=v.phase+i*Math.PI, c=Math.cos(ph), s=Math.sin(ph);
     const fx=v.x+c*stride*face, fy=v.y+(s<0? -Math.abs(s)*lift : 0);
     const knee=ik2(hipX+(i?1:-1),hipY,fx,fy-1,TH,SN,face>0?1:-1);
@@ -12792,7 +12825,7 @@ function drawVillager(g, v, o={}){
     pR(g,R(fx),R(fy)-2,2,1,'#6b5640');                            // the strap over the foot
   }
   if(v.skirt){
-    stepCloth(v.cloth,hipX,hipY-1,10,o.dt||0.016,o.wind||0,v.vx);
+    stepCloth(v.cloth,hipX,hipY-1,LEG,o.dt||0.016,o.wind||0,v.vx);
     drawCloth(g,v.cloth,v.skirtPat||'plaid',face,{flare:4});
   }
 
@@ -12807,9 +12840,11 @@ function drawVillager(g, v, o={}){
      and a person standing perfectly still with their arms down is the one
      thing a village never contains. */
   const jb = rk || ((v.jobOn && v.job && sp<3)? v.job : null);
+  const ps = (typeof POSE!=='undefined' && v.pose)? POSE[v.pose] : null;
   const drawArm = back => {
     let hx2,hy2;
     if(wai){ hx2=hipX+1.5*face; hy2=chestY-4; }
+    else if(ps){ hx2=hipX+(back?ps.bx:ps.fx)*face; hy2=chestY+(back?ps.by:ps.fy)+6; }
     else if(rk==='wave' && !back){ hx2=hipX+4.5*face; hy2=chestY-4+Math.sin(v.anim*13)*2.6; }
     else if(rk==='clap'){ hx2=hipX+(back?1.2:3.2)*face; hy2=chestY+1-Math.abs(Math.sin(v.anim*11))*2.4; }
     else if(jb==='shy'){ hx2=hipX+(back?-0.6:1.6)*face; hy2=chestY-3.4; }
@@ -12878,6 +12913,13 @@ function drawVillager(g, v, o={}){
   pR(g,R(hipX-2),R(chestY+6),1,3,shade(sh,-0.16));
   pR(g,R(hipX+2),R(chestY+5),1,4,shade(sh,-0.16));
   pR(g,R(hipX-1),R(chestY+8),3,1,shade(sh,-0.22));              // a crease over the belt
+  if(v.flowers){                                   // the Songkran shirt
+    for(let i=0;i<7;i++){
+      const fx2=R(hipX-3+((i*5)%7)), fy2=R(chestY+2+((i*3)%7));
+      pR(g,fx2,fy2,1,1,'#fff0c0');
+      if(i%2) pR(g,fx2+1,fy2+1,1,1,'#f2a23c');
+    }
+  }
   if(v.monk){
     pTaper(g,hipX-4,chestY,hipX+4,chestY+9,3.4,7.4,'#e8923f');
     pR(g,R(hipX-4),R(chestY+2),9,7,'#e8923f');
@@ -12932,17 +12974,18 @@ function drawVillager(g, v, o={}){
      nod and shake are set by whatever is talking: a head that moves while
      the words come out is most of what makes a line feel said rather than
      printed. */
-  const hy3=chestY-7.5 + (v.nod||0);
+  const hy3=chestY-8.2 + (v.nod||0);
   const hjx=(v.headX||0);
   const look = clamp((v.glance||0)*0.7 + (o.lookAt? clamp((o.lookAt-v.x)/60,-1,1) : 0), -1, 1);
   // neck, and the shadow the jaw throws on it
-  pR(g,R(hipX-1.4),R(hy3+3.5),3,4,skD);
-  pR(g,R(hipX-1.4),R(hy3+3.5),3,1,shade(skD,-0.24));
-  // skull, then jaw, then the shaded side
-  pEll(g,hipX+hjx+0.5*face,hy3,5.3,5.2,sk);
-  pEll(g,hipX+hjx+0.9*face,hy3+2.3,4.2,3.6,sk);
-  pEll(g,hipX+hjx+3.1*face,hy3+0.8,2.5,4.2,skD);
-  pEll(g,hipX+hjx-1.8*face,hy3-1.6,2.3,2.2,skL);          // the light on the temple
+  pR(g,R(hipX-1.2),R(hy3+3.9),3,4,skD);
+  pR(g,R(hipX-1.2),R(hy3+3.9),3,1,shade(skD,-0.24));
+  // skull, then jaw, then the shaded side. A touch bigger than it was: at
+  // this height a small head reads as a scarecrow and a big one as a child.
+  pEll(g,hipX+hjx+0.5*face,hy3,5.7,5.6,sk);
+  pEll(g,hipX+hjx+0.9*face,hy3+2.5,4.5,3.8,sk);
+  pEll(g,hipX+hjx+3.3*face,hy3+0.9,2.6,4.4,skD);
+  pEll(g,hipX+hjx-1.9*face,hy3-1.8,2.5,2.3,skL);          // the light on the temple
   // ear on the back side of the head
   pEll(g,hipX+hjx-3.4*face,hy3+0.6,1.3,1.7,skD);
   pR(g,R(hipX+hjx-3.4*face),R(hy3+0.6),1,1,shade(skD,-0.2));
@@ -12965,11 +13008,11 @@ function drawVillager(g, v, o={}){
   /* the two eyes have to sit far enough apart to read as two. At three
      pixels wide and three and a half apart they merged into one dark band
      and every villager looked like they were wearing a mask. */
-  const eyeY=hy3+0.7, blink=(v.blink||0)>0;
+  const eyeY=hy3+0.9, blink=(v.blink||0)>0;
   const wide=clamp(v.eye||0,-1,1);            // surprise opens them, weariness shuts them
   /* far enough apart to read as two. At three pixels wide and three and a
      half apart they merged into one dark band and everybody wore a mask. */
-  pR(g,R(hipX+hjx+(0.3+look*0.6)*face),R(eyeY)-1,1,3,shade(skD,-0.06));   // the bridge between them
+  pR(g,R(hipX+hjx+(0.3+look*0.6)*face),R(eyeY),1,2,shade(skD,-0.06));     // the bridge between them
   for(const ex of [3.0, -2.4]){
     const x2=R(hipX+hjx+(ex+look*0.6)*face);
     if(blink || wide<-0.5){ pR(g,x2-1,R(eyeY),3,1,shade(skD,-0.2)); continue; }
@@ -12977,42 +13020,49 @@ function drawVillager(g, v, o={}){
        and a surprised villager looked like one solid black band. */
     const eh = wide>0.6? 4 : 3;
     const ey0 = R(eyeY)-1;
-    pR(g,x2-1,ey0,3,eh,'#fbf4e6');
+    pR(g,x2-1,ey0,3,eh,eyeW);
     const pu=(look>0.25?1:look<-0.25?-1:0);
-    pR(g,x2+pu,ey0+(eh>3?1:0),1,2,'#1e1820');
-    pR(g,x2+pu,ey0+(eh>3?1:0),1,1,'#5a4a54');
-    if(eh>3) pR(g,x2-1,ey0+3,3,1,'#fbf4e6');
+    /* a big round pupil with a light in the top of it. Two pixels of white
+       on a three-pixel eye is the whole difference between a person you
+       want to talk to and a person with holes in their face. */
+    pR(g,x2+pu-(pu>0?0:1),ey0+1,2,2,pupil);
+    pR(g,x2+pu-(pu>0?0:1),ey0+1,1,1,gleam);
+    if(eh>3) pR(g,x2-1,ey0+eh-1,3,1,eyeW);
     pR(g,x2-1,ey0-1,3,1,shade(skD,-0.12));             // the lid above it
     if(wide<-0.1) pR(g,x2-1,ey0,3,1,shade(skD,-0.08)); // and half down when tired
   }
   // nose and mouth
-  pR(g,R(hipX+hjx+2.6*face),R(hy3+2.6),1,2,skD);
-  pR(g,R(hipX+hjx+2.6*face),R(hy3+2.6),1,1,shade(skD,-0.14));
+  pR(g,R(hipX+hjx+2.8*face),R(hy3+3.2),1,1,shade(skD,-0.16));
   const smile = v.mood===undefined? 1 : v.mood;
   const talk = clamp(v.talk||0,0,1);
-  const mx0=R(hipX+hjx+0.4*face), my0=R(hy3+4.2);
+  const mx0=R(hipX+hjx+0.4*face), my0=R(hy3+4.7);
   if(talk>0.05){
     /* an open mouth, and the dark inside it. Two pixels of shadow is the
        difference between somebody speaking and somebody with a line drawn
        on their face. */
     const oh=1+Math.round(talk*2);
     pR(g,mx0,my0-1,3,oh+1,'#5e2f30');
-    pR(g,mx0,my0-1,3,1,'#9a5048');
+    pR(g,mx0,my0-1,3,1,lipC);
     if(oh>1) pR(g,mx0+1,my0+oh-1,1,1,'#c2727a');
   } else if(smile>0.55){
-    pR(g,mx0,my0,3,1,'#9a5048'); pR(g,R(hipX+hjx+2.4*face),my0-1,1,1,'#9a5048');
-    pR(g,R(hipX+hjx-1.2*face),my0-1,1,1,'#9a5048');
+    pR(g,mx0,my0,3,1,lipC); pR(g,R(hipX+hjx+2.4*face),my0-1,1,1,lipC);
+    pR(g,R(hipX+hjx-1.2*face),my0-1,1,1,lipC);
   } else if(smile>0){
-    pR(g,mx0,my0,2,1,'#9a5048'); pR(g,R(hipX+hjx+2.2*face),R(hy3+3.6),1,1,'#9a5048');
+    pR(g,mx0,my0,2,1,lipC); pR(g,R(hipX+hjx+2.2*face),R(hy3+3.6),1,1,lipC);
   } else if(smile>-0.5){
-    pR(g,R(hipX+hjx+0.2*face),my0,3,1,'#9a5048');
+    pR(g,R(hipX+hjx+0.2*face),my0,3,1,lipC);
   } else {
-    pR(g,R(hipX+hjx+0.2*face),my0,3,1,'#9a5048');
-    pR(g,R(hipX+hjx+2.2*face),my0-1,1,1,'#9a5048');
-    pR(g,R(hipX+hjx-0.8*face),my0-1,1,1,'#9a5048');
+    pR(g,R(hipX+hjx+0.2*face),my0,3,1,lipC);
+    pR(g,R(hipX+hjx+2.2*face),my0-1,1,1,lipC);
+    pR(g,R(hipX+hjx-0.8*face),my0-1,1,1,lipC);
   }
-  if(v.blush){ pR(g,R(hipX+hjx+3.4*face),R(hy3+2.6),2,1,'#d4737e');
-               pR(g,R(hipX+hjx-3.4*face),R(hy3+2.6),2,1,'#c26a76'); }
+  if(v.blush){ pR(g,R(hipX+hjx+3.6*face),R(hy3+3.0),2,1,'#d4737e');
+               pR(g,R(hipX+hjx-3.6*face),R(hy3+3.0),2,1,'#c26a76'); }
+  else { /* and everybody else, faintly — off their own skin, so a face drawn
+            dark in a crowd does not end up with two pink dots on it */
+         const bl=v.blushC||mix(sk,'#e27a6e',0.42);
+         pEll(g,hipX+hjx+3.4*face,hy3+2.9,1.5,0.9,bl);
+         pEll(g,hipX+hjx-3.0*face,hy3+2.9,1.2,0.8,bl); }
   if(v.moust){ pR(g,R(hipX-0.4*face),R(hy3+3.1),4,1,v.hairC||'#4a4038');
                pR(g,R(hipX-0.4*face),R(hy3+3.6),4,1,shade(v.hairC||'#4a4038',-0.2)); }
   if(v.glasses){
@@ -13064,6 +13114,15 @@ function drawVillager(g, v, o={}){
     pEll(g,hipX+hjx+0.5*face,hy3-4,7,1.6,v.hat);
     pEll(g,hipX+hjx+0.5*face,hy3-5,3.4,2,v.hat);
   }
+  if(v.crown){                                     // ชฎา, on the ones on the stage
+    pTri(g,hipX+hjx+0.4*face,hy3-11, hipX+hjx-1.8,hy3-4, hipX+hjx+2.8,hy3-4,'#f2c14e');
+    pTri(g,hipX+hjx+0.4*face,hy3-9.4, hipX+hjx-0.8,hy3-4, hipX+hjx+1.8,hy3-4,'#ffe089');
+    pR(g,R(hipX+hjx-3),R(hy3-5),7,2,'#f2c14e'); pR(g,R(hipX+hjx-3),R(hy3-5),7,1,'#ffe089');
+    pEll(g,hipX+hjx+0.4*face,hy3-11.6,1.1,1.1,'#fff4c8');
+  }
+  if(v.chalk){ g.globalAlpha=0.85;                 // ประแป้ง, smeared on the cheek
+    pEll(g,hipX+hjx+3.2*face,hy3+2.8,1.9,1.2,'#f4f0e4');
+    pEll(g,hipX+hjx-2.2*face,hy3+3.4,1.4,0.9,'#f4f0e4'); g.globalAlpha=1; }
   if(v.earring){ pR(g,R(hipX+hjx-3.6*face),R(hy3+2),1,1,'#f2c14e'); }
 
   if(v.carry) pEll(g,hipX+hjx+7*face,chestY+2,3.6,2.8,'#f5ead8');
@@ -17598,51 +17657,22 @@ function drawStore(g){
 }
 
 /* the girl at the till: striped polo, cap, and the wai she gives the door */
+/* Everybody in here is the same figure as everybody outside, drawn larger
+   because the room is. SHOP_SC is how much closer this scene is than the
+   world; the figure is rendered at 1x and blitted up, so it stays square. */
+const SHOP_SC = 1.35;
 function shopStaff(g,x,y){
   const b=Math.sin(SHOP_STAFF.bob*1.6)*0.8;
-  y += b;
-  pR(g,x-7,y-30,15,22,'#e8e4da');                      // the striped polo
-  pR(g,x-7,y-30,15,4,'#2b8a4c');
-  pR(g,x-7,y-24,15,4,'#e8572f');
-  pR(g,x-7,y-18,15,4,'#f2b21e');
-  pR(g,x+4,y-30,4,22,'#cfcabe');
-  const wai = SHOP_STAFF.wai>0;
-  if(wai){
-    pTaper(g,x-3,y-24,x-1,y-40,3.4,2.6,'#e8bc92');
-    pTaper(g,x+3,y-24,x+1,y-40,3.4,2.6,'#e8bc92');
-    pEll(g,x,y-41,2.6,3.4,'#e8bc92');
-  } else {
-    pTaper(g,x-7,y-26,x-11,y-13,3.4,2.6,'#e8bc92');
-    pTaper(g,x+7,y-26,x+11,y-15,3.4,2.6,'#e8bc92');
-  }
-  pEll(g,x,y-39,7.0,7.4,'#e8bc92');                    // head
-  pEll(g,x-2.6,y-40,3.6,4.4,'#c99a6e');
-  pR(g,R(x-2.6),R(y-40),2,2,'#2c2020'); pR(g,R(x+1.4),R(y-40),2,2,'#2c2020');
-  pR(g,R(x-1.4),R(y-35.6),3,1,'#b0665e');
-  pEll(g,x,y-44,7.6,4.0,'#241c18');                    // hair
-  pEll(g,x-8,y-38,2.0,4.4,'#241c18');
-  pEll(g,x,y-46,7.2,3.2,'#2b8a4c');                    // the cap
-  pR(g,R(x+2),R(y-46),8,2,'#2b8a4c');
-  pR(g,R(x-2),R(y-47.6),4,1,'#e8572f');
+  drawPerson(g,{ keep:'shopStaff', x, y:y+b, face:-1, scale:SHOP_SC,
+    skin:'#e8bc92', shirt:'#e8e4da', legs:'#3a3a44', hair:'bun',
+    hat:'#2b8a4c', apron:'#2b8a4c', wai:SHOP_STAFF.wai>0,
+    pose:SHOP_STAFF.wai>0? null : 'reach', mood:1 });
 }
 /* a customer, looking at a shelf */
 function shopPerson(g,x,fl,c){
-  const y=fl;
-  pR(g,x-6,y-44,13,21,c.shirt);
-  pR(g,x-6,y-44,13,3,shade(c.shirt,0.24));
-  pR(g,x+3,y-44,4,21,shade(c.shirt,-0.24));
-  pR(g,x-6,y-23,13,17,'#3a3a44'); pR(g,x+3,y-23,4,17,'#2e2e38');
-  pR(g,R(x-6),R(y-6),5,4,'#2a2a30'); pR(g,R(x+2),R(y-6),5,4,'#2a2a30');
-  /* one arm up at the shelf, which is what everybody in here is doing */
-  pTaper(g,x+4*c.face,y-40, x+11*c.face,y-33, 3.4,2.6, c.skin);
-  pEll(g,x+11.6*c.face,y-32.6,2.4,2.4,c.skin);
-  pTaper(g,x-4*c.face,y-40, x-6*c.face,y-27, 3.2,2.6, c.skin);
-  pEll(g,x,y-52,6.6,7.0,c.skin);
-  pEll(g,x+2.4*c.face,y-51.4,3.4,4.2,shade(c.skin,-0.2));
-  pR(g,R(x+1*c.face),R(y-52.6),2,2,'#2c2020');
-  if(c.hair==='tails'){ pEll(g,x,y-57,7.0,4.0,'#241c18');
-    pEll(g,x-7*c.face,y-51,2.6,4.4,'#241c18'); }
-  else { pEll(g,x,y-57,7.0,4.0,'#241c18'); pR(g,R(x-7*c.face),R(y-55),3,5,'#241c18'); }
+  drawPerson(g,{ keep:'shopCust'+c.x, x, y:fl, face:c.face, scale:SHOP_SC,
+    skin:c.skin, shirt:c.shirt, legs:'#3a3a44', hair:c.hair,
+    pose:'reach', mood:1 });
 }
 /* and the prete, who does not fit */
 function shopPrete(g,x,fl,ceil){
@@ -17859,54 +17889,28 @@ function drawMorlam(g){
     pTri(g,lx,DECK-98, lx-26,DECK-2, lx+26,DECK-2, '#ffe9b0');
     g.globalAlpha=1;
   }
-  /* the performers, on the boards */
+  /* the performers, on the boards — the same figure as the crowd below them */
   const sy=DECK-4;
-  /* two หางเครื่อง, in sequins, stepping side to side */
+  /* two หางเครื่อง, in sequins and ชฎา, stepping side to side */
   for(let i=0;i<2;i++){
     const dx=cx+(i?34:-34), sw=Math.sin(t*4.4+i*Math.PI)*3;
-    const c=i? '#f2c14e':'#e8572f';
-    pR(g,dx-5+sw,sy-26,11,16,c); pR(g,dx-5+sw,sy-26,11,3,shade(c,0.3));
-    for(let k=0;k<3;k++) pR(g,R(dx-4+sw+k*4),R(sy-22+k*4),2,2,'#ffe089');
-    pR(g,dx-5+sw,sy-10,11,10,shade(c,-0.25));
-    pTaper(g,dx-4+sw,sy-24, dx-11+sw,sy-34+Math.sin(t*4.4+i)*3, 3,2.4,'#e8bc92');
-    pTaper(g,dx+4+sw,sy-24, dx+11+sw,sy-34-Math.sin(t*4.4+i)*3, 3,2.4,'#e8bc92');
-    const hx2=dx+sw;
-    pEll(g,hx2,sy-32,5.4,5.6,'#e8bc92');
-    pEll(g,hx2-4.6,sy-33,2.2,2.8,'#1c1510');                // the bun, off the back
-    pEll(g,hx2,sy-34.4,5.4,3.8,'#241c18');                  // hair, flat to the skull
-    pEll(g,hx2,sy-33.2,4.4,2.4,'#e8bc92');                  // and the forehead back out of it
-    pR(g,R(hx2-2.6),R(sy-32),1,2,'#241c18');                // two eyes under it
-    pR(g,R(hx2+1.4),R(sy-32),1,2,'#241c18');
-    pR(g,R(hx2-1),R(sy-28),2,1,'#b8564a');                  // singing along
-    /* the ชฎา: a spire, not a pair of horns */
-    pTri(g,hx2,sy-46, hx2-2.2,sy-37, hx2+2.2,sy-37,'#f2c14e');
-    pTri(g,hx2,sy-44, hx2-1.1,sy-37, hx2+1.1,sy-37,'#ffe089');
-    pR(g,R(hx2-3),R(sy-38),6,2,'#f2c14e'); pR(g,R(hx2-3),R(sy-38),6,1,'#ffe089');
-    pEll(g,hx2,sy-47,1.2,1.2,'#fff4c8');
+    drawPerson(g,{ keep:'mordan'+i, x:dx+sw, y:sy, face:i?-1:1,
+      skin:'#e8bc92', shirt:i? '#f2c14e':'#e8572f', legs:i? '#c89a2e':'#b8402080',
+      hair:'crop', crown:true, pose:'dance', mood:1, anim:t*4.4 });
   }
   /* the singer at the mic, in the middle, arm out */
   const swg=Math.sin(t*2.2)*2;
-  pR(g,cx-6+swg,sy-30,13,19,'#e8e4da'); pR(g,cx-6+swg,sy-30,13,3,'#ffffff');
-  pR(g,cx-6+swg,sy-12,13,12,'#8a4ac8');
-  pTaper(g,cx+5+swg,sy-27, cx+16+swg,sy-38, 3.2,2.6,'#d8a878');
-  pTaper(g,cx-5+swg,sy-27, cx-13+swg,sy-20, 3.2,2.6,'#d8a878');
-  pEll(g,cx+swg,sy-37,6.2,6.4,'#d8a878');
-  pEll(g,cx+swg,sy-41,6.4,2.8,'#241c18');
-  pEll(g,cx-6.4+swg,sy-39,1.6,2.6,'#241c18');                // and a bit over the ear
-  pR(g,R(cx+swg-3.4),R(sy-37),2,1,'#241c18');                // eyes shut, the way they sing
-  pR(g,R(cx+swg+1.6),R(sy-37),2,1,'#241c18');
-  { const m=1.2+Math.abs(Math.sin(t*3.1))*2.0;               // the mouth, open on the long notes
-    pEll(g,cx+swg,sy-33.4,1.7,m,'#5a2420');
-    pEll(g,cx+swg,sy-34.2,1.0,m*0.4,'#2a1210'); }
+  const sing=drawPerson(g,{ keep:'morsing', x:cx+swg, y:sy, face:1,
+    skin:'#d8a878', shirt:'#e8e4da', legs:'#8a4ac8', hair:'crop',
+    pose:'point', mood:1, talk:0.6+0.4*Math.abs(Math.sin(t*3.1)) });
   pR(g,R(cx-13+swg),R(sy-22),2,3,'#3a3630');                 // the mic
   pR(g,R(cx-13+swg),R(sy-19),1,19,'#5a5a64');
   /* the khaen player, sitting at the side with the pipes up */
   const kx=cx-52;
-  pR(g,kx-5,sy-14,11,14,'#4a7a9e'); pEll(g,kx,sy-20,5.0,5.2,'#c9986f');
-  pEll(g,kx,sy-23,5.2,2.4,'#241c18');
-  pR(g,R(kx-2.4),R(sy-19),1,1,'#241c18'); pR(g,R(kx+1.4),R(sy-19),1,1,'#241c18');
+  const kh=drawPerson(g,{ keep:'morkhaen', x:kx, y:sy, face:1,
+    skin:'#c9986f', shirt:'#4a7a9e', legs:'#2f4a5e', hair:'crop',
+    pose:'hold', mood:1 });
   for(let i=0;i<7;i++) pTaper(g,kx+4,sy-18, kx+9+i*1.2,sy-42-i*2, 1.2,0.9,'#b08c5c');
-  pTaper(g,kx+2,sy-16, kx+8,sy-20, 2.6,2.2,'#c9986f');
 
   /* the light off the stage, thrown over the dust — before the crowd, so they stand in it */
   g.globalAlpha=0.11+0.04*Math.sin(t*6);
@@ -17914,37 +17918,17 @@ function drawMorlam(g){
   g.globalAlpha=1;
 
   /* ---- and everybody in front of it, turning their hands ---- */
-  /* they stand between you and the lamps, so they come out as shapes with a warm edge */
+  /* They stand between you and the lamps, so they come out dark with a warm
+     edge — but they are the same figure as everybody else in the village,
+     with รำวง hands, not a set of ellipses that only exists here. */
   for(const c of MORLAM.crowd){
-    const y=groundY(c.x), s=Math.sin(c.ph), s2=Math.cos(c.ph*0.5);
-    const lean=s2*1.4, hx=c.x+lean;
-    const dk = shade(c.shirt,-0.62), lg = shade(c.shirt,-0.30);
-    const sk = shade(c.skin,-0.55),  skl= shade(c.skin,-0.24);
-    /* legs and สโรง */
-    pR(g,R(hx-5),R(y-15),11,15,'#20202a');
-    pR(g,R(hx-5),R(y-2),4,2,'#16161d'); pR(g,R(hx+1),R(y-2),4,2,'#16161d');
-    /* the shirt, dark, with the stage catching its left edge */
-    pR(g,hx-5,y-31,11,17,dk); pR(g,hx-5,y-31,11,3,lg);
-    pR(g,R(hx+4),R(y-31),1,17,lg);
-    /* the รำวง hands: both up, wrists turning, one high one low */
-    const a1=-0.9+s*0.5, a2=-0.2-s*0.5;
-    const h1x=hx+3+Math.cos(a1)*11, h1y=y-29+Math.sin(a1)*11;
-    const h2x=hx-3+Math.cos(a2+Math.PI)*11, h2y=y-29+Math.sin(a2)*11;
-    pTaper(g,hx+3,y-29, h1x,h1y, 3.0,2.4,sk);
-    pTaper(g,hx-3,y-29, h2x,h2y, 3.0,2.4,sk);
-    /* the turned-back fingers that make it รำวง and not just waving */
-    for(let f=0;f<3;f++){
-      const fa=a1-0.55+f*0.34;
-      pTaper(g,h1x,h1y, h1x+Math.cos(fa)*4.4, h1y+Math.sin(fa)*4.4, 1.3,0.9, skl);
-      const fb=a2+Math.PI-0.55+f*0.34;
-      pTaper(g,h2x,h2y, h2x+Math.cos(fb)*4.4, h2y+Math.sin(fb)*4.4, 1.3,0.9, skl);
-    }
-    pEll(g,h1x,h1y,2.2,2.2,sk); pEll(g,h2x,h2y,2.2,2.2,sk);
-    /* the head: dark, with the rim the stage puts on it */
-    pEll(g,hx,y-37,5.4,5.6,sk);
-    pEll(g,hx,y-40,5.6,3.2,'#15100e');
-    pEll(g,hx+3.4,y-37.4,1.5,3.6,skl);
-    if(c.hair==='tails') pEll(g,hx-5.6,y-36,2.0,3.4,'#15100e');
+    const y=groundY(c.x), s2=Math.cos(c.ph*0.5), lean=s2*1.4;
+    drawPerson(g,{ keep:'mor'+c.x, x:c.x+lean, y, face:(Math.sin(c.ph)>0?1:-1),
+      skin:shade(c.skin,-0.52), skinD:shade(c.skin,-0.66),
+      shirt:shade(c.shirt,-0.56), shirtD:shade(c.shirt,-0.70),
+      legs:'#191922', hair:c.hair, hairC:'#12100f',
+      eyeW:'#6a6660', pupil:'#141118', gleam:'#8e8a84', lip:'#4a2c2c',
+      pose:'dance', mood:1, anim:c.ph });
   }
 }
 /* joining in */
@@ -18101,22 +18085,15 @@ function stepSongkran(dt){
     if(a && !a.inside) throwWater(a.x, a.y-24, a.face||1);
   }
 }
-/* a child, about two-thirds of a grown-up, in a shirt with flowers on it */
+/* a child, in a shirt with flowers on it and ประแป้ง on the cheek */
 function songKid(g,x,fl,k){
   const bob=Math.abs(Math.sin(k.ph*2))*1.4, f=k.dx<0?-1:1;
-  const y=fl-bob;
-  pR(g,R(x-4),R(y-13),8,13,'#2f3a48');                       // shorts and legs, soaked through
-  pR(g,R(x-4),R(y-2),3,2,'#20262f'); pR(g,R(x+1),R(y-2),3,2,'#20262f');
-  pR(g,x-5,y-28,10,16,k.sh); pR(g,x-5,y-28,10,3,shade(k.sh,0.3));
-  for(let i=0;i<5;i++) pEll(g,x-3.4+((i*3)%8),y-25+((i*5)%11),1.1,1.1,'#fff0c0');   // the flowers
-  pEll(g,x,y-33,5.0,5.2,'#d8a878');                          // head
-  pEll(g,x,y-36,5.0,2.4,'#241c18');
-  pR(g,R(x-2.4*f-0.5),R(y-33),1,1,'#241c18'); pR(g,R(x+1.4*f-0.5),R(y-33),1,1,'#241c18');
-  pEll(g,x+1.2*f,y-30.4,2.0,1.4,'#8a3a33');                  // shouting
-  pEll(g,x-3.2,y-34.4,2.6,1.8,'#f4f0e4');                    // and ประแป้ง on the cheek
+  const v=drawPerson(g,{ keep:'song'+k.dx, x, y:fl-bob, face:f,
+    skin:'#d8a878', shirt:k.sh, legs:'#2f3a48', hair:k.job==='dip'?'tails':'crop',
+    flowers:true, chalk:true, mood:1, talk:0.5,
+    pose: k.job==='gun'? 'point' : k.job==='dip'? 'hold' : 'dance' });
+  const ax=v._hx===undefined? x+7*f : v._hx, ay=v._hy===undefined? fl-24 : v._hy;
   if(k.job==='gun'){
-    const ax=x+7*f, ay=y-24;
-    pTaper(g,x+3*f,y-25, ax,ay, 3.0,2.4,'#d8a878');
     pR(g,R(ax),R(ay-2),R(9*f)||9,4,k.c);                     // the pump gun
     pR(g,R(ax),R(ay-2),R(9*f)||9,1,shade(k.c,0.35));
     pR(g,R(ax+(f>0?2:-4)),R(ay+2),3,4,shade(k.c,-0.25));
@@ -18124,12 +18101,8 @@ function songKid(g,x,fl,k){
       pTaper(g,ax+9*f,ay, ax+44*f,ay+3, 2.6,5.2,'#bfe6ff');
       g.globalAlpha=0.8; pTaper(g,ax+9*f,ay, ax+26*f,ay, 1.6,2.4,'#eafaff'); g.globalAlpha=1; }
   } else if(k.job==='dip'){
-    pTaper(g,x+3*f,y-25, x+9*f,y-16, 3.0,2.4,'#d8a878');
-    pEll(g,x+11*f,y-15,4.2,2.6,'#e04a5a');                   // the red plastic bowl
-    pEll(g,x+11*f,y-15.8,3.4,1.8,'#bfe6ff');
-  } else {
-    pTaper(g,x+3*f,y-25, x+10*f,y-30, 3.0,2.4,'#d8a878');
-    pTaper(g,x-3*f,y-25, x-9*f,y-19, 3.0,2.4,'#d8a878');
+    pEll(g,ax+2*f,ay+1,4.2,2.6,'#e04a5a');                   // the red plastic bowl
+    pEll(g,ax+2*f,ay+0.2,3.4,1.8,'#bfe6ff');
   }
 }
 function drawSongkran(g){
@@ -18157,27 +18130,22 @@ function drawSongkran(g){
   { const ex=cx+SONG.elder.dx, ey=groundY(ex);
     pR(g,R(ex-8),R(ey-12),16,12,'#7a6a58');                  // sat on a low stool
     pR(g,R(ex-9),R(ey-2),18,2,'#4a4038');
-    pR(g,ex-6,ey-29,13,18,'#e8dfc8'); pR(g,ex-6,ey-29,13,3,'#fff6e8');
-    pEll(g,ex,ey-35,5.6,5.8,'#c9986f');
-    pEll(g,ex,ey-38,5.6,2.4,'#d8d4cc');                      // white hair
-    pR(g,R(ex-2.6),R(ey-35),1,1,'#241c18'); pR(g,R(ex+1.4),R(ey-35),1,1,'#241c18');
-    pEll(g,ex-1,ey-32,2.0,0.9,'#8a5a50');
-    pTaper(g,ex+5,ey-26, ex+13,ey-22, 3.0,2.6,'#c9986f');    // hands held out together
-    pTaper(g,ex+5,ey-24, ex+13,ey-21, 3.0,2.6,'#c9986f');
-    /* and the scented water going over them */
+    drawPerson(g,{ keep:'songElder', x:ex, y:ey-10, face:1,
+      skin:'#c9986f', shirt:'#e8dfc8', legs:'#6a6058', hair:'bun',
+      hairC:'#d8d4cc', pose:'sit', mood:1 });
+    /* and the scented water going over their hands */
     const pr=(SONG.t*0.7)%1;
     if(pr<0.55){
-      pTaper(g,ex+15,ey-30, ex+13.6,ey-21, 1.4,1.0,'#bfe6ff');
-      g.globalAlpha=0.5; pEll(g,ex+13.6,ey-20,3.4,1.4,'#bfe6ff'); g.globalAlpha=1;
+      pTaper(g,ex+17,ey-30, ex+14,ey-20, 1.4,1.0,'#bfe6ff');
+      g.globalAlpha=0.5; pEll(g,ex+14,ey-19,3.4,1.4,'#bfe6ff'); g.globalAlpha=1;
     }
     /* whoever is doing the pouring */
-    pR(g,ex+17,ey-30,11,17,'#b47ba8'); pR(g,ex+17,ey-30,11,3,'#c890bc');
-    pR(g,ex+17,ey-14,11,14,'#3a3a44');
-    pEll(g,ex+22,ey-36,5.2,5.4,'#e8bc92'); pEll(g,ex+22,ey-39,5.2,2.4,'#241c18');
-    pR(g,R(ex+19.6),R(ey-36),1,1,'#241c18'); pR(g,R(ex+23.4),R(ey-36),1,1,'#241c18');
-    pTaper(g,ex+18,ey-27, ex+15,ey-31, 3.0,2.4,'#e8bc92');
-    pEll(g,ex+14,ey-32,3.6,2.4,'#e8dfc8');                   // the little silver bowl
-    pEll(g,ex+14,ey-32.8,2.8,1.6,'#bfe6ff');
+    const po=drawPerson(g,{ keep:'songPour', x:ex+24, y:ey, face:-1,
+      skin:'#e8bc92', shirt:'#b47ba8', legs:'#3a3a44', hair:'crop',
+      flowers:true, pose:'pour', mood:1 });
+    const px=po._hx===undefined? ex+16 : po._hx, py=po._hy===undefined? ey-30 : po._hy;
+    pEll(g,px,py,3.6,2.4,'#e8dfc8');                         // the little silver bowl
+    pEll(g,px,py-0.8,2.8,1.6,'#bfe6ff');
   }
   for(const k of SONG.kids) songKid(g, cx+k.dx, groundY(cx+k.dx), k);
 }
@@ -18278,80 +18246,42 @@ function stepRound(dt){
     }
   }
 }
-/* a monk: จีวร over the left shoulder, บาตร held in both hands, no shoes */
-function drawMonk(g,x,fl,ph,hold){
-  const step=Math.sin(ph), bob=Math.abs(Math.cos(ph))*1.2;
-  const y=fl-bob;
-  const ROBE='#e07b2c', ROBE_L='#f09a44', ROBE_D='#b85a1e';
-  if(hold){                                              // legs, under the hem
-    pR(g,R(x-4),R(y-16),4,16,'#c9986f'); pR(g,R(x+1),R(y-16),4,16,'#c9986f');
-  } else {
-    pTaper(g,x,y-17, x-step*5,y-1, 4.4,3.4,'#c9986f');
-    pTaper(g,x,y-17, x+step*5,y-1, 4.4,3.4,'#c9986f');
-  }
-  pR(g,R(x-5),R(y-1),5,2,'#b08256'); pR(g,R(x+1),R(y-1),5,2,'#b08256');   // bare feet
-  pTri(g,x-9,y-2, x+9,y-2, x+7,y-24, ROBE);              // the robe, a bell to the ankle
-  pR(g,x-8,y-30,16,18,ROBE); pR(g,x-8,y-30,16,3,ROBE_L);
-  pTaper(g,x-8,y-30, x+6,y-14, 5.0,3.6,ROBE_D);          // the fold across the chest
-  pR(g,R(x-8),R(y-30),2,18,ROBE_L);
-  pEll(g,x,y-36,5.4,5.6,'#c9986f');                      // shaved head, all the way up
-  pEll(g,x,y-38.4,5.0,2.6,'#d4a578');                    // the light off the crown of it
-  pR(g,R(x-2.6),R(y-36),1,1,'#3a2a1e'); pR(g,R(x+1.4),R(y-36),1,1,'#3a2a1e');
-  pR(g,R(x-3.2),R(y-37.6),2,1,'#8a6a4c'); pR(g,R(x+1.4),R(y-37.6),2,1,'#8a6a4c');
-  pEll(g,x-0.4,y-33.6,1.6,0.7,'#8a5a50');
-  /* the บาตร, black iron, held level at the waist in both hands */
-  pTaper(g,x-6,y-26, x-3.4,y-21, 3.0,2.4,'#c9986f');
-  pTaper(g,x+6,y-26, x+3.4,y-21, 3.0,2.4,'#c9986f');
-  pEll(g,x,y-19.6,5.6,4.6,'#241f1c');
-  pEll(g,x,y-22.2,5.4,2.0,'#3a3430');
-  pEll(g,x,y-22.6,4.2,1.4,'#141210');
-  pEll(g,x-2.0,y-21.4,1.5,0.7,'#5a534c');
+/* a monk: จีวร, บาตร held at the waist, no shoes. The bowl comes from the
+   villager's own 'alms' job, so it is the same bowl the village monk carries. */
+function drawMonk(g,x,fl,ph,hold,i){
+  drawPerson(g,{ keep:'monk'+i, x, y:fl, face:-1,
+    skin:'#c9986f', shirt:'#e8923f', legs:'#c9986f', hair:'bald',
+    monk:true, job:'alms', mood:0.3,
+    vx: hold? 0 : 22, phase: ph });
 }
 /* somebody kneeling with a tray, who stands to put the rice in */
-function drawGiver(g,gv){
+function drawGiver(g,gv,i){
   const x=gv.x, fl=groundY(x), up=gv.rise;
-  const hipY = fl - lerp(14, 30, up);                     // heels to feet
-  const chY  = hipY - lerp(15, 19, up);
-  const hdY  = chY - lerp(9, 10, up);
   /* the tray on the ground in front, with the pot and the spoon in it */
   pR(g,R(x+14),R(fl-5),20,5,'#8a6a44'); pR(g,R(x+14),R(fl-5),20,1,'#a88656');
   pEll(g,x+21,fl-10,5.4,5.0,'#e8dfc8'); pEll(g,x+21,fl-13,5.0,2.0,'#fff6e8');
   pR(g,R(x+27),R(fl-14),1,9,'#a88656');
   pEll(g,x+30,fl-9,3.2,2.0,'#d8c8a0');
-  /* the legs, folded under */
-  if(up<0.5) pEll(g,x,fl-5,7.4,5.0,'#5a6070');
-  else { pR(g,R(x-4),R(hipY),4,R(fl-hipY),'#5a6070'); pR(g,R(x+1),R(hipY),4,R(fl-hipY),'#5a6070'); }
-  pR(g,R(x-4),R(fl-2),9,2,'#3e434e');
-  /* body and head */
-  pR(g,x-5,chY,11,R(hipY-chY)+2,gv.shirt); pR(g,x-5,chY,11,3,shade(gv.shirt,0.22));
-  pEll(g,x,hdY,5.4,5.6,gv.skin);
-  pEll(g,x,hdY-3,5.4,2.4, gv.old? '#d8d4cc' : '#241c18');
-  pR(g,R(x-2.6),R(hdY),1,1,'#241c18'); pR(g,R(x+1.4),R(hdY),1,1,'#241c18');
-  if(gv.wai>0){                                           // hands together after
-    pTaper(g,x-4,chY+5, x-1.4,hdY+2, 3.0,2.4,gv.skin);
-    pTaper(g,x+4,chY+5, x+1.4,hdY+2, 3.0,2.4,gv.skin);
-    pEll(g,x,hdY+1.4,2.6,3.4,gv.skin);
-  } else if(up>0.4){                                      // reaching over the bowl
-    pTaper(g,x+4,chY+4, x+14,chY+1, 3.0,2.4,gv.skin);
-    pTaper(g,x-4,chY+4, x+9,chY+6, 3.0,2.4,gv.skin);
-    pR(g,R(x+15),R(chY-1),1,7,'#a88656');                 // the spoon, going in
-    pEll(g,x+15,chY+7,2.8,1.8,'#d8c8a0');
-  } else {
-    pTaper(g,x+4,chY+4, x+8,chY+10, 3.0,2.4,gv.skin);
-    pTaper(g,x-4,chY+4, x-6,chY+10, 3.0,2.4,gv.skin);
+  const v=drawPerson(g,{ keep:'giver'+i, x, y:fl, face:1,
+    skin:gv.skin, shirt:gv.shirt, legs:'#5a6070',
+    hair: gv.old? 'bun' : 'crop', hairC: gv.old? '#d8d4cc' : '#241c18',
+    pose: up>0.4? null : 'kneel', wai: gv.wai>0, mood:1 });
+  if(gv.wai<=0 && up>0.4 && v._hx!==undefined){
+    pR(g,R(v._hx),R(v._hy-1),1,7,'#a88656');                 // the spoon, going in
+    pEll(g,v._hx,v._hy+7,2.8,1.8,'#d8c8a0');
   }
 }
 function drawRound(g){
   if(festLive()!=='merit' || ROUND.gone || ROUND.state==='idle') return;
   for(const gv of ROUND.givers){
     if(gv.x-GS.camX<-40||gv.x-GS.camX>W+40) continue;
-    drawGiver(g,gv);
+    drawGiver(g,gv,ROUND.givers.indexOf(gv));
   }
   for(let i=0;i<ROUND_MONKS;i++){
     const mx=ROUND.lead + i*27;
     if(mx-GS.camX<-40||mx-GS.camX>W+40) continue;
     const walking = ROUND.state==='walk';
-    drawMonk(g, mx, groundY(mx), walking? ROUND.t*4.6 - i*1.1 : Math.PI/2, !walking);
+    drawMonk(g, mx, groundY(mx), walking? ROUND.t*4.6 - i*1.1 : Math.PI/2, !walking, i);
   }
 }
 function roundInteract(set, taken){
@@ -19742,17 +19672,27 @@ function rider(g, x, y, f, seed, o={}){
   pTaper(g, x+lean*f, y-4, x+6.6*f, y-1.4, 2.2, 1.8, sk[0]);
   pEll(g, x+7*f, y-1.2, 1.4,1.4, sk[0]);
   /* head */
-  const hx=x+lean*f+0.6*f, hy=y-8.4;
-  pEll(g, hx, hy, 3.4, 3.4, sk[0]);
-  pEll(g, hx+1.2*f, hy+0.6, 2.0, 2.4, sk[1]);
+  /* the body has to be a riding pose, but the head is the village's head:
+     the same size and the same eyes as everybody standing on the verge */
+  const hx=x+lean*f+0.6*f, hy=y-9.4;
+  pEll(g, hx, hy, 4.4, 4.5, sk[0]);
+  pEll(g, hx-1.8*f, hy+0.5, 1.7, 2.6, sk[1]);
   if(o.helmet){
     const hc=HELMET[seed%5];
-    pEll(g, hx, hy-0.8, 4.0, 3.6, hc);
-    pEll(g, hx, hy-1.8, 3.4, 2.2, shade(hc,0.22));
-    pTaper(g, hx+1.8*f, hy-1.2, hx+4.2*f, hy+0.4, 2.0, 1.2, 'rgba(60,70,90,0.55)');  // visor
-    pTaper(g, hx-2.4*f, hy+1.2, hx+1.0*f, hy+3.0, 1.0, 1.0, shade(hc,-0.35));        // strap
+    pEll(g, hx, hy-1.0, 4.9, 4.4, hc);
+    pEll(g, hx, hy-2.2, 4.0, 2.6, shade(hc,0.22));
+    pTaper(g, hx+1.8*f, hy-1.2, hx+4.6*f, hy+0.6, 2.2, 1.3, 'rgba(60,70,90,0.55)');  // visor
+    pTaper(g, hx-2.6*f, hy+1.4, hx+1.0*f, hy+3.2, 1.0, 1.0, shade(hc,-0.35));        // strap
+    pR(g,R(hx+1.4*f),R(hy),1,1,'rgba(20,24,32,0.6)');                                // an eye behind it
   } else {
-    pEll(g, hx, hy-2.2, 3.6, 2.2, '#241c18');
+    for(const ex of [1.6, -0.9]){                // the same eyes as everybody else
+      const x2=R(hx+ex*f);
+      pR(g,x2-1,R(hy)-1,3,3,'#fbf4e6');
+      pR(g,x2,R(hy),2,2,'#1e1820');
+      pR(g,x2,R(hy),1,1,'#f2ecf4');
+    }
+    pR(g,R(hx+0.2*f),R(hy+2.4),2,1,'#9a5048');
+    pEll(g, hx, hy-2.8, 4.4, 2.4, '#241c18');
   }
   /* and whatever is strapped on the back, which is always something */
   if(o.load){
@@ -20491,13 +20431,13 @@ function almsInteract(set){
   const have = ['rice','somtam','stickyMango','friedBanana','khanomkrok','tomyum','padkaphrao']
                  .find(k=>bagHas(k));
   if(!have) return;
-  set(MONK.x, MONK.y-34, 'put it in the bowl', ()=>{
+  set(MONK.x, MONK.y-VILL_H-2, 'put it in the bowl', ()=>{
     GS.talked.alms=DAY.n;
     preteAct('give', 1.6, ()=>{
       bagTake(have,1); ALMS.given++;
       addMerit(5); floatUp('+5 '+L('merit'), PAL.goldL, MONK.x, MONK.y-50);
       MONK.react={k:'wai',t:3.0,dur:3.0}; AU.metta&&AU.metta();
-      pSpark(MONK.x, MONK.y-30, 12, '#ffe89a');
+      pSpark(MONK.x, MONK.y-VILL_H+2, 12, '#ffe89a');
       heartAdd('monk', 30, MONK);
       if(!GS.seen.alms){ GS.seen.alms=true; vignette('firstAlms'); }
       saveGame();
