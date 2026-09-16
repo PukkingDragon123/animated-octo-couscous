@@ -344,6 +344,49 @@ const AU = {
   blip(){ this.tone(420,0.04,'square',0.018); },
   sel(){ this.tone(620,0.06,'square',0.022); this.tone(930,0.05,'square',0.012,null,0.04); },
   ding(){ this.ranat(880,0,0.05); this.ranat(1320,0.06,0.025); },
+  /* ---- the door of a convenience store ----
+     Two notes, a fourth apart, the second a beat behind the first, each one
+     a bell: a bright sine with a soft attack and a long tail, plus a little
+     inharmonic ring on top. Everybody in Thailand knows this sound and
+     nobody has ever thought about it once. */
+  chime(){
+    if(!this.ctx||this.muted) return;
+    const n=(f,when)=>{
+      this.tone(f,      1.5,'sine',    0.055, null, when);
+      this.tone(f*2.01, 0.9,'sine',    0.020, null, when+0.005);
+      this.tone(f*3.02, 0.5,'triangle',0.008, null, when+0.01);
+    };
+    n(1318.5, 0); n(987.8, 0.30);
+  },
+  /* the aircon, which is the other half of the sound of being inside one:
+     a low hum with a hiss on top, running until you leave */
+  humOn(){
+    if(!this.ctx || this.hum) return;
+    const g=this.ctx.createGain(); g.gain.value=0;
+    g.gain.linearRampToValueAtTime(this.muted?0:0.05, this.ctx.currentTime+0.5);
+    const o=this.ctx.createOscillator(); o.type='sawtooth'; o.frequency.value=58;
+    const lp=this.ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=180;
+    o.connect(lp); lp.connect(g);
+    /* the hiss: a second of noise on a loop, filtered down to a draught */
+    const len=(this.ctx.sampleRate*1)|0;
+    const buf=this.ctx.createBuffer(1,len,this.ctx.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*0.5;
+    const nz=this.ctx.createBufferSource(); nz.buffer=buf; nz.loop=true;
+    const bp=this.ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1400; bp.Q.value=0.6;
+    const ng=this.ctx.createGain(); ng.gain.value=0.035;
+    nz.connect(bp); bp.connect(ng); ng.connect(g);
+    g.connect(this.out);
+    o.start(); nz.start();
+    this.hum={o,nz,g};
+  },
+  humOff(){
+    if(!this.hum) return;
+    const h=this.hum; this.hum=null;
+    try{
+      h.g.gain.linearRampToValueAtTime(0, this.ctx.currentTime+0.35);
+      h.o.stop(this.ctx.currentTime+0.4); h.nz.stop(this.ctx.currentTime+0.4);
+    }catch(e){}
+  },
   bigDing(){ this.gong(131,0,0.08); [523,659,784,1047].forEach((f,i)=>this.ranat(f,i*0.1,0.05)); },
   orb(){ this.tone(rnd(1100,1500),0.2,'sine',0.026); },
   wail(){ this.tone(1900,0.85,'sine',0.05,880); this.tone(1915,0.85,'sine',0.028,890,0.02); this.noise(0.5,0.012,2000,6000); },
@@ -2436,6 +2479,53 @@ const TH = {
   'hold it there':'คุมไว้ตรงนั้น',
   'and turn them when they catch':'พอเริ่มไหม้ก็พลิก',
 
+
+  /* ---- the shop you can walk into ---- */
+  'the hot cabinet':'ตู้อุ่นอาหาร',
+  'the fridge wall':'ตู้แช่',
+  'Pork buns, sausages on sticks, and a smell you can no longer eat.':
+    'ซาลาเปา ไส้กรอกเสียบไม้ และกลิ่นที่เธอกินไม่ได้อีกแล้ว',
+  'Four doors of cold. The draught comes out at your knees.':
+    'ตู้แช่สี่บาน ไอเย็นพัดออกมาโดนหัวเข่า',
+  'still warm':'ยังร้อนอยู่',
+  'still cold':'ยังเย็นอยู่',
+
+  /* ---- the calendar ---- */
+  'a merit day':'วันพระ',
+  'the temple fair':'งานวัด',
+  'the night of the floats':'คืนลอยกระทง',
+  'the water days':'สงกรานต์',
+  'tomorrow is':'พรุ่งนี้คือ',
+
+  /* ---- หมอลำ ---- */
+  'turn your hands':'รำวงกับเขา',
+  'Nobody minds. Nobody can see you. You do it anyway.':
+    'ไม่มีใครว่า ไม่มีใครเห็นเธอ เธอก็รำอยู่ดี',
+
+  /* ---- ลอยกระทง ---- */
+  'the water is full of candles':'ในน้ำเต็มไปด้วยแสงเทียน',
+  'Banana leaf, a candle, and whatever you would rather not keep.':
+    'ใบตอง เทียนหนึ่งเล่ม กับสิ่งที่เธอไม่อยากเก็บไว้',
+  'push one out':'ปล่อยกระทงลงน้ำ',
+  'It goes out slowly, turning, with everybody else, turning too.':
+    'มันลอยออกไปช้าๆ หมุนไปเรื่อยๆ พร้อมกับของคนอื่นที่หมุนไปเหมือนกัน',
+  'A hungry ghost floating away the thing he would rather not keep.':
+    'เปรตตนหนึ่งลอยสิ่งที่ตัวเองไม่อยากเก็บไว้ออกไป',
+
+  /* ---- สงกรานต์ ---- */
+  'a bowl of water, and everybody wet':'ขันน้ำหนึ่งใบ กับคนเปียกทั้งหมู่บ้าน',
+  'It goes through you and lands on the road behind.':
+    'น้ำทะลุตัวเธอไปตกบนถนนข้างหลัง',
+  'Mali throws hers anyway, at where she thinks you are.':
+    'มะลิก็ยังสาดมาอยู่ดี ตรงที่เธอคิดว่าเธอยืนอยู่',
+  'soaked, nearly':'เกือบเปียก',
+
+  /* ---- ตักบาตร ---- */
+  'kneel with them':'คุกเข่าลงกับเขา',
+  'You have nothing to put in the bowl. You kneel anyway.':
+    'เธอไม่มีอะไรจะใส่บาตร เธอก็คุกเข่าลงอยู่ดี',
+  'The last monk looks at the space where you are, and keeps walking.':
+    'พระรูปสุดท้ายมองมาตรงที่เธอยืนอยู่ แล้วเดินต่อไป',
 };
 function L(s){
   if(LANG!=='th') return s;
@@ -7621,14 +7711,19 @@ function tooPoor(n){
    ============================================================ */
 let CNT = null;
 function openCounter(o){
-  CNT = { title:o.title, sub:o.sub||'', rowsFn:o.rows, note:o.note||'', i:0, at:o.at||P.x, flash:0 };
+  /* where to go back to when it closes: the counter can be opened from the
+     road or from inside the shop, and dumping somebody onto the pavement
+     because they bought a bottle of water is not a door */
+  CNT = { title:o.title, sub:o.sub||'', rowsFn:o.rows, note:o.note||'', i:0, at:o.at||P.x,
+          flash:0, back: (GS.state==='store')? 'store' : 'play' };
   GS.state='shop'; clearPress(); AU.sel();
 }
 function cntRows(){ const r = CNT.rowsFn(); CNT.i = clamp(CNT.i, 0, Math.max(0,r.length-1)); return r; }
 function stepShop(dt){
   const C=CNT;
   C.flash = Math.max(0, C.flash-dt);
-  if(press('back')||press('tree')){ wipeTo(()=>{ GS.state='play'; CNT=null; },'page'); clearPress(); return; }
+  if(press('back')||press('tree')){ const to=C.back||'play';
+    wipeTo(()=>{ GS.state=to; CNT=null; },'page'); clearPress(); return; }
   hitTap();
   if(GS.state!=='shop') return;
   const rows=cntRows();
@@ -8864,6 +8959,7 @@ function render(){
   if(GS.state==='title'){ drawTitle(); return; }
   if(GS.state==='memory'){ drawMem(); return; }
   if(GS.state==='ascend'){ drawAscend(ctx); return; }
+  if(GS.state==='store'){ drawStore(ctx); drawWipe(ctx); return; }
 
   const sh=GS.shake>0?GS.shake:0;
   const ox=sh?rnd(-sh,sh):0, oy=sh?rnd(-sh,sh):0;
@@ -8887,6 +8983,7 @@ function render(){
   ctx.drawImage(playCv, cx, 0, W, H, cx, 0, W, H);
   drawWeatherMist(ctx);
   drawLanternString(ctx);
+  if(typeof drawFestSky==='function') drawFestSky(ctx);   // โคมลอย, over the rooftops
 
   // pond shimmer
   for(let i=0;i<10;i++){
@@ -8901,6 +8998,7 @@ function render(){
   drawFarm(ctx);
   drawNew(ctx);        // the barn, the jar, the log, and her
   drawBuilds(ctx);     // what you have put up, and what is still string and stakes
+  if(typeof drawFest==='function')  drawFest(ctx);    // whatever day it is
   if(typeof drawKids==='function')  drawKids(ctx);    // the lane at five o'clock
   if(typeof drawPests==='function') drawPests(ctx);   // and what got into the crop
   if(typeof drawPets==='function')  drawPets(ctx);    // and everything asleep in the road
@@ -9682,8 +9780,8 @@ function checkInteract(){
   if(near(STALL_X+34,20)) set(STALL_X+34, groundY(STALL_X+34)-44,'read the orders', openOrderBoard);
   if(near(STALL_X-30,22)) set(STALL_X-30, groundY(STALL_X-30)-52,'buy seed and feed', openStall);
   /* the shop out on the town road, which is open whatever the hour is */
-  if(typeof STORE_X!=='undefined' && near(STORE_X+30,26))
-    set(STORE_X+30, groundY(STORE_X+30)-58,'buy something cold', openStore, null, 'read');
+  if(typeof STORE_X!=='undefined' && near(STORE_X+30,30))
+    set(STORE_X+30, groundY(STORE_X+30)-58,'go in', enterStore, null, 'walk');
   /* and the dogs, who will let you scratch them once they are up */
   if(typeof ROAD_DOGS!=='undefined') for(const d of ROAD_DOGS){
     if(near(d.x,24) && d.st!=='sleep')
@@ -9721,6 +9819,7 @@ function checkInteract(){
   /* the things that stand still and can wait: a staked-out plot, and an animal
      that weighs half a ton and is not going anywhere. Neither of them may take
      a prompt off a bed, a tree or a pen. */
+  if(typeof festInteract==='function')  festInteract(set, ()=>false);
   if(typeof questInteract==='function') questInteract(set, ()=>false);
   if(typeof kidsInteract==='function') kidsInteract(set, ()=>false);
   if(typeof pestInteract==='function') pestInteract(set, ()=>false);
@@ -17218,6 +17317,1093 @@ function spotHit(sx,sy){
   return false;
 }
 /* ============================================================
+   INSIDE THE SHOP
+
+   Every Thai village has one and they are all the same shop: the
+   striped band across the front, the doors that chime, the white
+   light that makes two in the morning look like noon, the wall of
+   fridges, the hot cabinet with the buns in it, the girl at the
+   till who says the same sentence to everyone, and three dogs
+   asleep on the warm concrete outside who have never once been
+   shooed away.
+
+   It is the only air-conditioned room for four miles and it is
+   the reason anybody walks anywhere at night.
+
+   You are nine feet tall and the door is six, so he goes in bent
+   double and stays bent the whole time, which is the joke and
+   also, at this scale, the only way he fits on the screen.
+
+   (The look is the look every one of these has — the three-colour
+   band, the fridge wall, the chime. The name over the door is its
+   own; this is a homage, not a licence.)
+   ============================================================ */
+const STORE = { t:0, x:0, tx:0, face:1, chime:0, leave:0, near:null, bump:0 };
+/* The room is wider than the screen so that walking through it is walking
+   through it, and everything in it is drawn at the scale of the world
+   outside rather than at half of it — a shop you can see all of at once,
+   with a stripe of empty wall above the shelves, is a diorama. */
+const SHOP_W = 700;
+const SHOP_DOOR = SHOP_W-70;
+const SHOP_TILL = 96;
+const SHOP_HOT = 250;
+const SHOP_ISLE = 372;
+const SHOP_FRIDGE = 500;
+
+function enterStore(){
+  wipeTo(()=>{
+    GS.state='store';
+    STORE.t=0; STORE.x=SHOP_DOOR-26; STORE.tx=STORE.x; STORE.face=-1;
+    STORE.chime=1.6; STORE.leave=0; STORE.bump=0;
+    AU.ensure(); AU.chime(); AU.humOn();
+    clearPress();
+  },'iris');
+}
+function leaveStore(){
+  AU.chime(); AU.humOff();
+  wipeTo(()=>{
+    GS.state='play';
+    P.x=STORE_X+30; P.y=groundY(P.x); P.vx=0; P.face=1;
+    clearPress();
+  },'iris');
+}
+
+/* ---------- who is in it ---------- */
+const SHOP_STAFF = { x:SHOP_TILL+10, bob:0, wai:0, said:0 };
+const SHOP_CUST  = [
+  { x:SHOP_FRIDGE-30, tx:SHOP_FRIDGE-30, t:2, shirt:'#4a7a9e', skin:'#c9986f', hair:'crop',  face:1 },
+  { x:SHOP_HOT+34,   tx:SHOP_HOT+34,   t:5, shirt:'#b47ba8', skin:'#e8bc92', hair:'tails', face:-1 },
+];
+
+function stepStore(dt){
+  STORE.t+=dt;
+  if(STORE.chime>0) STORE.chime-=dt;
+  if(STORE.bump>0)  STORE.bump-=dt;
+  SHOP_STAFF.bob += dt;
+  if(SHOP_STAFF.wai>0) SHOP_STAFF.wai-=dt;
+
+  /* the customers drift between the fridge and the hot cabinet */
+  for(const c of SHOP_CUST){
+    c.t-=dt;
+    if(c.t<=0){ c.t=rnd(4,11); c.tx = clamp(rnd(SHOP_TILL+40, SHOP_FRIDGE+30), 60, SHOP_W-80); }
+    const d=c.tx-c.x;
+    if(Math.abs(d)>2){ c.x += clamp(d,-30*dt,30*dt); c.face = d<0?-1:1; }
+  }
+
+  if(DLG){ stepDlg(dt); return; }
+
+  /* walking, in the shop's own little space */
+  const L = K.left || (STICK.on && STICK.kx<-4);
+  const R2= K.right|| (STICK.on && STICK.kx>4);
+  const sp = 82;
+  if(L){ STORE.x -= sp*dt; STORE.face=-1; }
+  if(R2){ STORE.x += sp*dt; STORE.face=1; }
+  STORE.x = clamp(STORE.x, 46, SHOP_W-34);
+
+  /* what is in reach */
+  STORE.near = null;
+  if(Math.abs(STORE.x-SHOP_TILL)<40)        STORE.near='till';
+  else if(Math.abs(STORE.x-SHOP_HOT)<36)    STORE.near='hot';
+  else if(Math.abs(STORE.x-SHOP_FRIDGE)<52) STORE.near='fridge';
+  else if(STORE.x > SHOP_DOOR-34)           STORE.near='door';
+
+  if(press('act')||press('tap')){
+    switch(STORE.near){
+      case 'till':   AU.blip(); SHOP_STAFF.wai=2.0; openStore(); break;
+      case 'hot':    shopTake('hot');    break;
+      case 'fridge': shopTake('fridge'); break;
+      case 'door':   leaveStore(); break;
+      default: break;
+    }
+  }
+  if(press('back')) leaveStore();
+}
+
+/* taking something out of a cabinet: you still have to pay for it at the till,
+   which is the one thing a ghost cannot get around */
+function shopTake(which){
+  AU.blip();
+  const who = which==='hot'? 'the hot cabinet' : 'the fridge wall';
+  if(!GS.seen['shop_'+which]){
+    GS.seen['shop_'+which]=true;
+    say([{w:'',t: which==='hot'
+      ? 'Pork buns, sausages on sticks, and a smell you can no longer eat.'
+      : 'Four doors of cold. The draught comes out at your knees.'}]);
+  } else {
+    /* a ghost with his hand in a fridge is a thing the staff nearly notice */
+    SHOP_STAFF.wai=1.2;
+    toast(L(which==='hot'? 'still warm' : 'still cold'), '#cfe8e0');
+  }
+}
+
+/* ============================================================
+   DRAWING IT
+   ============================================================ */
+function drawStore(g){
+  const cam = clamp(STORE.x - W/2, 0, Math.max(0, SHOP_W - W));
+  const X = x => x - cam;
+  const fl = 236;                      // the floor line: low, so the room is tall
+  const ceil = 26;
+
+  /* ---- the room ---- */
+  pR(g,0,0,W,H,'#0b1014');
+  pR(g,0,ceil,W,fl-ceil,'#e2f0e8');                   // the wall, lit white
+  pR(g,0,ceil,W,2,'#f8fdfa');
+  pR(g,0,fl-30,W,2,'#cfe0d8');                        // a skirting line
+  /* the ceiling, and the tubes in it */
+  pR(g,0,0,W,ceil,'#c8d8d0'); pR(g,0,ceil-3,W,3,'#a2b8b0');
+  for(let i=0;i<8;i++){
+    const tx=X(Math.floor(cam/78)*78+i*78-40);
+    if(tx<-70||tx>W+70) continue;
+    pR(g,tx,7,58,5,'#ffffff'); pR(g,tx,12,58,2,'#d4ece4');
+    g.globalAlpha=0.14; pTri(g,tx,14, tx+58,14, tx+29,fl-6, '#ffffff'); g.globalAlpha=1;
+  }
+  /* the aircon unit, high on the wall */
+  const acX=X(SHOP_HOT+70);
+  pR(g,acX-32,ceil+6,64,22,'#eef2ee'); pR(g,acX-32,ceil+6,64,3,'#ffffff');
+  pR(g,acX-32,ceil+24,64,4,'#c2ccc6');
+  for(let i=0;i<7;i++) pR(g,acX-28+i*9,ceil+12,6,9,'#d6ded8');
+  for(let i=0;i<4;i++){
+    g.globalAlpha=0.12+0.05*Math.sin(STORE.t*2+i);
+    pTaper(g, acX-20+i*13, ceil+28, acX-26+i*13, ceil+62, 7,11, '#bfe6ff');
+    g.globalAlpha=1;
+  }
+  /* the floor: pale tiles, a grid, and the strip lights reflected in it */
+  pR(g,0,fl,W,H-fl,'#d2dbd6');
+  pR(g,0,fl,W,3,'#eef4f0');
+  for(let i=-1;i<14;i++){ const tx=X(Math.floor(cam/44)*44+i*44); pR(g,tx,fl,1,H-fl,'#bac6c0'); }
+  for(let i=0;i<3;i++) pR(g,0,fl+12+i*14,W,1,'#c6d0ca');
+  g.globalAlpha=0.16;
+  for(let i=0;i<8;i++){ const tx=X(Math.floor(cam/78)*78+i*78-40); pR(g,tx+10,fl+4,38,H-fl-6,'#ffffff'); }
+  g.globalAlpha=1;
+
+  /* ---- the till, at the left end ---- */
+  const tX=X(SHOP_TILL);
+  /* the cigarette cabinet and the coffee machine behind her */
+  pR(g,tX-58,fl-118,52,64,'#c8ccc4'); pR(g,tX-58,fl-118,52,3,'#e8ece4');
+  for(let i=0;i<3;i++) pR(g,tX-54,fl-112+i*20,44,15,'#9aa49c');
+  pR(g,tX-2,fl-116,64,62,'#b0a894'); pR(g,tX-2,fl-116,64,3,'#d6cdb8');
+  for(let i=0;i<12;i++) pR(g,tX+2+(i%4)*16,fl-110+Math.floor(i/4)*19,13,16,
+    ['#e8572f','#2b8a4c','#f2b21e','#4a7a9e','#c0392f','#8a4ac8','#d8d4cc','#e8bc52',
+     '#57a869','#e8572f','#f2b21e','#4a7a9e'][i]);
+  /* the counter */
+  pR(g,tX-52,fl-46,106,46,'#b8ae98'); pR(g,tX-52,fl-46,106,3,'#dcd2ba');
+  pR(g,tX-52,fl-10,106,3,'#8f866f');
+  pR(g,tX-40,fl-60,28,15,'#4a5560'); pR(g,tX-38,fl-58,24,10,'#8fd6c0');   // register
+  pR(g,tX+8,fl-56,17,11,'#e8e4da'); pR(g,tX+10,fl-54,13,7,'#cfe8e0');     // card reader
+  for(let i=0;i<6;i++) pR(g,tX-30+i*5,fl-54,3,8,['#c0392f','#f2c14e','#2b8a4c','#4a7a9e','#e8572f','#8a4ac8'][i]);
+  pR(g,tX+32,fl-58,14,13,'#dfe8e4'); pR(g,tX+34,fl-56,10,9,'#cfa040');
+  shopStaff(g, tX+10, fl-46);
+
+  /* ---- the hot cabinet ---- */
+  const hX=X(SHOP_HOT);
+  pR(g,hX-38,fl-86,76,86,'#b6bcb4'); pR(g,hX-38,fl-86,76,3,'#dae0d8');
+  pR(g,hX-33,fl-80,66,54,'#f2e8c8');
+  g.globalAlpha=0.32; pR(g,hX-33,fl-80,66,54,'#ffdd88'); g.globalAlpha=1;
+  for(let i=0;i<3;i++) for(let k=0;k<5;k++)
+    pEll(g,hX-25+k*13, fl-70+i*17, 5.4,4.0, i===1? '#c9a06a' : i===0? '#e0bd86' : '#b4854c');
+  for(let i=0;i<2;i++) pR(g,hX-33,fl-62+i*17,66,2,'#b4a880');
+  pR(g,hX-38,fl-26,76,16,'#9aa49c'); pR(g,hX-38,fl-26,76,2,'#b6bcb4');
+  /* the steamer on top, and its cloud */
+  pR(g,hX-14,fl-108,28,22,'#c8ccc4'); pR(g,hX-14,fl-108,28,3,'#e4e8e0');
+  pEll(g,hX,fl-108,16,5,'#dfe4dc');
+  for(let i=0;i<4;i++){
+    g.globalAlpha=0.26-i*0.055;
+    pEll(g, hX+Math.sin(STORE.t*1.7+i)*5, fl-114-((STORE.t*13+i*9)%34), 4+i*1.4, 5+i*1.6, '#ffffff');
+    g.globalAlpha=1;
+  }
+
+  /* ---- the shelf island in the middle ---- */
+  const sX=X(SHOP_ISLE);
+  pR(g,sX-40,fl-74,80,74,'#c8ccc4'); pR(g,sX-40,fl-74,80,3,'#e4e8e0');
+  for(let r=0;r<4;r++){
+    pR(g,sX-37,fl-68+r*17,74,3,'#a8aca4');
+    for(let k=0;k<9;k++) pR(g,sX-35+k*8,fl-65+r*17,6,13,
+      ['#f2b21e','#e8572f','#2b8a4c','#4a7a9e','#d8d4cc','#c0392f','#e8bc52','#8a4ac8','#57a869'][(r*9+k)%9]);
+  }
+  pR(g,sX-40,fl-6,80,6,'#9aa49c');
+
+  /* ---- the fridge wall ---- */
+  const frX=X(SHOP_FRIDGE);
+  pR(g,frX-74,fl-158,152,158,'#8fb0bc'); pR(g,frX-74,fl-158,152,4,'#c8e4ec');
+  for(let d=0;d<4;d++){
+    const dx=frX-70+d*37;
+    pR(g,dx,fl-152,33,146,'#cfe8f0');
+    g.globalAlpha=0.20; pR(g,dx,fl-152,33,146,'#ffffff'); g.globalAlpha=1;
+    for(let r=0;r<7;r++){
+      pR(g,dx+1,fl-146+r*20,31,3,'#a8c4cc');
+      for(let k=0;k<6;k++) pR(g,dx+2+k*5.2,fl-143+r*20,4,15,
+        ['#e8572f','#f2c14e','#2b8a4c','#4a7a9e','#d8d4cc','#c0392f','#8a4ac8'][(d*6+r*6+k)%7]);
+    }
+    pR(g,dx-1.6,fl-152,2,146,'#7a98a2');
+    pR(g,dx+29,fl-100,2.4,22,'#e8f4f8');
+    g.globalAlpha=0.18;
+    pTaper(g,dx+6,fl-148, dx+22,fl-10, 4,7, '#ffffff');
+    g.globalAlpha=1;
+  }
+  g.globalAlpha=0.09; pR(g,frX-74,fl-158,152,158,'#bfe6ff'); g.globalAlpha=1;
+
+  /* ---- the door, and the night outside it ---- */
+  const dX=X(SHOP_DOOR);
+  pR(g,dX-42,fl-170,90,170,'#7f8a86'); pR(g,dX-42,fl-170,90,3,'#9aa49e');
+  pR(g,dX-36,fl-164,78,158, TOD.v>0.4? '#7fa8c0' : '#101a24');
+  pR(g,dX-36,fl-32,78,26, TOD.v>0.4? '#6f7a76' : '#1b242c');
+  if(TOD.v<=0.4) for(let i=0;i<9;i++)
+    pEll(g, dX-32+i*9, fl-44-((i*17)%26), 1.4,1.4, 'rgba(255,220,150,0.5)');
+  else { for(let i=0;i<4;i++) pTaper(g, dX-26+i*20, fl-32, dX-26+i*20, fl-86, 3,2, 'rgba(120,150,130,0.4)'); }
+  /* the two that sleep on the step, seen through it from in here */
+  { const dogs=[{x:dX-20, f:1, c:'#b9915f', l:'#cfa872'},
+                {x:dX+22, f:-1, c:'#6a5c50', l:'#83756a'}];
+    for(const dg of dogs){
+      const br=Math.sin(STORE.t*1.3 + dg.x)*0.4, y=fl-34;
+      g.globalAlpha=0.24; pEll(g,dg.x,y+3,17,4,'#10131a'); g.globalAlpha=1;
+      pEll(g,dg.x,y-4,15,5.6+br,dg.c); pEll(g,dg.x,y-6.4,12.6,4.0,dg.l);
+      pEll(g,dg.x-12*dg.f,y-6,6.0,5.0,dg.c); pEll(g,dg.x-13*dg.f,y-7.4,5.0,3.8,dg.l);
+      pTri(g,dg.x-16*dg.f,y-11, dg.x-19*dg.f,y-5, dg.x-12*dg.f,y-6, shade(dg.c,-0.25));
+      pR(g,R(dg.x-16*dg.f),R(y-6),3,1,'#4a3524');
+      pEll(g,dg.x+13*dg.f,y-4,5.6,3.0,shade(dg.c,-0.2));
+      pR(g,R(dg.x-4),R(y+1),4,3,dg.l); pR(g,R(dg.x+5),R(y+1),4,3,dg.l);
+    }
+    /* and the glass in front of them */
+    g.globalAlpha=0.14; pR(g,dX-36,fl-164,78,158,'#dff2e8'); g.globalAlpha=1; }
+  pR(g,dX+1,fl-164,3,158,'#6a746f');
+  pR(g,dX-26,fl-104,11,18,'#e8572f'); pR(g,dX+14,fl-104,11,18,'#2b8a4c');
+  pR(g,dX-24,fl-84,8,3,'#cfd6d2'); pR(g,dX+16,fl-84,8,3,'#cfd6d2');
+  pR(g,dX-40,fl-2,86,5,'#5a6058');
+  /* the chime over the door */
+  pR(g,dX-7,fl-178,16,8,'#cfd6d2'); pR(g,dX-7,fl-178,16,2,'#eef2ee');
+  if(STORE.chime>0){
+    g.globalAlpha=clamp(STORE.chime/1.6,0,1);
+    for(let i=0;i<3;i++) pEll(g,dX+1,fl-174, 4+i*5+STORE.chime*3, 3+i*4, 'rgba(255,240,180,0.28)');
+    g.globalAlpha=1;
+  }
+
+  /* ---- the customers ---- */
+  for(const c of SHOP_CUST) shopPerson(g, X(c.x), fl, c);
+
+  /* ---- and him, bent double ---- */
+  shopPrete(g, X(STORE.x), fl, ceil);
+
+  /* ---- what you can do ---- */
+  if(STORE.near && !DLG){
+    const at = STORE.near==='till'? tX : STORE.near==='hot'? hX
+             : STORE.near==='fridge'? frX : dX;
+    const ic = STORE.near==='till'? 'read' : STORE.near==='door'? 'walk' : 'pick';
+    const bob=Math.sin(GS.t*4)*1.2;
+    cloud(g, at-11, ceil+30+bob, 22, 22, {seed:29, body:'#f4ecd6'});
+    spotGlyph(g, ic, at, ceil+41+bob, CL.ink);
+  }
+  /* the cold light over everything */
+  g.globalAlpha=0.05; pR(g,0,0,W,H,'#cfe8ff'); g.globalAlpha=1;
+}
+
+/* the girl at the till: striped polo, cap, and the wai she gives the door */
+function shopStaff(g,x,y){
+  const b=Math.sin(SHOP_STAFF.bob*1.6)*0.8;
+  y += b;
+  pR(g,x-7,y-30,15,22,'#e8e4da');                      // the striped polo
+  pR(g,x-7,y-30,15,4,'#2b8a4c');
+  pR(g,x-7,y-24,15,4,'#e8572f');
+  pR(g,x-7,y-18,15,4,'#f2b21e');
+  pR(g,x+4,y-30,4,22,'#cfcabe');
+  const wai = SHOP_STAFF.wai>0;
+  if(wai){
+    pTaper(g,x-3,y-24,x-1,y-40,3.4,2.6,'#e8bc92');
+    pTaper(g,x+3,y-24,x+1,y-40,3.4,2.6,'#e8bc92');
+    pEll(g,x,y-41,2.6,3.4,'#e8bc92');
+  } else {
+    pTaper(g,x-7,y-26,x-11,y-13,3.4,2.6,'#e8bc92');
+    pTaper(g,x+7,y-26,x+11,y-15,3.4,2.6,'#e8bc92');
+  }
+  pEll(g,x,y-39,7.0,7.4,'#e8bc92');                    // head
+  pEll(g,x-2.6,y-40,3.6,4.4,'#c99a6e');
+  pR(g,R(x-2.6),R(y-40),2,2,'#2c2020'); pR(g,R(x+1.4),R(y-40),2,2,'#2c2020');
+  pR(g,R(x-1.4),R(y-35.6),3,1,'#b0665e');
+  pEll(g,x,y-44,7.6,4.0,'#241c18');                    // hair
+  pEll(g,x-8,y-38,2.0,4.4,'#241c18');
+  pEll(g,x,y-46,7.2,3.2,'#2b8a4c');                    // the cap
+  pR(g,R(x+2),R(y-46),8,2,'#2b8a4c');
+  pR(g,R(x-2),R(y-47.6),4,1,'#e8572f');
+}
+/* a customer, looking at a shelf */
+function shopPerson(g,x,fl,c){
+  const y=fl;
+  pR(g,x-6,y-44,13,21,c.shirt);
+  pR(g,x-6,y-44,13,3,shade(c.shirt,0.24));
+  pR(g,x+3,y-44,4,21,shade(c.shirt,-0.24));
+  pR(g,x-6,y-23,13,17,'#3a3a44'); pR(g,x+3,y-23,4,17,'#2e2e38');
+  pR(g,R(x-6),R(y-6),5,4,'#2a2a30'); pR(g,R(x+2),R(y-6),5,4,'#2a2a30');
+  /* one arm up at the shelf, which is what everybody in here is doing */
+  pTaper(g,x+4*c.face,y-40, x+11*c.face,y-33, 3.4,2.6, c.skin);
+  pEll(g,x+11.6*c.face,y-32.6,2.4,2.4,c.skin);
+  pTaper(g,x-4*c.face,y-40, x-6*c.face,y-27, 3.2,2.6, c.skin);
+  pEll(g,x,y-52,6.6,7.0,c.skin);
+  pEll(g,x+2.4*c.face,y-51.4,3.4,4.2,shade(c.skin,-0.2));
+  pR(g,R(x+1*c.face),R(y-52.6),2,2,'#2c2020');
+  if(c.hair==='tails'){ pEll(g,x,y-57,7.0,4.0,'#241c18');
+    pEll(g,x-7*c.face,y-51,2.6,4.4,'#241c18'); }
+  else { pEll(g,x,y-57,7.0,4.0,'#241c18'); pR(g,R(x-7*c.face),R(y-55),3,5,'#241c18'); }
+}
+/* and the prete, who does not fit */
+function shopPrete(g,x,fl,ceil){
+  const f=STORE.face, t=STORE.t;
+  const BODY='#cdc8bc', SHD='#b3aea2', HI='#e2ded2';
+  const sway=Math.sin(t*1.5)*1.1, bob=Math.sin(t*3.1)*0.8;
+
+  /* He is half again as tall as this room, so he does what anybody nine feet
+     tall does in a shop with a two-and-a-half metre ceiling: he goes down on
+     his knees in the aisle and shuffles along on them. It reads instantly,
+     it is funny, and it is a bit sad, which is the register of this whole
+     game. Folding him forward was neither — it drew a pole. */
+  const kneeY = fl-6;                       // shins flat on the tiles
+  const hipY  = fl-52 + bob;
+  const chY   = hipY - 54;
+  const hdY   = chY - 26 + sway*0.3;
+  const hdX   = x + 5*f + sway;
+
+  pEll(g,x+6*f,fl-2,26,5.0,'rgba(10,8,20,0.22)');
+  /* shins along the floor, knees forward, one slightly ahead of the other */
+  for(let i=0;i<2;i++){
+    const ahead=(i?10:2)*f, col=i?BODY:SHD;
+    pTaper(g, x-12*f+ahead, kneeY, x+16*f+ahead, kneeY, 10.0,9.0, col);
+    pEll(g, x+16*f+ahead, kneeY-1, 6.0,5.4, col);              // the knee
+    pEll(g, x-13*f+ahead, kneeY-1, 6.6,5.0, col);              // the foot behind
+    pTaper(g, x+14*f+ahead, kneeY-3, x+(i?9:3)*f, hipY+4, 9.0,8.0, col);  // thigh up to the hip
+  }
+  /* the sarong, bunched at the hip */
+  pR(g, R(x-12), R(hipY-6), 26, 17, '#5d6a7a');
+  pR(g, R(x-12), R(hipY-6), 26, 3,  '#74839a');
+  pR(g, R(x-12), R(hipY+8), 26, 2,  '#47526010');
+  /* the torso, leaning forward off the hips */
+  pTaper(g, x, hipY-2, x+7*f, chY+6, 12.0, 10.0, BODY);
+  pEll(g, x+2*f, hipY-16, 16.0, 14.0, BODY);                   // the belly
+  pEll(g, x+6*f, hipY-14, 7.4, 6.6, SHD);
+  pEll(g, x-4*f, hipY-22, 4.4, 3.4, HI);
+  for(let i=0;i<3;i++)                                         // three ribs
+    pTaper(g, x+(2+i)*f-7, chY+16+i*8, x+(2+i)*f+7, chY+17+i*8, 1.6,1.2, SHD);
+  pEll(g, x+7*f, chY+4, 11.0, 9.0, BODY);                      // the chest
+  /* shoulders */
+  const shL = x+1*f, shR = x+13*f;
+  /* the near arm reaching along the shelf, the far one down on the floor */
+  const rr = Math.sin(t*1.1)*5;
+  pTaper(g, shL, chY+8, x-14*f, chY+34, 6.0,5.0, SHD);
+  pTaper(g, x-14*f, chY+34, x-18*f, kneeY-10, 5.0,4.2, SHD);
+  pEll(g, x-18*f, kneeY-8, 5.4,5.4, SHD);
+  for(let i=0;i<4;i++) pTaper(g, x-18*f, kneeY-8, x-(19+i*1.6)*f, kneeY-1+i*1.6, 2.8,2.0, SHD);
+  pTaper(g, shR, chY+8, x+27*f, chY+16+rr, 6.0,5.0, BODY);
+  pTaper(g, x+27*f, chY+16+rr, x+42*f, chY+8+rr, 5.0,4.2, BODY);
+  pEll(g, x+42*f, chY+8+rr, 5.6,5.6, BODY);
+  for(let i=0;i<4;i++) pTaper(g, x+42*f, chY+8+rr, x+(45+i*1.8)*f, chY+2+rr+i*3.0, 3.0,2.2, BODY);
+  /* the neck and the head, still near the tubes */
+  pTaper(g, x+8*f, chY+2, hdX, hdY+10, 7.0,6.0, BODY);
+  pEll(g, hdX, hdY, 17.0, 16.0, BODY);
+  pEll(g, hdX+5*f, hdY+2, 8.0, 10.0, SHD);
+  pEll(g, hdX-5*f, hdY-7, 5.4, 4.0, HI);
+  pEll(g, hdX+5.0*f, hdY-2.0, 5.0,4.6, '#f2efe6');
+  pEll(g, hdX-3.6*f, hdY-2.0, 5.0,4.6, '#f2efe6');
+  pEll(g, hdX+5.8*f, hdY-1.4, 2.6,3.0, '#3f6b52');
+  pEll(g, hdX-2.8*f, hdY-1.4, 2.6,3.0, '#3f6b52');
+  pEll(g, hdX+6.4*f, hdY-2.4, 1.1,1.1, '#ffffff');
+  pEll(g, hdX-2.2*f, hdY-2.4, 1.1,1.1, '#ffffff');
+  pR(g, R(hdX+1*f), R(hdY+6), 4, 1, '#8a6f62');                // the needle mouth
+  for(let i=0;i<5;i++)                                         // the tuft
+    pTaper(g, hdX-8*f+i*3.6*f, hdY-14, hdX-10*f+i*3.6*f, hdY-23-((i%2)*4), 1.8,1.0, BODY);
+  pTaper(g, hdX+8*f, hdY+4, hdX+28*f, hdY+10, 3.4,1.6, BODY);  // the snout
+  /* and the ceiling, which his head is still only just under */
+  pR(g, R(hdX-18), R(ceil), 38, 2, 'rgba(120,140,130,0.26)');
+  if(STORE.bump>0){
+    g.globalAlpha=clamp(STORE.bump,0,1);
+    for(let i=0;i<5;i++) pEll(g, hdX+rnd(-16,16), ceil+rnd(0,6), 1.4,1.4, '#f2e0a0');
+    g.globalAlpha=1;
+  }
+}
+/* ============================================================
+   THE VILLAGE CALENDAR
+
+   A Thai village is not the same every day. Four days in it are
+   not like the others, and they are the days people remember.
+
+   วันพระ — the merit day. The monk's bowl is heavier, the shrine
+   wants flowers, and everybody is a little more careful.
+
+   ลอยกระทง — the full moon of the twelfth month. You fold a banana
+   leaf into a lotus, put a candle in it, push it out onto the
+   water, and whatever you would rather not keep goes with it.
+   For a hungry ghost this is not a metaphor.
+
+   สงกรานต์ — the new year, in the hottest week of the hottest
+   month, and the whole country throws water at each other for
+   three days. Water on a prete is a complicated thing.
+
+   งานวัด — the temple fair, which means หมอลำ: a stage on the
+   temple ground, two speaker stacks taller than the stage, a
+   singer, a khaen, two dancers in sequins, strings of coloured
+   lamps, and everybody in the village turning their hands in a
+   circle in the dust until one in the morning.
+
+   They are announced the evening before, they land on a schedule
+   you can learn, and none of them is a cutscene: they are a
+   different village for a night.
+   ============================================================ */
+
+/* which day is which: a fourteen-day wheel, so a real save sees all four */
+const FEST = { id:null, t:0, said:0 };
+function festOn(day){
+  const d = ((day|0) % 14 + 14) % 14;
+  if(d===3  || d===10) return 'merit';
+  if(d===6)  return 'morlam';
+  if(d===9)  return 'krathong';
+  if(d===12) return 'songkran';
+  return null;
+}
+const festToday = ()=> festOn(DAY.n);
+const FEST_NAME = {
+  merit:    'a merit day',
+  morlam:   'the temple fair',
+  krathong: 'the night of the floats',
+  songkran: 'the water days',
+};
+/* when in the day it is actually happening */
+function festLive(){
+  const f=festToday(); if(!f) return null;
+  const h=DAY.min/60;
+  if(f==='morlam'   && h>=19)             return f;
+  if(f==='krathong' && (h>=19 || h<1))    return f;
+  if(f==='songkran' && h>=10 && h<17)     return f;
+  if(f==='merit'    && h>=6  && h<11)     return f;
+  return null;
+}
+
+/* ============================================================
+   หมอลำ — THE STAGE
+   ============================================================ */
+const STAGE_X = SALA_X + 150;
+const MORLAM = { t:0, beat:0, step:0, dancers:[], crowd:[], lit:0 };
+for(let i=0;i<7;i++) MORLAM.crowd.push({x:STAGE_X-96+i*27, ph:rnd(TAU), sp:rnd(0.8,1.3),
+  shirt:['#c0392f','#4a7a9e','#e8bc52','#3f6b4a','#b47ba8','#e8572f','#f0e8d2'][i],
+  skin:['#d8a878','#c9986f','#e8bc92'][i%3], hair:i%3===1?'tails':'crop'});
+
+/* the riff: a pentatonic figure over a bass pulse, and a khaen drone under it */
+const MORLAM_RIFF = [0,2,4,7,9,7,4,2, 0,2,4,7,9,11,9,7];
+function morlamNote(){
+  const base=196;                                   // G3
+  const semis=MORLAM_RIFF[MORLAM.step % MORLAM_RIFF.length];
+  const f=base*Math.pow(2,semis/12);
+  AU.ranat(f*2, 0, 0.040);
+  if(MORLAM.step%2===0){ AU.drum(0,0.055); AU.tone(base/2,0.34,'triangle',0.030,null,0); }
+  if(MORLAM.step%16===0) AU.tone(base*1.5,1.2,'sawtooth',0.012,null,0);  // the khaen drone
+  MORLAM.step++;
+}
+function stepMorlam(dt){
+  MORLAM.t+=dt;
+  MORLAM.lit = clamp(MORLAM.lit + dt*0.6, 0, 1);
+  const beat = 60/128;                              // 128 to the minute
+  MORLAM.beat += dt;
+  if(MORLAM.beat >= beat/2){ MORLAM.beat -= beat/2; morlamNote(); }   // and the riff in eighths
+  for(const c of MORLAM.crowd) c.ph += dt*c.sp*2.2;
+}
+function drawMorlam(g){
+  const cx=STAGE_X, gy=groundY(STAGE_X);
+  if(cx-GS.camX<-260 || cx-GS.camX>W+260) return;
+  const t=MORLAM.t;
+
+  /* the strings of coloured lamps, over the whole ground */
+  for(let s=0;s<2;s++){
+    const y0=gy-118+s*16;
+    for(let i=0;i<22;i++){
+      const lx=cx-150+i*14, sag=Math.sin(i*0.5)*4;
+      pR(g,R(lx),R(y0+sag),13,1,'#3a3630');
+      const on = ((i+s*3+Math.floor(t*3))%3)!==0;
+      const c=['#e8572f','#f2c14e','#2b8a4c','#4a7a9e','#c0392f'][(i+s)%5];
+      pEll(g,lx+6,y0+sag+3, on?2.4:1.6, on?2.8:2.0, on? c : shade(c,-0.5));
+      if(on){ g.globalAlpha=0.18; pEll(g,lx+6,y0+sag+3,6,6,c); g.globalAlpha=1; }
+    }
+  }
+  /* the two speaker stacks, taller than the stage, which is the whole point */
+  for(const sx of [cx-80, cx+80]){
+    pR(g,sx-14,gy-124,28,124,'#2e2b28'); pR(g,sx-14,gy-124,28,3,'#4a453e');
+    for(let i=0;i<5;i++){
+      const by=gy-120+i*24;
+      pR(g,sx-12,by,24,21,'#3a3630'); pR(g,sx-12,by,24,1,'#4e483f');
+      pEll(g,sx,by+10,8.5,8.5,'#1d1a18'); pEll(g,sx,by+10,5.4,5.4,'#514840');
+      pEll(g,sx-1.4,by+8.6,2.0,2.0,'#8a7a66');
+      const th=Math.sin(t*9+i)*0.5;                       // the cones move, a little
+      pEll(g,sx,by+10+th,3.0,3.0,'#241f1c');
+    }
+    pR(g,sx-16,gy-2,32,4,'#241f1c');
+  }
+  /* the stage: chest-high, so the crowd stands under it and looks up */
+  const DECK = gy-42;                                  // where the boards are
+  for(let i=0;i<7;i++){                                // the scaffold under the boards
+    const lx=cx-56+i*19;
+    pR(g,R(lx),R(DECK+3),3,39,'#3a2d1f');
+    if(i<6) pTaper(g,lx+1,DECK+8, lx+19,DECK+34, 1.6,1.6,'#33281c');
+  }
+  pR(g,cx-62,DECK-4,124,7,'#7a5f3c'); pR(g,cx-62,DECK-4,124,2,'#9c7a4c');
+  for(let i=0;i<13;i++) pR(g,R(cx-60+i*9.6),R(DECK-2),1,5,'#5a4630');
+  pR(g,cx-62,DECK+3,124,3,'#241c14');
+  /* the printed backdrop, hung off a frame */
+  pR(g,cx-64,DECK-98,128,96,'#b8342c'); pR(g,cx-64,DECK-98,128,4,'#e05a48');
+  pR(g,cx-60,DECK-94,120,88,'#d8552f');
+  /* the backdrop is a sunburst, because it always is */
+  for(let i=0;i<14;i++){
+    const a=(i/14)*TAU;
+    pTaper(g,cx,DECK-52, cx+Math.cos(a)*72, DECK-52+Math.sin(a)*40, 9,1,
+           i%2? 'rgba(242,193,78,0.5)' : 'rgba(255,240,180,0.28)');
+  }
+  pEll(g,cx,DECK-52,17,15,'#f2c14e'); pEll(g,cx,DECK-52,13,11,'#ffe089');
+  /* two par cans on the frame, throwing down at the boards */
+  for(const lx of [cx-46,cx+46]){
+    pR(g,R(lx-4),R(DECK-104),8,7,'#2e2b28');
+    g.globalAlpha=0.13+0.05*Math.sin(t*5+lx);
+    pTri(g,lx,DECK-98, lx-26,DECK-2, lx+26,DECK-2, '#ffe9b0');
+    g.globalAlpha=1;
+  }
+  /* the performers, on the boards */
+  const sy=DECK-4;
+  /* two หางเครื่อง, in sequins, stepping side to side */
+  for(let i=0;i<2;i++){
+    const dx=cx+(i?34:-34), sw=Math.sin(t*4.4+i*Math.PI)*3;
+    const c=i? '#f2c14e':'#e8572f';
+    pR(g,dx-5+sw,sy-26,11,16,c); pR(g,dx-5+sw,sy-26,11,3,shade(c,0.3));
+    for(let k=0;k<3;k++) pR(g,R(dx-4+sw+k*4),R(sy-22+k*4),2,2,'#ffe089');
+    pR(g,dx-5+sw,sy-10,11,10,shade(c,-0.25));
+    pTaper(g,dx-4+sw,sy-24, dx-11+sw,sy-34+Math.sin(t*4.4+i)*3, 3,2.4,'#e8bc92');
+    pTaper(g,dx+4+sw,sy-24, dx+11+sw,sy-34-Math.sin(t*4.4+i)*3, 3,2.4,'#e8bc92');
+    const hx2=dx+sw;
+    pEll(g,hx2,sy-32,5.4,5.6,'#e8bc92');
+    pEll(g,hx2-4.6,sy-33,2.2,2.8,'#1c1510');                // the bun, off the back
+    pEll(g,hx2,sy-34.4,5.4,3.8,'#241c18');                  // hair, flat to the skull
+    pEll(g,hx2,sy-33.2,4.4,2.4,'#e8bc92');                  // and the forehead back out of it
+    pR(g,R(hx2-2.6),R(sy-32),1,2,'#241c18');                // two eyes under it
+    pR(g,R(hx2+1.4),R(sy-32),1,2,'#241c18');
+    pR(g,R(hx2-1),R(sy-28),2,1,'#b8564a');                  // singing along
+    /* the ชฎา: a spire, not a pair of horns */
+    pTri(g,hx2,sy-46, hx2-2.2,sy-37, hx2+2.2,sy-37,'#f2c14e');
+    pTri(g,hx2,sy-44, hx2-1.1,sy-37, hx2+1.1,sy-37,'#ffe089');
+    pR(g,R(hx2-3),R(sy-38),6,2,'#f2c14e'); pR(g,R(hx2-3),R(sy-38),6,1,'#ffe089');
+    pEll(g,hx2,sy-47,1.2,1.2,'#fff4c8');
+  }
+  /* the singer at the mic, in the middle, arm out */
+  const swg=Math.sin(t*2.2)*2;
+  pR(g,cx-6+swg,sy-30,13,19,'#e8e4da'); pR(g,cx-6+swg,sy-30,13,3,'#ffffff');
+  pR(g,cx-6+swg,sy-12,13,12,'#8a4ac8');
+  pTaper(g,cx+5+swg,sy-27, cx+16+swg,sy-38, 3.2,2.6,'#d8a878');
+  pTaper(g,cx-5+swg,sy-27, cx-13+swg,sy-20, 3.2,2.6,'#d8a878');
+  pEll(g,cx+swg,sy-37,6.2,6.4,'#d8a878');
+  pEll(g,cx+swg,sy-41,6.4,2.8,'#241c18');
+  pEll(g,cx-6.4+swg,sy-39,1.6,2.6,'#241c18');                // and a bit over the ear
+  pR(g,R(cx+swg-3.4),R(sy-37),2,1,'#241c18');                // eyes shut, the way they sing
+  pR(g,R(cx+swg+1.6),R(sy-37),2,1,'#241c18');
+  { const m=1.2+Math.abs(Math.sin(t*3.1))*2.0;               // the mouth, open on the long notes
+    pEll(g,cx+swg,sy-33.4,1.7,m,'#5a2420');
+    pEll(g,cx+swg,sy-34.2,1.0,m*0.4,'#2a1210'); }
+  pR(g,R(cx-13+swg),R(sy-22),2,3,'#3a3630');                 // the mic
+  pR(g,R(cx-13+swg),R(sy-19),1,19,'#5a5a64');
+  /* the khaen player, sitting at the side with the pipes up */
+  const kx=cx-52;
+  pR(g,kx-5,sy-14,11,14,'#4a7a9e'); pEll(g,kx,sy-20,5.0,5.2,'#c9986f');
+  pEll(g,kx,sy-23,5.2,2.4,'#241c18');
+  pR(g,R(kx-2.4),R(sy-19),1,1,'#241c18'); pR(g,R(kx+1.4),R(sy-19),1,1,'#241c18');
+  for(let i=0;i<7;i++) pTaper(g,kx+4,sy-18, kx+9+i*1.2,sy-42-i*2, 1.2,0.9,'#b08c5c');
+  pTaper(g,kx+2,sy-16, kx+8,sy-20, 2.6,2.2,'#c9986f');
+
+  /* the light off the stage, thrown over the dust — before the crowd, so they stand in it */
+  g.globalAlpha=0.11+0.04*Math.sin(t*6);
+  pTri(g,cx,DECK-40, cx-170,gy+10, cx+170,gy+10, '#ffd98c');
+  g.globalAlpha=1;
+
+  /* ---- and everybody in front of it, turning their hands ---- */
+  /* they stand between you and the lamps, so they come out as shapes with a warm edge */
+  for(const c of MORLAM.crowd){
+    const y=groundY(c.x), s=Math.sin(c.ph), s2=Math.cos(c.ph*0.5);
+    const lean=s2*1.4, hx=c.x+lean;
+    const dk = shade(c.shirt,-0.62), lg = shade(c.shirt,-0.30);
+    const sk = shade(c.skin,-0.55),  skl= shade(c.skin,-0.24);
+    /* legs and สโรง */
+    pR(g,R(hx-5),R(y-15),11,15,'#20202a');
+    pR(g,R(hx-5),R(y-2),4,2,'#16161d'); pR(g,R(hx+1),R(y-2),4,2,'#16161d');
+    /* the shirt, dark, with the stage catching its left edge */
+    pR(g,hx-5,y-31,11,17,dk); pR(g,hx-5,y-31,11,3,lg);
+    pR(g,R(hx+4),R(y-31),1,17,lg);
+    /* the รำวง hands: both up, wrists turning, one high one low */
+    const a1=-0.9+s*0.5, a2=-0.2-s*0.5;
+    const h1x=hx+3+Math.cos(a1)*11, h1y=y-29+Math.sin(a1)*11;
+    const h2x=hx-3+Math.cos(a2+Math.PI)*11, h2y=y-29+Math.sin(a2)*11;
+    pTaper(g,hx+3,y-29, h1x,h1y, 3.0,2.4,sk);
+    pTaper(g,hx-3,y-29, h2x,h2y, 3.0,2.4,sk);
+    /* the turned-back fingers that make it รำวง and not just waving */
+    for(let f=0;f<3;f++){
+      const fa=a1-0.55+f*0.34;
+      pTaper(g,h1x,h1y, h1x+Math.cos(fa)*4.4, h1y+Math.sin(fa)*4.4, 1.3,0.9, skl);
+      const fb=a2+Math.PI-0.55+f*0.34;
+      pTaper(g,h2x,h2y, h2x+Math.cos(fb)*4.4, h2y+Math.sin(fb)*4.4, 1.3,0.9, skl);
+    }
+    pEll(g,h1x,h1y,2.2,2.2,sk); pEll(g,h2x,h2y,2.2,2.2,sk);
+    /* the head: dark, with the rim the stage puts on it */
+    pEll(g,hx,y-37,5.4,5.6,sk);
+    pEll(g,hx,y-40,5.6,3.2,'#15100e');
+    pEll(g,hx+3.4,y-37.4,1.5,3.6,skl);
+    if(c.hair==='tails') pEll(g,hx-5.6,y-36,2.0,3.4,'#15100e');
+  }
+}
+/* joining in */
+function morlamInteract(set, taken){
+  if(festLive()!=='morlam') return;
+  if(Math.abs(P.x-STAGE_X)>150) return;
+  set(clamp(P.x,STAGE_X-140,STAGE_X+140), groundY(P.x)-54, 'turn your hands', ()=>{
+    preteAct('wai', 1.4, ()=>{
+      AU.ding();
+      for(const c of MORLAM.crowd) c.sp = clamp(c.sp*1.25, 0.8, 2.4);
+      for(let i=0;i<10;i++) part({k:'sp',x:P.x+rnd(-14,14),y:P.y-30,vx:rnd(-20,20),
+                                  vy:-rnd(12,40),life:rnd(.6,1.1),c:PAL.goldL});
+      if(!GS.seen['morlam_'+DAY.n]){ GS.seen['morlam_'+DAY.n]=true;
+        addMerit(5); toast('+5', PAL.gold, 'merit');
+        say([{w:'',t:'Nobody minds. Nobody can see you. You do it anyway.'}]);
+      }
+    });
+  }, null, 'pet');
+}
+
+/* ============================================================
+   ลอยกระทง — THE NIGHT OF THE FLOATS
+   ============================================================ */
+const KRA = [];
+/* the โคมลอย go up from the whole village, not just from the water */
+const KOM = [];
+function stepKrathong(dt){
+  if(festLive()!=='krathong'){ KRA.length=0; KOM.length=0; return; }
+  if(KRA.length<9 && Math.random()<dt*0.7)
+    KRA.push({x:POND_X+rnd(-60,60), y:groundY(POND_X)+rnd(4,7), t:rnd(TAU),
+                 dr:rnd(2,6), life:rnd(30,90)});
+  for(const k of KRA){ k.t+=dt; k.x += Math.sin(k.t*0.3)*dt*3; k.life-=dt; }
+  for(let i=KRA.length-1;i>=0;i--) if(KRA[i].life<=0) KRA.splice(i,1);
+
+  /* one goes up somewhere every couple of seconds, all night */
+  if(KOM.length<26 && Math.random()<dt*1.5)
+    KOM.push({x:GS.camX+rnd(-160,W+160), y:rnd(126,150), t:rnd(TAU),
+              sp:rnd(3.4,7.0), sw:rnd(0.5,1.4), sc:rnd(0.75,1.35)});
+  for(const k of KOM){ k.t+=dt; k.y -= k.sp*dt; k.x += Math.sin(k.t*0.5)*k.sw*dt*7; }
+  for(let i=KOM.length-1;i>=0;i--) if(KOM[i].y < -30) KOM.splice(i,1);
+}
+function drawKom(g){
+  for(const k of KOM){
+    if(k.x-GS.camX<-24||k.x-GS.camX>W+24) continue;
+    const s=k.sc, fl=0.86+0.14*Math.sin(k.t*7.3);
+    const a=clamp(k.y/70,0.25,1);                      // the high ones go thin
+    g.globalAlpha=0.13*a*fl;
+    pEll(g,k.x,k.y,11*s,13*s,'#ffbe5c');               // the halo it carries up with it
+    g.globalAlpha=a;
+    pEll(g,k.x,k.y,4.2*s,5.4*s,'#f2a23c');             // the paper, lit from inside
+    pEll(g,k.x,k.y-0.6*s,3.2*s,4.2*s,'#ffd98c');
+    pEll(g,k.x,k.y-2.6*s,2.0*s,1.6*s,'#fff0c0');
+    pR(g,R(k.x-2*s),R(k.y+4.4*s),R(4*s)||1,1,'#c8762e');
+    g.globalAlpha=a*fl;
+    pEll(g,k.x,k.y+4.0*s,1.3*s,1.6*s,'#fff4d0');       // and the flame under it
+    g.globalAlpha=1;
+  }
+}
+function drawKrathongs(g){
+  for(const k of KRA){
+    if(k.x-GS.camX<-20||k.x-GS.camX>W+20) continue;
+    const bob=Math.sin(k.t*1.6)*0.8, fl=0.85+0.15*Math.sin(k.t*8+k.dr);
+    const y=k.y+bob;
+    g.globalAlpha=0.20*fl; pEll(g,k.x,y+2,10,3.0,'#ffd257'); g.globalAlpha=1;   // on the water
+    pEll(g,k.x,y,7.6,3.0,'#24583a');                        // the banana-leaf cup
+    pEll(g,k.x,y-1.4,6.6,2.4,'#3f8f52');
+    pEll(g,k.x,y-2.2,5.2,1.6,'#54a866');
+    for(let i=0;i<4;i++){                                    // the folded points round the rim
+      const px=k.x-4.2+i*2.8;
+      pTri(g,px,y-3.4, px-1.4,y-1.4, px+1.4,y-1.4,'#e8dfc8');
+    }
+    pEll(g,k.x-2.6,y-2.8,1.6,1.3,'#e8572f');                 // and the flowers in it
+    pEll(g,k.x+2.6,y-2.8,1.6,1.3,'#f2c14e');
+    pEll(g,k.x,y-3.2,1.4,1.2,'#f0b8d0');
+    pR(g,R(k.x),R(k.y-9+bob),1,5,'#f2e8c8');                 // the candle
+    pR(g,R(k.x-3),R(k.y-7+bob),1,3,'#d8b06a');               // and the three sticks
+    pR(g,R(k.x+3),R(k.y-7+bob),1,3,'#d8b06a');
+    g.globalAlpha=fl;
+    pEll(g,k.x,k.y-10.6+bob,1.5,2.2,'#ffd257');
+    pEll(g,k.x,k.y-11.0+bob,0.8,1.2,'#fff4d0');
+    g.globalAlpha=0.24*fl; pEll(g,k.x,k.y-10+bob,8,8,'#ffd257'); g.globalAlpha=1;
+  }
+}
+function krathongInteract(set, taken){
+  if(festLive()!=='krathong') return;
+  if(Math.abs(P.x-POND_X)>46) return;
+  if(!bagHas('krathong')){
+    set(POND_X, groundY(POND_X)-40, 'the water is full of candles', ()=>{
+      say([{w:'',t:'Banana leaf, a candle, and whatever you would rather not keep.'}]);
+    }, null, 'water');
+    return;
+  }
+  set(POND_X, groundY(POND_X)-40, 'push one out', ()=>{
+    preteAct('give', 1.1, ()=>{
+      bagTake('krathong',1);
+      KRA.push({x:POND_X+rnd(-10,10), y:groundY(POND_X)+5, t:0, dr:4, life:220});
+      AU.ranat(660,0,0.05); AU.ranat(880,0.1,0.04);
+      addMerit(6); toast('+6', PAL.gold, 'merit');
+      if(!GS.seen.krathongDone){ GS.seen.krathongDone=true;
+        say([{w:'',t:'It goes out slowly, turning, with everybody else, turning too.'},
+             {w:'',t:'A hungry ghost floating away the thing he would rather not keep.'}]);
+      }
+    });
+  }, null, 'give');
+}
+
+/* ============================================================
+   สงกรานต์ — THE WATER DAYS
+   ============================================================ */
+const SPLASH = [];
+/* the whole thing happens round one blue barrel at the roadside */
+const SONG_X = CART_X - 60;
+const SONG = { t:0,
+  kids:[ {dx:-46, job:'gun',  ph:0.0, fire:0, c:'#3fb4c8', sh:'#e8572f'},
+         {dx:-18, job:'dip',  ph:1.2, fire:0, c:'#e8bc52', sh:'#2b8a4c'},
+         {dx: 34, job:'gun',  ph:2.3, fire:0, c:'#c85fa8', sh:'#f2c14e'},
+         {dx: 62, job:'run',  ph:3.6, fire:0, c:'#4a7a9e', sh:'#b8342c'} ],
+  elder:{dx:-86, ph:0}, wet:[] };
+function stepSongkran(dt){
+  if(festLive()!=='songkran'){ SPLASH.length=0; SONG.wet.length=0; return; }
+  SONG.t+=dt;
+  for(let i=SPLASH.length-1;i>=0;i--){
+    const s=SPLASH[i];
+    s.t-=dt; s.x+=s.vx*dt; s.y+=s.vy*dt; s.vy+=260*dt;
+    const gy=groundY(s.x);
+    if(s.y>=gy && s.vy>0){                              // it lands, and the road goes dark
+      if(SONG.wet.length<40 && Math.random()<0.4)
+        SONG.wet.push({x:s.x, r:rnd(3,8), t:rnd(3,7)});
+      SPLASH.splice(i,1); continue;
+    }
+    if(s.t<=0) SPLASH.splice(i,1);
+  }
+  for(let i=SONG.wet.length-1;i>=0;i--){ SONG.wet[i].t-=dt; if(SONG.wet[i].t<=0) SONG.wet.splice(i,1); }
+
+  /* the kids at the barrel, working steadily through the afternoon */
+  for(const k of SONG.kids){
+    k.ph += dt*(k.job==='run'? 1.7 : 1.15);
+    const wasFiring=k.fire>0;
+    k.fire = Math.max(0, k.fire-dt);
+    if(k.job!=='run' && k.fire<=0 && Math.random()<dt*1.1) k.fire = k.job==='gun'? 0.9 : 0.35;
+    if(k.fire>0){
+      const x=SONG_X+k.dx, f=k.dx<0? -1:1;
+      if(k.job==='gun'){                                   // a steady jet while the pump holds
+        if(!wasFiring) AU.noise(0.22,0.03,300,3000);
+        for(let n=0;n<2;n++)
+          SPLASH.push({x:x+16*f, y:groundY(x)-24+rnd(-2,2), vx:f*rnd(150,235),
+                       vy:-rnd(4,34), t:rnd(0.5,0.95), r:rnd(0.9,2.0)});
+      } else if(!wasFiring) throwWater(x+6*f, groundY(x)-20, f);
+    }
+  }
+  /* and everybody else in the village, wherever they have got to */
+  if(Math.random()<dt*1.2){
+    const a=NPCS[(Math.random()*NPCS.length)|0];
+    if(a && !a.inside) throwWater(a.x, a.y-24, a.face||1);
+  }
+}
+/* a child, about two-thirds of a grown-up, in a shirt with flowers on it */
+function songKid(g,x,fl,k){
+  const bob=Math.abs(Math.sin(k.ph*2))*1.4, f=k.dx<0?-1:1;
+  const y=fl-bob;
+  pR(g,R(x-4),R(y-13),8,13,'#2f3a48');                       // shorts and legs, soaked through
+  pR(g,R(x-4),R(y-2),3,2,'#20262f'); pR(g,R(x+1),R(y-2),3,2,'#20262f');
+  pR(g,x-5,y-28,10,16,k.sh); pR(g,x-5,y-28,10,3,shade(k.sh,0.3));
+  for(let i=0;i<5;i++) pEll(g,x-3.4+((i*3)%8),y-25+((i*5)%11),1.1,1.1,'#fff0c0');   // the flowers
+  pEll(g,x,y-33,5.0,5.2,'#d8a878');                          // head
+  pEll(g,x,y-36,5.0,2.4,'#241c18');
+  pR(g,R(x-2.4*f-0.5),R(y-33),1,1,'#241c18'); pR(g,R(x+1.4*f-0.5),R(y-33),1,1,'#241c18');
+  pEll(g,x+1.2*f,y-30.4,2.0,1.4,'#8a3a33');                  // shouting
+  pEll(g,x-3.2,y-34.4,2.6,1.8,'#f4f0e4');                    // and ประแป้ง on the cheek
+  if(k.job==='gun'){
+    const ax=x+7*f, ay=y-24;
+    pTaper(g,x+3*f,y-25, ax,ay, 3.0,2.4,'#d8a878');
+    pR(g,R(ax),R(ay-2),R(9*f)||9,4,k.c);                     // the pump gun
+    pR(g,R(ax),R(ay-2),R(9*f)||9,1,shade(k.c,0.35));
+    pR(g,R(ax+(f>0?2:-4)),R(ay+2),3,4,shade(k.c,-0.25));
+    if(k.fire>0){ g.globalAlpha=0.5;
+      pTaper(g,ax+9*f,ay, ax+44*f,ay+3, 2.6,5.2,'#bfe6ff');
+      g.globalAlpha=0.8; pTaper(g,ax+9*f,ay, ax+26*f,ay, 1.6,2.4,'#eafaff'); g.globalAlpha=1; }
+  } else if(k.job==='dip'){
+    pTaper(g,x+3*f,y-25, x+9*f,y-16, 3.0,2.4,'#d8a878');
+    pEll(g,x+11*f,y-15,4.2,2.6,'#e04a5a');                   // the red plastic bowl
+    pEll(g,x+11*f,y-15.8,3.4,1.8,'#bfe6ff');
+  } else {
+    pTaper(g,x+3*f,y-25, x+10*f,y-30, 3.0,2.4,'#d8a878');
+    pTaper(g,x-3*f,y-25, x-9*f,y-19, 3.0,2.4,'#d8a878');
+  }
+}
+function drawSongkran(g){
+  if(festLive()!=='songkran') return;
+  const cx=SONG_X;
+  if(cx-GS.camX<-300 || cx-GS.camX>W+300) return;
+  const gy=groundY(cx);
+  /* the road, dark where it has been getting soaked since ten */
+  for(const w of SONG.wet){
+    g.globalAlpha=clamp(w.t/7,0,1)*0.28;
+    pEll(g,w.x,groundY(w.x)+1,w.r,1.6,'#2a3b4a'); g.globalAlpha=1;
+  }
+  /* ถัง: the blue barrel everybody refills out of */
+  const by=gy-1;
+  pEll(g,cx,by,15,4,'#1d4f6e');
+  pR(g,cx-15,by-34,30,34,'#2a6f96'); pR(g,cx-15,by-34,4,34,'#3d8cb8');
+  pR(g,cx+9,by-34,6,34,'#1d5c80');
+  pR(g,cx-15,by-26,30,2,'#1d5c80'); pR(g,cx-15,by-12,30,2,'#1d5c80');
+  pEll(g,cx,by-34,15,4.4,'#2a6f96');
+  pEll(g,cx,by-33,13,3.4,'#7fd0e8');                         // full to the brim
+  pEll(g,cx-3+Math.sin(SONG.t*2)*2,by-33.4,5,1.6,'#bfe6ff');
+  /* a bowl left floating in it */
+  pEll(g,cx+5,by-33.6,3.6,1.6,'#e04a5a');
+  /* the elder, sat with their hands out, having the year washed off them */
+  { const ex=cx+SONG.elder.dx, ey=groundY(ex);
+    pR(g,R(ex-8),R(ey-12),16,12,'#7a6a58');                  // sat on a low stool
+    pR(g,R(ex-9),R(ey-2),18,2,'#4a4038');
+    pR(g,ex-6,ey-29,13,18,'#e8dfc8'); pR(g,ex-6,ey-29,13,3,'#fff6e8');
+    pEll(g,ex,ey-35,5.6,5.8,'#c9986f');
+    pEll(g,ex,ey-38,5.6,2.4,'#d8d4cc');                      // white hair
+    pR(g,R(ex-2.6),R(ey-35),1,1,'#241c18'); pR(g,R(ex+1.4),R(ey-35),1,1,'#241c18');
+    pEll(g,ex-1,ey-32,2.0,0.9,'#8a5a50');
+    pTaper(g,ex+5,ey-26, ex+13,ey-22, 3.0,2.6,'#c9986f');    // hands held out together
+    pTaper(g,ex+5,ey-24, ex+13,ey-21, 3.0,2.6,'#c9986f');
+    /* and the scented water going over them */
+    const pr=(SONG.t*0.7)%1;
+    if(pr<0.55){
+      pTaper(g,ex+15,ey-30, ex+13.6,ey-21, 1.4,1.0,'#bfe6ff');
+      g.globalAlpha=0.5; pEll(g,ex+13.6,ey-20,3.4,1.4,'#bfe6ff'); g.globalAlpha=1;
+    }
+    /* whoever is doing the pouring */
+    pR(g,ex+17,ey-30,11,17,'#b47ba8'); pR(g,ex+17,ey-30,11,3,'#c890bc');
+    pR(g,ex+17,ey-14,11,14,'#3a3a44');
+    pEll(g,ex+22,ey-36,5.2,5.4,'#e8bc92'); pEll(g,ex+22,ey-39,5.2,2.4,'#241c18');
+    pR(g,R(ex+19.6),R(ey-36),1,1,'#241c18'); pR(g,R(ex+23.4),R(ey-36),1,1,'#241c18');
+    pTaper(g,ex+18,ey-27, ex+15,ey-31, 3.0,2.4,'#e8bc92');
+    pEll(g,ex+14,ey-32,3.6,2.4,'#e8dfc8');                   // the little silver bowl
+    pEll(g,ex+14,ey-32.8,2.8,1.6,'#bfe6ff');
+  }
+  for(const k of SONG.kids) songKid(g, cx+k.dx, groundY(cx+k.dx), k);
+}
+function throwWater(x,y,f){
+  for(let i=0;i<22;i++)
+    SPLASH.push({x, y, vx:f*rnd(40,170), vy:-rnd(30,130), t:rnd(0.5,1.2), r:rnd(0.8,2.0)});
+  AU.noise(0.18,0.03,300,3000);
+}
+function drawSplash(g){
+  for(const s of SPLASH){
+    if(s.x-GS.camX<-20||s.x-GS.camX>W+20) continue;
+    const a=clamp(s.t,0,1);
+    g.globalAlpha=a*0.30;
+    pTaper(g,s.x-s.vx*0.026,s.y-s.vy*0.026, s.x,s.y, s.r*0.6,s.r*0.9,'#9fd4ee');
+    g.globalAlpha=a*0.74;
+    pEll(g,s.x,s.y,s.r,s.r*1.2,'#bfe6ff');
+    g.globalAlpha=a*0.9;
+    pEll(g,s.x-s.r*0.3,s.y-s.r*0.35,s.r*0.4,s.r*0.45,'#f2fbff');
+    g.globalAlpha=1;
+  }
+}
+function songkranInteract(set, taken){
+  if(festLive()!=='songkran') return;
+  const bowl = CART_X-60;
+  if(Math.abs(P.x-bowl)>30) return;
+  set(bowl, groundY(bowl)-40, 'a bowl of water, and everybody wet', ()=>{
+    preteAct('water', 1.0, ()=>{
+      throwWater(P.x+20*(P.face||1), P.y-40, P.face||1);
+      /* water goes straight through him, which is the whole joke and also
+         the saddest thing in the game */
+      if(!GS.seen.songkranTry){ GS.seen.songkranTry=true;
+        say([{w:'',t:'It goes through you and lands on the road behind.'},
+             {w:'',t:'Mali throws hers anyway, at where she thinks you are.'}]);
+        addMerit(3); toast('+3', PAL.gold, 'merit');
+      } else toast(L('soaked, nearly'),'#bfe6ff');
+    });
+  }, null, 'water');
+}
+
+
+/* ============================================================
+   วันพระ — ตักบาตร, THE MORNING ALMS ROUND
+   Four monks walk the lane barefoot at first light. Everybody
+   who is going to give is already kneeling with a tray when
+   they get there. The line stops at each one, the rice goes in
+   the bowl, and the line moves on. You cannot give anything.
+   You can kneel, which turns out to count.
+   ============================================================ */
+const ROUND = {
+  t:0, lead:0, state:'idle', wait:0, spoon:0, idx:-1, gone:false,
+  givers:[]
+};
+const ROUND_X0 = CART_X + 190;                 // where the line comes out of the lane
+const ROUND_X1 = STALL_X - 120;                // and where it turns off toward the temple
+const ROUND_SPEED = 13;                        // barefoot, unhurried
+const ROUND_MONKS = 4;
+for(const gx of [CART_X+120, CART_X+10, CART_X-110, STALL_X+160, STALL_X+40, STALL_X-70])
+  ROUND.givers.push({x:gx, served:false, rise:0, wai:0,
+    shirt:['#f0e8d2','#e8dfc8','#f4ece0'][(gx|0)%3],
+    skin:['#d8a878','#c9986f','#e8bc92'][(gx|0)%3],
+    old:((gx|0)%2)===0});
+
+function roundReset(){
+  ROUND.lead=ROUND_X0; ROUND.state='walk'; ROUND.wait=0; ROUND.spoon=0;
+  ROUND.idx=-1; ROUND.gone=false;
+  for(const gv of ROUND.givers){ gv.served=false; gv.rise=0; gv.wai=0; }
+}
+function stepRound(dt){
+  if(festLive()!=='merit'){ ROUND.gone=false; ROUND.state='idle'; return; }
+  if(ROUND.state==='idle') roundReset();
+  if(ROUND.gone) return;
+  ROUND.t+=dt;
+  for(const gv of ROUND.givers){
+    gv.rise = clamp(gv.rise + (gv.wai>0? -dt*3 : 0), 0, 1);
+    gv.wai  = Math.max(0, gv.wai-dt);
+  }
+  if(ROUND.state==='walk'){
+    ROUND.lead -= ROUND_SPEED*dt;
+    if(ROUND.lead < ROUND_X1){ ROUND.gone=true; return; }
+    for(let i=0;i<ROUND.givers.length;i++){
+      const gv=ROUND.givers[i];
+      if(!gv.served && Math.abs(ROUND.lead-(gv.x+16))<6){
+        ROUND.state='give'; ROUND.wait=3.0; ROUND.idx=i; gv.rise=1; break;
+      }
+    }
+  } else if(ROUND.state==='give'){
+    const gv=ROUND.givers[ROUND.idx];
+    ROUND.wait-=dt;
+    if(ROUND.wait<1.9 && ROUND.spoon<3 && Math.random()<dt*6){   // three spoonfuls, the usual
+      ROUND.spoon++;
+      for(let k=0;k<7;k++) part({k:'sp', x:gv.x+22+rnd(-2,2), y:groundY(gv.x)-30,
+        vx:rnd(-6,6), vy:rnd(6,26), life:rnd(0.25,0.45), c:'#f4ece0'});
+      AU.ranat(1180+ROUND.spoon*90, 0, 0.030);
+    }
+    if(ROUND.wait<=0){
+      gv.served=true; gv.wai=2.2; ROUND.spoon=0;
+      ROUND.state='walk'; ROUND.idx=-1;
+    }
+  }
+}
+/* a monk: จีวร over the left shoulder, บาตร held in both hands, no shoes */
+function drawMonk(g,x,fl,ph,hold){
+  const step=Math.sin(ph), bob=Math.abs(Math.cos(ph))*1.2;
+  const y=fl-bob;
+  const ROBE='#e07b2c', ROBE_L='#f09a44', ROBE_D='#b85a1e';
+  if(hold){                                              // legs, under the hem
+    pR(g,R(x-4),R(y-16),4,16,'#c9986f'); pR(g,R(x+1),R(y-16),4,16,'#c9986f');
+  } else {
+    pTaper(g,x,y-17, x-step*5,y-1, 4.4,3.4,'#c9986f');
+    pTaper(g,x,y-17, x+step*5,y-1, 4.4,3.4,'#c9986f');
+  }
+  pR(g,R(x-5),R(y-1),5,2,'#b08256'); pR(g,R(x+1),R(y-1),5,2,'#b08256');   // bare feet
+  pTri(g,x-9,y-2, x+9,y-2, x+7,y-24, ROBE);              // the robe, a bell to the ankle
+  pR(g,x-8,y-30,16,18,ROBE); pR(g,x-8,y-30,16,3,ROBE_L);
+  pTaper(g,x-8,y-30, x+6,y-14, 5.0,3.6,ROBE_D);          // the fold across the chest
+  pR(g,R(x-8),R(y-30),2,18,ROBE_L);
+  pEll(g,x,y-36,5.4,5.6,'#c9986f');                      // shaved head, all the way up
+  pEll(g,x,y-38.4,5.0,2.6,'#d4a578');                    // the light off the crown of it
+  pR(g,R(x-2.6),R(y-36),1,1,'#3a2a1e'); pR(g,R(x+1.4),R(y-36),1,1,'#3a2a1e');
+  pR(g,R(x-3.2),R(y-37.6),2,1,'#8a6a4c'); pR(g,R(x+1.4),R(y-37.6),2,1,'#8a6a4c');
+  pEll(g,x-0.4,y-33.6,1.6,0.7,'#8a5a50');
+  /* the บาตร, black iron, held level at the waist in both hands */
+  pTaper(g,x-6,y-26, x-3.4,y-21, 3.0,2.4,'#c9986f');
+  pTaper(g,x+6,y-26, x+3.4,y-21, 3.0,2.4,'#c9986f');
+  pEll(g,x,y-19.6,5.6,4.6,'#241f1c');
+  pEll(g,x,y-22.2,5.4,2.0,'#3a3430');
+  pEll(g,x,y-22.6,4.2,1.4,'#141210');
+  pEll(g,x-2.0,y-21.4,1.5,0.7,'#5a534c');
+}
+/* somebody kneeling with a tray, who stands to put the rice in */
+function drawGiver(g,gv){
+  const x=gv.x, fl=groundY(x), up=gv.rise;
+  const hipY = fl - lerp(14, 30, up);                     // heels to feet
+  const chY  = hipY - lerp(15, 19, up);
+  const hdY  = chY - lerp(9, 10, up);
+  /* the tray on the ground in front, with the pot and the spoon in it */
+  pR(g,R(x+14),R(fl-5),20,5,'#8a6a44'); pR(g,R(x+14),R(fl-5),20,1,'#a88656');
+  pEll(g,x+21,fl-10,5.4,5.0,'#e8dfc8'); pEll(g,x+21,fl-13,5.0,2.0,'#fff6e8');
+  pR(g,R(x+27),R(fl-14),1,9,'#a88656');
+  pEll(g,x+30,fl-9,3.2,2.0,'#d8c8a0');
+  /* the legs, folded under */
+  if(up<0.5) pEll(g,x,fl-5,7.4,5.0,'#5a6070');
+  else { pR(g,R(x-4),R(hipY),4,R(fl-hipY),'#5a6070'); pR(g,R(x+1),R(hipY),4,R(fl-hipY),'#5a6070'); }
+  pR(g,R(x-4),R(fl-2),9,2,'#3e434e');
+  /* body and head */
+  pR(g,x-5,chY,11,R(hipY-chY)+2,gv.shirt); pR(g,x-5,chY,11,3,shade(gv.shirt,0.22));
+  pEll(g,x,hdY,5.4,5.6,gv.skin);
+  pEll(g,x,hdY-3,5.4,2.4, gv.old? '#d8d4cc' : '#241c18');
+  pR(g,R(x-2.6),R(hdY),1,1,'#241c18'); pR(g,R(x+1.4),R(hdY),1,1,'#241c18');
+  if(gv.wai>0){                                           // hands together after
+    pTaper(g,x-4,chY+5, x-1.4,hdY+2, 3.0,2.4,gv.skin);
+    pTaper(g,x+4,chY+5, x+1.4,hdY+2, 3.0,2.4,gv.skin);
+    pEll(g,x,hdY+1.4,2.6,3.4,gv.skin);
+  } else if(up>0.4){                                      // reaching over the bowl
+    pTaper(g,x+4,chY+4, x+14,chY+1, 3.0,2.4,gv.skin);
+    pTaper(g,x-4,chY+4, x+9,chY+6, 3.0,2.4,gv.skin);
+    pR(g,R(x+15),R(chY-1),1,7,'#a88656');                 // the spoon, going in
+    pEll(g,x+15,chY+7,2.8,1.8,'#d8c8a0');
+  } else {
+    pTaper(g,x+4,chY+4, x+8,chY+10, 3.0,2.4,gv.skin);
+    pTaper(g,x-4,chY+4, x-6,chY+10, 3.0,2.4,gv.skin);
+  }
+}
+function drawRound(g){
+  if(festLive()!=='merit' || ROUND.gone || ROUND.state==='idle') return;
+  for(const gv of ROUND.givers){
+    if(gv.x-GS.camX<-40||gv.x-GS.camX>W+40) continue;
+    drawGiver(g,gv);
+  }
+  for(let i=0;i<ROUND_MONKS;i++){
+    const mx=ROUND.lead + i*27;
+    if(mx-GS.camX<-40||mx-GS.camX>W+40) continue;
+    const walking = ROUND.state==='walk';
+    drawMonk(g, mx, groundY(mx), walking? ROUND.t*4.6 - i*1.1 : Math.PI/2, !walking);
+  }
+}
+function roundInteract(set, taken){
+  if(festLive()!=='merit' || ROUND.gone || ROUND.state==='idle') return;
+  const mid = ROUND.lead + 40;
+  if(Math.abs(P.x-mid)>150) return;
+  set(clamp(P.x, mid-140, mid+140), groundY(P.x)-54, 'kneel with them', ()=>{
+    preteAct('wai', 1.8, ()=>{
+      AU.ding();
+      for(let i=0;i<12;i++) part({k:'sp',x:P.x+rnd(-12,12),y:P.y-26,vx:rnd(-16,16),
+                                  vy:-rnd(10,34),life:rnd(.6,1.2),c:PAL.goldL});
+      if(!GS.seen['alms_'+DAY.n]){ GS.seen['alms_'+DAY.n]=true;
+        addMerit(7); toast('+7', PAL.gold, 'merit');
+        say([{w:'',t:'You have nothing to put in the bowl. You kneel anyway.'},
+             {w:'',t:'The last monk looks at the space where you are, and keeps walking.'}]);
+      }
+    });
+  }, null, 'pray');
+}
+
+/* ============================================================
+   the whole calendar, stepped and drawn in one place
+   ============================================================ */
+function stepFest(dt){
+  const f=festLive();
+  if(f==='morlam') stepMorlam(dt); else MORLAM.lit=Math.max(0,MORLAM.lit-dt);
+  stepKrathong(dt);
+  stepSongkran(dt);
+  stepRound(dt);
+  /* and it is announced the evening before, once */
+  const tomorrow=festOn(DAY.n+1), h=DAY.min/60;
+  if(tomorrow && h>=18 && h<19 && GS.seen['fest_said_'+(DAY.n+1)]!==true){
+    GS.seen['fest_said_'+(DAY.n+1)]=true;
+    guideSay(L('tomorrow is')+' '+L(FEST_NAME[tomorrow]), 7);
+  }
+}
+/* the sky layer: what is above the rooflines, drawn before the village is */
+function drawFestSky(g){ drawKom(g); }
+function drawFest(g){
+  if(festLive()==='morlam' || MORLAM.lit>0.01) drawMorlam(g);
+  drawKrathongs(g);
+  drawRound(g);
+  drawSongkran(g);
+  drawSplash(g);
+}
+function festInteract(set, taken){
+  morlamInteract(set, taken);
+  krathongInteract(set, taken);
+  songkranInteract(set, taken);
+  roundInteract(set, taken);
+}
+/* ============================================================
    THE PIGGY BANK, AND BECOMING LESS OF A GHOST
 
    The merit counter used to be a bar with a number beside it:
@@ -18197,38 +19383,57 @@ function artShophouse(seed){
 }
 /* ---------- the convenience store: lit, cold, and open ---------- */
 function artStore(){
-  const w=126, h=112, c=mkCv(w,h), g=G2(c);
-  // the box
-  pR(g,2,16,w-4,h-20,'#e8e4da'); pR(g,2,16,w-4,2,'#fbf8f0');
-  pR(g,w-16,16,14,h-20,'#cfcabe');
-  // the awning band across the front, in the stripes every one of these has
-  for(let i=0;i<Math.ceil((w-8)/10);i++)
-    pR(g,4+i*10,8,10,10, i%3===0?'#e8572f' : i%3===1?'#f2b21e' : '#2b8a4c');
-  pR(g,2,6,w-4,3,'#f6f2e8'); pR(g,2,17,w-4,2,'#b8b2a4');
-  // the glass front, and the light coming out of it onto the road
-  pR(g,8,26,w-30,h-34,'#1d2a2e');
-  pR(g,10,28,w-34,h-38,'#dff2e8');
-  // shelves and the fridge wall behind the glass
-  for(let i=0;i<4;i++){
-    pR(g,13,34+i*12,44,9,'#c6d8cc'); pR(g,13,34+i*12,44,1,'#eef8f0');
-    for(let k=0;k<6;k++) pR(g,15+k*7,36+i*12,4,6,
-      ['#c0392f','#f2c14e','#4a7a9e','#57a869','#e8572f','#8a4ac8'][(i*6+k)%6]);
+  const w=158, h=126, c=mkCv(w,h), g=G2(c);
+  /* the box it is always in: a flat-roofed concrete unit, painted white */
+  pR(g,4,22,w-8,h-26,'#eceae2'); pR(g,4,22,w-8,2,'#fdfbf4');
+  pR(g,w-16,22,12,h-26,'#d2cec2');
+  pR(g,2,18,w-4,6,'#f6f2e8'); pR(g,2,18,w-4,2,'#ffffff');
+  /* the three bands across the fascia, which is the whole face of it */
+  pR(g,4,2,w-8,6,'#e8572f');
+  pR(g,4,8,w-8,6,'#f4f0e6');
+  pR(g,4,14,w-8,5,'#2b8a4c');
+  pR(g,4,2,w-8,1,'#f2805a'); pR(g,4,14,w-8,1,'#46a868');
+  pR(g,2,0,w-4,3,'#cfcabe');
+  /* the lit sign panel in the middle of it */
+  pR(g,w/2-30,3,60,14,'#fbf8ef'); pR(g,w/2-30,3,60,2,'#ffffff');
+  pR(g,w/2-30,3,2,14,'#d8d4c8'); pR(g,w/2+28,3,2,14,'#d8d4c8');
+  for(let i=0;i<7;i++) pR(g,w/2-24+i*7,7,4,7, i%2? '#2b8a4c':'#e8572f');
+  /* the glass front: two big panes, and the light pouring out of them */
+  pR(g,10,32,88,h-44,'#1d2a2e');
+  pR(g,12,34,84,h-48,'#e6f6ee');
+  pR(g,53,32,3,h-44,'#1d2a2e');                    // the mullion between the panes
+  /* what you can see through it: the shelf run, and the fridge wall */
+  for(let i=0;i<5;i++){
+    pR(g,15,40+i*13,34,10,'#cadcd0'); pR(g,15,40+i*13,34,1,'#f2fbf4');
+    for(let k=0;k<5;k++) pR(g,17+k*6,42+i*13,4,7,
+      ['#c0392f','#f2c14e','#4a7a9e','#57a869','#e8572f','#8a4ac8'][(i*5+k)%6]);
   }
-  pR(g,62,32,30,h-46,'#b6d4dc'); pR(g,62,32,30,2,'#e2f4f8');
-  for(let i=0;i<5;i++){ pR(g,64,36+i*11,26,9,'#9ec4d0');
-    for(let k=0;k<5;k++) pR(g,65+k*5,37+i*11,3,7,['#e8572f','#f2c14e','#2b8a4c','#4a7a9e','#d8d4cc'][k]); }
-  // the door, with the two stickers and the bell
-  pR(g,w-34,26,26,h-34,'#1d2a2e');
-  pR(g,w-32,28,22,h-38,'#cfe8e0');
-  pR(g,w-22,28,2,h-38,'#9ab8b0');
-  pR(g,w-30,44,7,9,'#e8572f'); pR(g,w-19,44,7,9,'#2b8a4c');
-  // the counter just inside, and somebody behind it
-  pR(g,10,h-30,46,12,'#b0a894'); pR(g,10,h-30,46,2,'#d6cdb8');
-  pR(g,20,h-42,8,12,'#d8a878'); pEll(g,24,h-44,5,5,'#d8a878');
-  pR(g,21,h-46,6,3,'#2b2420');
-  // the step, and the mat
-  pR(g,0,h-8,w,8,'#8f8a80'); pR(g,0,h-8,w,1,'#b0aba0');
-  pR(g,w-40,h-6,32,4,'#5a5f52');
+  pR(g,59,38,34,h-56,'#b6d4dc'); pR(g,59,38,34,2,'#e2f4f8');
+  pR(g,59,38,2,h-56,'#8fb4c0');
+  for(let i=0;i<5;i++){ pR(g,63,43+i*12,27,10,'#9ec4d0');
+    for(let k=0;k<5;k++) pR(g,64+k*5,44+i*12,3,8,['#e8572f','#f2c14e','#2b8a4c','#4a7a9e','#d8d4cc'][k]); }
+  /* the strip lights on the ceiling, seen through the glass */
+  for(let i=0;i<3;i++) pR(g,16+i*28,36,22,2,'#ffffff');
+  /* the counter just inside the glass, and whoever is on shift */
+  pR(g,14,h-34,40,14,'#b0a894'); pR(g,14,h-34,40,2,'#d8cfba');
+  pR(g,17,h-38,6,5,'#5a5f52');                     // the till
+  pR(g,26,h-48,9,14,'#3f8f7a'); pEll(g,30,h-51,5,5,'#d8a878');
+  pR(g,27,h-54,7,3,'#2b2420'); pR(g,26,h-48,9,2,'#57a869');
+  /* the doors: two leaves that slide, with a push bar and the two stickers */
+  pR(g,w-56,32,46,h-44,'#1d2a2e');
+  pR(g,w-54,34,20,h-48,'#d6ece4'); pR(g,w-32,34,20,h-48,'#d6ece4');
+  pR(g,w-34,34,2,h-48,'#93b4ac');
+  pR(g,w-54,h-58,20,2,'#a8c8c0'); pR(g,w-32,h-58,20,2,'#a8c8c0');
+  pR(g,w-40,h-60,3,16,'#c8ccc4'); pR(g,w-27,h-60,3,16,'#c8ccc4');
+  pR(g,w-51,44,8,10,'#e8572f'); pR(g,w-30,44,8,10,'#2b8a4c');
+  pR(g,w-51,44,8,2,'#f2805a'); pR(g,w-30,44,8,2,'#46a868');
+  /* the ice cabinet parked outside the door, as there always is */
+  pR(g,w-14,h-32,12,26,'#dfe8ea'); pR(g,w-14,h-32,12,3,'#f4fafb');
+  pR(g,w-13,h-27,10,8,'#7fb8d0'); pR(g,w-13,h-27,10,2,'#bfe0ee');
+  pR(g,w-14,h-8,12,2,'#9aa4a6');
+  /* the step, the mat, and the kerb */
+  pR(g,0,h-10,w,10,'#9a958a'); pR(g,0,h-10,w,1,'#b8b3a8');
+  pR(g,w-58,h-7,42,4,'#5a5f52'); pR(g,w-58,h-7,42,1,'#727a68');
   return c;
 }
 /* ---------- the corner spirit house at the crossroad ---------- */
@@ -18365,6 +19570,15 @@ function paintEast(){
    WHAT MOVES ON IT
    ============================================================ */
 const TRAFFIC=[], ROAD_DOGS=[], PARKED=[];
+/* หมาวัด, หมาหน้าร้าน: the ones that live off the shop step, where the
+   concrete is warm and somebody always drops something */
+const DOG_COATS = [
+  {b:'#c9a06a', l:'#dcb47e', d:'#a87f4e'},          // the usual tan one
+  {b:'#4a4038', l:'#6a5c50', d:'#332c26'},          // the black one with the white socks
+  {b:'#d8cec0', l:'#eee6da', d:'#b0a493'},          // the dusty white one
+  {b:'#a8622e', l:'#c47f44', d:'#7e4620'},          // and the ginger
+];
+
 /* Almost everything on a Thai road is a motorbike, so almost everything here
    is one. The rest is what a motorbike cannot carry. */
 const VEH = ['moto','moto','family','sidecar','moto','pickup','songthaew','delivery'];
@@ -18385,7 +19599,8 @@ function seedTraffic(){
                    stop:0, park:0, blink:0, lane:0 });
   }
   for(const v of TRAFFIC) v.cruise=v.sp;
-  for(const x of [7290, 8060, 8820]) ROAD_DOGS.push({x, hx:x, t:rnd(9), st:'sleep', sp:0, face:1, wake:0});
+for(const [i,x] of [7290, STORE_X-58, STORE_X+62, STORE_X+16, 8820].entries())
+  ROAD_DOGS.push({x, hx:x, t:rnd(9), st:'sleep', sp:0, face:i%2?-1:1, wake:0, coat:i%4});
   /* parked: outside the shop, at the crossroad, and two at the far houses.
      None in the village — a bike under a house is a nice detail and six of
      them down a lane with no road is a car park. */
@@ -18787,25 +20002,27 @@ function drawVehicle(g,v){
 }
 function drawRoadDog(g,d){
   const x=d.x, gy=groundY(x), f=d.face;
+  const co=DOG_COATS[(d.coat||0)%DOG_COATS.length];
   if(d.st==='sleep'){
+    const br=Math.sin(d.t*1.3)*0.45;                 // it is breathing, if you watch it
     pEll(g,x,gy-1,13,4,'rgba(10,8,20,0.3)');
-    pEll(g,x,gy-4,11,4.4,'#c9a06a'); pEll(g,x,gy-5.4,9.4,3.2,'#dcb47e');
-    pEll(g,x-9*f,gy-5,4.6,3.8,'#c9a06a'); pEll(g,x-10*f,gy-6,3.8,3,'#dcb47e');
-    pTri(g,x-12*f,gy-9,x-14*f,gy-4,x-9*f,gy-5,'#a87f4e');
+    pEll(g,x,gy-4,11,4.4+br,co.b); pEll(g,x,gy-5.4,9.4,3.2+br*0.6,co.l);
+    pEll(g,x-9*f,gy-5,4.6,3.8,co.b); pEll(g,x-10*f,gy-6,3.8,3,co.l);
+    pTri(g,x-12*f,gy-9,x-14*f,gy-4,x-9*f,gy-5,co.d);
     pR(g,R(x-12*f),R(gy-5),2,1,'#5a4028');
-    pEll(g,x+10*f,gy-4,4.4,2.4,'#a87f4e');
-    pR(g,R(x-3),R(gy-1),3,2,'#b8905a'); pR(g,R(x+4),R(gy-1),3,2,'#b8905a');
+    pEll(g,x+10*f,gy-4,4.4,2.4,co.d);
+    pR(g,R(x-3),R(gy-1),3,2,co.l); pR(g,R(x+4),R(gy-1),3,2,co.l);
   } else {
     const ph=d.t*7, step=d.sp? Math.sin(ph)*2.4 : 0;
     pEll(g,x,gy-1,11,3,'rgba(10,8,20,0.28)');
-    pEll(g,x,gy-8,9,4.2,'#c9a06a'); pEll(g,x,gy-9.4,7.6,3,'#dcb47e');
-    pEll(g,x+8*f,gy-12,4.4,4,'#c9a06a'); pEll(g,x+9*f,gy-13,3.4,3,'#dcb47e');
-    pTri(g,x+7*f,gy-16,x+5*f,gy-12,x+10*f,gy-13,'#a87f4e');
+    pEll(g,x,gy-8,9,4.2,co.b); pEll(g,x,gy-9.4,7.6,3,co.l);
+    pEll(g,x+8*f,gy-12,4.4,4,co.b); pEll(g,x+9*f,gy-13,3.4,3,co.l);
+    pTri(g,x+7*f,gy-16,x+5*f,gy-12,x+10*f,gy-13,co.d);
     pR(g,R(x+9*f),R(gy-12),1,1,'#3a2c1e');
     pR(g,R(x+11*f),R(gy-11),2,1,'#5a4028');
-    pTaper(g,x-8*f,gy-9,x-13*f,gy-14+Math.sin(d.t*4)*2,3,1,'#a87f4e');
+    pTaper(g,x-8*f,gy-9,x-13*f,gy-14+Math.sin(d.t*4)*2,3,1,co.d);
     for(let i=0;i<2;i++){
-      pLimb(g,x+(i?5:-5)*f,gy-6,x+(i?5:-5)*f+(i?step:-step),gy-1,2.2,i?'#b8905a':'#a87f4e');
+      pLimb(g,x+(i?5:-5)*f,gy-6,x+(i?5:-5)*f+(i?step:-step),gy-1,2.2,i?co.l:co.d);
     }
   }
 }
@@ -19245,7 +20462,8 @@ function npcWant(v){
 const ALMS = { on:false, leg:0, given:0 };
 function stepAlms(dt){
   const h = DAY.min/60;
-  const want = h>=5.6 && h<9.4 && !storyBusy() && GS.q.metPhra;
+  const merit = typeof festLive==='function' && festLive()==='merit';
+  const want = h>=5.6 && h<9.4 && !storyBusy() && GS.q.metPhra && !merit;
   if(want && !ALMS.on){
     ALMS.on=true; ALMS.leg=0; ALMS.given=0;
     MONK.x=3060; MONK.y=groundY(MONK.x); MONK.face=-1; MONK.state='idle'; MONK.vx=0;
@@ -20427,6 +21645,7 @@ function update(dt){
   if(typeof stepQTE==='function') stepQTE(dt);
   if(typeof stepPets==='function' && GS.state==='play') stepPets(dt);
   if(typeof stepKids==='function' && GS.state==='play') stepKids(dt);
+  if(typeof stepFest==='function' && GS.state==='play') stepFest(dt);
   if(typeof stepSneak==='function') stepSneak(dt);
   if(typeof stepStealth==='function') stepStealth(dt);
   /* while a quick-time is up he does not go anywhere */
@@ -20517,6 +21736,7 @@ function update(dt){
     case 'act':      PROMPT=null; stepHint(dt); stepAct(dt); break;
     case 'give':     PROMPT=null; stepGive(dt); break;
     case 'shop':     PROMPT=null; stepShop(dt); break;
+    case 'store':    PROMPT=null; stepStore(dt); break;
     case 'tree':     PROMPT=null; stepTree(dt); break;
     case 'ascend':   PROMPT=null; stepAscend(dt); break;
     case 'ceremony': stepCeremony(dt); break;

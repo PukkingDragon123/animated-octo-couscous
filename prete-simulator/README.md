@@ -1642,6 +1642,96 @@ find the lanterns still burning over the beds and wonder who left them on.
 
 ![the ceremony](screenshots/ceremony.png)
 
+## The shop, which you can walk into
+
+The one at the crossroad is a real room, not a menu. The glass front, the three
+bands across the fascia, the strip lights, the fridge wall, the hot cabinet with
+the buns going round under it. You push the door and it **chimes** — two bells, a
+fifth apart, the sound every one of these makes — and the air conditioning comes
+on under everything and stays on until you leave.
+
+Inside is its own little scene, seven hundred pixels end to end. You are nine feet
+tall and the ceiling is seven, so he goes in on his knees and shuffles the aisle
+like that, which is the first time in the game the world is too small for him
+rather than the other way round.
+
+There are three things to stop at: the girl at the till, who wais at the door out
+of habit whether or not anybody came through it; the hot cabinet; and the four
+doors of cold. Two customers drift between them, and through the glass you can see
+the two dogs asleep on the step outside, because they are always on the step
+outside.
+
+![the shop at night](screenshots/shop-front.png)
+
+![inside the shop](screenshots/shop-inside.png)
+
+### And the dogs on the step
+
+Five strays live on the road now, three of them off the shop, where the concrete
+is warm and somebody always drops something. Each one has its own coat — the tan
+one, the black one, the dusty white one, the ginger — and each one breathes while
+it sleeps, gets up when you come near, and lies back down when you have gone.
+
+## Four festivals, on a wheel you can learn
+
+A fourteen-day calendar, so a save of any length sees all of them, more than once.
+None of them is a cutscene. They are a different village for a night, and the
+evening before, somebody tells you what tomorrow is.
+
+### วันพระ — the alms round
+
+Day 3 and day 10, from six to eleven. **Four monks walk the lane barefoot** in a
+line with their bowls held at the waist. Six people are already kneeling with trays
+when they get there — rice pot, spoon, a low stool for whoever is too old to kneel.
+The line stops at each one, three spoonfuls go in the bowl, the giver puts their
+hands together, and the line moves on. On a merit day the village's own monk stops
+doing his everyday round, because he is in this one.
+
+You have nothing to put in a bowl. You can kneel, which turns out to count.
+
+![the alms round](screenshots/alms.png)
+
+### งานวัด — the หมอลำ stage
+
+Day 6, from seven at night until it stops. A **stage goes up on the temple ground**
+at chest height on a scaffold, with a printed sunburst backdrop, two par cans on the
+frame, and **two speaker stacks taller than the stage**, which is the whole point of
+a หมอลำ stage. A singer at the mic with her eyes shut, two หางเครื่อง in sequins and
+ชฎา stepping side to side, a khaen player sat at the edge with the pipes up. The
+riff is a **pentatonic figure in eighths at 128** over a bass pulse, with the khaen
+drone coming in once a bar.
+
+Seven people stand in front of it in the spill of the lamps, silhouettes with a warm
+edge, **turning their hands** the way รำวง is turned. You can join in. Nobody minds;
+nobody can see you.
+
+![the stage](screenshots/morlam.png)
+
+### ลอยกระทง — the night of the floats
+
+Day 9, from seven. **Krathongs come out onto the pond** — banana-leaf cups with
+folded points round the rim, flowers, three sticks and a candle — and drift, and go
+out, and are replaced. If you have made one you can push it out yourself.
+
+And **โคมลอย go up over the whole village**, all night, from everywhere, thinning as
+they climb until they are the same brightness as the stars.
+
+![the floats](screenshots/krathong.png)
+
+### สงกรานต์ — the water days
+
+Day 12, ten until five. A **blue barrel** at the roadside with a bowl floating in
+it, four kids round it in flower shirts with ประแป้ง on their cheeks, two of them
+with pump guns and one dipping. The road goes dark in patches where it lands and
+dries out again in the heat. Round the side, somebody's grandmother sits on a stool
+with her hands out while the scented water goes over them.
+
+You can pick up the bowl. It goes through you and lands on the road behind, which
+is the joke and also the saddest thing in the game. Mali throws hers anyway, at
+where she thinks you are.
+
+![the water](screenshots/songkran.png)
+
 ## The lore (actual research)
 
 - The prete is the Thai **hungry ghost**: **as tall as palm trees**, pot-bellied,
