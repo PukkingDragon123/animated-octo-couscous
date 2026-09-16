@@ -4111,8 +4111,40 @@ function drawPrete(g, p, o={}){
     }
     return {hx2,hy2};
   }
+  /* ---------------------------------------------------------------
+     HANDS THAT ARRIVE, RATHER THAN APPEAR
+
+     armPose picks a branch — hanging, reaching into the soil, holding a
+     jar, blocking, in the air — and for a long time the hand simply WAS
+     wherever the new branch said. So the frame an action began, both
+     hands teleported fourteen to sixteen pixels, which on a character
+     sixty pixels tall is the whole arm moving between one frame and the
+     next. That is the thing that looked broken: not an animation, a cut.
+
+     The pose is a target now and the hand springs to it, in the body's
+     own frame so walking does not drag it. Everything else about him
+     already works this way — the head, the belly, the walk easing in —
+     and this was the last part that did not.
+     --------------------------------------------------------------- */
+  const HAND_K = 0.00018;            // ~0.12s to close on a new pose
+  function smoothHand(back, hx2, hy2){
+    const i = back?0:1;
+    if(!p._hand) p._hand=[null,null];
+    const tx = hx2-hipX, ty = hy2-hipY;      // local: moves with him
+    const cur = p._hand[i];
+    const dt2 = o.dt===undefined? 1/60 : o.dt;
+    /* first frame, a still, or a teleport: be where the pose says */
+    if(!cur || !dt2 || Math.hypot(tx-cur.x, ty-cur.y) > 64){
+      p._hand[i]={x:tx,y:ty};
+      return {hx2,hy2};
+    }
+    const k = 1-Math.pow(HAND_K, dt2);
+    cur.x += (tx-cur.x)*k;
+    cur.y += (ty-cur.y)*k;
+    return {hx2: hipX+cur.x, hy2: hipY+cur.y};
+  }
   function drawArm(back){
-    const {hx2,hy2}=armPose(back);
+    const {hx2,hy2}=smoothHand(back, ...(pose=>[pose.hx2,pose.hy2])(armPose(back)));
     const col=back?SHD:BODY;
     const sx0=chestX+(back?-4:4)*face;
     /* both elbows drop outward under a load — the back one bending the usual
@@ -18333,23 +18365,31 @@ function paintEast(){
    WHAT MOVES ON IT
    ============================================================ */
 const TRAFFIC=[], ROAD_DOGS=[], PARKED=[];
-/* Almost everything on a village road is a motorbike, so almost everything
-   here is a motorbike. The rest is what a motorbike cannot carry. */
-const VEH = ['moto','moto','moto','moto','family','sidecar','moto','pickup','songthaew','moto','delivery'];
-/* The road is the whole map now, not the stretch past the crossroad. A lane
-   with nothing on it between the farm and the shop made the village feel
-   like a diorama with one working corner. */
-const ROAD_W = 620, ROAD_E = 10400;
+/* Almost everything on a Thai road is a motorbike, so almost everything here
+   is one. The rest is what a motorbike cannot carry. */
+const VEH = ['moto','moto','family','sidecar','moto','pickup','songthaew','delivery'];
+/* ---- and it is only on the road ----
+   For one version there were eighteen of them running the whole length of the
+   map, which put a two-stroke through the banana grove and past the spirit
+   house every few seconds. There is no road there. The metalled road starts
+   at the crossroad and runs east past the shop, and that is the only place
+   anything with an engine belongs; west of it is a dirt lane with a buffalo
+   on it. Six vehicles, one stretch, and the village gets its quiet back. */
+const ROAD_W = CROSS_X - 380, ROAD_E = 10400;
+const TRAFFIC_N = 6;
 function seedTraffic(){
-  for(let i=0;i<18;i++){
+  for(let i=0;i<TRAFFIC_N;i++){
     const dir = Math.random()<0.5? -1 : 1;
     TRAFFIC.push({ kind:pick(VEH), x:rnd(ROAD_W,ROAD_E), dir,
-                   sp:rnd(46,124), t:rnd(9), horn:0, seed:(Math.random()*997)|0 });
+                   sp:rnd(46,124), cruise:0, t:rnd(9), horn:0, seed:(Math.random()*997)|0,
+                   stop:0, park:0, blink:0, lane:0 });
   }
+  for(const v of TRAFFIC) v.cruise=v.sp;
   for(const x of [7290, 8060, 8820]) ROAD_DOGS.push({x, hx:x, t:rnd(9), st:'sleep', sp:0, face:1, wake:0});
-  /* and the ones that are not going anywhere: every house has one leaning
-     under it, and there is a row of them outside the shop */
-  const spots=[1210,1340,1690,1960,2300,2560,2830,3150,4110,4160,5280,6220,7460,8140,8190,8240,9020];
+  /* parked: outside the shop, at the crossroad, and two at the far houses.
+     None in the village — a bike under a house is a nice detail and six of
+     them down a lane with no road is a car park. */
+  const spots=[7380, 7440, 8130, 8180, 8230, 9010];
   for(const x of spots) PARKED.push({x, seed:(x*7)%991, lean:(x%3)-1});
 }
 /* how much of it is out at this hour: the school run and the evening market
@@ -18362,6 +18402,14 @@ function trafficBusy(){
   if(h>=19 && h<22)  return 0.45;
   return 0.16;
 }
+/* Where a vehicle might reasonably stop: the shop, and the crossroad. */
+const STOPS = [];
+function trafficStops(){
+  if(STOPS.length) return STOPS;
+  STOPS.push({x:(typeof STORE_X!=='undefined'? STORE_X+28 : 8200), dur:[4,11]});
+  STOPS.push({x:CROSS_X, dur:[1.5,3.5]});
+  return STOPS;
+}
 function stepTraffic(dt){
   const busy=trafficBusy();
   for(let i=0;i<TRAFFIC.length;i++){
@@ -18369,12 +18417,63 @@ function stepTraffic(dt){
     v.out = (i/TRAFFIC.length) < busy;       // the rest are parked up somewhere
     if(!v.out) continue;
     v.t+=dt;
+
+    /* ---- what it wants to be doing ----
+       Sitting at the shop for a minute, easing off for the dog asleep in the
+       road, slowing behind whatever is in front of it, or getting on with it.
+       Every one of those is a target speed, and the throttle takes a moment
+       to get there, so nothing on this road changes speed in a single frame. */
+    let want = v.cruise;
+    if(v.stop>0){
+      v.stop -= dt; want = 0;
+      v.blink = (v.stop>0.4)? 1 : 0;              // hazards on while it sits
+    } else {
+      /* the dog asleep in the middle of the road, which is the only reason
+         the dog is still alive */
+      for(const d of ROAD_DOGS){
+        const ahead=(d.x-v.x)*v.dir;
+        if(ahead>0 && ahead<64 && d.st==='sleep'){ want=Math.min(want, 22); v.horn=0.6; }
+        else if(ahead>0 && ahead<40){ want=Math.min(want, 40); }
+      }
+      /* Whatever is in front of it going the same way. The rule is the GAP,
+         not the leader's speed: matching 86% of the car in front means a
+         stopped leader multiplies backwards through the queue and the whole
+         road settles to nought and never starts again. Judging the gap
+         instead, a follower closes up, waits at a car's length, and pulls
+         away the moment the space opens — which is also how traffic works. */
+      for(const o of TRAFFIC){
+        if(o===v || !o.out || o.dir!==v.dir) continue;
+        const ahead=(o.x-v.x)*v.dir;
+        if(ahead>0 && ahead<90) want=Math.min(want, Math.max(0,(ahead-26))*3.4);
+      }
+      /* Pulling in. The decision is taken once on the way in — rolling a
+         die every frame inside a ten-pixel window it crosses in a sixth of
+         a second is why it used to almost never stop — and afterwards there
+         is a cooldown, because a vehicle sitting at the shop is still within
+         ten pixels of the shop and would otherwise decide to stop at it
+         again, and again, for ever. */
+      v.blink = 0;
+      if(v.noStop>0) v.noStop -= dt;
+      for(const st of trafficStops()){
+        const ahead=(st.x-v.x)*v.dir;
+        if(ahead>0 && ahead<90 && v.willStop===undefined && v.noStop<=0)
+          v.willStop = Math.random()<0.55;
+        if(ahead < -14) v.willStop = undefined;
+        if(v.willStop && ahead>0 && ahead<90){ v.blink=1; want=Math.min(want, 34); }
+        if(v.willStop && Math.abs(ahead)<10){
+          v.stop = rnd(st.dur[0], st.dur[1]);
+          v.willStop = undefined;
+          v.noStop = 9;                 // long enough to be well clear of it
+        }
+      }
+    }
+    /* a throttle, not a switch: it takes a second to get up to speed and
+       rather less to come off it */
+    const rate = want<v.sp? 150 : 46;
+    v.sp += clamp(want-v.sp, -rate*dt, rate*dt);
     v.x += v.dir*v.sp*dt;
-    if(v.x<ROAD_W){ v.x=ROAD_E; }
-    if(v.x>ROAD_E){ v.x=ROAD_W; }
-    /* it slows for a dog in the road, which is the correct behaviour and
-       also the only reason the dog is still alive */
-    for(const d of ROAD_DOGS) if(Math.abs(d.x-v.x)<40 && d.st==='sleep'){ v.horn=0.5; }
+    if(v.x<ROAD_W){ v.x=ROAD_E; v.sp=v.cruise; v.stop=0; v.willStop=undefined; v.noStop=0; }
+    if(v.x>ROAD_E){ v.x=ROAD_W; v.sp=v.cruise; v.stop=0; v.willStop=undefined; v.noStop=0; }
     if(v.horn>0) v.horn-=dt;
   }
   for(const d of ROAD_DOGS){
@@ -18393,98 +18492,297 @@ function stepTraffic(dt){
     }
   }
 }
+/* ============================================================
+   THE VEHICLES, DRAWN PROPERLY
+
+   These were six or seven rectangles each: a slab for the body, two
+   black circles, a lump for the rider. At 480x270 that is legible and
+   it is also flat — you could not tell a Wave from a Click and there
+   was nothing on any of them that a real one has.
+
+   So they are built the way the houses are: a part at a time, with a
+   lit edge and a shadowed side on every one of them. A wheel is a rim,
+   a tyre, a hub and four spokes that turn with the distance travelled.
+   A bike has a mudguard, a fork, a mirror on a stalk, a number plate,
+   an exhaust and a stand. A rider has a helmet with a strap, a hand on
+   the bar, and a foot on the peg.
+   ============================================================ */
+
+/* one rider, used by every two-wheeler here: a helmet with a strap on it,
+   a hand on the bar, a foot on the peg, and a lean when it is moving */
+const RIDER_SHIRT=['#e8dfc8','#c0392f','#4a7a9e','#3f6b4a','#d8b04a','#f0e8d2'];
+const RIDER_SKIN =[['#d8a878','#b3855a'],['#c9986f','#a87c58'],['#e8bc92','#c99a6e']];
+const HELMET     =['#c0392f','#2c5a7a','#f2c14e','#e8e4da','#3a3630'];
+function rider(g, x, y, f, seed, o={}){
+  const sk=RIDER_SKIN[seed%3], sh=o.shirt||RIDER_SHIRT[seed%6];
+  const lean = o.lean===undefined? 1.2 : o.lean;
+  /* the leg, bent, with the foot forward on the peg */
+  pTaper(g, x-1*f, y+2, x+2.4*f, y+5.6, 3.0, 2.4, '#3a3a44');
+  pTaper(g, x+2.4*f, y+5.6, x+5.4*f, y+6.4, 2.4, 1.8, '#3a3a44');
+  pR(g,R(x+5.4*f),R(y+6.2),2,1,'#2a2a30');
+  /* torso, leaning into it */
+  pTaper(g, x-1*f, y+3, x+lean*f, y-6, 4.6, 4.0, sh);
+  pTaper(g, x-1*f, y+3, x+lean*f, y-6, 2.2, 1.8, shade(sh,-0.22));
+  /* the arm out to the bar */
+  pTaper(g, x+lean*f, y-4, x+6.6*f, y-1.4, 2.2, 1.8, sk[0]);
+  pEll(g, x+7*f, y-1.2, 1.4,1.4, sk[0]);
+  /* head */
+  const hx=x+lean*f+0.6*f, hy=y-8.4;
+  pEll(g, hx, hy, 3.4, 3.4, sk[0]);
+  pEll(g, hx+1.2*f, hy+0.6, 2.0, 2.4, sk[1]);
+  if(o.helmet){
+    const hc=HELMET[seed%5];
+    pEll(g, hx, hy-0.8, 4.0, 3.6, hc);
+    pEll(g, hx, hy-1.8, 3.4, 2.2, shade(hc,0.22));
+    pTaper(g, hx+1.8*f, hy-1.2, hx+4.2*f, hy+0.4, 2.0, 1.2, 'rgba(60,70,90,0.55)');  // visor
+    pTaper(g, hx-2.4*f, hy+1.2, hx+1.0*f, hy+3.0, 1.0, 1.0, shade(hc,-0.35));        // strap
+  } else {
+    pEll(g, hx, hy-2.2, 3.6, 2.2, '#241c18');
+  }
+  /* and whatever is strapped on the back, which is always something */
+  if(o.load){
+    pR(g, R(x-7*f), R(y-4), 7, 8, '#8a6a44');
+    pR(g, R(x-7*f), R(y-4), 7, 1, '#b08c5c');
+    pR(g, R(x-7*f), R(y-1), 7, 1, shade('#8a6a44',-0.3));
+  }
+}
+function horn(g,x,y,f){
+  for(let i=0;i<3;i++){
+    g.globalAlpha=0.7-i*0.18;
+    pTaper(g, x+i*3*f, y-2-i, x+i*3*f, y+2+i, 1.4,1.4, '#f2e0a0');
+    g.globalAlpha=1;
+  }
+}
+/* a wheel that is actually turning, not a black dot */
+function wheel(g, x, y, r, roll, hub){
+  pCirc(g,x,y,r,'#23232a');                       // tyre
+  pCirc(g,x,y,r-1,'#333340');
+  pCirc(g,x,y,r*0.52,hub||'#9a9aa4');             // rim
+  pCirc(g,x,y,r*0.22,'#5f5f6a');                  // hub
+  for(let i=0;i<4;i++){
+    const a=roll+i*Math.PI/4;
+    pTaper(g, x+Math.cos(a)*r*0.2, y+Math.sin(a)*r*0.2,
+              x+Math.cos(a)*r*0.5, y+Math.sin(a)*r*0.5, 1,1, '#c4c4cc');
+  }
+  pEll(g,x-r*0.4,y-r*0.45,r*0.22,r*0.16,'rgba(255,255,255,0.25)');   // one highlight
+}
+/* the headlamp beam, after dark */
+function beam(g,x,y,f){
+  if(TOD.v>0.30) return;
+  const a=(0.30-TOD.v)/0.30;
+  /* a cone thrown ON the road, not a wedge cut out of the air: three thin
+     slices, each fainter and wider than the last, and the far end fades out
+     rather than stopping. A solid triangle reads as a piece of card. */
+  const gyl = groundY(x)-1;
+  for(let i=0;i<3;i++){
+    g.globalAlpha=a*(0.13-i*0.035);
+    const L=14+i*10;
+    pTri(g, x, y, x+L*f, y+2+i*2, x+L*f, gyl, 'rgba(255,226,160,1)');
+  }
+  g.globalAlpha=a*0.20;
+  pEll(g, x+16*f, gyl-1, 13, 2.4, 'rgba(255,226,160,1)');    // the pool on the tarmac
+  g.globalAlpha=a*0.5; pEll(g,x,y,2.0,1.8,'#fff4cf');
+  g.globalAlpha=1;
+}
+/* the indicator, which is on when it is pulling in */
+function blinker(g,x,y,on){
+  if(!on) return;
+  const b = Math.sin(GS.t*9)>0;
+  pR(g,R(x),R(y),2,2, b? '#ffb03c' : '#7a5a24');
+}
 function drawVehicle(g,v){
   const x=v.x, gy=groundY(x), f=v.dir;
-  const bob=Math.sin(v.t*9)*0.6;
-  pEll(g,x,gy+1,16,3,'rgba(10,8,20,0.32)');
+  /* every colour and every rider is picked off this, so a vehicle that
+     arrived without one must still be a vehicle rather than a crash */
+  const seed = (v.seed===undefined? (R(x)*7)&1023 : v.seed)|0;
+  const moving = v.sp>2;
+  const bob = moving? Math.sin(v.t*9)*0.6*clamp(v.sp/90,0,1) : 0;
+  const roll = (v.roll = (v.roll||0) + v.sp*0.016*0.09*f);
+  pEll(g,x,gy+1,17,3.2,'rgba(10,8,20,0.34)');
   if(v.kind==='moto'){
-    const c1=['#c0392f','#2c5a7a','#3f6b4a','#d8b04a','#e8e4da'][(R(x)%5)];
-    pCirc(g,x-7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x-7*f,gy-4+bob,2,'#7a7a84');
-    pCirc(g,x+7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x+7*f,gy-4+bob,2,'#7a7a84');
-    pR(g,x-8*f,gy-10+bob,16,5,c1); pR(g,x-8*f,gy-10+bob,16,1,shade(c1,0.3));
-    pR(g,x-2*f,gy-14+bob,8,5,'#3a3630');
-    pTaper(g,x+6*f,gy-13+bob,x+10*f,gy-10+bob,2,1,'#9a9aa4');
-    // the rider, and whatever is on the back
-    const ry=gy-16+bob;
-    pR(g,x-1*f,ry-8,6,10,['#e8dfc8','#c0392f','#4a7a9e'][(R(x)%3)]);
-    pEll(g,x+1*f,ry-11,4,4,'#d8a878');
-    pEll(g,x+1*f,ry-12.4,4.4,3.4,['#c0392f','#2c5a7a','#f2c14e'][(R(x)%3)]);  // helmet, sometimes
-    pLimb(g,x+2*f,ry-5,x+7*f,ry-2,2,'#d8a878');
-    if((R(x)%3)===0){ pR(g,x-9*f,ry-4,7,8,'#8a6a44'); pR(g,x-9*f,ry-4,7,1,'#b08c5c'); }
-    if(v.horn>0){ for(let i=0;i<3;i++) pEll(g,x+(11+i*3)*f, gy-14+bob-i, 1.4,1.4,'rgba(242,193,78,0.7)'); }
-  } else if(v.kind==='pickup'){
-    const c1=['#e8e4da','#2c5a7a','#8a2c24'][(R(x)%3)];
-    pCirc(g,x-12*f,gy-5+bob,5.4,'#2c2c30'); pCirc(g,x-12*f,gy-5+bob,2.4,'#7a7a84');
-    pCirc(g,x+12*f,gy-5+bob,5.4,'#2c2c30'); pCirc(g,x+12*f,gy-5+bob,2.4,'#7a7a84');
-    pR(g,x-18*f,gy-14+bob,36,9,c1); pR(g,x-18*f,gy-14+bob,36,1,shade(c1,0.28));
-    pR(g,x-4*f,gy-22+bob,16,9,c1); pR(g,x-2*f,gy-21+bob,12,7,'#2e3a44');
-    pR(g,x-18*f,gy-20+bob,13,7,shade(c1,-0.2));      // the tray, with sacks in it
-    pR(g,x-16*f,gy-24+bob,4,5,'#9a8a6c'); pR(g,x-11*f,gy-23+bob,4,4,'#8a7a5c');
-    pR(g,x+17*f,gy-11+bob,3,2,'#f2e0a0');
+    /* a step-through, which is what almost every bike in the country is */
+    const c1=['#c0392f','#2c5a7a','#3f6b4a','#d8b04a','#e8e4da','#7a4a8a'][seed%6];
+    const c1d=shade(c1,-0.3), c1l=shade(c1,0.26);
+    const by=gy-11+bob;
+    /* fork and swingarm behind the body */
+    pTaper(g,x+7*f,by+1, x+8*f,gy-4+bob, 2.2,1.8,'#8a8a94');
+    pTaper(g,x-3*f,by+3, x-8*f,gy-4+bob, 2.6,2.0,'#4a4a54');
+    /* exhaust down the low side */
+    pTaper(g,x-1*f,by+4, x-9*f,gy-5+bob, 2.6,2.2,'#a8a8b2');
+    pR(g,R(x-10*f),R(gy-6.6+bob),3,3,'#8a8a94');
+    wheel(g,x-8*f,gy-4.6+bob,4.8,roll);
+    wheel(g,x+8*f,gy-4.6+bob,4.8,roll);
+    /* mudguards */
+    pTaper(g,x+4*f,gy-10+bob, x+11*f,gy-8+bob, 2,1.6, c1d);
+    pTaper(g,x-5*f,gy-9+bob,  x-11*f,gy-7+bob, 2,1.6, c1d);
+    /* the body: a step-through has a dip in the middle */
+    pR(g,x-7*f,by,7,4,c1);                       // the leg shield side
+    pTri(g,x+2*f,by, x+7*f,by-4, x+7*f,by+4, c1);
+    pR(g,x-7*f,by,7,1,c1l);
+    pR(g,x-7*f,by+3,7,1,c1d);
+    pR(g,x+3*f,by-6,5,7,c1); pR(g,x+3*f,by-6,5,1,c1l);    // the shield up front
+    /* seat, long and black */
+    pR(g,x-6*f,by-4,9,3,'#2e2b28'); pR(g,x-6*f,by-4,9,1,'#4a453e');
+    /* bars, mirror, lamp */
+    pTaper(g,x+7*f,by-6, x+9.4*f,by-11, 1.6,1.4,'#9a9aa4');
+    pR(g,R(x+8.6*f),R(by-12.4),2,1,'#b4b4be');
+    pTaper(g,x+9*f,by-12, x+10.6*f,by-15, 1,1,'#8a8a94');   // mirror stalk
+    pEll(g,x+11*f,by-15.6,1.6,2.0,'#c8c8d2');
+    pEll(g,x+9.6*f,by-7.4,2.2,2.0,'#e8e2cc');               // headlamp
+    beam(g,x+11*f,by-7.4,f);
+    /* number plate and a rear lamp */
+    pR(g,R(x-9.4*f),R(by+0.6),3,2,'#e8e4d4'); pR(g,R(x-9.4*f),R(by+0.6),3,1,'#b8b4a4');
+    pR(g,R(x-8*f),R(by-2),2,2,'#b8342c');
+    blinker(g,x+10*f,by-5,v.blink);
+    blinker(g,x-10*f,by-1,v.blink);
+    /* and the rider */
+    rider(g, x+1*f, by-6, f, seed, {helmet:(seed%4)!==0, load:(seed%3)===0});
+    if(v.horn>0) horn(g, x+13*f, by-8, f);
   } else if(v.kind==='family'){
     /* four on a bike, nobody in a helmet, the smallest one standing on the
        footwell holding the mirror. Every single day, everywhere. */
-    const c1=['#c0392f','#3f6b4a','#2c5a7a'][(R(x)%3)];
-    pCirc(g,x-7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x-7*f,gy-4+bob,2,'#7a7a84');
-    pCirc(g,x+7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x+7*f,gy-4+bob,2,'#7a7a84');
-    pR(g,x-8*f,gy-10+bob,16,5,c1); pR(g,x-8*f,gy-10+bob,16,1,shade(c1,0.3));
-    pR(g,x-4*f,gy-14+bob,12,5,'#3a3630');
-    pTaper(g,x+6*f,gy-13+bob,x+10*f,gy-10+bob,2,1,'#9a9aa4');
-    const ry=gy-16+bob;
-    /* the little one out front, standing up, hands on the bars */
-    pR(g,x+4*f,ry-4,4,6,'#f2c14e'); pEll(g,x+5*f,ry-6,3,3,'#e8bc92');
-    pEll(g,x+5*f,ry-7.2,3.2,2.4,'#241c18');
-    /* the one riding, and two more behind */
-    pR(g,x-1*f,ry-8,6,10,'#e8dfc8'); pEll(g,x+1*f,ry-11,4,4,'#d8a878');
-    pEll(g,x+1*f,ry-12.4,4.2,3.2,'#241c18');
-    pR(g,x-7*f,ry-7,6,9,'#b47ba8'); pEll(g,x-5*f,ry-10,3.8,3.8,'#e8bc92');
-    pEll(g,x-5*f,ry-11.4,4,3,'#241c18');
-    pR(g,x-12*f,ry-5,5,7,'#4a7a9e'); pEll(g,x-10*f,ry-8,3.2,3.2,'#d8a878');
-    pEll(g,x-10*f,ry-9.2,3.4,2.6,'#241c18');
+    const c1=['#c0392f','#3f6b4a','#2c5a7a'][seed%3];
+    const by=gy-11+bob;
+    pTaper(g,x+7*f,by+1, x+8*f,gy-4+bob, 2.2,1.8,'#8a8a94');
+    pTaper(g,x-3*f,by+3, x-8*f,gy-4+bob, 2.6,2.0,'#4a4a54');
+    wheel(g,x-8*f,gy-4.6+bob,4.8,roll); wheel(g,x+8*f,gy-4.6+bob,4.8,roll);
+    pTaper(g,x+4*f,gy-10+bob, x+11*f,gy-8+bob, 2,1.6, shade(c1,-0.3));
+    pR(g,x-7*f,by,7,4,c1); pTri(g,x+2*f,by, x+7*f,by-4, x+7*f,by+4, c1);
+    pR(g,x-7*f,by,7,1,shade(c1,0.26));
+    pR(g,x+3*f,by-6,5,7,c1); pR(g,x+3*f,by-6,5,1,shade(c1,0.26));
+    pR(g,x-7*f,by-4,10,3,'#2e2b28');
+    pTaper(g,x+7*f,by-6, x+9.4*f,by-11, 1.6,1.4,'#9a9aa4');
+    pEll(g,x+9.6*f,by-7.4,2.2,2.0,'#e8e2cc');
+    beam(g,x+11*f,by-7.4,f);
+    /* the little one standing on the footwell out front, then three behind */
+    rider(g, x+4.6*f, by-4, f, seed+2, {helmet:false, shirt:'#f2c14e', lean:0.4});
+    rider(g, x+0.6*f, by-6, f, seed,   {helmet:false});
+    rider(g, x-3.4*f, by-6, f, seed+1, {helmet:false, shirt:'#b47ba8', lean:0.6});
+    rider(g, x-7.4*f, by-5, f, seed+4, {helmet:false, shirt:'#4a7a9e', lean:0.2});
+    if(v.horn>0) horn(g, x+13*f, by-8, f);
+    blinker(g,x+10*f,by-5,v.blink);
   } else if(v.kind==='sidecar'){
-    /* รถพ่วง — the bike with a whole kitchen bolted to the side of it, a
-       glass case and a gas bottle and a bell */
-    const c1='#c8443a';
-    pCirc(g,x-6*f,gy-4+bob,4.2,'#2c2c30'); pCirc(g,x+8*f,gy-4+bob,4.2,'#2c2c30');
-    pCirc(g,x-16*f,gy-4+bob,3.6,'#2c2c30');
-    pR(g,x-6*f,gy-10+bob,14,5,'#3f6b4a');
-    pR(g,x-2*f,gy-14+bob,8,5,'#3a3630');
-    pTaper(g,x+7*f,gy-13+bob,x+11*f,gy-10+bob,2,1,'#9a9aa4');
-    /* the cart */
-    pR(g,x-24*f,gy-12+bob,20,8,c1); pR(g,x-24*f,gy-12+bob,20,1,shade(c1,0.3));
-    pR(g,x-23*f,gy-20+bob,18,8,'#e8e4da'); pR(g,x-22*f,gy-19+bob,16,6,'#c8d4d8');
-    for(let i=0;i<3;i++) pR(g,x-(21-i*5)*f,gy-17+bob,3,3,['#d8b04a','#c0392f','#57a869'][i]);
-    pR(g,x-25*f,gy-24+bob,22,4,'#d8552f'); pR(g,x-25*f,gy-24+bob,22,1,'#f07a4c');
-    for(const px of [-25,-5]) pR(g,x+px*f,gy-24+bob,1.6,5,'#9a9aa4');
-    pR(g,x-14*f,gy-27+bob,2,3,'#f2c14e');                       // the bell
-    const ry=gy-16+bob;
-    pR(g,x-1*f,ry-8,6,10,'#e8dfc8'); pEll(g,x+1*f,ry-11,4,4,'#d8a878');
-    pEll(g,x+1*f,ry-12.4,4.4,3.4,'#8a6a44');                    // a sun hat
+    /* รถพ่วง — the bike with a whole kitchen bolted to the side of it: a
+       glass case, a gas bottle, an awning on four poles and a bell */
+    const c1='#c8443a', c1d=shade(c1,-0.3), c1l=shade(c1,0.24);
+    const by=gy-11+bob;
+    pTaper(g,x+7*f,by+1, x+8*f,gy-4+bob, 2.2,1.8,'#8a8a94');
+    wheel(g,x-6*f,gy-4.6+bob,4.4,roll);
+    wheel(g,x+8*f,gy-4.6+bob,4.4,roll);
+    wheel(g,x-18*f,gy-4.2+bob,3.6,roll);
+    /* the cart frame and box */
+    pTaper(g,x-6*f,by+2, x-18*f,by+3, 2.2,2.0,'#6a6a74');
+    pR(g,x-26*f,by-1,20,7,c1);  pR(g,x-26*f,by-1,20,1,c1l); pR(g,x-26*f,by+5,20,1,c1d);
+    /* the glass case, with things in it */
+    pR(g,x-25*f,by-10,18,9,'#e8e4da'); pR(g,x-24*f,by-9,16,7,'#cbdbe2');
+    for(let i=0;i<4;i++) pR(g,x-(23-i*4)*f,by-7,3,4,['#d8b04a','#c0392f','#57a869','#e8dfc8'][i]);
+    pR(g,x-25*f,by-10,18,1,'#ffffff');
+    /* the awning on its poles, and the bell */
+    for(const px of [-26,-8]) pR(g,R(x+px*f),R(by-18),1.6,8,'#9a9aa4');
+    pR(g,x-27*f,by-20,21,3,'#d8552f'); pR(g,x-27*f,by-20,21,1,'#f07a4c');
+    for(let i=0;i<5;i++) pTri(g,x-(26-i*4)*f,by-17, x-(24-i*4)*f,by-17, x-(25-i*4)*f,by-15,'#e8dfc8');
+    pR(g,R(x-16*f),R(by-23),2,3,'#f2c14e');
+    /* a gas bottle under the cart */
+    pR(g,R(x-22*f),R(by+2),4,5,'#2c5a7a'); pR(g,R(x-22*f),R(by+2),4,1,'#4a7a9e');
+    /* the bike part */
+    pR(g,x-5*f,by,6,4,'#3f6b4a'); pTri(g,x+1*f,by, x+7*f,by-4, x+7*f,by+4,'#3f6b4a');
+    pR(g,x-5*f,by-4,8,3,'#2e2b28');
+    pTaper(g,x+7*f,by-6, x+9.4*f,by-11, 1.6,1.4,'#9a9aa4');
+    pEll(g,x+9.6*f,by-7.4,2.2,2.0,'#e8e2cc');
+    beam(g,x+11*f,by-7.4,f);
+    rider(g, x+1*f, by-6, f, seed, {helmet:false, shirt:'#e8dfc8'});
+    pEll(g, x+2.4*f, by-15.4, 4.6, 1.6, '#c9a86a');        // a sun hat over the lot
+    pEll(g, x+2.4*f, by-16.4, 2.6, 1.8, '#c9a86a');
+    if(v.horn>0) horn(g, x+13*f, by-8, f);
+    blinker(g,x-27*f,by+2,v.blink);
   } else if(v.kind==='delivery'){
-    /* the one with three gas bottles and a rack of eggs on the back */
-    const c1='#2c5a7a';
-    pCirc(g,x-7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x-7*f,gy-4+bob,2,'#7a7a84');
-    pCirc(g,x+7*f,gy-4+bob,4.4,'#2c2c30'); pCirc(g,x+7*f,gy-4+bob,2,'#7a7a84');
-    pR(g,x-8*f,gy-10+bob,16,5,c1); pR(g,x-8*f,gy-10+bob,16,1,shade(c1,0.3));
-    pR(g,x-2*f,gy-14+bob,8,5,'#3a3630');
-    pTaper(g,x+6*f,gy-13+bob,x+10*f,gy-10+bob,2,1,'#9a9aa4');
-    /* the load, stacked far higher than is reasonable */
-    for(let i=0;i<3;i++) pR(g,x-(13+i*4)*f,gy-22+bob-i*1,5,11,i%2?'#d8b04a':'#c0392f');
-    pR(g,x-20*f,gy-26+bob,12,5,'#e8dfc8'); pR(g,x-20*f,gy-26+bob,12,1,'#ffffff');
-    const ry=gy-16+bob;
-    pR(g,x-1*f,ry-8,6,10,'#f0e8d2'); pEll(g,x+1*f,ry-11,4,4,'#c9986f');
-    pEll(g,x+1*f,ry-12.4,4.4,3.4,'#2c5a7a');
+    /* the one with three gas bottles and a rack of eggs stacked far higher
+       than is reasonable, which is the correct height */
+    const c1='#2c5a7a', by=gy-11+bob;
+    pTaper(g,x+7*f,by+1, x+8*f,gy-4+bob, 2.2,1.8,'#8a8a94');
+    pTaper(g,x-3*f,by+3, x-8*f,gy-4+bob, 2.6,2.0,'#4a4a54');
+    wheel(g,x-8*f,gy-4.6+bob,4.8,roll); wheel(g,x+8*f,gy-4.6+bob,4.8,roll);
+    pR(g,x-7*f,by,7,4,c1); pTri(g,x+2*f,by, x+7*f,by-4, x+7*f,by+4, c1);
+    pR(g,x-7*f,by,7,1,shade(c1,0.26));
+    pR(g,x+3*f,by-6,5,7,c1); pR(g,x+3*f,by-6,5,1,shade(c1,0.26));
+    pR(g,x-6*f,by-4,9,3,'#2e2b28');
+    /* the rack, and the load on it */
+    pR(g,R(x-15*f),R(by-3),9,1.6,'#6a6a74');
+    for(let i=0;i<3;i++){
+      const bx2=x-(9+i*4.2)*f, bh=11+((seed+i)%3);
+      const bc=i%2? '#d8b04a':'#c0392f';
+      pR(g,bx2-2,by-3-bh,4.4,bh,bc); pR(g,bx2-2,by-3-bh,4.4,1,shade(bc,0.25));
+      pEll(g,bx2,by-3-bh,2.2,1.2,shade(bc,0.32));
+      pR(g,R(bx2-1),R(by-2-bh),2,1,'#6a6a74');
+    }
+    pR(g,x-19*f,by-20,13,5,'#e8dfc8'); pR(g,x-19*f,by-20,13,1,'#ffffff');
+    for(let i=0;i<4;i++) pEll(g,x-(18-i*3)*f,by-17.4,1.3,1.1,'#e0c9a0');
+    pTaper(g,x-19*f,by-4, x-19*f,by-19, 1,1,'#8a6a44');        // the strap holding it on
+    pTaper(g,x+7*f,by-6, x+9.4*f,by-11, 1.6,1.4,'#9a9aa4');
+    pEll(g,x+9.6*f,by-7.4,2.2,2.0,'#e8e2cc');
+    beam(g,x+11*f,by-7.4,f);
+    rider(g, x+1*f, by-6, f, seed, {helmet:true, shirt:'#f0e8d2'});
+    if(v.horn>0) horn(g, x+13*f, by-8, f);
+    blinker(g,x+10*f,by-5,v.blink);
+  } else if(v.kind==='pickup'){
+    /* a one-tonne pickup, which is the other half of the Thai road: a cab,
+       a tray with sacks roped into it, and a bull bar */
+    const c1=['#e8e4da','#2c5a7a','#8a2c24','#3a3a44'][seed%4];
+    const c1d=shade(c1,-0.28), c1l=shade(c1,0.22);
+    const by=gy-16+bob;
+    pTaper(g,x-12*f,by+7, x-12*f,gy-5+bob, 2.4,2.0,'#4a4a54');
+    wheel(g,x-12*f,gy-5.4+bob,5.6,roll); wheel(g,x+12*f,gy-5.4+bob,5.6,roll);
+    /* body, cab, glass */
+    pR(g,x-19*f,by+2,38,7,c1); pR(g,x-19*f,by+2,38,1,c1l); pR(g,x-19*f,by+8,38,1,c1d);
+    pR(g,x-5*f,by-7,17,10,c1); pR(g,x-5*f,by-7,17,1,c1l);
+    pR(g,x-3*f,by-6,7,6,'#2e3a44'); pR(g,x+5*f,by-6,6,6,'#2e3a44');
+    pR(g,x-3*f,by-6,7,1,'#4a5a68'); pR(g,x+5*f,by-6,6,1,'#4a5a68');
+    pR(g,R(x+4*f),R(by-7),1.4,10,c1d);                       // the door pillar
+    /* the tray with its load */
+    pR(g,x-19*f,by-5,14,8,c1d); pR(g,x-19*f,by-5,14,1,shade(c1,-0.1));
+    for(let i=0;i<3;i++){ const sx2=x-(17-i*4.6)*f;
+      pR(g,sx2-2,by-9-((i%2)*2),4.6,5,'#9a8a6c'); pR(g,sx2-2,by-9-((i%2)*2),4.6,1,'#b8a888'); }
+    pTaper(g,x-20*f,by-6, x-4*f,by-6, 1,1, '#6a5a44');        // the rope over them
+    /* bumper, lamps, plate, mudflaps */
+    pR(g,R(x+17*f),R(by+4),2.4,3.4,'#6a6a74');
+    pR(g,R(x+18*f),R(by+1),2.4,2.4,'#f2e0a0'); beam(g,x+20*f,by+2,f);
+    pR(g,R(x-20*f),R(by+3),2.4,2,'#b8342c');
+    pR(g,R(x-20*f),R(by+6),3,2,'#e8e4d4');
+    pR(g,R(x-15*f),R(gy-3+bob),3,3,'#2a2a30'); pR(g,R(x+9*f),R(gy-3+bob),3,3,'#2a2a30');
+    blinker(g,x+19*f,by+4,v.blink); blinker(g,x-20*f,by+5,v.blink);
+    /* somebody at the wheel, and sometimes somebody in the back */
+    pEll(g,x+1*f,by-3.4,2.6,2.6,'#d8a878');
+    pEll(g,x+1*f,by-5,2.8,2.0,'#241c18');
+    if(seed%2===0){
+      pR(g,x-13*f,by-11,4,6,'#c0392f'); pEll(g,x-11.6*f,by-13,2.4,2.4,'#c9986f');
+      pEll(g,x-11.6*f,by-14.4,2.6,1.8,'#241c18');
+    }
+    if(v.horn>0) horn(g, x+23*f, by-2, f);
   } else {
-    const c1='#2b6a8a';
-    pCirc(g,x-14*f,gy-5+bob,5.4,'#2c2c30'); pCirc(g,x-14*f,gy-5+bob,2.4,'#7a7a84');
-    pCirc(g,x+14*f,gy-5+bob,5.4,'#2c2c30'); pCirc(g,x+14*f,gy-5+bob,2.4,'#7a7a84');
-    pR(g,x-20*f,gy-15+bob,40,10,c1); pR(g,x-20*f,gy-15+bob,40,1,shade(c1,0.3));
-    pR(g,x+6*f,gy-24+bob,14,10,c1); pR(g,x+8*f,gy-23+bob,10,7,'#2e3a44');
-    // the roofed back, with two benches and whoever is riding home on them
-    pR(g,x-21*f,gy-29+bob,30,3,'#d8552f'); pR(g,x-20*f,gy-26+bob,28,11,'rgba(20,26,30,0.45)');
-    for(let i=0;i<3;i++){ pR(g,x-(16-i*8)*f,gy-24+bob,4,7,['#e8dfc8','#c0392f','#4a7a9e'][i]);
-      pEll(g,x-(14-i*8)*f,gy-25+bob,2.4,2.4,'#d8a878'); }
-    for(const px of [-21,-9,3]) pR(g,x+px*f,gy-29+bob,2,15,'#9a9aa4');
+    /* สองแถว — a pickup with two benches and a roof, which is the bus */
+    const c1='#2b6a8a', c1d=shade(c1,-0.28), c1l=shade(c1,0.22);
+    const by=gy-16+bob;
+    wheel(g,x-14*f,gy-5.4+bob,5.6,roll); wheel(g,x+14*f,gy-5.4+bob,5.6,roll);
+    pR(g,x-21*f,by+2,42,7,c1); pR(g,x-21*f,by+2,42,1,c1l); pR(g,x-21*f,by+8,42,1,c1d);
+    pR(g,x+7*f,by-8,14,11,c1); pR(g,x+7*f,by-8,14,1,c1l);
+    pR(g,x+9*f,by-7,10,7,'#2e3a44'); pR(g,x+9*f,by-7,10,1,'#4a5a68');
+    /* the roofed back: posts, roof, and the people riding home under it */
+    pR(g,x-22*f,by-6,28,13,'rgba(20,26,30,0.40)');
+    for(const px of [-22,-12,-2,6]) pR(g,R(x+px*f),R(by-16),1.8,11,'#9a9aa4');
+    pR(g,x-23*f,by-19,31,4,'#d8552f'); pR(g,x-23*f,by-19,31,1,'#f07a4c');
+    pR(g,x-23*f,by-15,31,1,shade('#d8552f',-0.35));
+    for(let i=0;i<4;i++){
+      const px=x-(19-i*6)*f;
+      pR(g,px-2,by-11,4.4,9,['#e8dfc8','#c0392f','#4a7a9e','#d8b04a'][(seed+i)%4]);
+      pEll(g,px,by-13,2.6,2.6,['#d8a878','#c9986f','#e8bc92'][(seed+i)%3]);
+      pEll(g,px,by-14.6,2.8,1.9,'#241c18');
+    }
+    pR(g,R(x-24*f),R(by-2),3,6,'#8a8a94');                    // the step at the back
+    pR(g,x+20*f,by+4,3,4,'#8a8a94');
+    pR(g,R(x+21*f),R(by+1),2.4,2.4,'#f2e0a0'); beam(g,x+23*f,by+2,f);
+    pR(g,R(x-22*f),R(by+3),2.4,2,'#b8342c');
+    blinker(g,x+22*f,by+4,v.blink); blinker(g,x-22*f,by+5,v.blink);
+    if(v.horn>0) horn(g, x+26*f, by-2, f);
   }
 }
 function drawRoadDog(g,d){
@@ -19274,6 +19572,95 @@ function drawAnthem(g){
   }
 }
 
+/* ============================================================
+   WHAT A DAY IS MADE OF
+
+   The hours above are a timetable, and a timetable is only half a
+   life. Nobody sweeps a yard for three hours because it is between
+   five and eight; they sweep it until it is swept, and then they
+   are hungry, and they go and eat, and on the way they meet
+   somebody and stop.
+
+   So the timetable is the backbone and these are the interrupts.
+   Five needs fill up at their own rates, each has somewhere that
+   empties it, and when one of them gets loud enough it takes the
+   person off their mark and sends them there until it is quiet
+   again. Two people whose stomachs are the same size end up at
+   the stall together, which is where the talking comes from —
+   the conversations are not scheduled either, they are what
+   happens when the needs collide.
+
+   The result is that nobody stands anywhere for three hours, the
+   same person is in a different place on two different mornings,
+   and the village has traffic through it that nobody wrote.
+   ============================================================ */
+const NEEDS = ['eat','rest','talk','merit','wash'];
+/* how fast each need fills, per in-game hour, per personality */
+const NEED_RATE = {
+  eat:   {def:0.34}, rest:  {def:0.20}, talk:  {def:0.26},
+  merit: {def:0.10}, wash:  {def:0.16},
+};
+/* who is like what. It changes the rates, so Yai Pen is at the temple twice
+   as often as Loong Dam and Mali would rather be talking than anything. */
+const NPC_WAY = {
+  yai:  {merit:2.2, talk:1.2, rest:1.3},
+  nok:  {talk:1.5,  eat:0.7,  merit:0.7},
+  dam:  {talk:1.4,  merit:0.5, rest:1.2},
+  mali: {talk:2.0,  eat:1.4,  rest:0.6, merit:0.4},
+  uncle:{eat:0.5,   talk:0.8, rest:1.4},
+  monk: {merit:2.4, eat:0.6,  talk:0.7, wash:1.3},
+};
+/* where each need is answered, and what your hands do while you are there */
+function needPlace(n, need){
+  switch(need){
+    case 'eat':   return {x: STALL_X + ((n.id.charCodeAt(1)%3)-1)*18, job:null,   dur:[40,90]};
+    case 'rest':  return {x: (DAY.min/60>=11 && DAY.min/60<15.5)? SHADE_X + ((n.id.charCodeAt(0)%3)-1)*16
+                             : n.home, job:'fan', dur:[60,150]};
+    case 'talk':  return {x: SHADE_X + ((n.id.charCodeAt(2)%4)-2)*14, job:null,   dur:[30,70]};
+    case 'merit': return {x: SHRINE_X + ((n.id.charCodeAt(0)%3)-1)*14, job:null,  dur:[26,50]};
+    case 'wash':  return {x: n.home - 20, job:'sweep', dur:[40,90]};
+  }
+  return null;
+}
+function npcNeed(n){
+  if(!n.need){ n.need={}; for(const k of NEEDS) n.need[k]=Math.random()*0.4; }
+  return n.need;
+}
+/* needs fill in game-time, so they keep step with the clock rather than with
+   how long the tab has been open */
+function stepNeeds(dt){
+  const hours = dt*(typeof DAY_RATE!=='undefined'? DAY_RATE : 12)/60;   // in-game hours elapsed
+  for(const n of NPCS){
+    const need=npcNeed(n), way=NPC_WAY[n.id]||{};
+    for(const k of NEEDS) need[k] = clamp(need[k] + NEED_RATE[k].def*(way[k]||1)*hours, 0, 2);
+    if(n.busy>0){
+      n.busy -= dt;
+      /* being where the need is answered is what empties it */
+      if(n.busyNeed) need[n.busyNeed] = Math.max(0, need[n.busyNeed] - dt*0.9);
+      if(n.busy<=0){ n.busyNeed=null; n.busyAt=null; }
+    }
+  }
+}
+/* Each need has its own idea of "loud". Hunger fills three times faster than
+   the wish to sit at the shrine, so comparing the raw numbers meant hunger
+   always won and nobody ever went to the shrine at all — the slow needs were
+   starved by the fast ones. Each is scored against its own threshold instead,
+   so a need that has been building all morning beats one that has been
+   building for twenty minutes. */
+const NEED_BAR = {eat:0.80, rest:0.75, talk:0.85, merit:0.42, wash:0.62};
+function npcUrge(n){
+  const need=npcNeed(n), h=DAY.min/60;
+  if(h>=21.5 || h<5) return null;              // asleep: nothing is that urgent
+  let best=null, bs=1.0;                       // below its own bar, get on with work
+  for(const k of NEEDS){
+    if(k==='merit' && !(h>=6 && h<18)) continue;
+    if(k==='eat'   && !((h>=6&&h<9)||(h>=11&&h<14)||(h>=17&&h<20))) continue;
+    const sc = need[k]/NEED_BAR[k];
+    if(sc>bs){ bs=sc; best=k; }
+  }
+  return best;
+}
+
 function stepLife(dt){
   /* nobody walks off to sweep a yard in the middle of being spoken to — and
      nobody has a routine at all on the first night, when the story is driving
@@ -19287,11 +19674,23 @@ function stepLife(dt){
   stepNotice(dt);
   stepChatter(dt);
   stepSpiritLife(dt);
-  /* the routine: walk to where the hour says you should be, and do the thing
-     you do when you get there */
+  stepNeeds(dt);
+  /* the routine: the hour says where your mark is, and a need loud enough
+     takes you off it until it is quiet again */
   for(const n of NPCS){
-    const p = npcPlan(n);
+    let p = npcPlan(n);
     if(!p) continue;
+    if(p.job!=='in' && n!==MONK){
+      if(n.busy>0 && n.busyAt){ p = n.busyAt; }
+      else {
+        const urge = npcUrge(n);
+        if(urge){
+          const q = needPlace(n, urge);
+          if(q){ n.busyNeed=urge; n.busy=rnd(q.dur[0],q.dur[1]); n.busyAt=q; p=q;
+                 n.need[urge] = Math.min(n.need[urge], NEED_BAR[urge]*1.4); }
+        }
+      }
+    } else { n.busy=0; n.busyNeed=null; n.busyAt=null; }
     if(p.job==='in'){
       /* indoors. They are still there, they are just behind a wall. */
       n.inside = true; n.jobOn=false;

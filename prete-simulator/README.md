@@ -631,27 +631,42 @@ Every one of those is a *gesture*, not a menu tick: he folds ninety pixels of
 leg into a crouch, reaches both long arms down to the soil, and the thing
 happens at the moment his hands actually get there.
 
-## Almost everything on the road is a motorbike
+## What is on the road, and only on the road
 
-Because almost everything on a village road is a motorbike. There were seven
-vehicles, all of them on the stretch past the crossroad, which made the rest of
-the map a diorama with one working corner. There are eighteen now and they run
-the **whole length of it**, and about half of them are two-stroke:
+For one version there were eighteen vehicles running the whole length of the
+map, which put a two-stroke through the banana grove and past the spirit house
+every few seconds. **There is no road there.** The metalled road starts at the
+crossroad and runs east past the shop; west of it is a dirt lane with a water
+buffalo on it, and nothing with an engine belongs on it. Six vehicles, one
+stretch, and the village gets its quiet back.
 
-- the ordinary one, one rider, helmet optional
-- **four on a bike**, nobody in a helmet, the smallest one standing on the
-  footwell holding the mirror — every day, everywhere
-- a **รถพ่วง**, the bike with a whole kitchen bolted to its side: a glass case,
-  a gas bottle, an awning and a bell
-- the **delivery**, with three gas bottles and a rack of eggs stacked far higher
-  than is reasonable
-- and the pickup and the สองแถว, for what a motorbike cannot carry
+They are drawn the way the houses are now — a part at a time, with a lit edge
+and a shadowed side on each one — instead of a slab with two black circles:
 
-How many are out depends on the hour: the school run and the evening market are
-a wall of them, and three in the morning is one dog and the moon. **And there is
-one leaning under every house** — seventeen parked, with a crate on the back or
-a helmet left on the seat, because that is what the ground floor of a Thai house
-is for.
+- a **wheel** is a rim, a tyre, a hub and four spokes that turn with the
+  distance travelled
+- a **bike** has a fork, a swingarm, an exhaust, both mudguards, a mirror on a
+  stalk, a number plate, a tail lamp and an indicator
+- a **rider** has a helmet with a strap and a visor, a hand on the bar, a foot
+  on the peg, and a lean
+- and after dark the **headlamp throws a pool on the tarmac** rather than a
+  wedge of card out of the air
+
+The six of them are: the ordinary step-through; **four on a bike** with the
+smallest standing on the footwell holding the mirror; a **รถพ่วง** with a whole
+kitchen bolted to its side — glass case, gas bottle, awning, bell; a
+**delivery** with three gas bottles and a rack of eggs stacked far higher than
+is reasonable; a pickup with sacks roped in the tray; and a **สองแถว** with four
+people riding home on the benches.
+
+**And they drive.** Speed is a throttle, not a switch: they come off it for the
+dog asleep in the road, they indicate and roll to a halt at the shop, they sit
+there for a few seconds and pull out again. Following is judged on the *gap*
+rather than on the leader's speed — matching a percentage of the car in front
+means a stopped leader multiplies backwards through the queue until the whole
+road is welded to the tarmac, which is exactly what happened the first time.
+How many are out at all depends on the hour: the school run and the evening
+market put all six on it, and three in the morning is one dog and the moon.
 
 ## A village with a day in it
 
@@ -756,6 +771,32 @@ watching is worth something too.
 | | |
 |---|---|
 | ![football in the lane](screenshots/the-kids.png) | ![spinning tops in a washing-up bowl](screenshots/beyblade.png) |
+
+## What a day is actually made of
+
+The timetable above is half a life. Nobody sweeps a yard for three hours
+because it is between five and eight; they sweep it until it is swept, and
+then they are hungry, and they go and eat, and on the way they meet somebody
+and stop.
+
+So the timetable is the backbone and **five needs are the interrupts**. Hunger,
+tiredness, company, merit and chores each fill at their own rate, each has
+somewhere that empties it — the stall, the shade, the shrine, their own yard —
+and when one gets loud enough it takes the person off their mark and sends them
+there until it is quiet again. Rates differ by person: Yai Pen is at the shrine
+twice as often as anyone, Mali would rather be talking than eating, and Lung
+Somchai barely leaves his cart because he never has.
+
+Each need is scored against **its own** bar rather than against the others.
+Hunger fills three times faster than the wish to sit at the shrine, so comparing
+the raw numbers meant hunger always won and nobody ever went to the shrine at
+all — the slow needs were starved by the fast ones.
+
+The result is that nobody stands anywhere for three hours, the same person is
+somewhere different on two different mornings, and the village has traffic
+through it that nobody wrote. It is also where the conversations come from: two
+people whose stomachs are the same size end up at the stall together, and that
+is not scheduled either.
 
 ## Eight in the morning, and six at night
 
@@ -1634,7 +1675,7 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~1.0 MB, 480×270 canvas integer-scaled with `image-rendering:
+One HTML file, ~1.05 MB, 480×270 canvas integer-scaled with `image-rendering:
 pixelated`. Parses and initialises in about a tenth of a second, has the whole
 road built inside half a second behind a loading screen, and holds 50–60 fps
 with a fully stocked farm on screen.
@@ -1646,6 +1687,15 @@ with a fully stocked farm on screen.
   prete is drawn cartoon-first: one hard ink line all the way round, flat colour
   inside it, forty-two pixels of leg on 3px-wide bones, arms that hang past the
   hip, and a head far too big for either.
+- **Hands that arrive, rather than appear.** The arm pose picks a branch —
+  hanging, reaching into the soil, holding a jar, blocking, in the air — and
+  for a long time the hand simply *was* wherever the new branch said. So the
+  frame any job began, both hands teleported fourteen to sixteen pixels, which
+  on a character sixty pixels tall is the whole arm moving between one frame
+  and the next. That is not an animation, it is a cut, and it is what looked
+  broken. The pose is a target now and the hand springs to it over about an
+  eighth of a second, in the body's own frame so walking does not drag it.
+  Measured: sixteen pixels down to one and a half, and it is a test.
 - **Four long fingers and a thumb, and they move.** They were four splayed
   spikes on a fan once, which is a claw, and a claw is the most frightening
   thing you can put on a cozy character; then they were three stubs, which is
