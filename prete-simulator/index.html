@@ -349,6 +349,20 @@ const AU = {
      a bell: a bright sine with a soft attack and a long tail, plus a little
      inharmonic ring on top. Everybody in Thailand knows this sound and
      nobody has ever thought about it once. */
+  /* a dog, twice, from somewhere down the road. A bark is a body of noise
+     with a hard edge on the front of it: a short buzz that falls in pitch,
+     and a slap of filtered noise on top for the mouth opening. */
+  bark(seed){
+    if(!this.ctx||this.muted) return;
+    const base = 168 + ((seed|0)%3)*34;
+    const one=(when)=>{
+      this.tone(base,      0.16,'sawtooth', 0.030, base*0.62, when);
+      this.tone(base*0.5,  0.20,'triangle', 0.022, null,      when);
+      this.noise(0.09, 0.018, 420, 2400, when);
+    };
+    one(0); one(0.20 + Math.random()*0.06);
+    if(Math.random()<0.5) one(0.44 + Math.random()*0.08);
+  },
   chime(){
     if(!this.ctx||this.muted) return;
     const n=(f,when)=>{
@@ -889,13 +903,66 @@ function artDog(){ const c=mkCv(46,24),g=G2(c);
   pR(g,14,21,4,3,'#b8905a'); pR(g,24,21,4,3,'#b8905a');
   pR(g,7,13,2,1,'#3a2c1e');
   return c; }
-function artScarecrow(){ const c=mkCv(50,86),g=G2(c);
-  pR(g,23,20,4,66,'#7d5a3c'); pR(g,8,32,34,4,'#6b4a30');
-  pR(g,16,22,18,20,'#c0392f'); pR(g,16,22,18,2,'#e05a48');
-  for(let i=0;i<5;i++) pR(g,17+i*4,24,1,17,'#8a2c24');
-  pEll(g,25,15,8,8,'#d8c9a4'); pR(g,17,9,17,4,'#c9b085'); pEll(g,25,9,11,4,'#c9b085');
-  pR(g,21,13,2,2,'#3a2c1e'); pR(g,27,13,2,2,'#3a2c1e'); pR(g,23,17,4,1,'#3a2c1e');
-  for(let i=0;i<6;i++) pTaper(g,10+i*2,36,8+i*2,44,2,1,'#c9b085');
+/* ศาลเพียงตา — the one-post shrine that stands at the edge of a field.
+   There are no scarecrows in a Thai rice field. There is this: a post about
+   eye height with a little house on it, a bit of roof tile, and whatever the
+   family had to give that morning — a red drink, a garland, three sticks of
+   incense and a saucer of rice. */
+function artFieldShrine(){
+  const c=mkCv(52,92), g=G2(c), cx=26;
+  /* the post, and the packed earth it stands in */
+  pEll(g,cx,89,13,4,'#6b5a42');
+  pEll(g,cx,87,10,3,'#7d6a4e');
+  pR(g,cx-4,40,8,50,'#6e4f33');
+  pR(g,cx-4,40,3,50,'#8a6543');                    // the lit side of it
+  pR(g,cx+2,40,2,50,'#543b25');
+  for(let i=0;i<5;i++) pR(g,cx-4,48+i*9,8,1,'#5b3f28');   // the grain
+  /* two braces up under the floor */
+  pTaper(g,cx-4,52, cx-11,44, 2.2,1.6,'#6e4f33');
+  pTaper(g,cx+4,52, cx+11,44, 2.2,1.6,'#5b3f28');
+  /* the floor it all stands on */
+  pR(g,cx-14,38,28,4,'#8a6a48'); pR(g,cx-14,38,28,1,'#a98a62');
+  pR(g,cx-15,42,30,2,'#5b3f28');
+  /* the house: white plaster walls, a dark doorway, gold posts at the corners */
+  pR(g,cx-11,20,22,18,'#efe7d6'); pR(g,cx-11,20,22,2,'#fdf8ec');
+  pR(g,cx+5,20,6,18,'#d6cbb6');                    // the shaded side
+  pR(g,cx-4,24,8,14,'#3a2a3e');                    // the way in
+  pR(g,cx-4,24,8,2,'#241a28');
+  for(const px of [cx-11, cx+9]){ pR(g,px,20,2,18,'#d8b04a'); pR(g,px,20,1,18,'#f2c96a'); }
+  /* the roof, in two tiers, tiled, with ช่อฟ้า off the ends */
+  for(let t=0;t<2;t++){
+    const ry=14-t*6, rw=24-t*6;
+    pR(g,cx-rw/2,ry,rw,5,'#b8342c'); pR(g,cx-rw/2,ry,rw,1,'#e05a48');
+    pR(g,cx-rw/2,ry+4,rw,1,'#8e241e');
+    for(let i=0;i<rw/3;i++) pR(g,cx-rw/2+i*3,ry+1,1,4,'#9c2a24');   // the tiles
+  }
+  pTri(g,cx,2, cx-9,14, cx+9,14,'#b8342c');
+  pTri(g,cx,4, cx-6,14, cx+6,14,'#d8453a');
+  for(const s2 of [-1,1]){                                     // the horns off the gable
+    pTaper(g,cx+s2*9,14, cx+s2*13,5, 2.4,1.0,'#d8b04a');
+    pTaper(g,cx+s2*12,15, cx+s2*15,9, 1.6,0.8,'#f2c96a');
+  }
+  pEll(g,cx,3,2.0,2.0,'#f2c96a');
+  /* and what was left there this morning */
+  pR(g,cx+3,30,4,7,'#e03a3a'); pR(g,cx+3,30,4,1,'#f2705e');      // the red drink
+  pR(g,cx+4,28,1,2,'#f5ead8');
+  pEll(g,cx-6,35,4,2.6,'#f5ead8'); pEll(g,cx-6,34,3,2,'#fffaf0'); // a saucer of rice
+  for(let i=0;i<3;i++){                                          // three sticks of incense
+    pR(g,cx-9+i,29,1,8,'#b8a894');
+    pR(g,cx-9+i,28,1,1,'#ff9a4a');
+  }
+  /* a garland over the doorway, and one hanging off the floor edge */
+  for(let i=0;i<7;i++){
+    const a2=Math.PI*(i/6), gx=cx-6+i*2, gy=23+Math.sin(a2)*2.4;
+    pEll(g,gx,gy,1.1,1.1, i%2? '#f2e8c8':'#f0a0b8');
+  }
+  pR(g,cx-13,42,1,7,'#d8c8a0'); pEll(g,cx-13,50,2.0,2.4,'#f0a0b8');
+  /* the little fence of sticks people put round the foot of one */
+  for(let i=0;i<7;i++){
+    const fx2=cx-16+i*5.4, fh=6+((i*7)%4);
+    pR(g,R(fx2),R(90-fh),1,fh,'#7a6244');
+  }
+  pR(g,cx-17,84,34,1,'#7a6244');
   return c; }
 function artOffering(){ const c=mkCv(30,22),g=G2(c);
   pR(g,3,14,24,6,'#6d5138'); pR(g,3,14,24,1,'#8a6a48'); pR(g,5,20,3,2,'#4a3728'); pR(g,22,20,3,2,'#4a3728');
@@ -1543,7 +1610,7 @@ const TH = {
   'sit on the stool':'นั่งบนม้านั่ง',
   'the woodpile':'กองฟืน',
   'read the old stone':'อ่านศิลาเก่า',
-  'the scarecrow':'หุ่นไล่กา',
+  'the field shrine':'ศาลเพียงตา',
   'turn the stone over':'พลิกก้อนหิน',
   'the fallen tree':'ต้นไม้ล้ม',
   'count the chickens':'นับไก่',
@@ -2526,6 +2593,12 @@ const TH = {
     'เธอไม่มีอะไรจะใส่บาตร เธอก็คุกเข่าลงอยู่ดี',
   'The last monk looks at the space where you are, and keeps walking.':
     'พระรูปสุดท้ายมองมาตรงที่เธอยืนอยู่ แล้วเดินต่อไป',
+
+  /* the shrine that stands where a scarecrow never did */
+  'A red drink, a saucer of rice, three sticks of incense burnt down.':
+    'น้ำแดงหนึ่งขวด ข้าวหนึ่งจาน ธูปสามดอกที่ไหม้จนหมดแล้ว',
+  'Somebody comes out here before work to leave that. Every morning.':
+    'มีคนออกมาวางไว้ก่อนไปทำงาน ทุกเช้า',
 };
 function L(s){
   if(LANG!=='th') return s;
@@ -3312,7 +3385,7 @@ function artPool(){
   ART.dead   = [5,15,25,35,45].map(artDeadTree);
   ART.house  = [7,38,69,100,131,162].map((s,i)=>artHouse(s, i%3===0));
   ART.jar    = artJar(); ART.fence = artFence(); ART.dog = artDog();
-  ART.scare  = artScarecrow(); ART.offer = artOffering();
+  ART.shrineF= artFieldShrine(); ART.offer = artOffering();
   ART.shrine = artSpiritHouse(); ART.chedi = artChedi(); ART.sala = artSala();
   ART.cart   = artCart();
   ART.lamp   = artLamp(false); ART.lampBroken = artLamp(true);
@@ -3711,8 +3784,8 @@ function paintPlay(){
     }
     if(i%3===0){ pEll(g,x-6,gy-2,4,3,'#c0392f'); pEll(g,x-6,gy-3,3,2,'#e05a48'); }  // a red drink, left out
   }
-  // --- the rice fields: dikes west of the farm, and one scarecrow on it ---
-  stamp(ART.scare, 1180, groundY(1180)+2, 1);
+  // --- the rice fields: dikes west of the farm, and the shrine at the edge ---
+  stamp(ART.shrineF, 1180, groundY(1180)+2, 1);
   // the fallen tree across the road (a task for someone tall)
   {
     const x=FALLEN_TREE_X, gy=groundY(x);
@@ -4079,7 +4152,9 @@ function drawPrete(g, p, o={}){
 
   /* the shape of him: two storeys of leg, a narrow ribbed chest, arms that
      hang past the hip, and a head far too big and far too awake */
-  const LEG=42, TH=20, SN=20, AU2=23, AL=25;
+  /* Two storeys of leg. He is about twice a grown man, which is what the
+     folklore says and what makes a doorway a problem for him. */
+  const LEG=45, TH=22, SN=22, AU2=25, AL=28;
   const sp = Math.abs(p.vx);
   const stride = p.stride;
   const lift   = clamp(sp*0.11, 0, 6);
@@ -4105,7 +4180,12 @@ function drawPrete(g, p, o={}){
   /* SITTING. The hips come down to the ground and the legs fold out in front,
      knees up. Everything else — the breath, the belly, the head lagging a beat
      behind the shoulders — carries on as it does standing. */
-  const sit = o.sit? 1 : 0;
+  /* How far down he is, from nought to one — NOT a flag. It used to be read
+     as a boolean, and SNEAK.k decays exponentially toward zero without ever
+     arriving, so one crouch left a value like 1e-8 behind and he spent the
+     rest of the session walking around fully seated. */
+  const sit = clamp(o.sit===true? 1 : (o.sit||0), 0, 1);
+  const sitting = sit > 0.02;
   const hipY = by - LEG*sY*(1-sit*0.84) - bobA + kneel + carry*2.2;
   const hipX = bx + p.lean*2.4 + sway*0.4 + cWob*0.5;
   const chestY = hipY - 26*sY + p.breath*0.4;
@@ -4118,8 +4198,7 @@ function drawPrete(g, p, o={}){
     /* feet well out in front of the hips, which is the only way a knee has
        anywhere to go: too close and the whole leg folds up behind the belly
        and he reads as squatting in a hole */
-    if(sit){ fx=(back? 21:27)*face; fy=5; }
-    else if(!p.onGround){ fx=(back?-6:6)*face; fy = p.vy<0? -4:1; }
+    if(!p.onGround){ fx=(back?-6:6)*face; fy = p.vy<0? -4:1; }
     else if(p.state==='block'){ fx=(back?-10:9)*face; fy=0; }
     else {
       /* A cosine can only hold a foot still for one instant, so a cosine walk
@@ -4137,6 +4216,10 @@ function drawPrete(g, p, o={}){
         fx=-stride+2*stride*e; fy=-Math.sin(u*Math.PI)*lift;
       }
     }
+    if(sitting){                                   // and fold toward sitting
+      fx = lerp(fx, (back? 21:27)*face, sit);
+      fy = lerp(fy, 5, sit);
+    }
     return {back, fx:bx+fx, fy:by+fy};
   }
   function drawLeg(i){
@@ -4144,7 +4227,7 @@ function drawPrete(g, p, o={}){
     const hx0=hipX+(L.back?-2.4:2.4)*face;
     /* sitting wants the knee ABOVE the line from hip to foot, which is the
        other bend from the one a walking leg takes */
-    const knee=ik2(hx0,hipY,L.fx,L.fy-5,TH*sY,SN*sY, sit? (face>0?1:-1) : (face>0?1:-1));
+    const knee=ik2(hx0,hipY,L.fx,L.fy-5,TH*sY,SN*sY, face>0?1:-1);
     /* thin, because that is the folklore, but not knobbly. A visible joint
        at every hinge is a skeleton, and he is a hungry man, not a skeleton. */
     iTaper(g,hx0,hipY-2,knee.x,knee.y,3.8,3.2,col,OC);        // thigh
@@ -4166,7 +4249,7 @@ function drawPrete(g, p, o={}){
     else if(ACT && ACT.k==='give'){
       hx2=chestX+(10+abell*13)*face+(back?-6*face:0); hy2=chestY+34-abell*13+(back?5:0);
     }
-    else if(sit && !ACT){
+    else if(sitting && !ACT){
       /* the back hand takes his weight behind him; the front one is held out
          flat and open, which is the whole reason anything lands on it */
       if(back){ hx2=chestX-11*face; hy2=chestY+38; }
@@ -4594,9 +4677,9 @@ function makeVillager(cfg){
    Taller than it was, and cuter with it: long legs, a narrow
    torso, a generous head, and eyes with a light in them.
    ============================================================ */
-const VILL_H   = 36;                 // heel to the top of the head
-const VILL_LEG = 14, VILL_TH = 7.5, VILL_SN = 7.5;
-const VILL_CH  = 9;                  // how tall the torso is — the legs get the rest
+const VILL_H   = 42;                 // heel to the top of the head
+const VILL_LEG = 17, VILL_TH = 9, VILL_SN = 9;
+const VILL_CH  = 11;                 // how tall the torso is — the legs get the rest
 const villTop  = v => (v.y||0) - VILL_H;
 
 /* How long a stride is, and how fast the walk cycle turns.
@@ -9061,7 +9144,7 @@ function render(){
   if(typeof drawParked==='function')  drawParked(ctx);    // one under every house
   if(typeof drawTraffic==='function') drawTraffic(ctx);   // and what is out on the road
   if(typeof drawStealthScene==='function') drawStealthScene(ctx);
-  if(GS.state==='play') drawNavMark(ctx);
+  if(GS.state==='play' && !DAY.sleeping) drawNavMark(ctx);
   // gatherable plants
   for(const nd of NODES){
     if(nd.x-cx<-30||nd.x-cx>W+30) continue;
@@ -9122,7 +9205,7 @@ function render(){
   pEll(ctx,P.x,P.y+1,9,2.6,'rgba(10,8,24,0.4)');
   drawPrete(ctx,P,{dt:GS.rdt||1/60, wind:GS.wind, mouth:P.state==='wail'?1:(P.talk||0),
     headX:(P.chatX||0),
-    sit: (typeof SNEAK!=='undefined'? SNEAK.k*0.55 : 0),
+    sit: clamp((typeof SNEAK!=='undefined'? SNEAK.k*0.55 : 0) + (P.stoop||0), 0, 0.8),
     armTarget: HT? {x:HT.hx,y:HT.hy}
               : PLOW? {x:PLOW.x-19, y:groundY(PLOW.x)-41} : null,
     /* asked this way rather than through carriedJars(), which built a throwaway
@@ -9176,7 +9259,10 @@ function render(){
   /* GS.plate strips the furniture off: no purse, no clock, no prompts, no
      thumb controls. The store art is this game with its HUD taken out, not a
      painting of it, so it is always a picture of the build it shipped with. */
-  if(GS.state==='play' && !VIG && !GS.plate){ drawPosopBubble(ctx); drawHintLine(ctx); drawHUD(); }
+  /* asleep, the furniture comes off too: the night going over the village
+     is the picture, and a purse and a clock in front of it is not */
+  if(GS.state==='play' && !VIG && !GS.plate && !DAY.sleeping){
+    drawPosopBubble(ctx); drawHintLine(ctx); drawHUD(); }
   if(typeof drawQTE==='function') drawQTE(ctx);
   if(GS.state==='plow') drawPlowUI(ctx);
   else if(GS.state==='task') drawTaskHUD(ctx);
@@ -9193,6 +9279,35 @@ function render(){
   if(TOUCH.on && uiShowsPads() && !DAY.sleeping && !GS.plate) drawPads(ctx);
   if(!GS.plate) drawDay(ctx);
   if(_intro){ GS.state='intro'; if(typeof introOverlay==='function') introOverlay(); }
+}
+/* ============================================================
+   WHERE HE HAS TO DUCK
+
+   He is nine feet of hungry ghost in a village built for people half that.
+   Under a house on its stilts, under the market awning, under the eaves of
+   the food cart, he goes down — not because anything stops him, but because
+   that is what being too big for somewhere looks like.
+   ============================================================ */
+const LOW_CLEAR = [];
+{
+  const add=(x,w,k)=>LOW_CLEAR.push({x0:x-w, x1:x+w, k});
+  if(typeof HOUSE_XS!=='undefined') for(const hx of HOUSE_XS) add(hx, 30, 0.40);
+  if(typeof STALL_X!=='undefined')  add(STALL_X, 46, 0.34);
+  if(typeof CART_X!=='undefined')   add(CART_X, 40, 0.30);
+  if(typeof KITCHEN_X!=='undefined')add(KITCHEN_X, 34, 0.30);
+  if(typeof FARMHOUSE_X!=='undefined') add(FARMHOUSE_X, 30, 0.40);
+  if(typeof SALA_X!=='undefined')   add(SALA_X, 40, 0.26);
+}
+/* how far down he has to go where he is standing, eased at the edges so he
+   ducks on the way in rather than snapping down at the threshold */
+function stoopAt(x){
+  let most=0;
+  for(const c of LOW_CLEAR){
+    if(x<c.x0-14 || x>c.x1+14) continue;
+    const into = Math.min(1, Math.min(x-(c.x0-14), (c.x1+14)-x)/18);
+    most = Math.max(most, c.k*clamp(into,0,1));
+  }
+  return most;
 }
 function uiShowsPads(){ return (GS.state==='play'&&!DLG&&!VIG&&!DAY.card)||GS.state==='task'; }
 function bubble(g,x,y,txt){
@@ -12769,6 +12884,10 @@ function stepPlayer(dt){
     if(typeof scatterBirds==='function') scatterBirds(P.x, 150);
     if(greeted && !GS.seen.greet){ GS.seen.greet=true; guideSay('They heard that. Everything heard that.'); }
   }
+  /* ducking under whatever is over him, eased both ways */
+  { const want = (P.onGround && typeof stoopAt==='function')? stoopAt(P.x) : 0;
+    P.stoop = lerp(P.stoop||0, want, 1-Math.pow(0.004,dt));
+    if(P.stoop<0.004 && want===0) P.stoop=0; }
   if(P.wailT>0){ P.wailT-=dt; P.state='wail'; }
   else if(HT) P.state='reach';
   else if(!P.onGround) P.state='jump';
@@ -13341,9 +13460,9 @@ function seedThings(){
          'You can read it. You have no idea how you can read it.'],
     merit:2 });
   /* the fields */
-  addThing({x:1180, dy:40, txt:'the scarecrow',
-    say:['Somebody dressed it in a shirt that was still good.',
-         'It watches the field. You watch it. Neither of you blinks.'],
+  addThing({x:1180, dy:40, txt:'the field shrine',
+    say:['A red drink, a saucer of rice, three sticks of incense burnt down.',
+         'Somebody comes out here before work to leave that. Every morning.'],
     fx(){ scatterBirds(1180,140); } });
   /* stones you can turn over, out in the open ground */
   for(const sx of [352, 372, 390, 5980, 6640]){
@@ -15714,7 +15833,11 @@ function coolBand(day){
    ============================================================ */
 
 const DAY = { n:1, min:0, on:false, sleeping:0, card:null, ship:[], earnt:0, meritT:0 };
-const DAY_START = 6*60, DAY_END = 26*60;          // six in the morning to two
+/* Half six, not six. At six sharp this sky is still very nearly dark — the
+   sun does not clear the horizon until about a quarter to seven — so waking
+   on the hour meant the night scene ended before the sunrise it had spent
+   five seconds building toward. */
+const DAY_START = 6.6*60, DAY_END = 26*60;        // just after half six, to two
 const DAY_RATE  = 3.1;                            // game-minutes per real second
 const dayHour = ()=> Math.floor(DAY.min/60)%24;
 const dayMin  = ()=> Math.floor(DAY.min%60);
@@ -15836,8 +15959,20 @@ function nightPass(){
 /* NOT stepSleep: the first night has a sleep screen of its own by that name,
    and this file is concatenated after it. */
 function stepNightFade(dt){
+  const first = DAY.sleeping<=0.001;
   DAY.sleeping+=dt;
   const s=DAY.sleeping;
+  if(first) DAY.tod0 = TOD.v;                     // whatever the light was when he lay down
+  /* The village holds still and the light goes over it. Nothing else in the
+     world steps while he is asleep, so this is the only thing moving: the
+     clock runs from the hour he lay down, through the small hours, to six in
+     the morning, and the ordinary sky does the rest. */
+  { const u=clamp((s-0.45)/(SLEEP_DUR-1.15),0,1);
+    const night=0.02;
+    const tod = u<0.30? lerp(DAY.tod0===undefined?0.06:DAY.tod0, night, u/0.30)
+              : u<0.52? night
+              : lerp(night, todFromClock(DAY_START), (u-0.52)/0.48);
+    setTOD(tod, true); }
   /* the day turns over halfway through, so the number that comes up with the
      sun is the new one */
   if(s>SLEEP_DUR*0.46 && !DAY.done){ DAY.done=1; nightPass(); }
@@ -15883,211 +16018,62 @@ function dawnSky(u){
 
 function drawSleep(g){
   const s=DAY.sleeping;
-  const u=clamp((s-0.55)/(SLEEP_DUR-1.35), 0, 1);     // how far through the night
-  const hz=H*SLEEP_HZ;
-  /* how far the morning has got into the foreground */
-  const lift=clamp((u-0.52)/0.44,0,1);
+  const u=clamp((s-0.45)/(SLEEP_DUR-1.15), 0, 1);      // how far through the night
 
-  /* ---- sky ---- */
-  const [cT,cM,cH]=dawnSky(u);
-  pVGrad(g,0,0,W,hz*0.62,cT,cM,7);
-  pVGrad(g,0,hz*0.62,W,hz*0.38+1,cM,cH,7);
+  /* The village is already on the screen behind this, lit by the clock that
+     stepNightFade is winding forward — so this draws only the things the
+     ordinary sky has no way of saying: where the moon got to, where the sun
+     came up, and how long the night was. */
 
-  /* ---- stars, going out from the bottom of the sky upward ---- */
-  const starA = clamp(1-u*1.9, 0, 1);
-  if(starA>0.01) for(const st of STARS){
-    const y=st[1]*hz*0.92;
-    const tw=0.45+0.55*Math.sin(GS.t*1.6+st[2]*7);
-    const low=clamp(1-(y/(hz*0.92))*0.8,0,1);          // the low ones go first
-    const a=starA*low*tw*(0.35+st[3]*0.65);
-    if(a<0.03) continue;
-    g.fillStyle=`rgba(255,246,224,${a.toFixed(3)})`;
-    g.fillRect(R(st[0]*W), R(y), 1,1);
+  /* ---- the small hours pressed down over everything ---- */
+  { const deep = 1 - Math.abs(u-0.47)/0.47;            // deepest in the middle
+    g.globalAlpha = clamp(deep,0,1)*0.34;
+    pR(g,0,0,W,H,'#05070f');
+    g.globalAlpha = 1;
   }
 
-  /* ---- the moon, coming down and setting behind the hills ---- */
-  { const mu=clamp(u/0.78,0,1);
-    const mx=lerp(W*0.80, W*0.06, mu);
-    const my=lerp(hz*0.16, hz+7, mu*mu*0.82+mu*0.18);
-    const fade=clamp((0.86-u)/0.20,0,1);
-    if(fade>0.01 && my<hz+9){
-      g.globalAlpha=fade*0.13;
-      pEll(g,mx,my,17,17,'#cfd8f0');
-      g.globalAlpha=fade;
-      pEll(g,mx,my,7.4,7.4,'#e8eafa');
-      pEll(g,mx+2.4,my-1.2,6.2,6.2, mix('#e8eafa', cT, 0.86));   // the crescent, bitten out
-      pEll(g,mx-2.6,my+1.6,1.5,1.2,'#cdd2e8');
-      pEll(g,mx-1.0,my+3.0,1.0,0.9,'#cdd2e8');
-      g.globalAlpha=1;
-    }
-  }
+  /* The sky over the village has its own moon, its own stars and its own sun,
+     and they all move with the clock — so there is nothing to add up there.
+     Drawing a second moon on top only gave the village two of them. */
 
-  /* ---- the sun, coming up out of the far side of the fields ---- */
-  const su=clamp((u-0.60)/0.40,0,1);
-  if(su>0){
-    const sx=W*0.72, sy=hz+9-su*24;
-    g.globalAlpha=0.10+0.16*su;
-    pEll(g,sx,sy,44+su*22,30+su*16,'#ffcf7a');
-    g.globalAlpha=0.22*su;
-    pEll(g,sx,sy,24,18,'#ffdf9e');
-    g.globalAlpha=1;
-    pEll(g,sx,sy,9.5,9.5,'#fff0c0');
-    pEll(g,sx,sy,7.6,7.6,'#fffaea');
-  }
-
-  /* ---- cloud bars, catching it before anything on the ground does ---- */
-  for(let i=0;i<5;i++){
-    const cy=hz*(0.20+i*0.14), cw=60+((i*53)%70), cx=((i*137 + s*3.5)%(W+160))-80;
-    const lit=clamp((u-0.42-i*0.04)/0.34,0,1);
-    const col=mix(mix('#20263f','#8a6a84',clamp(u*1.5,0,1)), '#ffc98e', lit);
-    g.globalAlpha=0.30+0.35*clamp(u*1.2,0,1);
-    pEll(g,cx,cy,cw*0.5,2.6,col);
-    pEll(g,cx+cw*0.16,cy-2.0,cw*0.30,2.0,col);
-    g.globalAlpha=1;
-  }
-
-  /* ---- the far hills ---- */
-  g.fillStyle=mix('#0b1024','#6f93ad',clamp((u-0.45)/0.5,0,1));
-  g.beginPath(); g.moveTo(0,hz+1);
-  for(let x=0;x<=W;x+=8){
-    const y=hz-6-Math.sin(x*0.011)*7-Math.sin(x*0.027+1.3)*4;
-    g.lineTo(x,y);
-  }
-  g.lineTo(W,hz+1); g.closePath(); g.fill();
-
-  /* ---- the paddies: flat water holding whatever the sky is doing ---- */
-  const bankY=H*0.855;
-  pVGrad(g,0,hz,W,bankY-hz+1,mix('#0a1020','#5f89a8',clamp((u-0.4)/0.55,0,1)),
-                             mix('#080c18','#8fb0aa',clamp((u-0.4)/0.55,0,1)),6);
-  /* the sun's road across the water */
-  if(su>0){
-    g.globalAlpha=0.20*su;
-    for(let i=0;i<9;i++){
-      const y=hz+3+i*3.4, w2=(10+i*7)*(0.6+0.4*Math.sin(s*2+i));
-      pR(g,R(W*0.72-w2/2),R(y),R(w2),1,'#ffe6ae');
-    }
-    g.globalAlpha=1;
-  }
-  /* the bunds between the fields */
-  for(let i=0;i<6;i++){
-    const y=hz+4+i*4.2;
-    g.globalAlpha=0.5;
-    pR(g,0,R(y),W,1, mix('#121a26','#4e6b57',clamp((u-0.45)/0.5,0,1)));
-    g.globalAlpha=1;
-  }
-  /* mist, lying on the water, lit from the east once the sun is up */
-  for(let i=0;i<7;i++){
-    const my2=hz+2+i*3.6, mw=90+((i*67)%120);
-    const mx2=((i*151 - s*5)%(W+200))-100;
-    g.globalAlpha=(0.10+0.16*clamp(u*1.4,0,1))*(1-i*0.08);
-    pEll(g,mx2,my2,mw*0.5,2.4, su>0? mix('#cfe0e8','#ffddb0',su*0.7) : '#9fb4c8');
-    g.globalAlpha=1;
-  }
-
-  /* ---- palms on the near bank, as silhouettes ---- */
-  const dark = mix('#05070e','#1c2c26',clamp((u-0.55)/0.45,0,1));
-  for(let i=0;i<5;i++){
-    const px=[24, 118, 250, 352, 448][i], ph2=[30,24,34,26,30][i];
-    const base=H*0.855;   // the palms stand on the same bank
-    pR(g,R(px),R(base-ph2),2,ph2,dark);
-    for(let k=0;k<6;k++){
-      const a=-0.35-k*0.42+Math.sin(s*0.5+i)*0.05;
-      pTaper(g,px+1,base-ph2, px+1+Math.cos(a)*13, base-ph2+Math.sin(a)*9, 3.0,0.8, dark);
-    }
-    if(su>0.1){                                // a rim on the side the sun is
-      g.globalAlpha=0.34*su;
-      pR(g,R(px+2),R(base-ph2),1,ph2,'#d8b478');
-      g.globalAlpha=1;
-    }
-  }
-
-  /* ---- the egrets, going over once the sky has turned ---- */
-  if(u>0.42){
-    const fx0=-40 + (u-0.42)*W*1.9;
-    for(let i=0;i<5;i++){
-      const bx=fx0-i*17, by=hz*0.42+Math.sin(s*1.2+i*0.9)*5+i*3;
-      if(bx<-10||bx>W+10) continue;
-      const fl=Math.sin(s*7+i*1.3);
-      g.globalAlpha=0.85;
-      pTaper(g,bx,by, bx-4.5,by-fl*3.0, 1.5,0.8, '#f4f0e4');
-      pTaper(g,bx,by, bx+4.5,by-fl*3.0, 1.5,0.8, '#f4f0e4');
-      g.globalAlpha=1;
-    }
-  }
-
-  /* ---- the near bank, and him lying on it ---- */
-  /* the bank comes up out of the dark with everything else — it used to stay
-     pitch black while the sun was well up, which is where the scene stopped
-     being a morning and went back to being a screen with a picture on it */
-  pR(g,0,R(bankY),W,H,mix('#080a10','#2b3a2a',lift));
-  for(let i=0;i<70;i++){
-    const gx=(i*53)%W, gh=2+((i*29)%5);
-    pR(g,R(gx),R(bankY-gh),1,gh, mix('#0c1016','#4a6440',lift));
-  }
-  if(su>0.1){                                  // the low sun catching the tops
-    g.globalAlpha=0.30*su;
-    for(let i=0;i<70;i+=2){
-      const gx=(i*53)%W, gh=2+((i*29)%5);
-      pR(g,R(gx),R(bankY-gh),1,1,'#e8c98a');
-    }
-    g.globalAlpha=1;
-  }
-  { /* asleep in the bottom corner: the long head, the knees, and breathing.
-       He is a pale thing, so he comes up out of the dark faster than the bank
-       does — by sunrise you can see who it is. */
-    const br=Math.sin(s*1.15)*0.9, bx=W*0.19, by=H*0.955;
-    const BODY2=mix('#141a26','#b9b4a8',lift), SHD2=mix('#0e131d','#8e8a80',lift),
-          HI2  =mix('#1b2332','#d6d1c4',lift);
-    pEll(g,bx+34,by-2+br*0.3,26,7.5,SHD2);           // the body, breathing
-    pEll(g,bx+34,by-5+br*0.4,20,5.0,BODY2);
-    pEll(g,bx+34,by-7+br*0.4,13,2.6,HI2);
-    pEll(g,bx+10,by-6,11,8,BODY2);                   // the head
-    pEll(g,bx+10,by-8,8.5,5.5,HI2);
-    pTaper(g,bx+1,by-7, bx-15,by-4, 2.4,1.2,BODY2);  // the snout, along the ground
-    pR(g,R(bx+4),R(by-9),3,1,mix('#2b3548','#4a4438',lift));   // an eye, shut
-    for(let i=0;i<4;i++) pR(g,R(bx+16+i*4),R(by-13-((i%2)*2)),1,4,SHD2);  // the hair
-    /* three of the little breaths, going up */
-    for(let i=0;i<3;i++){
-      const zt=(s*0.55+i*0.33)%1;
-      g.globalAlpha=(1-zt)*0.30*clamp(1-u*1.2,0,1);
-      pEll(g, bx-16-zt*16, by-12-zt*22, 1.6+zt*2.2, 1.2+zt*1.6, '#9fb0d0');
-      g.globalAlpha=1;
-    }
-  }
-
-  /* ---- what night it was, said once, quietly ---- */
-  { const a=clamp((s-0.7)/0.6,0,1)*clamp((3.3-s)/0.6,0,1);
+  /* ---- what the night was, said once ---- */
+  { const a=clamp((s-0.6)/0.6,0,1)*clamp((SLEEP_DUR*0.62-s)/0.6,0,1);
     if(a>0.01){
       g.globalAlpha=a;
       const line = DAY.forced? 'you go out like a lamp'
                              : 'you lie down where nobody walks';
-      pTxt(g,L(line), W/2+1, H*0.30+1, 'rgba(8,6,16,0.6)', 7, 'center');
-      pTxt(g,L(line), W/2,   H*0.30,   '#e8e2f2', 7, 'center');
+      pTxt(g,L(line), W/2+1, H*0.26+1, 'rgba(8,6,16,0.7)', 7, 'center');
+      pTxt(g,L(line), W/2,   H*0.26,   '#e8e2f2', 7, 'center');
       g.globalAlpha=1;
     }
   }
-  /* and the new day's number, coming up with the sun */
-  { const a=clamp((u-0.72)/0.2,0,1)*clamp((SLEEP_DUR-0.35-s)/0.4,0,1);
+  /* and the new day's number, with the sun */
+  { const a=clamp((u-0.76)/0.16,0,1)*clamp((SLEEP_DUR-0.3-s)/0.4,0,1);
     if(a>0.01){
       g.globalAlpha=a;
-      pTxt(g,L('DAY ')+DAY.n, W/2+1, H*0.19+1, 'rgba(8,6,16,0.5)', 13,'center');
-      pTxt(g,L('DAY ')+DAY.n, W/2,   H*0.19,   '#f6ecc8', 13,'center');
+      pTxt(g,L('DAY ')+DAY.n, W/2+1, H*0.17+1, 'rgba(8,6,16,0.6)', 13,'center');
+      pTxt(g,L('DAY ')+DAY.n, W/2,   H*0.17,   '#f6ecc8', 13,'center');
       g.globalAlpha=1;
     }
   }
-  if(s>1.2 && s<SLEEP_DUR-0.6){
-    g.globalAlpha=0.30+0.12*Math.sin(s*3);
+  if(s>1.0 && s<SLEEP_DUR-0.6){
+    g.globalAlpha=0.28+0.12*Math.sin(s*3);
     pTxt(g, L('tap to wake'), W/2, H-9, '#cbc2dc', 6,'center');
     g.globalAlpha=1;
   }
-
-  /* in from the world at the start, out to it at the end */
-  const inA = clamp(1-s/0.55, 0, 1);
-  if(inA>0){ g.fillStyle=rgba('#05060f',inA); g.fillRect(0,0,W,H); }
-  const outA = clamp((s-(SLEEP_DUR-0.55))/0.55, 0, 1);
-  if(outA>0){ g.fillStyle=rgba('#0a0d16',outA); g.fillRect(0,0,W,H); }
+  /* a soft edge, so it reads as his eyes closing rather than a screen */
+  { const v=clamp(1-Math.abs(u-0.47)/0.52,0,1)*0.5;
+    g.globalAlpha=v;
+    pVGrad(g,0,0,W,H*0.22,'#05070f','rgba(5,7,15,0)',5);
+    pVGrad(g,0,H*0.78,W,H*0.22,'rgba(5,7,15,0)','#05070f',5);
+    g.globalAlpha=1;
+  }
+  /* down into it at the start, and back out at the end */
+  const inA = clamp((s-0.05)/0.4, 0, 1);
+  if(inA<1){ g.fillStyle=rgba('#05060f',1-inA); g.fillRect(0,0,W,H); }
+  const outA = clamp((s-(SLEEP_DUR-0.45))/0.45, 0, 1);
+  if(outA>0){ g.fillStyle=rgba('#0a0d16',outA*0.85); g.fillRect(0,0,W,H); }
 }
-
 /* the morning card — Stardew shows you the night's takings and so do we */
 function drawDayCard(g){
   const c=DAY.card; if(!c) return;
@@ -16742,6 +16728,28 @@ function stepPets(dt){
        picks how far it will go and how fast. */
     p.moodT -= dt; if(p.moodT<=0) p.mood=null;
     p.socialCd -= dt;
+    /* ---- and the one thing in this village that can see him ----
+       Nobody else can. The dogs can, and they do not like it: they stand up,
+       face him, and shout until he goes away. A cat only stares, which is
+       worse. */
+    p.bark=(p.bark||0)-dt; if(p.bark<0) p.bark=0;
+    p.barkCd=(p.barkCd||0)-dt;
+    { const near = Math.abs(P.x-p.x) < (p.kind==='dog'? 74 : 46);
+      const seen = near && !(typeof SNEAK!=='undefined' && SNEAK.on && SNEAK.k>0.6);
+      if(seen && !(p.barkCd>0)){
+        p.face = P.x<p.x? -1 : 1;
+        if(p.kind==='dog'){
+          p.st='bark'; p.bark=rnd(1.4,2.6); p.barkCd=p.bark+rnd(1.6,4.0);
+          p.vx=0; p.tx=p.x;
+          if(typeof AU!=='undefined' && AU.bark) AU.bark(p.coat||0);
+        } else { p.st='stare'; p.bark=rnd(1.6,3.0); p.barkCd=p.bark+rnd(3,7); p.vx=0; }
+      }
+      if((p.st==='bark'||p.st==='stare')){
+        p.vx=0;
+        if(p.bark<=0 || !near){ p.st='sit'; p.t=rnd(0.4,1.4); }
+        else { p.x += 0; p.y=groundY(p.x); continue; }
+      }
+    }
     const w = petHour(p, h, night);
     p.t -= dt;
     if(p.t<=0){
@@ -16850,6 +16858,26 @@ function petTake(p){
   saveGame();
 }
 /* ---------- drawing ---------- */
+/* the shape of a noise: three short bars off the muzzle, thrown out and gone */
+function barkMarks(g, x, y, f, t){
+  const beat = (t*3.4)%1;
+  for(let i=0;i<3;i++){
+    const ph = (beat + i*0.24)%1;
+    const a = Math.sin(ph*Math.PI);
+    if(a<0.05) continue;
+    g.globalAlpha = a*0.9;
+    const bx = x + (14 + ph*13)*f, by = y - 13 - ph*7 - i*3;
+    pTaper(g, bx, by, bx+4.5*f, by-1.6, 1.6, 0.7, '#f4ecd8');
+    g.globalAlpha = 1;
+  }
+}
+/* a cat does not bark. It looks at the place where you are. */
+function stareMark(g, x, y, f, t){
+  g.globalAlpha = clamp(t,0,1)*0.5*(0.6+0.4*Math.sin(t*5));
+  pEll(g, x+9*f, y-13, 1.4, 1.4, '#e8e2f2');
+  pEll(g, x+12*f, y-15, 0.9, 0.9, '#e8e2f2');
+  g.globalAlpha = 1;
+}
 function drawPets(g){
   for(const p of PETS){
     if(p.x-GS.camX<-40 || p.x-GS.camX>W+40) continue;
@@ -16862,8 +16890,12 @@ function drawPets(g){
                        st: p.st==='sleep'? 'sleep' : p.st==='walk'? 'walk':'sit'});
     } else {
       drawRoadDog(g,{x:p.x, face:p.face, st: (p.st==='sit'||p.st==='sleep')? 'sleep':'up',
-                     t:p.anim, step:Math.sin(p.phase)*3, sp:p.st==='walk'});
+                     t:p.anim, step:Math.sin(p.phase)*3, sp:p.st==='walk',
+                     bark: p.st==='bark'? p.bark : 0, coat:p.dogCoat});
     }
+    /* what it looks like when something shouts at you that nobody else hears */
+    if(p.st==='bark' && p.bark>0) barkMarks(g, p.x, p.y, p.face, p.bark);
+    if(p.st==='stare' && p.bark>0) stareMark(g, p.x, p.y, p.face, p.bark);
     if(p.mood) petMoodIcon(g, p);
     if(p.purr>0){
       const a=clamp(p.purr/2.4,0,1);
@@ -19640,13 +19672,48 @@ function artStore(){
   pR(g,w-40,h-60,3,16,'#c8ccc4'); pR(g,w-27,h-60,3,16,'#c8ccc4');
   pR(g,w-51,44,8,10,'#e8572f'); pR(g,w-30,44,8,10,'#2b8a4c');
   pR(g,w-51,44,8,2,'#f2805a'); pR(g,w-30,44,8,2,'#46a868');
+  /* the condenser units bolted to the wall under the fascia, and their pipes */
+  for(let i=0;i<2;i++){
+    const ax=16+i*26;
+    pR(g,ax,23,18,8,'#b8b4a8'); pR(g,ax,23,18,1,'#d8d4c8');
+    pR(g,ax,30,18,1,'#8e8a80');
+    for(let k=0;k<4;k++) pR(g,ax+3+k*4,25,2,5,'#8e8a80');
+    pR(g,R(ax+16),R(26),1,6,'#9a968c');
+  }
+  pR(g,R(66),R(24),1,8,'#a49f94');
+  /* the ATM let into the wall beside the door, under its little canopy */
+  pR(g,w-20,46,16,34,'#3a4450'); pR(g,w-20,46,16,2,'#5a6672');
+  pR(g,w-18,50,12,10,'#8fd0e0'); pR(g,w-18,50,12,1,'#c4eaf2');
+  for(let i=0;i<3;i++) for(let k=0;k<3;k++) pR(g,w-18+k*4,62+i*4,3,3,'#5a6672');
+  pR(g,w-22,42,20,4,'#e8572f'); pR(g,w-22,42,20,1,'#f2805a');
+  /* posters taped up inside the glass */
+  pR(g,15,38,11,13,'#f2c14e'); pR(g,15,38,11,3,'#e8572f');
+  for(let i=0;i<3;i++) pR(g,17,44+i*3,7,1,'#8a6a2e');
+  pR(g,86,42,9,11,'#57a869'); pR(g,86,42,9,3,'#2b8a4c');
   /* the ice cabinet parked outside the door, as there always is */
   pR(g,w-14,h-32,12,26,'#dfe8ea'); pR(g,w-14,h-32,12,3,'#f4fafb');
   pR(g,w-13,h-27,10,8,'#7fb8d0'); pR(g,w-13,h-27,10,2,'#bfe0ee');
   pR(g,w-14,h-8,12,2,'#9aa4a6');
+  /* a parasol and two plastic stools on the concrete, where people sit */
+  { const ux=20;
+    pR(g,R(ux),R(h-34),1,28,'#8a8a92');
+    pTri(g,ux,h-46, ux-17,h-34, ux+17,h-34,'#e8572f');
+    pTri(g,ux,h-44, ux-11,h-35, ux+11,h-35,'#f2805a');
+    pR(g,ux-18,h-35,36,2,'#c04628');
+    for(const sx of [ux-11, ux+9]){
+      pR(g,R(sx),R(h-16),9,3,'#e04a5a'); pR(g,R(sx),R(h-16),9,1,'#f0707e');
+      pR(g,R(sx+1),R(h-13),1,7,'#b8384a'); pR(g,R(sx+7),R(h-13),1,7,'#b8384a');
+    }
+    /* a crate of empties, and a bin by the kerb */
+    pR(g,ux+22,h-14,13,9,'#2b6f96'); pR(g,ux+22,h-14,13,2,'#3d8cb8');
+    for(let i=0;i<4;i++) pR(g,ux+23+i*3,h-17,2,3,'#6aa84a');
+    pR(g,w-96,h-20,12,15,'#4a5a4c'); pR(g,w-96,h-20,12,2,'#6a7a6c');
+    pR(g,w-97,h-22,14,3,'#3a4a3c');
+  }
   /* the step, the mat, and the kerb */
   pR(g,0,h-10,w,10,'#9a958a'); pR(g,0,h-10,w,1,'#b8b3a8');
   pR(g,w-58,h-7,42,4,'#5a5f52'); pR(g,w-58,h-7,42,1,'#727a68');
+  for(let i=0;i<w;i+=11) pR(g,R(i),R(h-10),1,10,'#8e8980');    // the slabs
   return c;
 }
 /* ---------- the corner spirit house at the crossroad ---------- */
@@ -19774,9 +19841,9 @@ function paintEast(){
     pTaper(g,x+5,gy-12,x+9,gy-9,2,1,'#8f8f99');
   }
   pR(g,8640,groundY(8640)-14,12,14,'#3f6b4a'); pR(g,8640,groundY(8640)-16,12,3,'#57a869');
-  /* the far paddies get a scarecrow and a hut of their own */
-  stamp(ART.scare, 9460, groundY(9460)+2, 1);
-  stamp(ART.scare, 10120, groundY(10120)+2, 0.9);
+  /* the far paddies have their own shrine at the corner, and a hut */
+  stamp(ART.shrineF, 9460, groundY(9460)+2, 1);
+  stamp(ART.shrineF, 10120, groundY(10120)+2, 0.9);
 }
 
 /* ============================================================
@@ -19813,7 +19880,8 @@ function seedTraffic(){
   }
   for(const v of TRAFFIC) v.cruise=v.sp;
 for(const [i,x] of [7290, STORE_X-58, STORE_X+62, STORE_X+16, 8820].entries())
-  ROAD_DOGS.push({x, hx:x, t:rnd(9), st:'sleep', sp:0, face:i%2?-1:1, wake:0, coat:i%4});
+  ROAD_DOGS.push({x, hx:x, t:rnd(9), st:'sleep', sp:0, face:i%2?-1:1, wake:0,
+                  coat:i%4, bark:0, barkCd:rnd(0,3)});
   /* parked: outside the shop, at the crossroad, and two at the far houses.
      None in the village — a bike under a house is a nice detail and six of
      them down a lane with no road is a car park. */
@@ -19906,6 +19974,16 @@ function stepTraffic(dt){
   }
   for(const d of ROAD_DOGS){
     d.t+=dt;
+    /* he is the one thing on this road they can see, and they say so */
+    if(d.bark>0){ d.bark-=dt; if(d.bark<=0){ d.st='sleep'; d.wake=rnd(2,5); } else continue; }
+    d.barkCd=(d.barkCd||0)-dt;
+    if(Math.abs(P.x-d.x)<70 && !(d.barkCd>0) &&
+       !(typeof SNEAK!=='undefined' && SNEAK.on && SNEAK.k>0.6)){
+      d.face = P.x<d.x? -1:1;
+      d.st='bark'; d.bark=rnd(1.4,2.6); d.barkCd=d.bark+rnd(2.5,6);
+      if(typeof AU!=='undefined' && AU.bark) AU.bark(d.coat||0);
+      continue;
+    }
     if(d.st==='sleep'){
       /* it gets up when somebody comes near enough, and lies back down when
          they have gone */
@@ -20226,6 +20304,31 @@ function drawVehicle(g,v){
 function drawRoadDog(g,d){
   const x=d.x, gy=groundY(x), f=d.face;
   const co=DOG_COATS[(d.coat||0)%DOG_COATS.length];
+  if(d.bark>0){
+    /* up on its front legs, head back, and the whole body going with it */
+    const beat=(d.bark*3.4)%1, open=Math.max(0,Math.sin(beat*Math.PI));
+    const rock=open*2.2;
+    pEll(g,x,gy-1,11,3,'rgba(10,8,20,0.28)');
+    pLimb(g,x-5*f,gy-9,x-6*f,gy-1,2.2,co.d);                 // back legs, planted
+    pLimb(g,x-3*f,gy-9,x-2*f,gy-1,2.2,co.b);
+    pEll(g,x,gy-10,9,4.4,co.b); pEll(g,x,gy-11.6,7.6,3.2,co.l);
+    pLimb(g,x+5*f,gy-11,x+6*f,gy-1,2.2,co.d);                // front legs, braced
+    pLimb(g,x+7*f,gy-11,x+8*f,gy-1,2.2,co.b);
+    const hx=x+9*f, hy=gy-15-rock;
+    pEll(g,hx,hy,4.6,4.2,co.b); pEll(g,hx+1*f,hy-1,3.6,3.0,co.l);
+    pTri(g,hx-1*f,hy-6, hx-4*f,hy-1, hx+1*f,hy-1, co.d);     // ear, back
+    pTri(g,hx+3*f,hy-5, hx+1*f,hy-1, hx+5*f,hy-1, co.d);     // ear, forward
+    /* the muzzle, open on the beat */
+    pTaper(g,hx+2*f,hy+1, hx+7*f,hy+1+open*1.4, 2.6,1.8, co.l);
+    if(open>0.25){
+      pTri(g,hx+3*f,hy+0.4, hx+8*f,hy+0.6+open*2.6, hx+3*f,hy+2.2+open*2.2,'#4a2020');
+      pR(g,R(hx+4*f),R(hy+1.4+open*1.2),2,1,'#d0707a');      // a bit of tongue
+    }
+    pR(g,R(hx+7*f),R(hy+0.6),1,1,'#2a1c14');                 // the nose
+    pR(g,R(hx+2*f),R(hy-1),1,1,'#241a12');                   // and one hard eye
+    pTaper(g,x-8*f,gy-11, x-13*f,gy-16-Math.sin(d.t*9)*3, 2.6,1,co.d);   // tail, up
+    return;
+  }
   if(d.st==='sleep'){
     const br=Math.sin(d.t*1.3)*0.45;                 // it is breathing, if you watch it
     pEll(g,x,gy-1,13,4,'rgba(10,8,20,0.3)');
@@ -20252,7 +20355,9 @@ function drawRoadDog(g,d){
 function drawTraffic(g){
   for(const v of TRAFFIC){ if(!v.out) continue;
     if(v.x-GS.camX<-70||v.x-GS.camX>W+70) continue; drawVehicle(g,v); }
-  for(const d of ROAD_DOGS){ if(d.x-GS.camX<-40||d.x-GS.camX>W+40) continue; drawRoadDog(g,d); }
+  for(const d of ROAD_DOGS){ if(d.x-GS.camX<-40||d.x-GS.camX>W+40) continue;
+    drawRoadDog(g,d);
+    if(d.bark>0 && typeof barkMarks==='function') barkMarks(g,d.x,groundY(d.x),d.face,d.bark); }
 }
 /* the ones leaning under every house, which is most of them */
 function drawParked(g){
@@ -20388,6 +20493,9 @@ function stepSneak(dt){
   const want = !!K.down && !P.jump && Math.abs(P.vy||0)<40;
   if(want!==SNEAK.on){ SNEAK.on=want; AU.noise(0.06,0.012,120,900); }
   SNEAK.k = lerp(SNEAK.k, SNEAK.on?1:0, 1-Math.pow(0.002,dt));
+  /* an exponential approach never arrives, and anything downstream that tests
+     this for truth would stay switched on forever */
+  if(!SNEAK.on && SNEAK.k < 0.004) SNEAK.k = 0;
   const hid = !!inHide(P.x);
   /* the eye over somebody's head fills while you are upright in their view */
   let worst=null, worstV=0;

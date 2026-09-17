@@ -1329,37 +1329,35 @@ it is brakes, a long look, and the road again faster than before.
 
 ## Sleeping, which you do every day
 
-It used to be a black rectangle with a line of type on it, held for two
-seconds. You sleep every single day in this game, so that was the thing the
-player saw more often than anything else in it, and it was nothing.
+It was a black rectangle with a line of type, held two seconds — the thing the
+player saw more often than anything else in the game. Then it was a painted
+landscape of paddies and hills, which was prettier and still wrong: it was not
+this village, and you had just spent an evening in this village.
 
-Now you lie where you lay down and watch the night go over. The moon comes down
-the sky and sets behind the hills. The stars go out from the bottom of the sky
-upward, because the low ones always go first. The whole sky walks through six
-stops — night, first light, violet, orange, gold, morning — and the clouds catch
-each one before anything on the ground does. Mist comes up off the paddies and
-turns warm when the sun reaches it. The egrets go over. The sun comes up out of
-the far side of the fields and lays a road across the water, the bank comes up
-out of the dark with the grass lit along its tops, and the new day's number
-arrives with it.
+So now the night goes over **the place you actually lay down in**. Nothing else
+moves — the game stops stepping the world while he sleeps — and the only thing
+that changes is the light. The clock winds forward from the hour he lay down,
+through the small hours, to half six in the morning, and the village's own sky
+does the rest: its own moon comes down, its own stars come out and go in, its
+own sun comes up behind the houses he was standing among.
 
-He is down there in the corner the whole time, asleep on his side with his
-snout along the ground, breathing.
+The overlay on top of that is only what the sky has no way of saying: the small
+hours pressed down over everything, a soft edge so it reads as his eyes closing,
+what the night was, and the new day's number arriving with the sun. Drawing a
+moon of my own on top only gave the village two of them.
 
-A tap skips it, because you will see it a hundred times — but never past the
-point where the day turns over, so skipping never costs you the night.
+A tap skips it, but never past the point where the day turns over.
 
-![the night going over](screenshots/sleep-night.png)
+![the night over the village](screenshots/sleep-night.png)
 
 ![and the morning](screenshots/sleep-morning.png)
 
-### The test for it looks for the gap
+### Half six, not six
 
-The paddies used to stop eight pixels short of the bank and the village showed
-through the seam — exactly the sort of thing you only notice at three in the
-morning. So the test fills the screen with magenta, draws the sleep scene over
-it at seven points through the night, and counts magenta pixels. Any that
-survive are a hole in the scene.
+The village used to wake at six on the dot. At six sharp this sky is still very
+nearly dark — the sun does not clear the horizon until about a quarter to seven
+— so the night scene was ending before the sunrise it had spent five seconds
+building toward. It wakes just after half six now.
 
 ## One person, drawn one way
 
@@ -1391,6 +1389,55 @@ A scene that is drawn closer than the world is passes a `scale`. That does not
 scale the canvas, which would turn every rounded rectangle soft: the figure is
 drawn once at 1× into a scratch canvas and blitted up with smoothing off, so a
 person in the shop is the same person as a person on the road, only nearer.
+
+### He is too big for the village, and it shows
+
+He is about **two and three-quarter times a grown man** — which is what the
+folklore says, and what makes a doorway a problem for him. Under a house on its
+stilts, under the market awning, under the eaves of the food cart or the sala,
+he goes down. Not because anything stops him: because that is what being too
+big for somewhere looks like.
+
+`stoopAt(x)` returns how far down he has to go where he is standing, eased over
+eighteen pixels at each edge so he ducks on the way in rather than snapping at
+the threshold — 0.02 → 0.18 → 0.40 as he walks under one.
+
+That reuses the crouch, which needed fixing first. `sit` was passed to the
+figure as a continuous amount from nought to one and read as a **boolean** —
+and `SNEAK.k` decays exponentially toward zero without ever arriving, so one
+crouch left a value like `1e-8` behind and he spent the rest of the session
+walking around fully seated. That is the bug where he gets stuck sitting. It is
+an amount now, blended through the legs and the arms, and the sneak value
+snaps to a real zero when it gets close.
+
+### The dogs can see him
+
+Nobody in the village can. The dogs can, and they do not like it: they get up on
+their front legs, put their head back, and shout until he goes away — ears
+forward, mouth opening on the beat, tail up, three short bars of noise thrown
+out of the muzzle and gone. There is a synthesised bark to go with it: a short
+sawtooth buzz that falls in pitch with a slap of filtered noise on the front,
+twice, sometimes three times, pitched differently per dog.
+
+A cat does not bark. It looks at the place where you are, which is worse.
+
+Sneaking properly stops both.
+
+![a dog that can see you](screenshots/dog-barking.png)
+
+### There are no scarecrows in a Thai rice field
+
+There were three in this one, which was simply wrong. What stands at the edge of
+a field here is **ศาลเพียงตา** — a one-post shrine about eye height with a
+little house on it, a red tiled roof with gold finials, white walls, gold corner
+posts, and whatever the family had to give that morning: a red drink, a saucer
+of rice, three sticks of incense burnt down, a garland. There is a fence of
+sticks round the foot of it.
+
+The test greps the built file: no `artScarecrow`, no หุ่นไล่กา, and the thing at
+the edge of the field is a shrine.
+
+![the field shrine](screenshots/field-shrine.png)
 
 ### Nobody walks backwards any more
 
