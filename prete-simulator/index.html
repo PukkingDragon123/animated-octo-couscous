@@ -3901,6 +3901,14 @@ function makeCloth(n, len){
   return s;
 }
 function stepCloth(cl, hipX, hipY, wide, dt, wind, hipVX){
+  /* A phone frame can be a fifth of a second. A verlet skirt integrated in one
+     jump that big turns itself inside out, so walk it there in pieces no
+     bigger than the sixtieth it was written for. */
+  if(dt > 1/50){
+    const n2=Math.min(8, Math.ceil(dt*60));
+    for(let k=0;k<n2;k++) stepCloth(cl, hipX, hipY, wide, dt/n2, wind, hipVX);
+    return;
+  }
   for(let i=0;i<cl.n;i++){
     const st = cl.pts[i];
     const ax = hipX + (i/(cl.n-1)-0.5)*wide;
@@ -4217,6 +4225,14 @@ function drawPrete(g, p, o={}){
      and this was the last part that did not.
      --------------------------------------------------------------- */
   const HAND_K = 0.00018;            // ~0.12s to close on a new pose
+  /* Both arms share one bank of time, counted once for the frame: if each
+     arm drained it in turn the second one would never move. */
+  {
+    const dtF = o.dt===undefined? 1/60 : o.dt;
+    p._hacc = Math.min(0.25, (p._hacc||0) + dtF);
+    p._hticks = 0;
+    while(p._hacc >= 1/60 && p._hticks < 16){ p._hticks++; p._hacc -= 1/60; }
+  }
   function smoothHand(back, hx2, hy2){
     const i = back?0:1;
     if(!p._hand) p._hand=[null,null];
@@ -4228,9 +4244,18 @@ function drawPrete(g, p, o={}){
       p._hand[i]={x:tx,y:ty};
       return {hx2,hy2};
     }
-    const k = 1-Math.pow(HAND_K, dt2);
-    cur.x += (tx-cur.x)*k;
-    cur.y += (ty-cur.y)*k;
+    /* The spring lives in the draw pass, so how often it is advanced depends
+       on the frame rate. Advancing it once per frame by the real elapsed time
+       is close, but not the same thing: the target moves in fixed simulation
+       steps, and a phone that renders once per four of them lets the hand
+       chase a coarser staircase. So bank the time and spend it in sixtieths.
+       Then the hand takes the same number of ticks per second to get
+       anywhere, on any device. */
+    const k = 1-Math.pow(HAND_K, 1/60);
+    for(let n2=0; n2<(p._hticks||0); n2++){
+      cur.x += (tx-cur.x)*k;
+      cur.y += (ty-cur.y)*k;
+    }
     return {hx2: hipX+cur.x, hy2: hipY+cur.y};
   }
   function drawArm(back){
@@ -4573,6 +4598,18 @@ const VILL_H   = 36;                 // heel to the top of the head
 const VILL_LEG = 14, VILL_TH = 7.5, VILL_SN = 7.5;
 const VILL_CH  = 9;                  // how tall the torso is — the legs get the rest
 const villTop  = v => (v.y||0) - VILL_H;
+
+/* How long a stride is, and how fast the walk cycle turns.
+
+   These two are one fact, not two. A planted foot only stays put if the phase
+   advances exactly one half-cycle per stride of ground covered — the same
+   identity the prete needed. The villagers had a phase rate of 0.22 and a
+   stride of up to 4.6, which do not satisfy it at any speed, so every planted
+   foot skated; and because the foot offset was multiplied by `face` on top of
+   a signed phase, the whole cycle ran backwards whenever they walked left.
+   Anybody who moves a villager advances its phase through villPhase. */
+const villStride = vx => clamp(Math.abs(vx)*0.2, 1.6, 5.2);
+const villPhase  = (vx, dt) => vx * dt * Math.PI / (2*villStride(vx));
 
 /* poses beyond walking. Everything here is a hand target, so the same
    IK that swings an arm also reaches, pours and holds a bowl. */
@@ -4991,7 +5028,7 @@ const GS = {
   skills:{}, cos:{skirt:'ash'}, q:{prayers:0,offerings:0,pets:0,gifts:0},
   seen:{}, bag:{}, friends:{}, learned:{}, mem:{}, dawn:0, shake:0, hitstop:0,
   farm:null, req:null,
-  camX:0, camY:0, wind:0, toasts:[], zoneName:0, tut:0,
+  camX:0, camY:0, wind:0, toasts:[], zoneName:0, tut:0, rdt:1/60,
   water:0, rice0:0, chops:0,
   en:undefined, hearts:{}, talked:{}, gifted:{}, incense:0,
   quests:{}, pet:null, petH:{},
@@ -5645,7 +5682,7 @@ function stepNpcs(dt){
     if(n.react){ n.react.t-=dt; if(n.react.t<=0) n.react=null; }
     if(n.mark){ n.mark.t-=dt; if(n.mark.t<=0) n.mark=null; }
     if(n.bub){ n.bub.t-=dt; if(n.bub.t<=0) n.bub=null; }
-    n.phase += n.vx*dt*0.22;
+    n.phase += villPhase(n.vx, dt);
     if(n.state==='walk'){
       const d=n.tx-n.x;
       /* somebody who is being spoken to stops walking to their next job. The
@@ -9043,7 +9080,7 @@ function render(){
 
   for(const n of NPCS){
     if(n.x-cx<-40||n.x-cx>W+40) continue;
-    drawVillager(ctx,n,{dt:1/60,wind:GS.wind});
+    drawVillager(ctx,n,{dt:GS.rdt||1/60,wind:GS.wind});
     const qm = (typeof questMark==='function')? questMark(n) : null;
     if(qm){
       /* a favour waiting, a favour running, a favour you can hand in: three
@@ -9083,7 +9120,7 @@ function render(){
   }
 
   pEll(ctx,P.x,P.y+1,9,2.6,'rgba(10,8,24,0.4)');
-  drawPrete(ctx,P,{dt:1/60, wind:GS.wind, mouth:P.state==='wail'?1:(P.talk||0),
+  drawPrete(ctx,P,{dt:GS.rdt||1/60, wind:GS.wind, mouth:P.state==='wail'?1:(P.talk||0),
     headX:(P.chatX||0),
     sit: (typeof SNEAK!=='undefined'? SNEAK.k*0.55 : 0),
     armTarget: HT? {x:HT.hx,y:HT.hy}
@@ -12785,7 +12822,7 @@ function drawVillager(g, v, o={}){
      and the head stays generous, which is where the cute comes from. */
   const fold = (v.pose==='kneel')? 0.50 : (v.pose==='sit')? 0.42 : 1;
   const LEG=VILL_LEG*fold, TH=VILL_TH*fold, SN=VILL_SN*fold;
-  const stride=clamp(sp*0.2,0,4.6), lift=clamp(sp*0.1,0,2.4);
+  const stride=villStride(v.vx), lift=clamp(sp*0.1,0,2.4);
   const bob = Math.abs(Math.sin(v.phase*2))*clamp(sp*0.03,0,1);
   const breathe = sp<4 ? Math.sin(v.breath)*0.35 : 0;
   const hipY=v.y-LEG-bob, hipX=v.x;
@@ -12804,8 +12841,19 @@ function drawVillager(g, v, o={}){
     pR(g,R(hipX-8*face),R(v.y-2),6,2,'#4a3a2c');
     pR(g,R(hipX-8*face),R(v.y-1),6,1,'#33281e');
   } else for(let i=0;i<2;i++){
-    const ph=v.phase+i*Math.PI, c=Math.cos(ph), s=Math.sin(ph);
-    const fx=v.x+c*stride*face, fy=v.y+(s<0? -Math.abs(s)*lift : 0);
+    /* A cosine can only hold a foot still for one instant, so a cosine walk
+       always skates. Split it, the way the prete's is split: half the cycle is
+       STANCE, where the foot tracks straight back at exactly walking speed and
+       so does not move over the ground at all, and half is SWING. The sign is
+       already in the phase — multiplying by face as well is what sent the
+       whole cycle backwards whenever they walked left. */
+    const tt=((v.phase+i*Math.PI)%TAU+TAU)%TAU;
+    let ox,oy;
+    if(tt<Math.PI){ ox=stride*(1-2*tt/Math.PI); oy=0; }
+    else { const u=(tt-Math.PI)/Math.PI;
+           const e=u<0.5? 2*u*u : 1-2*(1-u)*(1-u);   // out of the ground and back into it
+           ox=-stride+2*stride*e; oy=-Math.sin(u*Math.PI)*lift; }
+    const fx=v.x+ox, fy=v.y+oy;
     const knee=ik2(hipX+(i?1:-1),hipY,fx,fy-1,TH,SN,face>0?1:-1);
     const col=i===0? shade(legC,-0.24) : legC;
     if(!v.skirt){
@@ -13461,7 +13509,7 @@ function stepLung(dt){
   LUNG.face=sign(d);
   LUNG.vx=LUNG.face*CH.wspd;
   LUNG.x += LUNG.vx*dt;
-  LUNG.phase += LUNG.vx*dt*0.22;
+  LUNG.phase += villPhase(LUNG.vx, dt);
   LUNG.state='walk';
   LUNG.y = groundY(LUNG.x);
   if(Math.random()<dt*6) brushGrass(LUNG.x,14,2);
@@ -15790,21 +15838,256 @@ function nightPass(){
 function stepNightFade(dt){
   DAY.sleeping+=dt;
   const s=DAY.sleeping;
-  if(s>0.9 && !DAY.done){ DAY.done=1; nightPass(); }
-  if(s>2.0){ DAY.sleeping=0; DAY.done=0;
+  /* the day turns over halfway through, so the number that comes up with the
+     sun is the new one */
+  if(s>SLEEP_DUR*0.46 && !DAY.done){ DAY.done=1; nightPass(); }
+  if(s>SLEEP_DUR){ DAY.sleeping=0; DAY.done=0;
     P.x=clamp(bedNear()||P.x, 20, WORLD_W-20); P.y=groundY(P.x); P.vx=0; P.vy=0;
     GS.camX=clamp(P.x-W/2,0,WORLD_W-W); }
 }
+/* ============================================================
+   THE NIGHT PASSING
+
+   It used to be a black rectangle with a line of type on it, held
+   for two seconds. You sleep every single day in this game, so
+   that was the thing the player saw more often than anything
+   else, and it was nothing.
+
+   Now you lie where you lay down and watch the night go over:
+   the moon comes down the sky and sets behind the hills, the
+   stars go out one at a time, the whole sky turns through violet
+   and orange, mist comes up off the paddies, the egrets go over,
+   and the sun comes up out of the far side of the fields.
+
+   A tap skips it, because you will see it a hundred times.
+   ============================================================ */
+const SLEEP_DUR = 5.6;
+const SLEEP_HZ  = 0.60;                 // where the horizon sits, as a fraction of H
+
+/* the sky, as a handful of stops it walks through */
+const DAWN_SKY = [
+  [0.00, '#05081a', '#0a1028', '#121832'],
+  [0.34, '#0d1730', '#1d2246', '#43304f'],
+  [0.54, '#1b2850', '#453763', '#9a5566'],
+  [0.72, '#33507e', '#8a5a72', '#e08a56'],
+  [0.87, '#5a86b4', '#c98f6e', '#f6c06a'],
+  [1.00, '#79b0d6', '#a6cde0', '#f4e2b4'],
+];
+function dawnSky(u){
+  let a=DAWN_SKY[0], b=DAWN_SKY[DAWN_SKY.length-1];
+  for(let i=0;i<DAWN_SKY.length-1;i++)
+    if(u>=DAWN_SKY[i][0] && u<=DAWN_SKY[i+1][0]){ a=DAWN_SKY[i]; b=DAWN_SKY[i+1]; break; }
+  const t=a[0]===b[0]? 0 : clamp((u-a[0])/(b[0]-a[0]),0,1);
+  return [mix(a[1],b[1],t), mix(a[2],b[2],t), mix(a[3],b[3],t)];
+}
+
 function drawSleep(g){
-  const s=DAY.sleeping, a=s<0.9? s/0.9 : s<1.4? 1 : clamp((2.0-s)/0.6,0,1);
-  g.fillStyle=`rgba(6,5,14,${a.toFixed(3)})`; g.fillRect(0,0,W,H);
-  if(s>0.5 && s<1.9){
-    g.globalAlpha=clamp((s-0.5)*3,0,1)*clamp((1.9-s)*3,0,1);
-    pTxt(g, DAY.forced? 'you go out like a lamp' : 'you lie down where nobody walks',
-         W/2, H/2, '#8a8098', 7, 'center');
+  const s=DAY.sleeping;
+  const u=clamp((s-0.55)/(SLEEP_DUR-1.35), 0, 1);     // how far through the night
+  const hz=H*SLEEP_HZ;
+  /* how far the morning has got into the foreground */
+  const lift=clamp((u-0.52)/0.44,0,1);
+
+  /* ---- sky ---- */
+  const [cT,cM,cH]=dawnSky(u);
+  pVGrad(g,0,0,W,hz*0.62,cT,cM,7);
+  pVGrad(g,0,hz*0.62,W,hz*0.38+1,cM,cH,7);
+
+  /* ---- stars, going out from the bottom of the sky upward ---- */
+  const starA = clamp(1-u*1.9, 0, 1);
+  if(starA>0.01) for(const st of STARS){
+    const y=st[1]*hz*0.92;
+    const tw=0.45+0.55*Math.sin(GS.t*1.6+st[2]*7);
+    const low=clamp(1-(y/(hz*0.92))*0.8,0,1);          // the low ones go first
+    const a=starA*low*tw*(0.35+st[3]*0.65);
+    if(a<0.03) continue;
+    g.fillStyle=`rgba(255,246,224,${a.toFixed(3)})`;
+    g.fillRect(R(st[0]*W), R(y), 1,1);
+  }
+
+  /* ---- the moon, coming down and setting behind the hills ---- */
+  { const mu=clamp(u/0.78,0,1);
+    const mx=lerp(W*0.80, W*0.06, mu);
+    const my=lerp(hz*0.16, hz+7, mu*mu*0.82+mu*0.18);
+    const fade=clamp((0.86-u)/0.20,0,1);
+    if(fade>0.01 && my<hz+9){
+      g.globalAlpha=fade*0.13;
+      pEll(g,mx,my,17,17,'#cfd8f0');
+      g.globalAlpha=fade;
+      pEll(g,mx,my,7.4,7.4,'#e8eafa');
+      pEll(g,mx+2.4,my-1.2,6.2,6.2, mix('#e8eafa', cT, 0.86));   // the crescent, bitten out
+      pEll(g,mx-2.6,my+1.6,1.5,1.2,'#cdd2e8');
+      pEll(g,mx-1.0,my+3.0,1.0,0.9,'#cdd2e8');
+      g.globalAlpha=1;
+    }
+  }
+
+  /* ---- the sun, coming up out of the far side of the fields ---- */
+  const su=clamp((u-0.60)/0.40,0,1);
+  if(su>0){
+    const sx=W*0.72, sy=hz+9-su*24;
+    g.globalAlpha=0.10+0.16*su;
+    pEll(g,sx,sy,44+su*22,30+su*16,'#ffcf7a');
+    g.globalAlpha=0.22*su;
+    pEll(g,sx,sy,24,18,'#ffdf9e');
+    g.globalAlpha=1;
+    pEll(g,sx,sy,9.5,9.5,'#fff0c0');
+    pEll(g,sx,sy,7.6,7.6,'#fffaea');
+  }
+
+  /* ---- cloud bars, catching it before anything on the ground does ---- */
+  for(let i=0;i<5;i++){
+    const cy=hz*(0.20+i*0.14), cw=60+((i*53)%70), cx=((i*137 + s*3.5)%(W+160))-80;
+    const lit=clamp((u-0.42-i*0.04)/0.34,0,1);
+    const col=mix(mix('#20263f','#8a6a84',clamp(u*1.5,0,1)), '#ffc98e', lit);
+    g.globalAlpha=0.30+0.35*clamp(u*1.2,0,1);
+    pEll(g,cx,cy,cw*0.5,2.6,col);
+    pEll(g,cx+cw*0.16,cy-2.0,cw*0.30,2.0,col);
     g.globalAlpha=1;
   }
+
+  /* ---- the far hills ---- */
+  g.fillStyle=mix('#0b1024','#6f93ad',clamp((u-0.45)/0.5,0,1));
+  g.beginPath(); g.moveTo(0,hz+1);
+  for(let x=0;x<=W;x+=8){
+    const y=hz-6-Math.sin(x*0.011)*7-Math.sin(x*0.027+1.3)*4;
+    g.lineTo(x,y);
+  }
+  g.lineTo(W,hz+1); g.closePath(); g.fill();
+
+  /* ---- the paddies: flat water holding whatever the sky is doing ---- */
+  const bankY=H*0.855;
+  pVGrad(g,0,hz,W,bankY-hz+1,mix('#0a1020','#5f89a8',clamp((u-0.4)/0.55,0,1)),
+                             mix('#080c18','#8fb0aa',clamp((u-0.4)/0.55,0,1)),6);
+  /* the sun's road across the water */
+  if(su>0){
+    g.globalAlpha=0.20*su;
+    for(let i=0;i<9;i++){
+      const y=hz+3+i*3.4, w2=(10+i*7)*(0.6+0.4*Math.sin(s*2+i));
+      pR(g,R(W*0.72-w2/2),R(y),R(w2),1,'#ffe6ae');
+    }
+    g.globalAlpha=1;
+  }
+  /* the bunds between the fields */
+  for(let i=0;i<6;i++){
+    const y=hz+4+i*4.2;
+    g.globalAlpha=0.5;
+    pR(g,0,R(y),W,1, mix('#121a26','#4e6b57',clamp((u-0.45)/0.5,0,1)));
+    g.globalAlpha=1;
+  }
+  /* mist, lying on the water, lit from the east once the sun is up */
+  for(let i=0;i<7;i++){
+    const my2=hz+2+i*3.6, mw=90+((i*67)%120);
+    const mx2=((i*151 - s*5)%(W+200))-100;
+    g.globalAlpha=(0.10+0.16*clamp(u*1.4,0,1))*(1-i*0.08);
+    pEll(g,mx2,my2,mw*0.5,2.4, su>0? mix('#cfe0e8','#ffddb0',su*0.7) : '#9fb4c8');
+    g.globalAlpha=1;
+  }
+
+  /* ---- palms on the near bank, as silhouettes ---- */
+  const dark = mix('#05070e','#1c2c26',clamp((u-0.55)/0.45,0,1));
+  for(let i=0;i<5;i++){
+    const px=[24, 118, 250, 352, 448][i], ph2=[30,24,34,26,30][i];
+    const base=H*0.855;   // the palms stand on the same bank
+    pR(g,R(px),R(base-ph2),2,ph2,dark);
+    for(let k=0;k<6;k++){
+      const a=-0.35-k*0.42+Math.sin(s*0.5+i)*0.05;
+      pTaper(g,px+1,base-ph2, px+1+Math.cos(a)*13, base-ph2+Math.sin(a)*9, 3.0,0.8, dark);
+    }
+    if(su>0.1){                                // a rim on the side the sun is
+      g.globalAlpha=0.34*su;
+      pR(g,R(px+2),R(base-ph2),1,ph2,'#d8b478');
+      g.globalAlpha=1;
+    }
+  }
+
+  /* ---- the egrets, going over once the sky has turned ---- */
+  if(u>0.42){
+    const fx0=-40 + (u-0.42)*W*1.9;
+    for(let i=0;i<5;i++){
+      const bx=fx0-i*17, by=hz*0.42+Math.sin(s*1.2+i*0.9)*5+i*3;
+      if(bx<-10||bx>W+10) continue;
+      const fl=Math.sin(s*7+i*1.3);
+      g.globalAlpha=0.85;
+      pTaper(g,bx,by, bx-4.5,by-fl*3.0, 1.5,0.8, '#f4f0e4');
+      pTaper(g,bx,by, bx+4.5,by-fl*3.0, 1.5,0.8, '#f4f0e4');
+      g.globalAlpha=1;
+    }
+  }
+
+  /* ---- the near bank, and him lying on it ---- */
+  /* the bank comes up out of the dark with everything else — it used to stay
+     pitch black while the sun was well up, which is where the scene stopped
+     being a morning and went back to being a screen with a picture on it */
+  pR(g,0,R(bankY),W,H,mix('#080a10','#2b3a2a',lift));
+  for(let i=0;i<70;i++){
+    const gx=(i*53)%W, gh=2+((i*29)%5);
+    pR(g,R(gx),R(bankY-gh),1,gh, mix('#0c1016','#4a6440',lift));
+  }
+  if(su>0.1){                                  // the low sun catching the tops
+    g.globalAlpha=0.30*su;
+    for(let i=0;i<70;i+=2){
+      const gx=(i*53)%W, gh=2+((i*29)%5);
+      pR(g,R(gx),R(bankY-gh),1,1,'#e8c98a');
+    }
+    g.globalAlpha=1;
+  }
+  { /* asleep in the bottom corner: the long head, the knees, and breathing.
+       He is a pale thing, so he comes up out of the dark faster than the bank
+       does — by sunrise you can see who it is. */
+    const br=Math.sin(s*1.15)*0.9, bx=W*0.19, by=H*0.955;
+    const BODY2=mix('#141a26','#b9b4a8',lift), SHD2=mix('#0e131d','#8e8a80',lift),
+          HI2  =mix('#1b2332','#d6d1c4',lift);
+    pEll(g,bx+34,by-2+br*0.3,26,7.5,SHD2);           // the body, breathing
+    pEll(g,bx+34,by-5+br*0.4,20,5.0,BODY2);
+    pEll(g,bx+34,by-7+br*0.4,13,2.6,HI2);
+    pEll(g,bx+10,by-6,11,8,BODY2);                   // the head
+    pEll(g,bx+10,by-8,8.5,5.5,HI2);
+    pTaper(g,bx+1,by-7, bx-15,by-4, 2.4,1.2,BODY2);  // the snout, along the ground
+    pR(g,R(bx+4),R(by-9),3,1,mix('#2b3548','#4a4438',lift));   // an eye, shut
+    for(let i=0;i<4;i++) pR(g,R(bx+16+i*4),R(by-13-((i%2)*2)),1,4,SHD2);  // the hair
+    /* three of the little breaths, going up */
+    for(let i=0;i<3;i++){
+      const zt=(s*0.55+i*0.33)%1;
+      g.globalAlpha=(1-zt)*0.30*clamp(1-u*1.2,0,1);
+      pEll(g, bx-16-zt*16, by-12-zt*22, 1.6+zt*2.2, 1.2+zt*1.6, '#9fb0d0');
+      g.globalAlpha=1;
+    }
+  }
+
+  /* ---- what night it was, said once, quietly ---- */
+  { const a=clamp((s-0.7)/0.6,0,1)*clamp((3.3-s)/0.6,0,1);
+    if(a>0.01){
+      g.globalAlpha=a;
+      const line = DAY.forced? 'you go out like a lamp'
+                             : 'you lie down where nobody walks';
+      pTxt(g,L(line), W/2+1, H*0.30+1, 'rgba(8,6,16,0.6)', 7, 'center');
+      pTxt(g,L(line), W/2,   H*0.30,   '#e8e2f2', 7, 'center');
+      g.globalAlpha=1;
+    }
+  }
+  /* and the new day's number, coming up with the sun */
+  { const a=clamp((u-0.72)/0.2,0,1)*clamp((SLEEP_DUR-0.35-s)/0.4,0,1);
+    if(a>0.01){
+      g.globalAlpha=a;
+      pTxt(g,L('DAY ')+DAY.n, W/2+1, H*0.19+1, 'rgba(8,6,16,0.5)', 13,'center');
+      pTxt(g,L('DAY ')+DAY.n, W/2,   H*0.19,   '#f6ecc8', 13,'center');
+      g.globalAlpha=1;
+    }
+  }
+  if(s>1.2 && s<SLEEP_DUR-0.6){
+    g.globalAlpha=0.30+0.12*Math.sin(s*3);
+    pTxt(g, L('tap to wake'), W/2, H-9, '#cbc2dc', 6,'center');
+    g.globalAlpha=1;
+  }
+
+  /* in from the world at the start, out to it at the end */
+  const inA = clamp(1-s/0.55, 0, 1);
+  if(inA>0){ g.fillStyle=rgba('#05060f',inA); g.fillRect(0,0,W,H); }
+  const outA = clamp((s-(SLEEP_DUR-0.55))/0.55, 0, 1);
+  if(outA>0){ g.fillStyle=rgba('#0a0d16',outA); g.fillRect(0,0,W,H); }
 }
+
 /* the morning card — Stardew shows you the night's takings and so do we */
 function drawDayCard(g){
   const c=DAY.card; if(!c) return;
@@ -16806,7 +17089,7 @@ function stepFootball(dt){
       else k.vx*=0.8;
     }
     k.x += k.vx*dt; k.y=groundY(k.x);
-    k.phase += Math.abs(k.vx)*dt*0.26;
+    k.phase += villPhase(k.vx, dt);
   }
   /* and the prete, who is nine feet tall and standing in the middle of it */
   if(Math.abs(P.x-BALL.x)<16 && Math.abs(BALL.vx)<40){
@@ -20412,7 +20695,7 @@ function stepAlms(dt){
   MONK.jobOn = true; MONK.job='alms';
   const tx = ALMS.leg===0? 2300 : MONK.home;
   const d = tx-MONK.x;
-  if(Math.abs(d)>4){ MONK.vx=sign(d)*19; MONK.face=sign(d); MONK.x+=MONK.vx*dt; MONK.phase+=MONK.vx*dt*0.22; }
+  if(Math.abs(d)>4){ MONK.vx=sign(d)*19; MONK.face=sign(d); MONK.x+=MONK.vx*dt; MONK.phase+=villPhase(MONK.vx, dt); }
   else if(ALMS.leg===0){ ALMS.leg=1; }
   else { ALMS.on=false; MONK.jobOn=false; MONK.vx=0; }
   MONK.y=groundY(MONK.x);
@@ -21618,7 +21901,15 @@ function update(dt){
     case 'memory': stepMem(dt); break;
     case 'play':{
       stepDay(dt);
-      if(DAY.sleeping){ clearPress(); break; }
+      if(DAY.sleeping){
+        /* you will watch this night go over a hundred times, so a tap runs it
+           to the end — but never past the point where the day turns over */
+        if((press('act')||press('tap')) && DAY.sleeping>0.7){
+          if(!DAY.done){ DAY.done=1; nightPass(); }
+          DAY.sleeping = Math.max(DAY.sleeping, SLEEP_DUR-0.5);
+        }
+        clearPress(); break;
+      }
       /* the morning card holds the village still for a moment, the way a
          day-summary should. A tap moves it on. */
       if(DAY.card){
@@ -21771,6 +22062,10 @@ function newGame(){
   GS.quests={}; GS.pet=null; GS.petH={};
   DAY.n=1; DAY.min=DAY_START; DAY.ship.length=0; DAY.sleeping=0; DAY.card=null; DAY.meritT=0;
   GS.ch=0;
+  /* the rig too, or a new game inherits the last one's gait and hands */
+  P.stride=6; P.phase=0; P._hand=null; P._hacc=0; P._hticks=0;
+  P.lean=0; P.squash=0; P.vx=0; P.vy=0;
+  P.swayT=0; P.anim=0; P.breath=0; P.state='idle';
   resetFarm();
   /* Nothing is yours and nothing is planted. The old man's five beds are
      baked hard and the first morning is about that and nothing else. */
@@ -21901,6 +22196,15 @@ function frame(now){
   _acc+=dt;
   let n=0;
   while(_acc>=STEP && n<4){ update(STEP); _acc-=STEP; n++; }
+  /* Four steps is the most we will run in one frame, so on a slow phone the
+     leftover has to be thrown away. Kept, it only grows, and the game spends
+     the rest of its life four steps behind and getting further. */
+  if(_acc > STEP*4) _acc = STEP*4;
+  /* What the draw pass gets is the REAL time since the last frame, not a
+     hopeful sixtieth. The prete's hand spring and the cloth run inside the
+     draw, so a hardcoded 1/60 made them advance at a quarter speed on a
+     fifteen-frame phone — which is most of what looked broken on mobile. */
+  GS.rdt = dt;
   render();
   /* the cover goes on last, over whatever the screen happens to be */
   if(typeof drawWipe==='function'){ ctx.setTransform(SC,0,0,SC,0,0); drawWipe(ctx); }

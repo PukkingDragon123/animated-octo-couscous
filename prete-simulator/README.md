@@ -1327,6 +1327,40 @@ it is brakes, a long look, and the road again faster than before.
 
 ![the headlights, and one button](screenshots/keeping-out-of-sight.png)
 
+## Sleeping, which you do every day
+
+It used to be a black rectangle with a line of type on it, held for two
+seconds. You sleep every single day in this game, so that was the thing the
+player saw more often than anything else in it, and it was nothing.
+
+Now you lie where you lay down and watch the night go over. The moon comes down
+the sky and sets behind the hills. The stars go out from the bottom of the sky
+upward, because the low ones always go first. The whole sky walks through six
+stops — night, first light, violet, orange, gold, morning — and the clouds catch
+each one before anything on the ground does. Mist comes up off the paddies and
+turns warm when the sun reaches it. The egrets go over. The sun comes up out of
+the far side of the fields and lays a road across the water, the bank comes up
+out of the dark with the grass lit along its tops, and the new day's number
+arrives with it.
+
+He is down there in the corner the whole time, asleep on his side with his
+snout along the ground, breathing.
+
+A tap skips it, because you will see it a hundred times — but never past the
+point where the day turns over, so skipping never costs you the night.
+
+![the night going over](screenshots/sleep-night.png)
+
+![and the morning](screenshots/sleep-morning.png)
+
+### The test for it looks for the gap
+
+The paddies used to stop eight pixels short of the bank and the village showed
+through the seam — exactly the sort of thing you only notice at three in the
+morning. So the test fills the screen with magenta, draws the sleep scene over
+it at seven points through the night, and counts magenta pixels. Any that
+survive are a hole in the scene.
+
 ## One person, drawn one way
 
 There used to be nine or ten different people in this game, in the sense that
@@ -1357,6 +1391,52 @@ A scene that is drawn closer than the world is passes a `scale`. That does not
 scale the canvas, which would turn every rounded rectangle soft: the figure is
 drawn once at 1× into a scratch canvas and blitted up with smoothing off, so a
 person in the shop is the same person as a person on the road, only nearer.
+
+### Nobody walks backwards any more
+
+A cosine can only hold a foot still for one instant, so a cosine walk always
+skates. The prete was given a proper one a while back — the cycle split into
+STANCE, where the planted foot tracks straight back at exactly walking speed and
+therefore does not move over the ground at all, and SWING — but the villagers
+were still on the cosine, and worse, they multiplied the foot's offset by `face`
+on top of a **signed** phase. Walking right that cancelled out. Walking left it
+inverted the cycle: the foot that should have been planted was in the air, and
+the one in the air was dragging along the ground. They moonwalked.
+
+The measurement, before: walking left, the planted foot slid **0.72 pixels a
+frame** — 1.7× the body's own speed, in the wrong direction. Walking right it
+was 0.147. Now it is 0.000, both ways, at every speed.
+
+The other half of it is that a stride and a phase rate are one fact, not two:
+the phase has to advance exactly one half-cycle per stride of ground covered or
+the foot skates however you split the cycle. Both now come from one place,
+`villStride` and `villPhase`, and there is a test that greps the built file for
+anything advancing a `.phase` by anything else.
+
+### And the rig no longer minds what the frame rate is
+
+The prete's hand spring and the cloth on every sarong run inside the *draw*
+pass, not the update — and the draw was being handed a hardcoded `dt: 1/60`
+whatever the real frame time was. On a phone rendering fifteen frames a second
+that ran the spring at a quarter speed, so his hands lagged a long way behind
+the pose and swam around after it. Measured: at 15fps the hand ended up **7.4
+pixels** from where the same walk put it at 60fps, on a figure whose hand is
+three pixels across.
+
+Three things fixed it. The draw pass gets `GS.rdt`, the real elapsed time.
+The hand spring banks that time and spends it in sixtieths, so it takes the same
+number of ticks per second to get anywhere on any device — and both arms share
+one bank, counted once per frame, or the first arm would drain it and the second
+would never move. And `stepCloth` refuses to integrate a fifth of a second in
+one jump, which used to turn a skirt inside out; it walks there in pieces.
+
+The loop also throws away the leftover after four catch-up steps. Kept, it only
+grows, and a phone that stalls once spends the rest of its life four steps
+behind and getting further.
+
+After: 0.05 pixels at 30fps, 0.67 at 15fps. And what the game *simulates* is now
+bit-identical however often it is drawn, which the suite checks by running the
+same 240 steps while rendering every step, every second step and every fourth.
 
 ### Taller, and cuter with it
 
