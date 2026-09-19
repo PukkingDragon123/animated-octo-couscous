@@ -363,6 +363,27 @@ const AU = {
     one(0); one(0.20 + Math.random()*0.06);
     if(Math.random()<0.5) one(0.44 + Math.random()*0.08);
   },
+  /* a pig. Two short falling grunts through a nasal filter — the point is
+     that it is soft and a bit silly, because it is a piggy bank. */
+  oink(){
+    if(!this.ctx||this.muted) return;
+    const one=(when, f0)=>{
+      this.tone(f0,      0.11,'sawtooth', 0.026, f0*0.55, when);
+      this.tone(f0*0.5,  0.13,'triangle', 0.020, null,    when);
+      this.noise(0.05, 0.010, 300, 1500, when);
+    };
+    one(0, 230); one(0.135, 186);
+  },
+  /* one long temple gong, for the moment the cloud opens */
+  gong(){
+    if(!this.ctx||this.muted) return;
+    const f=104;
+    this.tone(f,      3.4,'sine',    0.070, null, 0);
+    this.tone(f*2.02, 2.4,'sine',    0.030, null, 0.01);
+    this.tone(f*2.97, 1.6,'triangle',0.016, null, 0.02);
+    this.tone(f*4.31, 1.0,'sine',    0.010, null, 0.03);
+    this.noise(0.20, 0.020, 200, 3000, 0);
+  },
   chime(){
     if(!this.ctx||this.muted) return;
     const n=(f,when)=>{
@@ -2599,6 +2620,33 @@ const TH = {
     'น้ำแดงหนึ่งขวด ข้าวหนึ่งจาน ธูปสามดอกที่ไหม้จนหมดแล้ว',
   'Somebody comes out here before work to leave that. Every morning.':
     'มีคนออกมาวางไว้ก่อนไปทำงาน ทุกเช้า',
+
+  /* ---- พระอิศวร, the one night somebody explains it ----
+     He is a god out of a temple mural, so he talks like one: ข้า for himself,
+     เจ้า for you, and no politeness particles at all — a เทพ does not ครับ. */
+  'Phra Isuan':'พระอิศวร',
+  'You are a long way up, and the floor is cloud.':
+    'เธออยู่สูงขึ้นมามาก และพื้นใต้เท้าคือเมฆ',
+  'Come here. I have been waiting for somebody to die badly enough to be sent up.':
+    'เข้ามาใกล้ ๆ ข้ารอมานานแล้ว รอคนที่ตายอย่างอนาถพอจะถูกส่งขึ้นมาถึงนี่',
+  'You know what you are. Prete. The mouth of a needle and the belly of a well.':
+    'เจ้ารู้อยู่แก่ใจว่าเจ้าเป็นอะไร เปรต ปากเท่ารูเข็ม ท้องเท่าบ่อน้ำ',
+  'You were not made hungry to punish you. You were made hungry so you would go and look for something.':
+    'ที่เจ้าหิว ไม่ใช่เพื่อลงโทษเจ้า ที่เจ้าหิว เพื่อให้เจ้าออกไปตามหาบางอย่าง',
+  'What you are looking for is บุญ. Merit. It is not a coin and it is not a score.':
+    'สิ่งที่เจ้าตามหาคือบุญ บุญไม่ใช่เหรียญ และไม่ใช่คะแนน',
+  'It is what is left over when somebody is glad you were there.':
+    'บุญคือสิ่งที่เหลืออยู่ เมื่อมีใครสักคนดีใจที่เจ้าอยู่ตรงนั้น',
+  'Help them. Fix what is broken. Feed what is thin. Kneel when the line goes past.':
+    'ช่วยเขา ซ่อมสิ่งที่พัง ให้อาหารสิ่งที่ผอม คุกเข่าลงเมื่อแถวบาตรผ่านไป',
+  'You will not be able to count it, so I am going to give you something that can.':
+    'เจ้านับบุญเองไม่ได้ ข้าจึงจะให้ของสิ่งหนึ่งที่นับแทนเจ้าได้',
+  'Keep it where you can see it. Every good turn is a coin through the slot.':
+    'เก็บมันไว้ในที่ที่เจ้ามองเห็น ความดีทุกครั้งคือเหรียญที่หยอดลงไป',
+  'Fill it, and it breaks, and you come back a little further from what you were.':
+    'เมื่อเต็ม มันจะแตก และเจ้าจะกลับมาไกลจากสิ่งที่เจ้าเคยเป็นขึ้นอีกหน่อย',
+  'Go on. They are waiting on the morning and you are keeping them.':
+    'ไปเถอะ เขารอเช้าวันใหม่กันอยู่ และเจ้ากำลังรั้งเขาไว้',
 };
 function L(s){
   if(LANG!=='th') return s;
@@ -3943,12 +3991,12 @@ function drawMotes(g){
   g.globalCompositeOperation='source-over';
 }
 
-/* ---------- foreground: grass blades and drifting leaves ---------- */
-const FORE = [];
-for(let i=0;i<220;i++){
-  const x=Math.random()*WORLD_W;
-  FORE.push({x, y:groundY(x)+rnd(-1,7), h:rnd(6,16), ph:rnd(TAU), c: Math.random()<0.5?'#1a3324':'#122519'});
-}
+/* There used to be a layer of near-black grass blades here, drawn over the
+   whole frame at a faster parallax than the world, to sell depth. What it
+   actually did was put two hundred dark smears between you and the game:
+   they crossed faces, they crossed the prompts, and at the bottom of the
+   screen they read as dirt on the lens. Gone. The tall grass you can walk
+   through is in pcrit.js and stands in the world where it belongs. */
 const FIREFLIES = [];
 for(let i=0;i<70;i++){
   const grove = i<38;
@@ -5585,7 +5633,7 @@ function addMerit(n, quiet){
   const b=GS.merit;
   GS.merit=clamp(GS.merit+n,0,999);
   if(GS.merit>b){
-    meritFlash=1; if(!quiet) AU.ding();
+    meritFlash=1; if(!quiet) AU.ding();      // the oink is on the pig, when it lands
     /* a prete is sustained by merit transferred to it. That is the folklore,
        and it happens to be exactly the refill this loop needed: the way to
        get your strength back is to be some use to somebody. */
@@ -5594,7 +5642,9 @@ function addMerit(n, quiet){
        it is the act of earning that drops the coin through the slot */
     if(typeof humanStage==='function' && humanStage()>(GS.human||0)) GS.bankDue=humanStage();
     /* and it arrives as coins, from wherever you were when you earned it */
-    if(typeof pigCoin==='function' && GS.state==='play')
+    /* merit never says a number. It is a light that leaves whatever you did
+       and goes into the pig, and the pig grunts when it lands. */
+    if(typeof pigCoin==='function' && (GS.state==='play'||GS.state==='dream'))
       pigCoin(GS.merit-b, P.x, P.y-60);
     /* and whatever the total has now earned you comes back. One at a time
        normally; a big jump catches up rather than leaving you owed. */
@@ -6929,7 +6979,7 @@ function posopCheck(){
   saveGame();
   if(riceDone()){
     posopSay('That\'s a crop. Road east is yours — the village eats what you cut.', 9);
-    addMerit(5); toast(L('+5 merit')+' · '+L('the rice is in'), PAL.goldL);
+    addMerit(5); toast(L('the rice is in'), PAL.goldL);
     vignette('riceLesson');
     return;
   }
@@ -6945,7 +6995,7 @@ function talkPosop(){
          {e:'cross', w:'Mae Posop',t:'I\'m Mae Posop. Rice is mine, and this paddy has stood empty two years.'},
          {e:'warm', w:'Mae Posop',t:'You can\'t eat. Good. Then you won\'t keep any of it.'},
          {e:'warm', w:'Mae Posop',t:'Work my field and I\'ll teach you all of it.'}],
-      ()=>{ addMerit(3); toast(L('+3 merit')+' · '+L('the rice mother'), PAL.goldL);
+      ()=>{ addMerit(3); toast(L('the rice mother'), PAL.goldL);
             vignette('metPosop');
             posopSay(riceStep().say, 9); });
     return;
@@ -7419,7 +7469,7 @@ function bugCaught(b){
   if(GS.q.bugs===1) vignette('firstBug');
   else if(BUG_IDS.every(k=>GS.seen['bug_'+k]) && !GS.seen.allBugs){
     GS.seen.allBugs=true; addMerit(6);
-    toast(L('+6 merit')+' · '+L('every one of them'), PAL.goldL);
+    toast(L('every one of them'), PAL.goldL);
     guideSay('All six. Nobody asked you to. Good.',8);
   }
   saveGame();
@@ -9096,6 +9146,7 @@ function render(){
   if(GS.state==='title'){ drawTitle(); return; }
   if(GS.state==='memory'){ drawMem(); return; }
   if(GS.state==='ascend'){ drawAscend(ctx); return; }
+  if(GS.state==='dream'){ drawDream(ctx); drawDialog(ctx); drawWipe(ctx); return; }
   if(GS.state==='store'){ drawStore(ctx); drawWipe(ctx); return; }
 
   const sh=GS.shake>0?GS.shake:0;
@@ -9202,6 +9253,11 @@ function render(){
     wishBubble(ctx,s,y-38);
   }
 
+  /* while the night is going over he is lying under the house, which is a
+     pose of its own rather than the standing one bent double */
+  if(DAY.sleeping && typeof LIE!=='undefined' && LIE.k>0.012){
+    drawPreteLie(ctx, P.x, P.y, LIE.k, GS.t, P.face||1);
+  } else {
   pEll(ctx,P.x,P.y+1,9,2.6,'rgba(10,8,24,0.4)');
   drawPrete(ctx,P,{dt:GS.rdt||1/60, wind:GS.wind, mouth:P.state==='wail'?1:(P.talk||0),
     headX:(P.chatX||0),
@@ -9214,6 +9270,7 @@ function render(){
     carry: P.carry? P.carry.jars.length : 0,
     carryWater: P.carry? P.carry.jars : null,
     gold: GS.cos.halo?1:0, rise:P.rise||0});
+  }
   if(HT) drawTaskWorld(ctx);
   drawStoryFore(ctx);  // whoever is walking you home, and what you are holding
   drawCrittersFore(ctx);
@@ -9225,12 +9282,6 @@ function render(){
   ctx.save(); ctx.translate(-cx,-cy);
   drawGlows(ctx);
   drawMotes(ctx);
-  for(const f of FORE){
-    const fx=f.x - cx*1.32 + cx*0.32;
-    if(fx-cx<-14||fx-cx>W+14) continue;
-    const sw=Math.sin(GS.t*1.3+f.ph)*2.2;
-    pTaper(ctx,fx,f.y+8,fx+sw,f.y+8-f.h,3,1,f.c);
-  }
   ctx.restore();
 
   /* the daylight pass. Everything up to here is painted for dusk, which is
@@ -11315,7 +11366,10 @@ function drawHUD(){
      bottom, the way a farming game does it. neither one covers the village. */
   /* No plaque and no number. A gold pig floats in the corner with the coins
      going into it, and how far up the gold has climbed is the whole readout. */
-  const mw = drawBank(g,6,6);
+  /* No pig and no merit until the night somebody explains what merit is.
+     Handing a player a currency before they have a reason to want it is
+     the oldest sin in this kind of game. */
+  const mw = GS.q.blessed? drawBank(g,6,6) : 0;
   /* the purse: the other number, and the one the landlord counts */
   { const btxt=(GS.baht|0)+'฿', bwid=txtW(btxt,8)+20;
     cloud(g,mw+6,6,bwid,18,{seed:9,top:'#fff4d4',body:'#f0dca8',under:'#d4b878',edge:'#3b2412'});
@@ -12896,6 +12950,161 @@ function stepPlayer(dt){
   stepPrete(P,dt);
 }
 /* ============================================================
+   HE LIES DOWN
+
+   Sleeping used to be a cut. You pressed the thing under the house
+   and the screen was already going dark, so the one moment in the
+   day when this enormous starved thing stops being upright happened
+   entirely off camera.
+
+   Now he folds up. The knees go first, the hip comes down, and then
+   the whole long body tips over onto its side and the head lands
+   last. He curls. He breathes. Two z's come off him. In the morning
+   he does the same thing backwards and stands up into the daylight.
+
+   It is one continuous pose rather than two sprites cross-faded:
+   k runs nought to one and everything on him is a lerp along it, so
+   there is no frame where he is in two places.
+   ============================================================ */
+const LIE = { k:0 };
+function lieReset(){ LIE.k=0; }
+
+function drawPreteLie(g, x, y, k, t, face){
+  face = face||1;
+  const hum  = clamp(typeof humanAmt==='function'? humanAmt():0, 0, 1);
+  const BODY = mix('#ded5c4', PAL.skin, hum*0.78);
+  const SHD  = mix('#b6a894', PAL.skinD, hum*0.78);
+  const HI   = mix('#f7f1e2', '#f2cda4', hum*0.72);
+  const OC   = mix('#5c4a3c', '#4a3024', hum*0.55);
+  const BLUSH= mix('#d89a90', '#d4737e', hum*0.6);
+  const e  = clamp(k,0,1); const ee = e*e*(3-2*e);        // soft at both ends
+  const br = Math.sin(t*1.25)*(0.4+1.0*ee);               // the breath, deeper once he is out
+
+  /* one bend, going over from standing to flat: hip, then shoulder, then head.
+     At k=0 these are the standing prete's own numbers — hip at forty-five,
+     chest twenty-six above that — so the hand-off from drawPrete is a step of
+     a pixel or two rather than a jump. */
+  const hipY = y - lerp(45, 8, ee);
+  const hipX = x - lerp(0, 9, ee)*face;
+  const ang  = ee*1.40;
+  const BL   = lerp(30, 28, ee);
+  const shX  = hipX + Math.sin(ang)*BL*face;
+  const shY  = hipY - Math.cos(ang)*BL + br*0.30;
+  const hdX  = shX + Math.sin(ang*1.02)*19*face;
+  const hdY  = shY - Math.cos(ang*1.02)*19 - lerp(0,1.5,ee) + br*0.45;
+
+  /* the shadow spreads under him as he comes down */
+  pEll(g, lerp(x, (hipX+hdX)/2, ee), y+1, lerp(9,29,ee), lerp(2.6,3.6,ee), 'rgba(10,8,24,0.34)');
+
+  /* ---- the legs, folding up towards the chest ---- */
+  /* the knees come up and the shins tuck under the belly: he curls */
+  const legAt=(dx,dy,col,dcol)=>{
+    const kx = hipX + lerp(3,13,ee)*face + dx, ky = lerp(y-23, y-15.5, ee) + dy;
+    const fx = hipX + lerp(5,25,ee)*face + dx, fy = lerp(y,   y-4.5, ee) + dy;
+    pTaper(g, hipX+dx, hipY+dy, kx, ky, 6.2, 4.6, col);
+    pTaper(g, kx, ky, fx, fy, 4.6, 3.2, col);
+    pEll(g, kx, ky, 3.2, 3.0, dcol);
+    /* a long flat foot, which lies over on its side with the rest of him */
+    pEll(g, fx+lerp(3.4,2.6,ee)*face, fy-lerp(0,0.6,ee), lerp(5.0,4.2,ee), lerp(1.9,2.8,ee), col);
+    pEll(g, fx+lerp(3.4,2.6,ee)*face, fy-lerp(0,0.6,ee), lerp(3.8,3.0,ee), lerp(1.1,1.8,ee), dcol);
+  };
+  legAt(-2.4*face, 1.4, SHD, shade(SHD,-0.10));            // the far one, behind
+  /* ---- the far arm, laid along the body ---- */
+  { const ex = lerp(shX+6*face, shX+9*face,  ee), ey2 = lerp(shY+13, shY+7.0, ee);
+    const hx = lerp(shX+6*face, shX+22*face, ee), hy2 = lerp(shY+27, shY+6.5, ee);
+    pTaper(g, shX-2.4*face, shY+1.4, ex, ey2, 4.2, 3.4, SHD);
+    pTaper(g, ex, ey2, hx, hy2, 3.4, 2.6, SHD);
+    pEll(g, hx, hy2, 2.8, 2.6, shade(SHD,-0.06)); }
+
+  /* ---- the trunk: narrow at the shoulder, and the starved belly under it ---- */
+  pTaper(g, hipX, hipY, shX, shY, 12.0, 9.8, OC);
+  pTaper(g, hipX, hipY, shX, shY, 10.4, 8.2, BODY);
+  { /* the belly hangs whichever way is down, which is the whole joke of him */
+    const bxm = lerp(hipX, shX, 0.38), bym = lerp(hipY, shY, 0.38);
+    pEll(g, bxm + lerp(0,1.5,ee)*face, bym + lerp(1.0,3.2,ee) + br*0.5,
+            lerp(7.0,9.2,ee), lerp(8.2,5.4,ee), BODY);
+    pEll(g, bxm + lerp(1.4,2.4,ee)*face, bym + lerp(3.0,4.4,ee) + br*0.5,
+            lerp(4.6,6.0,ee), lerp(4.4,2.8,ee), SHD); }
+  /* three ribs across the chest */
+  for(let i=0;i<3;i++){
+    const u=0.58+i*0.13;
+    const rx=lerp(hipX,shX,u), ry=lerp(hipY,shY,u);
+    pTaper(g, rx-Math.cos(ang)*5.0, ry-Math.sin(ang)*5.0*face,
+              rx+Math.cos(ang)*5.0, ry+Math.sin(ang)*5.0*face, 1.3, 1.3, SHD);
+  }
+  pEll(g, lerp(hipX,shX,0.80), lerp(hipY,shY,0.80)-lerp(2,0,ee), 4.0, 3.0, HI);
+  /* the sarong, low on the hip */
+  { const sx2=lerp(hipX,shX,0.10), sy2=lerp(hipY,shY,0.10);
+    pEll(g, sx2, sy2, lerp(8.0,10.6,ee), lerp(6.2,7.4,ee), mix('#7e6b52','#6a5a46',0.4));
+    pEll(g, sx2, sy2-1, lerp(7.0,9.4,ee), lerp(4.6,5.4,ee), mix('#95805f','#7e6b52',0.4)); }
+
+  legAt(0, 0, BODY, SHD);                                  // and the near leg, in front
+
+  /* ---- the near arm, folded under his cheek ---- */
+  { const ex = lerp(shX+7*face, shX+11*face, ee), ey2 = lerp(shY+14, shY+9.5, ee);
+    const hx = lerp(shX+7*face, hdX-9.5*face, ee), hy2 = lerp(shY+28, hdY+11.0, ee);
+    pTaper(g, shX+1.2*face, shY+1.0, ex, ey2, 4.4, 3.6, BODY);
+    pTaper(g, ex, ey2, hx, hy2, 3.6, 2.8, BODY);
+    for(let i=0;i<3;i++) pEll(g, hx+(i-1)*2.0*face, hy2+0.6, 1.5, 1.9, BODY);
+    pEll(g, hx, hy2, 3.0, 2.8, BODY);
+    pEll(g, hx+1.0*face, hy2+1.0, 2.0, 1.6, SHD); }
+
+  /* ---- the head, which lands last ---- */
+  const HRX=11.4, HRY=11.6;
+  pTaper(g, shX, shY, hdX, hdY, 4.4, 4.0, OC);
+  pTaper(g, shX, shY, hdX, hdY, 3.4, 3.0, SHD);
+  pEll(g, hdX, hdY, HRX+1.6, HRY+1.6, OC);
+  pEll(g, hdX, hdY, HRX, HRY, BODY);
+  pEll(g, hdX+lerp(4.6,1.0,ee)*face, hdY+lerp(1.6,5.0,ee), HRX*0.46, HRY*0.60, SHD);
+  pEll(g, hdX-3.6*face, hdY-lerp(5.4,3.0,ee), 4.2, 2.8, HI);
+  pEll(g, hdX-10.4*face, hdY+lerp(1.8,-1.0,ee), 1.9, 2.6, BODY);   // the ear
+  pEll(g, hdX-10.4*face, hdY+lerp(1.8,-1.0,ee), 1.1, 1.6, SHD);
+  /* the few hairs, which lie down with him */
+  { const nH=5+R(hum*7), hCol=mix('#9b8d7c','#3a3028',hum*0.85);
+    for(let i=0;i<nH;i++){
+      const u=nH<2?0.5:i/(nH-1);
+      const a2 = -Math.PI/2 + ang*0.92 + (u-0.5)*0.85;
+      const hx3 = hdX + Math.cos(a2)*10.2, hy3 = hdY + Math.sin(a2)*10.2;
+      const hh = (4.2+((i*5)%3))*(1+hum*1.1);
+      const cur = Math.sin(t*1.2+i)*1.3;
+      pTaper(g, hx3, hy3, hx3+Math.cos(a2)*hh+cur, hy3+Math.sin(a2)*hh+1.2*ee, 1.6+hum*0.5, 0.7, hCol);
+    } }
+  /* ---- the eyes, shut ---- */
+  const eyY = hdY - lerp(0.4, -1.2, ee);
+  const shutEye=(ex,r)=>{
+    pEll(g, ex, eyY+0.4, r+1.0, r*0.94, shade(SHD,-0.10));
+    pEll(g, ex, eyY-0.2, r+0.7, r*0.94, BODY);
+    for(let i=-3;i<=3;i++){ const u=i/3;
+      pR(g, R(ex+u*r*0.95), R(eyY - (1-u*u)*r*0.36), 1, 1, OC); }
+    pTaper(g, ex+r*0.88*face, eyY+r*0.10, ex+r*1.34*face, eyY-r*0.18, 1.0, 0.5, shade(BODY,-0.13));
+  };
+  shutEye(hdX - 5.6*0.72*face, 5.2*0.72);
+  shutEye(hdX + 4.6*0.72*face, 6.1*0.72);
+  g.globalAlpha=0.42;
+  pEll(g, hdX+6.4*face, hdY+3.6, 3.0, 1.6, BLUSH);
+  pEll(g, hdX-6.8*face, hdY+3.4, 2.5, 1.4, BLUSH);
+  g.globalAlpha=1;
+  /* the needle of a mouth, open a crack and moving with the breath */
+  { const w=1.1+hum*1.9+Math.abs(br)*0.22, h2=0.9+hum*1.1+Math.abs(br)*0.30;
+    pEll(g, hdX+1.4*face, eyY+7.2, w, h2, mix('#8a5560','#7a3f4a',hum*0.5)); }
+
+  /* ---- and two z's, once he has actually gone ---- */
+  if(ee>0.72){
+    const a0=clamp((ee-0.72)/0.20,0,1);
+    for(let i=0;i<2;i++){
+      const u=((t*0.42+i*0.5)%1);
+      const zx=hdX+lerp(6,20,u)*face, zy=hdY-12-u*22;
+      const s2=0.8+u*0.7, a=a0*(1-u)*(u<0.14? u/0.14 : 1)*0.9;
+      if(a<=0.01) continue;
+      g.globalAlpha=a;
+      pR(g, zx-3*s2, zy-3*s2, 6*s2, 1.4*s2, '#f6f0dc');
+      pR(g, zx-3*s2, zy+1.8*s2, 6*s2, 1.4*s2, '#f6f0dc');
+      pTaper(g, zx+2.6*s2, zy-1.8*s2, zx-2.6*s2, zy+2.4*s2, 1.4*s2, 1.4*s2, '#f6f0dc');
+      g.globalAlpha=1;
+    }
+  }
+}
+/* ============================================================
    PEOPLE
 
    The villagers used to be twenty-two pixels of coloured block
@@ -13812,7 +14021,7 @@ const STORY = [
         {e:'tired', w:'Lung Somchai', t:'Listen. I\'m in that field at first light. I\'m seventy-one. I won\'t manage it.'},
         {e:'happy', w:'Lung Somchai', t:'You\'re big and you\'re not busy. Come hold the other end.'},
       ], ()=>{
-        addMerit(4); toast('+4 '+L('merit')+' · '+L('he was not afraid of you'));
+        addMerit(4); toast(L('he was not afraid of you'));
         LUNG.face=1; lungSay('Night, tall one.',3);
         guideSay('Under the house. Between the stilts.',8);
         chNext();
@@ -13881,7 +14090,7 @@ const STORY = [
     stepLung(dt);
     if(plowedCount()>=PLOTS.length && !DLG && !CH.said.done){
       CH.said.done=true;
-      addMerit(8); toast('+8 '+L('merit')+' · '+L('the ground is open'));
+      addMerit(8); toast(L('the ground is open'));
       lungWalk(BED_XS[2], 46);
       say([
         {e:'laugh', w:'Lung Somchai', t:'Hah! Straight, too. I\'ve seen buffalo do worse.'},
@@ -13899,7 +14108,7 @@ const STORY = [
     stepLung(dt);
     if(wateredCount()>=PLOTS.length && !DLG && !CH.said.done){
       CH.said.done=true;
-      addMerit(6); toast('+6 '+L('merit')+' · '+L('the beds are wet through'));
+      addMerit(6); toast(L('the beds are wet through'));
       say([
         {e:'warm', w:'Lung Somchai', t:'Good. Feel that — it gives now.'},
         {e:'warm', w:'Lung Somchai', t:'Seed next. I\'ll start this end. You take the far one.'},
@@ -13931,7 +14140,7 @@ const STORY = [
     if(sownCount()>=PLOTS.length && !DLG && !CH.said.done){
       CH.said.done=true;
       addMerit(12); earn(40);
-      toast('+12 '+L('merit')+' · +40 '+L('baht'));
+      toast('+40 '+L('baht'));
       vignette('planted');
       say([
         {e:'happy', w:'Lung Somchai', t:'That\'s the field in. Two days, that\'d have taken me.'},
@@ -13972,7 +14181,7 @@ function talkLungFirst(){
     {e:'warm', w:'Lung Somchai', t:'Ah. One of the hungry ones. My grandmother fed one every Wan Phra.'},
     {e:'warm', w:'Lung Somchai', t:'I\'m closing. Walk with me — there\'s rice in the pot.'},
   ], ()=>{
-    addMerit(2); toast('+2 '+L('merit')+' · '+L('somebody spoke to you'));
+    addMerit(2); toast(L('somebody spoke to you'));
     GS.q.metLung=true;
     chNext();
   });
@@ -14604,7 +14813,7 @@ function plowBite(A, grade){
     A.out=1.5;
     AU.fix();
     toast(L('bed turned')+' · '+plowedCount()+'/'+PLOTS.length, PAL.jadeL);
-    if(A.best>=A.need) { addMerit(2,true); toast('+2 '+L('merit')+' · '+L('not one skip'), PAL.goldL); }
+    if(A.best>=A.need) { addMerit(2,true); toast(L('not one skip'), PAL.goldL); }
     for(let i=0;i<18;i++)
       part({k:'clod',x:pl.x+rnd(-16,16),y:groundY(pl.x)-2,vx:rnd(-30,30),vy:-rnd(30,90),life:rnd(.5,1.1),sz:1+((i%3)|0),sw:rnd(TAU)});
     /* the birds know exactly what a turned bed means */
@@ -15903,6 +16112,8 @@ function goToBed(force){
   DAY.sleeping=0.001;
   DAY.forced=!!force;
   navStop(); clearPress(); DLG=null; PROMPT=null;
+  P.vx=0; P.vy=0; P.act=null;
+  if(typeof lieReset==='function') lieReset();
   AU.gong(98,0,0.05);
 }
 /* what actually happens between one day and the next */
@@ -15967,15 +16178,22 @@ function stepNightFade(dt){
      world steps while he is asleep, so this is the only thing moving: the
      clock runs from the hour he lay down, through the small hours, to six in
      the morning, and the ordinary sky does the rest. */
-  { const u=clamp((s-0.45)/(SLEEP_DUR-1.15),0,1);
+  { const u=sleepU(s);
     const night=0.02;
     const tod = u<0.30? lerp(DAY.tod0===undefined?0.06:DAY.tod0, night, u/0.30)
               : u<0.52? night
               : lerp(night, todFromClock(DAY_START), (u-0.52)/0.48);
     setTOD(tod, true); }
+  if(typeof LIE!=='undefined') LIE.k = sleepLie(s);
   /* the day turns over halfway through, so the number that comes up with the
      sun is the new one */
-  if(s>SLEEP_DUR*0.46 && !DAY.done){ DAY.done=1; nightPass(); }
+  if(sleepU(s)>0.42 && !DAY.done){
+    DAY.done=1; nightPass();
+    /* and the first time, you do not just sleep through it */
+    if(typeof dreamDue==='function' && dreamDue()){
+      DAY.sleeping=0; startDream(); return;
+    }
+  }
   if(s>SLEEP_DUR){ DAY.sleeping=0; DAY.done=0;
     P.x=clamp(bedNear()||P.x, 20, WORLD_W-20); P.y=groundY(P.x); P.vx=0; P.vy=0;
     GS.camX=clamp(P.x-W/2,0,WORLD_W-W); }
@@ -15996,7 +16214,23 @@ function stepNightFade(dt){
 
    A tap skips it, because you will see it a hundred times.
    ============================================================ */
-const SLEEP_DUR = 5.6;
+const SLEEP_DUR = 7.0;
+const LIE_IN   = 1.5;      // how long he takes to fold up
+const LIE_OUT  = 1.35;     // and to unfold again into the morning
+/* how far through the night we are, nought at the moment he stops moving and
+   one when the sun is up. Everything that runs on the night reads this. */
+function sleepU(s){ return clamp((s-LIE_IN)/(SLEEP_DUR-LIE_IN-LIE_OUT), 0, 1); }
+/* how far over he is: down over LIE_IN, flat all night, up again over LIE_OUT */
+function sleepLie(s){
+  return clamp(s/LIE_IN,0,1) * (1 - clamp((s-(SLEEP_DUR-LIE_OUT))/0.95, 0, 1));
+}
+/* and how far his eyes have closed — they shut to a slot rather than to black,
+   because the whole point of the scene is watching the night go over */
+function sleepLid(s){
+  const shut = clamp((s-0.95)/0.85, 0, 1);
+  const open = 1 - clamp((s-(SLEEP_DUR-LIE_OUT))/0.75, 0, 1);
+  return Math.min(shut, open);
+}
 const SLEEP_HZ  = 0.60;                 // where the horizon sits, as a fraction of H
 
 /* the sky, as a handful of stops it walks through */
@@ -16018,7 +16252,7 @@ function dawnSky(u){
 
 function drawSleep(g){
   const s=DAY.sleeping;
-  const u=clamp((s-0.45)/(SLEEP_DUR-1.15), 0, 1);      // how far through the night
+  const u=sleepU(s);                                    // how far through the night
 
   /* The village is already on the screen behind this, lit by the clock that
      stepNightFade is winding forward — so this draws only the things the
@@ -16027,7 +16261,7 @@ function drawSleep(g){
 
   /* ---- the small hours pressed down over everything ---- */
   { const deep = 1 - Math.abs(u-0.47)/0.47;            // deepest in the middle
-    g.globalAlpha = clamp(deep,0,1)*0.34;
+    g.globalAlpha = clamp(deep,0,1)*0.22;
     pR(g,0,0,W,H,'#05070f');
     g.globalAlpha = 1;
   }
@@ -16061,18 +16295,25 @@ function drawSleep(g){
     pTxt(g, L('tap to wake'), W/2, H-9, '#cbc2dc', 6,'center');
     g.globalAlpha=1;
   }
-  /* a soft edge, so it reads as his eyes closing rather than a screen */
-  { const v=clamp(1-Math.abs(u-0.47)/0.52,0,1)*0.5;
-    g.globalAlpha=v;
-    pVGrad(g,0,0,W,H*0.22,'#05070f','rgba(5,7,15,0)',5);
-    pVGrad(g,0,H*0.78,W,H*0.22,'rgba(5,7,15,0)','#05070f',5);
-    g.globalAlpha=1;
+  /* His eyes closing, drawn as two lids coming across the screen — but only
+     as far as a slot. It used to fade to solid black here and then fade back,
+     which meant the night nobody could see was the night I had spent all that
+     time on. */
+  { const lid = sleepLid(s);
+    if(lid>0.005){
+      /* the top lid does nearly all of the work, the way a real one does —
+         and the bottom one has to stay off the ground, because the thing you
+         are meant to be looking at is him lying on it */
+      const dT = R(H*0.30*lid), dB = R(H*0.145*lid);
+      pR(g,0,0,W,dT,'#05070f'); pR(g,0,H-dB,W,dB,'#05070f');
+      pVGrad(g,0,dT,W,10,'#05070f','rgba(5,7,15,0)',5);
+      pVGrad(g,0,H-dB-10,W,10,'rgba(5,7,15,0)','#05070f',5);
+      /* the lashes on the near edge of each lid */
+      g.globalAlpha=0.5*lid;
+      pR(g,0,dT,W,1,'#1b1730'); pR(g,0,H-dB-1,W,1,'#1b1730');
+      g.globalAlpha=1;
+    }
   }
-  /* down into it at the start, and back out at the end */
-  const inA = clamp((s-0.05)/0.4, 0, 1);
-  if(inA<1){ g.fillStyle=rgba('#05060f',1-inA); g.fillRect(0,0,W,H); }
-  const outA = clamp((s-(SLEEP_DUR-0.45))/0.45, 0, 1);
-  if(outA>0){ g.fillStyle=rgba('#0a0d16',outA*0.85); g.fillRect(0,0,W,H); }
 }
 /* the morning card — Stardew shows you the night's takings and so do we */
 function drawDayCard(g){
@@ -16089,7 +16330,6 @@ function drawDayCard(g){
   else          row('shipped', 'nothing', CL.ink3);
   row('grown overnight', c.grew? c.grew+'' : '—', c.grew? '#3f6a2c':CL.ink3);
   if(c.eaten) row('eaten overnight', c.eaten+'', '#a8392c');
-  if(c.merit) row('merit', '+'+c.merit, '#8f6a1e');
   if(c.t>0.8){ g.globalAlpha=a*(0.5+0.5*Math.sin(GS.t*6));
     icoDown(g, x+w-14, y+h-10, 1.2, CL.gold); }
   g.globalAlpha=1;
@@ -16922,19 +17162,50 @@ function drawFluffyDog(g,d){
   const sleep = d.st==='sleep', walk = d.st==='walk';
   const step = walk? Math.sin(t*7)*2.4 : 0;
   const puff = (cx,cy,rx,ry,c)=>pEll(g,cx,cy,rx,ry,c);
-  pEll(g,x,gy-1, sleep?14:12, sleep?4:3.2,'rgba(10,8,20,0.28)');
+  pEll(g,x,gy-1, sleep?17:12, sleep?4:3.2,'rgba(10,8,20,0.28)');
   if(sleep){
-    puff(x,gy-5,12,5,W2); puff(x,gy-6.6,10,3.6,W1);
-    for(let i=0;i<5;i++) puff(x-9+i*4.6, gy-8.4+Math.sin(i*1.7)*0.8, 3.0,2.0, i%2?W1:W2);
+    /* the same two breaths as the soi dogs, and the coat moves a beat behind
+       him the way it does when he walks */
+    const tt  = t||0;
+    const br  = Math.sin(tt*1.15)*0.42 + Math.sin(tt*0.33)*0.55;
+    const tw  = Math.max(0, Math.sin(tt*0.49)-0.94)*11;
+    const ef  = Math.max(0, Math.sin(tt*0.37+0.9)-0.95)*20;
+    /* the legs, right out past the coat — his fore pair reaches past the
+       muzzle, which is how a big dog sprawls when it gives up on the day */
+    pLimb(g, x-6*f, gy-4.6, x-19*f+tw*0.3*f, gy-1.5, 2.6, W3);
+    puff(x-20.4*f+tw*0.3*f, gy-1.5, 2.8, 1.8, W2);
+    pLimb(g, x+4*f, gy-4.4, x+15*f, gy-1.5, 2.6, W3);
+    puff(x+16.4*f, gy-1.5, 2.8, 1.8, W2);
+    puff(x,gy-5,12,5+br*0.5,W2); puff(x,gy-6.6,10,3.6+br*0.4,W1);
+    for(let i=0;i<5;i++) puff(x-9+i*4.6, gy-8.4+Math.sin(i*1.7)*0.8+br*0.45, 3.0,2.0, i%2?W1:W2);
     /* the head is out on the ground in front of him, chin down, which is
        the shape that says asleep rather than a bread roll */
+    /* white on white is nothing, so the head is cut out of the coat with a
+       crease behind it and the ear is the darkest thing on him */
+    puff(x-9.6*f,gy-5.6,3.6,4.2,W3);                                // the crease at the ruff
     puff(x-12.5*f,gy-5.4,5.0,4.0,W2); puff(x-13.5*f,gy-6.4,4.0,3.0,W1);
-    pTri(g,x-15*f,gy-10.4,x-17*f,gy-5.6,x-12*f,gy-6.4,W2);          // ear
-    pTri(g,x-14.4*f,gy-9.6,x-16*f,gy-6,x-12.6*f,gy-6.6,W1);
-    puff(x-16.4*f,gy-4.2,2.4,1.8,W1);                               // muzzle on the dirt
-    pR(g,R(x-17.4*f),R(gy-4.6),2,1,'#c2857f');
-    pR(g,R(x-14.2*f),R(gy-6.2),2,1,INK);                            // a shut eye
-    puff(x+11*f,gy-6,5.4,3.4,W1); puff(x+13*f,gy-7,3.6,2.6,W2);     // the tail over him
+    pTri(g,x-15*f,gy-10.8-ef*0.16,x-17.4*f,gy-5.2,x-11.6*f,gy-6.4,W3);  // ear, flicking
+    pTri(g,x-14.8*f,gy-9.8-ef*0.14,x-16.4*f,gy-5.8,x-12.4*f,gy-6.6,W2);
+    puff(x-16.4*f,gy-4.2,2.8,2.0,W1);                               // muzzle on the dirt
+    pR(g,R(x-18.2*f),R(gy-4.4),2,1,'#c2857f');
+    pR(g,R(x-16.6*f),R(gy-2.8),4,1,W3);                             // the line of the jaw
+    /* the shut eye is a curve, not a dash — a dash is a dead dog */
+    for(let i=-2;i<=2;i++){ const u=i/2;
+      pR(g, R(x-14.2*f+u*1.8), R(gy-6.4-(1-u*u)*0.9), 1,1, INK); }
+    /* the near foreleg over the far one, and the plume of tail across him */
+    pLimb(g, x-5*f, gy-6.0, x-18*f+tw*0.45*f, gy-2.3, 2.8, W1);
+    puff(x-19.4*f+tw*0.45*f, gy-2.3, 2.9, 1.9, W1);
+    puff(x+11*f,gy-6+br*0.3,5.4,3.4,W1); puff(x+13*f,gy-7+br*0.3,3.6,2.6,W2);
+    { const cyc=(tt*0.28)%1;
+      if(cyc<0.55){
+        const u=cyc/0.55, a=(u<0.15?u/0.15:1)*(1-u)*0.8, s2=0.62+u*0.5;
+        const zx=x-19*f-u*7*f, zy=gy-11-u*12;
+        g.globalAlpha=a;
+        pR(g, zx-2.4*s2, zy-2.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
+        pR(g, zx-2.4*s2, zy+1.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
+        pTaper(g, zx+2.0*s2, zy-1.4*s2, zx-2.0*s2, zy+1.9*s2, 1.2*s2, 1.2*s2, '#efe6cf');
+        g.globalAlpha=1;
+      } }
     return;
   }
   const bob = walk? Math.abs(Math.sin(t*7))*1.0 : 0;
@@ -17263,14 +17534,12 @@ function kidsInteract(set, taken){
     set(BALL.x, BALL.y-14, 'kick it back', ()=>{
       BALL.vx = clamp((P.face||1)*rnd(110,170),-170,170); BALL.vy=-rnd(140,200);
       AU.blip(); for(const k of KIDS) k.cheer=1.0;
-      if(!GS.seen['ball_'+DAY.n]){ GS.seen['ball_'+DAY.n]=true; addMerit(2,true);
-        toast('+2', PAL.gold, 'merit'); }
+      if(!GS.seen['ball_'+DAY.n]){ GS.seen['ball_'+DAY.n]=true; addMerit(2,true); }
     }, null, 'play');
   if(beyWeather() && !kidsOut() && Math.abs(P.x-BOWL_X)<30)
     set(BOWL_X, groundY(BOWL_X)-20, 'watch the match', ()=>{
       for(const k of KIDS.slice(4)) k.cheer=1.2;
-      if(!GS.seen['bey_'+DAY.n]){ GS.seen['bey_'+DAY.n]=true; addMerit(1,true);
-        toast('+1', PAL.gold, 'merit'); }
+      if(!GS.seen['bey_'+DAY.n]){ GS.seen['bey_'+DAY.n]=true; addMerit(1,true); }
       AU.ding();
     }, null, 'play');
 }
@@ -17409,7 +17678,6 @@ function questTurnIn(id){
   q.take();
   questSet(id,'done');
   addMerit(q.merit);
-  toast('+'+q.merit, PAL.gold, 'merit');
   if(q.heart) heartAdd(q.heart, HEART_PTS, NPCS.find(n=>n.id===q.heart));
   AU.bigDing();
   for(let i=0;i<10;i++) part({k:'sp', x:(npc?npc.x:P.x)+rnd(-10,10), y:(npc?npc.y:P.y)-20,
@@ -17495,18 +17763,14 @@ function drawQuestCard(g){
 /* ============================================================
    THINGS IN REACH
 
-   There used to be a plaque with words on it — "talk to Lung Somchai",
-   "tip the basket in (34฿)" — pinned over whatever you were nearest.
-   It named one thing at a time, in a language, and you pressed E.
+   Everything within arm's reach goes in a list. SPOTS[0] is what
+   the button does; the rest are there to be tapped. Each of them
+   is named on the screen with an arrow pointing at it — see the
+   drawing end of this file, below the glyphs.
 
-   Now every candidate goes in a list and every one of them gets a
-   picture instead: a small icon over his head, a hair-thin thread down
-   to the thing it belongs to, and a tap on it does that thing. The
-   first one is what E does, drawn bigger and in gold. No words at all.
-
-   A person's icon is the person's face, because a row of identical
-   speech bubbles cannot tell you which of the three people standing
-   here is which, and the words that used to do that are gone.
+   The glyphs themselves are still here because the shop shelf, the
+   quest list and the speech bubbles all draw them; they are just no
+   longer what a thing in reach looks like.
    ============================================================ */
 
 /* what a line of prompt text is asking you to do, as a picture */
@@ -17581,55 +17845,28 @@ function spotGlyph(g,k,x,y,c){
   }
 }
 
-/* Each icon is the same handful of ellipses every frame, so paint each one
-   once into a small canvas and blit it from then on. A couple of dozen
-   sprites, and the row costs one drawImage apiece. */
-const _spotSpr=new Map();
-function spotSprite(k, first, badge){
-  const key=k+(first?'!':'.')+(badge?'+':'');
-  let c=_spotSpr.get(key);
-  if(c) return c;
-  const r=first?11:9, S=r+3;
-  c=mkCv(S*2,S*2+2);
-  const g=G2(c), x=S, y=S;
-  pEll(g,x,y+1,r,r*0.9,'rgba(20,14,8,0.35)');
-  pEll(g,x,y,r,r,first?'#3f2d14':'#37302a');
-  if(k.charAt(0)==='@'){
-    /* somebody's face, cut to the disc. It is the only thing in the row that
-       says WHO, now that the row has no words in it. The gold ring is what
-       marks it as the one E is pointed at — the face fills the disc, so there
-       is no cream left to carry that the way the drawn icons do. */
-    pEll(g,x,y,r-1,r-1,first?'#ffe9b3':'#e4d8bc');
-    const f=portrait(k.slice(1), (r-2)*2, true);
-    g.save(); g.beginPath(); g.arc(x,y,r-2,0,TAU); g.clip();
-    g.drawImage(f, R(x-(r-2)), R(y-(r-2)));
-    g.restore();
-  } else {
-    pEll(g,x,y,r-1,r-1,first?'#ffe9b3':'#e4d8bc');
-    pEll(g,x,y-r+2,r-4,1.4,first?'#fffdf6':'#f4ecd6');
-    const sc = first? 1.18 : 1;
-    g.save(); g.translate(x,y+0.5); g.scale(sc,sc);
-    spotGlyph(g,k,0,0,first?'#4a3212':'#4a4034');
-    g.restore();
-  }
-  /* a small heart in the corner of anyone you could also give something to,
-     which is what the word "give" used to do under the plaque */
-  if(badge){
-    const bx=x+r-3, by=y+r-4;
-    pEll(g,bx,by,4.4,4.4,'#37302a');
-    pEll(g,bx,by,3.2,3.2,'#fbe7ea');
-    icoHeart(g,bx,by,0.8,'#d8566e');
-  }
-  c._o=S;
-  _spotSpr.set(key,c);
-  return c;
-}
+/* ============================================================
+   THE ARROW, AND WHAT THE THING IS
+
+   For a while every thing in reach got a little disc with a picture
+   in it, floating in a row over his head. It was pretty and it was
+   useless: a row of identical-looking discs cannot tell you that
+   this one is the water jar and that one is Malee, and by the time
+   you had learned twenty glyphs you had learned a second language
+   for no reason.
+
+   So: an arrow, pointing straight down at the thing, and above the
+   arrow the thing's name. The one the button does is gold and a
+   size larger. Everything else is quiet. If two of them would land
+   on top of each other the later one goes up a row and drops a
+   thread back down to its arrow.
+   ============================================================ */
 
 /* send the thing just added to the back of the queue: it is still reachable,
    it just should not be what E does from here */
 function spotLast(){ if(SPOTS.length) SPOTS[SPOTS.length-1].pri=1; }
 
-/* where each icon landed on the screen this frame, for the tap test */
+/* where each label landed on the screen this frame, for the tap test */
 const SPOT_HITS=[];
 function spotShown(){
   /* the story's own prompts go through the same list — on the first night it
@@ -17638,41 +17875,72 @@ function spotShown(){
   return GS.state==='play' && !GS.plate && !DLG && !VIG && !P.act && !BURST
       && !DAY.card && !DAY.sleeping && SPOTS.length>0;
 }
-/* A row of them above his head, left to right in the order the things
-   actually stand around him. Not over the things themselves: he is a hundred
-   pixels of prete and twenty-six wide, and everything within arm's reach is
-   therefore behind him. A hair-thin leader drops from each icon to the thing
-   it belongs to, so the row still says which is which. */
+
+/* the plate the name sits on */
+function spotPlate(g,x,y,w,h,first){
+  const bg = first? 'rgba(26,20,12,0.92)' : 'rgba(28,25,21,0.80)';
+  pR(g,x+1,y,w-2,h,bg); pR(g,x,y+1,w,h-2,bg);
+  const ed = first? '#ffdf9e' : '#857c71';
+  pR(g,x+1,y,w-2,1,ed); pR(g,x+1,y+h-1,w-2,1,ed);
+  pR(g,x,y+1,1,h-2,ed); pR(g,x+w-1,y+1,1,h-2,ed);
+  if(first){ pR(g,x+2,y+1,w-4,1,'rgba(255,240,206,0.28)'); }
+}
+/* and the arrow out of the bottom of it, tip on the thing */
+function spotArrow(g,x,y,first){
+  const c = first? '#ffdf9e' : '#cdc4b6';
+  /* the dark one underneath is a pixel wider on every row, which is the
+     outline; without it the arrow vanishes into a pale wall */
+  for(let i=0;i<7;i++){ const w2=13-i*2; pR(g,x-(w2-1)/2,y-7+i,Math.max(1,w2),1,'rgba(12,9,6,0.72)'); }
+  for(let i=0;i<6;i++){ const w2=11-i*2; pR(g,x-(w2-1)/2,y-7+i,Math.max(1,w2),1,c); }
+  if(first){ pR(g,x-4,y-7,9,1,'#fff6de'); pR(g,x-3,y-6,7,1,'#ffeec4'); }
+}
+
 function drawSpots(g){
   SPOT_HITS.length=0;
   if(!spotShown()) return;
   const cx=GS.camX, cy=GS.camY||0;
   const list=SPOTS.map((s,i)=>({s,i})).sort((a,b)=>a.s.x-b.s.x);
-  const n=list.length, gap=32;   // wider than the tap target, so none of them overlap
-  const px=P.x-cx;
-  let x0=clamp(px-(n-1)*gap/2, 20, W-20-(n-1)*gap);
-  const row=R(clamp(P.y-cy-124, 36, H-72));
-  for(let k=0;k<n;k++){
-    const {s,i}=list[k];
-    const first=(i===0);
-    const x=R(x0+k*gap), y=R(row+Math.sin(GS.t*2.4+k*1.7)*0.9);
-    // a thread down to the thing it is about
-    const tx=R(s.x-cx), ty=R(s.y-cy+8);
-    if(ty>y+16){
-      g.fillStyle='rgba(43,38,32,0.32)';
-      for(let t=1;t<=5;t++) g.fillRect(R(lerp(x,tx,t/6)), R(lerp(y+12,ty,t/6)), 1,1);
+  const boxes=[];
+  for(const it of list){
+    const s=it.s, i=it.i, first=(i===0);
+    const size = 7;
+    const txt  = L(s.txt||'');
+    if(!txt) continue;
+    const w = R(txtW(txt,size)+10), h = 13;
+    const tipx = R(clamp(s.x-cx, 7, W-7));
+    const px   = R(clamp(tipx-w/2, 3, W-3-w));
+    const bob  = Math.sin(GS.t*2.6+i*1.4)*(first?1.3:0.8);
+    const tipy = R(clamp(s.y-cy, 36, H-54)+bob);
+    /* The thing that must not overlap is the TAP TARGET, not the plate: two
+       plates a hair apart still hand one thumb two answers. So the layout is
+       resolved against the box a finger has to hit, and the words follow. */
+    const bx=px-4, bw=w+8, bh=h+13;
+    let py = tipy-8-h;
+    for(let pass=0; pass<8; pass++){
+      let over=false;
+      for(const b of boxes)
+        if(bx < b.x+b.w && bx+bw > b.x && py-3 < b.y+b.h && py-3+bh > b.y){ over=true; break; }
+      if(!over) break;
+      py -= bh+2;
     }
-    const spr=spotSprite(s.icon, first, s.sub==='give');
-    g.drawImage(spr, x-spr._o, y-spr._o);
-    if(first){          // the one E does, marked underneath
-      const bl=0.5+0.5*Math.sin(GS.t*5);
-      pR(g,x-3,y+12,7,1, rgba('#ffe9b3',0.45+0.45*bl));
+    py = Math.max(py, 6);
+    boxes.push({x:bx, y:py-3, w:bw, h:bh});
+    /* a thread back down, when the label has been pushed up off its arrow */
+    const atop = tipy-7;
+    if(py+h < atop-1){
+      g.fillStyle = first? 'rgba(255,223,158,0.45)' : 'rgba(214,205,190,0.32)';
+      for(let yy=py+h+1; yy<atop; yy+=2) g.fillRect(R(tipx), R(yy), 1, 1);
     }
-    /* a thumb is wider than a picture: the target is the size of one */
-    SPOT_HITS.push({x:x-15,y:y-15,w:31,h:31,i});
+    spotArrow(g, tipx, tipy, first);
+    spotPlate(g, px, py, w, h, first);
+    pTxt(g, txt, px+w/2, py+h-3, first?'#fff3d4':'#ded4c4', size, 'center');
+    /* the heart in the corner of anyone you could also hand something to */
+    if(s.sub==='give') icoHeart(g, px+w-3.5, py+2, 0.6, '#e2778c');
+    /* a thumb is wider than a label: the target is a little bigger than one */
+    SPOT_HITS.push({x:bx, y:py-3, w:bw, h:bh, i, tx:tipx, ty:tipy});
   }
 }
-/* a tap on an icon uses that thing, whatever E happens to be pointed at */
+/* a tap on a label uses that thing, whatever E happens to be pointed at */
 function spotHit(sx,sy){
   if(!spotShown()) return false;
   for(let k=SPOT_HITS.length-1;k>=0;k--){
@@ -18257,7 +18525,7 @@ function morlamInteract(set, taken){
       for(let i=0;i<10;i++) part({k:'sp',x:P.x+rnd(-14,14),y:P.y-30,vx:rnd(-20,20),
                                   vy:-rnd(12,40),life:rnd(.6,1.1),c:PAL.goldL});
       if(!GS.seen['morlam_'+DAY.n]){ GS.seen['morlam_'+DAY.n]=true;
-        addMerit(5); toast('+5', PAL.gold, 'merit');
+        addMerit(5);
         say([{w:'',t:'Nobody minds. Nobody can see you. You do it anyway.'}]);
       }
     });
@@ -18341,7 +18609,7 @@ function krathongInteract(set, taken){
       bagTake('krathong',1);
       KRA.push({x:POND_X+rnd(-10,10), y:groundY(POND_X)+5, t:0, dr:4, life:220});
       AU.ranat(660,0,0.05); AU.ranat(880,0.1,0.04);
-      addMerit(6); toast('+6', PAL.gold, 'merit');
+      addMerit(6);
       if(!GS.seen.krathongDone){ GS.seen.krathongDone=true;
         say([{w:'',t:'It goes out slowly, turning, with everybody else, turning too.'},
              {w:'',t:'A hungry ghost floating away the thing he would rather not keep.'}]);
@@ -18494,7 +18762,7 @@ function songkranInteract(set, taken){
       if(!GS.seen.songkranTry){ GS.seen.songkranTry=true;
         say([{w:'',t:'It goes through you and lands on the road behind.'},
              {w:'',t:'Mali throws hers anyway, at where she thinks you are.'}]);
-        addMerit(3); toast('+3', PAL.gold, 'merit');
+        addMerit(3);
       } else toast(L('soaked, nearly'),'#bfe6ff');
     });
   }, null, 'water');
@@ -18609,7 +18877,7 @@ function roundInteract(set, taken){
       for(let i=0;i<12;i++) part({k:'sp',x:P.x+rnd(-12,12),y:P.y-26,vx:rnd(-16,16),
                                   vy:-rnd(10,34),life:rnd(.6,1.2),c:PAL.goldL});
       if(!GS.seen['alms_'+DAY.n]){ GS.seen['alms_'+DAY.n]=true;
-        addMerit(7); toast('+7', PAL.gold, 'merit');
+        addMerit(7);
         say([{w:'',t:'You have nothing to put in the bowl. You kneel anyway.'},
              {w:'',t:'The last monk looks at the space where you are, and keeps walking.'}]);
       }
@@ -18901,7 +19169,7 @@ function drawLuckyPig(g, cx, cy, s, o){
    on an arc, and drops through the slot. The pig kicks, the
    gold climbs, and that is the only readout there is.
    ============================================================ */
-const PIG = { t:0, blink:3, kick:0, ear:0, coins:[], pop:[], fill:0 };
+const PIG = { t:0, blink:3, kick:0, ear:0, coins:[], pop:[], fill:0, oinkCd:0 };
 const PIG_S = 0.80;
 /* where the slot actually is on screen, which is where a coin is aiming */
 function pigSlotX(){ return pigScreenX() + 5.6*PIG_S; }
@@ -18913,6 +19181,7 @@ function stepPig(dt){
   P2.t += dt;
   P2.blink -= dt; if(P2.blink < -0.14) P2.blink = rnd(2.2,6.0);
   if(P2.kick>0) P2.kick -= dt;
+  if(P2.oinkCd>0) P2.oinkCd -= dt;
   P2.fill = lerp(P2.fill, bankFrac(), 1-Math.pow(0.02,dt));
   for(let i=P2.coins.length-1;i>=0;i--){
     const c=P2.coins[i];
@@ -18922,6 +19191,10 @@ function stepPig(dt){
       P2.coins.splice(i,1);
       P2.kick = 0.36; P2.ear = 0.5;
       AU.tone(1180,0.07,'square',0.02,880); AU.tone(1620,0.05,'square',0.012,1200,0.04);
+      /* and the pig grunts, when the light actually goes in — not on a timer
+         set when you did the good turn, which fired in the wrong scene half
+         the time and never lined up with the thing it was about */
+      if(P2.oinkCd<=0 && AU.oink){ AU.oink(); P2.oinkCd = 0.85; }
       /* it goes in with a chink and a few sparks, in screen space, at the slot */
       for(let k=0;k<7;k++) P2.pop.push({ x:pigSlotX()+rnd(-2,2), y:pigSlotY(),
         vx:rnd(-26,26), vy:rnd(-46,-14), t:rnd(0.28,0.5) });
@@ -18951,18 +19224,34 @@ function drawPigCoins(g){
     const x = lerp(c.x0, pigSlotX(), e);
     const y = lerp(c.y0, pigSlotY(), e) - Math.sin(u*Math.PI)*c.arc;
     const sc = c.s*(1-u*0.35);
-    // a thin trail of light behind it
-    for(let k=1;k<=3;k++){
-      const u2=clamp(u-k*0.045,0,1), e2=u2*u2*(3-2*u2);
+    /* It is not a coin any more. Merit is a light that comes off whatever
+       you just did and goes into the pig — a bright mote with a halo and a
+       tail of itself, brightest halfway across and gone once it is in. */
+    for(let k=1;k<=6;k++){
+      const u2=clamp(u-k*0.038,0,1), e2=u2*u2*(3-2*u2);
       const tx=lerp(c.x0,pigSlotX(),e2), ty=lerp(c.y0,pigSlotY(),e2)-Math.sin(u2*Math.PI)*c.arc;
-      pR(g, tx, ty, 1, 1, rgba('#ffe89a', 0.30-k*0.08));
+      pEll(g, tx, ty, (1.5-k*0.16)*sc, (1.5-k*0.16)*sc, rgba('#ffd980', 0.34-k*0.05));
     }
-    drawCoin(g, x, y, sc, c.spin);
+    const puls = 0.82+0.18*Math.sin(c.t*22+c.spin);
+    const bright = Math.sin(u*Math.PI)*0.5+0.5;
+    g.globalAlpha = 0.30*bright;
+    pEll(g, x, y, 9.0*sc*puls, 9.0*sc*puls, '#ffd980');
+    g.globalAlpha = 0.62*bright;
+    pEll(g, x, y, 4.4*sc*puls, 4.4*sc*puls, '#ffe9a8');
+    g.globalAlpha = 1;
+    pEll(g, x, y, 2.4*sc, 2.4*sc, '#fff6d8');
+    /* four spokes of glare, which is what stops it reading as a dot on a
+       bright sky — the mote is the only thing telling you merit happened */
+    g.globalAlpha = 0.55*bright;
+    pR(g, R(x-5.5*sc*puls), R(y), R(11*sc*puls), 1, '#fff6d8');
+    pR(g, R(x), R(y-5.5*sc*puls), 1, R(11*sc*puls), '#fff6d8');
+    g.globalAlpha = 1;
+    pEll(g, x, y, 1.2*sc, 1.2*sc, '#ffffff');
   }
   for(const q of PIG.pop) pR(g, q.x, q.y, 1, 1, rgba('#ffe89a', clamp(q.t*3,0,1)));
 }
 /* the corner of the screen, with a pig floating in it */
-function drawBank(g, x, y){
+function drawBank(g, x, y, big){
   const done = humanStage()>=HUMAN_MAX;
   const fr = PIG.fill;
   const glow = done? 1 : clamp((fr-0.72)/0.28, 0, 1);
@@ -19070,6 +19359,305 @@ function drawBurst(g){
   }
 }
 /* ============================================================
+   พระอิศวร — THE ONE NIGHT SOMEBODY EXPLAINS IT
+
+   Everything in this game runs on merit, and until now nobody
+   ever told you that. The pig in the corner and the number
+   behind it were simply there from the first frame, which is
+   the oldest sin in this kind of game: a system handed to you
+   before you have any reason to want it.
+
+   So the first night you sleep, you do not just sleep. You go
+   up. There is a temple above the cloud with the god of the
+   third eye sitting in it, and he tells you what you are, what
+   merit is, what to do about it, and then he gives you the pig
+   to keep it in. Until that has happened there is no pig and no
+   merit anywhere on the screen.
+
+   Phra Isuan is the Thai Shiva: the ชฎา on his head with the
+   crescent in it, the third eye, the ตรีศูล in his hand, blue
+   through the skin, sat on a lotus that is also a cloud.
+   ============================================================ */
+const DREAM2 = { on:false, t:0, phase:0, said:0, given:0, out:0, rays:0 };
+
+function dreamDue(){
+  /* the first proper night, once somebody has actually shown you the village */
+  return !GS.q.blessed && GS.q.metPhra !== undefined;
+}
+function startDream(){
+  DREAM2.on=true; DREAM2.t=0; DREAM2.phase=0; DREAM2.said=0;
+  DREAM2.given=0; DREAM2.out=0; DREAM2.rays=0;
+  GS.state='dream';
+  AU.ensure();
+  if(AU.gong) AU.gong();
+  clearPress();
+  dreamSay();
+}
+const DREAM_LINES = [
+  {t:'You are a long way up, and the floor is cloud.'},
+  {w:'god', t:'Come here. I have been waiting for somebody to die badly enough to be sent up.'},
+  {w:'god', t:'You know what you are. Prete. The mouth of a needle and the belly of a well.'},
+  {w:'god', t:'You were not made hungry to punish you. You were made hungry so you would go and look for something.'},
+  {w:'god', t:'What you are looking for is บุญ. Merit. It is not a coin and it is not a score.'},
+  {w:'god', t:'It is what is left over when somebody is glad you were there.'},
+  {w:'god', t:'Help them. Fix what is broken. Feed what is thin. Kneel when the line goes past.'},
+  {w:'god', t:'You will not be able to count it, so I am going to give you something that can.'},
+];
+function dreamSay(){
+  say(DREAM_LINES.map(l=>({w:l.w==='god'? 'Phra Isuan' : '', t:l.t})), ()=>{
+    DREAM2.phase=1;                      // and then he hands it over
+    DREAM2.t=0;
+  });
+}
+function stepDream(dt){
+  DREAM2.t+=dt;
+  DREAM2.rays+=dt;
+  if(DLG){ stepDlg(dt); return; }
+  if(DREAM2.phase===1){
+    /* the pig comes down the light and settles in front of him */
+    if(DREAM2.t>2.4 && !DREAM2.given){
+      DREAM2.given=1;
+      if(AU.oink) AU.oink();
+      GS.q.blessed = true;               // and from here the corner has a pig in it
+      GS.bankDue = 0;
+      saveGame();
+      say([{w:'Phra Isuan', t:'Keep it where you can see it. Every good turn is a coin through the slot.'},
+           {w:'Phra Isuan', t:'Fill it, and it breaks, and you come back a little further from what you were.'},
+           {w:'Phra Isuan', t:'Go on. They are waiting on the morning and you are keeping them.'}],
+        ()=>{ DREAM2.phase=2; DREAM2.t=0; });
+    }
+  } else if(DREAM2.phase===2){
+    if(DREAM2.t>0.6 && !DREAM2.out){
+      DREAM2.out=1;
+      wipeTo(()=>{ DREAM2.on=false; GS.state='play'; dreamWake(); }, 'iris');
+    }
+  }
+  if(press('act')||press('tap')){ /* the lines are advanced by stepDlg */ }
+}
+/* what the morning is when you come back down */
+function dreamWake(){
+  /* back into the night he left, already flat out and most of the way through
+     it: the lying-down happened before the dream and does not happen twice */
+  DAY.sleeping = LIE_IN + (SLEEP_DUR-LIE_IN-LIE_OUT)*0.56;
+  DAY.done = 1;                           // the day already turned over in the dream
+  DAY.tod0 = 0.02;
+  if(typeof LIE!=='undefined') LIE.k = 1;
+  clearPress();
+}
+
+/* ---------- the temple above the cloud ----------
+   He is the biggest thing on the screen, because he is the only
+   thing up here that matters. The prasat is behind him and the
+   two ยักษ์ are at the far edges, so the eye lands on the god and
+   then finds the little grey thing kneeling at the left. ------- */
+function drawDream(g){
+  const t=DREAM2.t, rays=DREAM2.rays;
+  const cx=W/2, base=H*0.72;
+  /* the sky up here: gold at the floor, deep blue overhead */
+  pVGrad(g,0,0,W,H*0.62,'#161540','#57468f',7);
+  pVGrad(g,0,H*0.60,W,H*0.42,'#57468f','#f0c86a',7);
+  /* the long rays, out of the spire behind him */
+  for(let i=0;i<11;i++){
+    const a=(i/11)*TAU + rays*0.05;
+    const w2=8+Math.sin(rays*0.7+i)*3;
+    g.globalAlpha=0.085+0.04*Math.sin(rays*1.1+i*1.7);
+    pTaper(g, cx, H*0.34, cx+Math.cos(a)*320, H*0.34+Math.sin(a)*320, w2, 1, '#ffe9a8');
+    g.globalAlpha=1;
+  }
+  /* stars, because it is still night underneath all this */
+  for(const s of STARS){
+    if(s[1]>0.5) continue;
+    g.fillStyle=`rgba(255,246,224,${(0.30*(0.3+s[3]*0.7)*(0.6+0.4*Math.sin(GS.t*1.4+s[2]))).toFixed(3)})`;
+    g.fillRect(R(s[0]*W),R(s[1]*H*0.8),1,1);
+  }
+
+  /* ---------- the prasat ---------- */
+  { const py=base-6;
+    /* plinth */
+    pR(g,cx-62,py-16,124,16,'#c9992f'); pR(g,cx-62,py-16,124,2,'#ffe089');
+    pR(g,cx-58,py-22,116,6,'#e8bc52');  pR(g,cx-58,py-22,116,1,'#ffe089');
+    /* the body, with the doorway */
+    pR(g,cx-42,py-58,84,36,'#dcae44'); pR(g,cx-42,py-58,84,2,'#ffe089');
+    pR(g,cx-42,py-24,84,2,'#a8802a');
+    for(let k=-2;k<=2;k++) pR(g,R(cx+k*17-2),R(py-56),4,32,'#eec863');
+    pR(g,cx-9,py-46,18,24,'#2a2450');
+    pTri(g,cx,py-57, cx-10,py-42, cx+10,py-42,'#2a2450');
+    pTaper(g,cx-10,py-44, cx,py-58, 2,1.2,'#ffe089');
+    pTaper(g,cx+10,py-44, cx,py-58, 2,1.2,'#ffe089');
+    pR(g,R(cx-10),R(py-23),20,1,'#ffe089');
+    /* five receding tiers, each one with the horns curling off its corners */
+    for(let i=0;i<5;i++){
+      const w2=lerp(76,26,i/4), y=py-58-i*13, h2=11;
+      pR(g,cx-w2/2,y-h2,w2,h2,i%2?'#d8a83c':'#e8bc52');
+      pR(g,cx-w2/2,y-h2,w2,2,'#ffe089');
+      pR(g,cx-w2/2,y-2,w2,2,'#a8802a');
+      pR(g,R(cx-w2/2+3),R(y-h2+3),Math.max(1,R(w2-6)),1,'#b8902e');
+      for(const s2 of [-1,1]) pTaper(g, cx+s2*w2/2, y-2, cx+s2*(w2/2+7), y-12, 2.4, 0.7, '#f2c96a');
+    }
+    /* the spire */
+    const sy=py-58-5*13;
+    pTaper(g,cx,sy, cx,sy-26, 9,2.4,'#e8bc52');
+    for(let i=0;i<5;i++) pR(g,R(cx-(8-i*1.4)),R(sy-3-i*5),Math.max(2,R((8-i*1.4)*2)),1,'#a8802a');
+    pTaper(g,cx,sy-24, cx,sy-38, 2.4,0.7,'#ffe089');
+    g.globalAlpha=0.45; pEll(g,cx,sy-40,7,7,'#ffe9a8'); g.globalAlpha=1;
+    pEll(g,cx,sy-40,2.4,2.4,'#fff4c8');
+  }
+
+  /* ---------- the two ยักษ์ at the gate ---------- */
+  for(const s2 of [-1,1]){
+    const gx=cx+s2*152, gb=base+4;
+    pTaper(g,gx-s2*9,gb, gx-s2*11,gb-46, 3.2,2.2,'#6f6030');       // the club, planted
+    pEll(g,gx-s2*11,gb-49,3.4,4.4,'#93813f');
+    pR(g,gx-8,gb-20,16,20,'#2a5440');                              // legs
+    pR(g,gx-9,gb-27,18,10,'#8a5a8c'); pR(g,gx-9,gb-27,18,2,'#b07ab0');
+    pR(g,gx-9,gb-48,18,23,'#2f6b4e');                              // body
+    pR(g,gx-9,gb-48,18,2,'#45876a'); pR(g,gx+4,gb-48,5,23,'#24523c');
+    pTaper(g,gx-8,gb-46, gx+8,gb-29, 2.2,1.8,'#e8bc52');           // the sash
+    pTaper(g,gx-8,gb-45, gx-s2*10,gb-30, 3,2.2,'#2f6b4e');
+    pTaper(g,gx+8,gb-45, gx+s2*4,gb-28, 3,2.2,'#24523c');
+    pEll(g,gx,gb-56,7.6,7.8,'#2f6b4e');                            // the head
+    pEll(g,gx-2,gb-59,3,2.4,'#45876a');
+    pR(g,R(gx-6),R(gb-58),5,3,'#f4f0e0'); pR(g,R(gx+1),R(gb-58),5,3,'#f4f0e0');
+    pR(g,R(gx-5),R(gb-58),2,3,'#c02a2a'); pR(g,R(gx+3),R(gb-58),2,3,'#c02a2a');
+    pR(g,R(gx-4),R(gb-52),9,2,'#1c3c2c');
+    pR(g,R(gx-3),R(gb-51),1,3,'#f6f2e2'); pR(g,R(gx+3),R(gb-51),1,3,'#f6f2e2');  // fangs
+    pTri(g,gx,gb-80, gx-7,gb-62, gx+7,gb-62,'#e8bc52');            // the มงกุฎ
+    pTri(g,gx,gb-75, gx-3,gb-62, gx+3,gb-62,'#ffe089');
+    pR(g,R(gx-8),R(gb-64),16,3,'#d8a83c'); pR(g,R(gx-8),R(gb-64),16,1,'#ffe089');
+    pEll(g,gx,gb-81,1.6,1.6,'#fff4c8');
+  }
+
+  /* ---------- the cloud floor ---------- */
+  for(let i=0;i<10;i++){
+    const cwx=((i*97 + rays*4)%(W+200))-100, cwy=base+2+((i*23)%14);
+    g.globalAlpha=0.55;
+    pEll(g,cwx,cwy,40+((i*31)%40),7,'#f6e8c4');
+    pEll(g,cwx+14,cwy-4,24,5,'#fdf6e0');
+    g.globalAlpha=1;
+  }
+  pVGrad(g,0,base+10,W,H-base-10,'#f0d89a','#e6c078',5);
+
+  /* ---------- him ---------- */
+  const gy=base+2, bob=Math.sin(t*0.8)*1.4;
+  const SKIN='#8fa8d8', SKIN_D='#6d85b4', SKIN_L='#b2c6ea';
+  /* a night behind him, so the gold on his head is not gold on gold */
+  for(let i=6;i>=1;i--){ g.globalAlpha=0.075; pEll(g,cx,gy-52,26+i*9,44+i*12,'#221d4a'); }
+  g.globalAlpha=1;
+  /* the lotus */
+  for(let i=0;i<13;i++){
+    const a=Math.PI*(i/12), px=cx+Math.cos(a)*44, py=gy+2-Math.sin(a)*4;
+    pEll(g,px,py,8,4.4,i%2?'#ec97b2':'#f8c0d0');
+  }
+  pEll(g,cx,gy,40,10,'#e88aa8'); pEll(g,cx,gy-3,31,7,'#f8c0d0');
+  pEll(g,cx,gy-5,20,4,'#fde2ea');
+  /* the legs, crossed */
+  pEll(g,cx,gy-12,33,11,SKIN_D);
+  pEll(g,cx,gy-16,27,8,SKIN);
+  pEll(g,cx-19,gy-15,6,4,SKIN_L); pEll(g,cx+19,gy-15,6,4,SKIN_L);   // the two soles
+  pR(g,R(cx-25),R(gy-21),50,5,'#e8bc52'); pR(g,R(cx-25),R(gy-21),50,1,'#ffe089');
+  /* the body */
+  pR(g,cx-14,gy-56,28,38,SKIN);
+  pR(g,cx+6,gy-56,8,38,SKIN_D);
+  pR(g,cx-14,gy-56,28,3,SKIN_L);
+  pTaper(g,cx-13,gy-54, cx+11,gy-22, 2.4,1.8,'#f6eed4');            // the sacred thread
+  pEll(g,cx,gy-54,17,6,'#e8bc52'); pEll(g,cx,gy-56,14,4,'#ffe089');
+  pEll(g,cx,gy-49,13,4,'#d8a83c'); pEll(g,cx,gy-50,11,2.4,'#f2c96a');
+  for(let k=-2;k<=2;k++){ pEll(g,cx+k*5,gy-46,1.8,2.4,'#e8bc52');
+                          pEll(g,cx+k*5,gy-45,1,1.2,'#ffe089'); }   // the drops of the กรองศอ
+  pEll(g,cx,gy-52,2.6,2.6,'#c02a4a'); pEll(g,cx-1,gy-53,1.2,1.2,'#f06a80');
+  /* four arms — the upper pair out and back, the lower pair forward */
+  const sw=Math.sin(t*0.9)*1.6;
+  pTaper(g,cx-12,gy-53, cx-35,gy-73-sw, 4,2.8,SKIN_D);
+  pTaper(g,cx+12,gy-53, cx+35,gy-73+sw, 4,2.8,SKIN_D);
+  pEll(g,cx-37,gy-75-sw,3.4,3.4,SKIN_D); pEll(g,cx+37,gy-75+sw,3.4,3.4,SKIN_D);
+  pR(g,R(cx-39),R(gy-79-sw),5,2,'#e8bc52'); pR(g,R(cx+35),R(gy-79+sw),5,2,'#e8bc52');
+  pEll(g,cx-13,gy-53,5.4,5,SKIN); pEll(g,cx+13,gy-53,5.4,5,SKIN_D);   // the shoulders
+  /* the ตรีศูล in the upper right hand */
+  { const tx=cx+37, ty=gy-75+sw;
+    pR(g,R(tx),R(ty-52),2,70,'#c9a244'); pR(g,R(tx),R(ty-52),1,70,'#e8bc52');
+    pTaper(g,tx+1,ty-50, tx+1,ty-68, 3,1,'#f2c96a');
+    pTaper(g,tx+1,ty-52, tx-7,ty-66, 2.4,1,'#f2c96a');
+    pTaper(g,tx+1,ty-52, tx+9,ty-66, 2.4,1,'#f2c96a');
+    pEll(g,tx+1,ty-49,3.4,2,'#ffe089'); }
+  /* the lower left holds a conch; the lower right is open, palm out */
+  pTaper(g,cx-12,gy-44, cx-24,gy-24, 4,3,SKIN);
+  pEll(g,cx-25,gy-22,3.6,3.4,SKIN);
+  pEll(g,cx-27,gy-25,4.4,3,'#f2ead2'); pEll(g,cx-25,gy-25,2.4,2,'#fdf8e8');
+  { const op2=DREAM2.phase>=1?1:0;
+    const hx=cx+24+op2*3, hy2=gy-26-op2*8;
+    pTaper(g,cx+12,gy-44, hx,hy2, 4,3,SKIN);
+    pEll(g,hx+1,hy2-2,4,4.4,SKIN_L);
+    for(let k=0;k<3;k++) pR(g,R(hx-1+k*2),R(hy2-7),1,4,SKIN_L);
+    if(op2){ g.globalAlpha=0.20+0.12*Math.sin(t*4); pEll(g,hx+1,hy2-3,9,9,'#ffe9a8'); g.globalAlpha=1; } }
+  /* the head */
+  const hy=gy-72+bob*0.4;
+  g.globalAlpha=0.14+0.05*Math.sin(t*1.6); pEll(g,cx,hy-2,38,38,'#ffe9a8'); g.globalAlpha=1;
+  g.globalAlpha=0.30; pEll(g,cx,hy-2,26,26,'#fff0b4'); g.globalAlpha=1;
+  pEll(g,cx,hy,15,15.4,SKIN);
+  pEll(g,cx+6,hy+2,7,10,SKIN_D);
+  pEll(g,cx-6,hy-5,6,5,SKIN_L);
+  pEll(g,cx,hy+13,9,4,SKIN_D);                                      // the jaw
+  /* the eyes, half lowered the way they always are */
+  pR(g,R(cx-9),R(hy),7,3,'#f4f0e0'); pR(g,R(cx+3),R(hy),7,3,'#f4f0e0');
+  pR(g,R(cx-7),R(hy),3,3,'#23204a'); pR(g,R(cx+5),R(hy),3,3,'#23204a');
+  pR(g,R(cx-7),R(hy),1,1,'#e8eaff');  pR(g,R(cx+5),R(hy),1,1,'#e8eaff');
+  pR(g,R(cx-9),R(hy-1),7,1,'#4a4270'); pR(g,R(cx+3),R(hy-1),7,1,'#4a4270');
+  /* and the third one, which opens while he talks */
+  { const op=clamp((t-0.7)/1.5,0,1)*(DREAM2.phase>=1?1:0.7), ey=hy-8;
+    if(op<0.10){ pR(g,R(cx-4),R(ey),8,1,'#c9a244'); }
+    else {
+      const ry=0.8+4.4*op;
+      pTri(g,cx-5,ey, cx,ey-ry-1, cx+5,ey,'#d8a83c');
+      pTri(g,cx-5,ey, cx,ey+ry+1, cx+5,ey,'#d8a83c');
+      pEll(g,cx,ey,4,ry,'#f6f2e0');
+      pEll(g,cx,ey,1.6,ry*0.72,'#2a2450');
+      pR(g,R(cx-1),R(ey-ry*0.5),1,1,'#fff4c8');
+      g.globalAlpha=0.22*op; pEll(g,cx,ey,12,12,'#fff0b4'); g.globalAlpha=1;
+    } }
+  pR(g,R(cx-4),R(hy+7),9,1,'#5a4a70');                              // the mouth
+  pR(g,R(cx-5),R(hy+8),2,1,'#5a4a70'); pR(g,R(cx+4),R(hy+8),2,1,'#5a4a70');
+  /* the ชฎา, and the crescent bitten into it */
+  pR(g,R(cx-14),R(hy-17),29,5,'#d8a83c'); pR(g,R(cx-14),R(hy-17),29,2,'#ffe089');
+  pTri(g,cx,hy-40, cx-12,hy-14, cx+12,hy-14,'#e8bc52');
+  pTri(g,cx,hy-34, cx-6,hy-14, cx+6,hy-14,'#ffe089');
+  for(let i=0;i<3;i++){ const w2=lerp(20,8,i/2); pR(g,R(cx-w2/2),R(hy-21-i*6),Math.max(1,R(w2)),2,'#c9932c'); }
+  for(const s2 of [-1,1]) pTaper(g, cx+s2*13, hy-15, cx+s2*20, hy-27, 2.6,0.8, '#f2c96a');
+  pEll(g,cx-8,hy-23,4,4,'#f6eed4');                                 // the moon
+  pEll(g,cx-6,hy-23,3.2,3.2,'#e8bc52');
+  pEll(g,cx,hy-42,2,2,'#fff4c8');
+  g.globalAlpha=0.5; pEll(g,cx,hy-42,5,5,'#ffe9a8'); g.globalAlpha=1;
+
+  /* ---------- and him, kneeling on the cloud ---------- */
+  { const px2=cx-112, py2=base+9;
+    drawPrete(g, {...P, x:px2, y:py2, vx:0, vy:0, state:'idle', act:null,
+                  rise:0, onGround:true, phase:0, face:1},
+              {dt:1/60, wind:0, sit:0.86, cos:GS.cos}); }
+
+  /* ---------- the pig coming down the light ---------- */
+  if(DREAM2.phase>=1){
+    const u=clamp(DREAM2.t/2.4,0,1);
+    const px2=cx-66, py2=lerp(H*0.06, base-6, 1-Math.pow(1-u,3));
+    g.globalAlpha=0.20*(1-Math.abs(u-0.5)*1.1);
+    pTaper(g, px2, -10, px2, py2, 4, 20, '#ffe9a8');
+    g.globalAlpha=1;
+    if(u>=1){
+      const s2=Math.sin(DREAM2.t*7)*0.5+0.5;
+      g.globalAlpha=0.16+0.20*s2;
+      pEll(g,px2,py2-12,30,26,'#ffe9a8'); g.globalAlpha=1;
+    }
+    if(typeof drawLuckyPig==='function')
+      drawLuckyPig(g, px2, py2-13, 1.25, {fill:0, glow:0.4+0.3*Math.sin(DREAM2.t*3),
+                   blink:0, look:-0.4, ear:Math.sin(DREAM2.t*5)*1.6, shadow:u>=1});
+  }
+  /* motes drifting up through all of it */
+  for(let i=0;i<22;i++){
+    const mx=((i*57 + rays*5)%(W+40))-20;
+    const my=H - ((rays*11 + i*37)%(H+40));
+    g.globalAlpha=0.22+0.2*Math.sin(rays*2+i);
+    pEll(g,mx,my,1.1,1.1,'#ffe9a8'); g.globalAlpha=1;
+  }
+}
+/* ============================================================
    BUILDING, WHICH IS THE OLDEST WAY TO MAKE MERIT
 
    Thai merit-making is not mostly about praying. It is about
@@ -19132,8 +19720,7 @@ function raiseBuild(b){
     AU.fix(); GS.shake=Math.max(GS.shake||0,2);
     const gy=groundY(b.x);
     for(let i=0;i<14;i++) pDust(b.x+rnd(-16,16), gy-rnd(0,10));
-    addMerit(s.merit);
-    floatUp('+'+s.merit+' '+L('merit'), PAL.goldL, b.x, gy-b.h*0.6);
+    addMerit(s.merit);      // the light off it goes to the pig; no number
     if(FARM.built[b.id]>=2){
       AU.metta&&AU.metta(); pSpark(b.x, gy-b.h*0.5, 16, '#ffe89a');
       vignette('builtSomething');
@@ -19149,18 +19736,18 @@ function useBuild(b){
   GS.talked[key]=DAY.n;
   const gy=groundY(b.x);
   if(b.id==='shrine'){
-    preteAct('wai', 2.0, ()=>{ addMerit(2); floatUp(b.x,gy-70,'+2',PAL.goldL);
+    preteAct('wai', 2.0, ()=>{ addMerit(2);
       for(let i=0;i<4;i++) pSmoke(b.x+rnd(-3,3), gy-58, i*0.3); AU.chant(); });
   } else if(b.id==='sala'){
-    preteAct('wai', 1.4, ()=>{ addMerit(1); floatUp(b.x,gy-70,'+1',PAL.goldL);
+    preteAct('wai', 1.4, ()=>{ addMerit(1);
       if(typeof feed==='function') feed(14); AU.ranat(523,0,0.05); });
   } else if(b.id==='jar'){
     if((GS.water|0)<=0){ guideSay(L('your can is empty')); AU.blip(); GS.talked[key]=0; return; }
     preteAct('water', 1.4, ()=>{ GS.water=Math.max(0,(GS.water|0)-1); addMerit(2);
-      floatUp('+2 '+L('merit'), PAL.goldL, b.x, gy-40); AU.pour(); });
+      AU.pour(); });
   } else if(b.id==='well'){
     preteAct('water', 1.6, ()=>{ GS.water=Math.min(waterCap(), (GS.water|0)+2); addMerit(1);
-      floatUp('+1 '+L('merit'), PAL.goldL, b.x, gy-52); AU.pour(); });
+      AU.pour(); });
   } else {
     guideSay(L(b.why));
   }
@@ -19411,7 +19998,7 @@ function buffInteract(set, taken){
         GS.talked.buff=DAY.n;
         preteAct('water', 1.5, ()=>{
           BUFF.scratch=2.2; BUFF.head=0.1; AU.purr&&AU.purr();
-          addMerit(1); floatUp('+1 '+L('merit'), PAL.goldL, BUFF.x, BUFF.y-56);
+          addMerit(1);
           pHeart(BUFF.x+6, BUFF.y-44);
         });
       }, null, 'pet');
@@ -20330,14 +20917,69 @@ function drawRoadDog(g,d){
     return;
   }
   if(d.st==='sleep'){
-    const br=Math.sin(d.t*1.3)*0.45;                 // it is breathing, if you watch it
-    pEll(g,x,gy-1,13,4,'rgba(10,8,20,0.3)');
-    pEll(g,x,gy-4,11,4.4+br,co.b); pEll(g,x,gy-5.4,9.4,3.2+br*0.6,co.l);
-    pEll(g,x-9*f,gy-5,4.6,3.8,co.b); pEll(g,x-10*f,gy-6,3.8,3,co.l);
-    pTri(g,x-12*f,gy-9,x-14*f,gy-4,x-9*f,gy-5,co.d);
-    pR(g,R(x-12*f),R(gy-5),2,1,'#5a4028');
-    pEll(g,x+10*f,gy-4,4.4,2.4,co.d);
-    pR(g,R(x-3),R(gy-1),3,2,co.l); pR(g,R(x+4),R(gy-1),3,2,co.l);
+    /* Flat out on its side in the dust with all four legs pushed away from it,
+       the muzzle down on the ground and the tail curled round to the belly.
+       It used to be a loaf with an ear on it.
+
+       Two breaths at once, a slow one under a much slower one, because one
+       sine wave reads as a machine; and every few seconds a paw goes and an
+       ear flicks, which is the whole of what makes it look alive. */
+    const t   = d.t||0;
+    const br  = Math.sin(t*1.25)*0.40 + Math.sin(t*0.37)*0.50;
+    const tw  = Math.max(0, Math.sin(t*0.53)-0.93)*12;      // a paw, now and then
+    const ef  = Math.max(0, Math.sin(t*0.41+1.7)-0.95)*22;  // and an ear
+    const hx  = x + 13*f, hy = gy - 5.0;
+    pEll(g,x,gy-0.5,17,3.6,'rgba(10,8,20,0.28)');
+    /* the far pair first, darker, and pushed right out past the body — a leg
+       that stops inside the barrel is a leg nobody can see */
+    pLimb(g, x-5*f,  gy-6.0, x-10.5*f, gy-3.4, 2.5, co.d);      // hock
+    pLimb(g, x-10.5*f, gy-3.4, x-15*f, gy-1.5, 2.3, co.d);
+    pEll(g,  x-16.4*f, gy-1.5, 2.6, 1.5, co.d);
+    pLimb(g, x+6*f,  gy-5.4, x+12.5*f, gy-3.2, 2.5, co.d);      // elbow
+    pLimb(g, x+12.5*f, gy-3.2, x+19*f, gy-1.4, 2.3, co.d);
+    pEll(g,  x+20.4*f, gy-1.4, 2.6, 1.5, co.d);
+    /* the tail, lying along the ground and hooking back under */
+    { const tp=[[-9,-4.6],[-13.6,-3.4],[-17.2,-1.8],[-15.4,-0.7],[-12.2,-0.7]];
+      for(let i=0;i<tp.length;i++){ const u=i/(tp.length-1);
+        pEll(g, x+tp[i][0]*f, gy+tp[i][1]+Math.sin(t*0.8+i*0.7)*0.22,
+                lerp(2.6,1.5,u), lerp(2.2,1.2,u), i<2?co.b:co.d); } }
+    /* the barrel of it, going up and down */
+    pEll(g, x,       gy-5.8, 9.2, 5.2+br*0.55, co.b);
+    pEll(g, x-1.4*f, gy-7.4, 7.4, 3.4+br*0.42, co.l);
+    pEll(g, x+1.6*f, gy-3.6, 6.4, 2.2+br*0.22, co.d);        // the underside, in shade
+    /* the neck reaching out, and the head down on the dirt */
+    pTaper(g, x+6.4*f, gy-6.0, hx, hy, 5.6, 4.2, co.b);
+    pEll(g, hx, hy, 4.8, 4.0, co.b);
+    pEll(g, hx-0.8*f, hy-1.2, 3.8, 2.6, co.l);
+    pTaper(g, hx+2.4*f, hy+0.4, hx+7.4*f, hy+1.8, 3.2, 2.0, co.l);   // the muzzle, flat
+    pEll(g, hx+7.8*f, hy+1.9, 1.5, 1.2, '#2a1c14');                  // the nose
+    pR(g, R(hx+5.0*f), R(hy+2.8), 2, 1, '#8a5560');                  // a slack lip
+    /* the ear, flopped over the side of its face and flicking */
+    pTri(g, hx-1.2*f, hy-5.0-ef*0.18, hx-6.0*f, hy+1.2, hx+0.6*f, hy+1.6, co.d);
+    pTri(g, hx-1.4*f, hy-4.0-ef*0.16, hx-4.6*f, hy+0.6, hx+0.0*f, hy+1.0, co.b);
+    /* the eye, shut: one curve with a lash off the outer corner */
+    for(let i=-2;i<=2;i++){ const u=i/2;
+      pR(g, R(hx+1.2*f+u*2.0), R(hy-1.4-(1-u*u)*0.9), 1,1, '#3a2a1c'); }
+    pR(g, R(hx+3.6*f), R(hy-1.6), 1,1, '#4a3826');
+    /* and the near pair on top of everything, twitching. The front one
+       stretches out past the nose, which is how a dog actually sprawls. */
+    pLimb(g, x-4*f, gy-7.0, x-9.5*f, gy-4.0, 2.8, co.b);
+    pLimb(g, x-9.5*f, gy-4.0, x-14*f+tw*0.35*f, gy-2.2, 2.5, co.b);
+    pEll(g,  x-15.4*f+tw*0.35*f, gy-2.2, 2.8, 1.8, co.l);
+    pLimb(g, x+6*f, gy-6.2, x+12*f, gy-3.8, 2.8, co.b);
+    pLimb(g, x+12*f, gy-3.8, x+18*f+tw*0.5*f, gy-2.1, 2.5, co.b);
+    pEll(g,  x+19.6*f+tw*0.5*f, gy-2.1, 2.8, 1.8, co.l);
+    /* a z, now and then */
+    { const cyc=(t*0.30)%1;
+      if(cyc<0.55){
+        const u=cyc/0.55, a=(u<0.15?u/0.15:1)*(1-u)*0.8, s2=0.62+u*0.5;
+        const zx=hx+5*f+u*7*f, zy=hy-8-u*12;
+        g.globalAlpha=a;
+        pR(g, zx-2.4*s2, zy-2.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
+        pR(g, zx-2.4*s2, zy+1.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
+        pTaper(g, zx+2.0*s2, zy-1.4*s2, zx-2.0*s2, zy+1.9*s2, 1.2*s2, 1.2*s2, '#efe6cf');
+        g.globalAlpha=1;
+      } }
   } else {
     const ph=d.t*7, step=d.sp? Math.sin(ph)*2.4 : 0;
     pEll(g,x,gy-1,11,3,'rgba(10,8,20,0.28)');
@@ -20415,7 +21057,6 @@ function petRoadDog(d){
   AU.purr && AU.purr();
   if(!GS.seen['dog'+R(d.hx)]){
     GS.seen['dog'+R(d.hx)]=true; addMerit(1,true);
-    toast('+1', PAL.gold, 'merit');
   } else spark('#d8b04a');
   endInteract();
 }
@@ -20536,8 +21177,7 @@ function stepSneak(dt){
     if(SNEAK.quiet>2.6){
       SNEAK.quiet=0;
       if(!GS.seen['snuck'+worst.id]){
-        GS.seen['snuck'+worst.id]=true; addMerit(2,true);
-        toast('+2', PAL.gold, 'merit'); SNEAK.praise=1.6;
+        GS.seen['snuck'+worst.id]=true; addMerit(2,true); SNEAK.praise=1.6;
       }
     }
   } else if(!worst) SNEAK.quiet=0;
@@ -20668,8 +21308,7 @@ const STEALTH_SPOTS = [
     say:'something is coming up the road',
     go(){ STEALTH.on='headlights'; STEALTH.t=0; STEALTH.x=P.x+150; STEALTH.dir=-1; STEALTH.lights=0;
       startQTE({ word:'hold still', need:'hold', dur:2.6, win:[0.34,0.80],
-        fn(){ STEALTH.on=null; if(!GS.seen.stealth1){ GS.seen.stealth1=true; addMerit(3,true);
-                toast('+3', PAL.gold,'merit'); }
+        fn(){ STEALTH.on=null; if(!GS.seen.stealth1){ GS.seen.stealth1=true; addMerit(3,true); }
               vignette && vignette('sneakPast'); },
         fail(){ STEALTH.on=null; AU.wail && AU.wail(); GS.shake=4;
                 vignette && vignette('sneakSeen'); } }); } },
@@ -20677,8 +21316,7 @@ const STEALTH_SPOTS = [
     say:'the dogs have your number',
     go(){ STEALTH.on='dogs'; STEALTH.t=0;
       startQTE({ word:'go past them slowly', need:'tap', dur:2.2, win:[0.52,0.74],
-        fn(){ STEALTH.on=null; if(!GS.seen.stealth2){ GS.seen.stealth2=true; addMerit(3,true);
-                toast('+3', PAL.gold,'merit'); }
+        fn(){ STEALTH.on=null; if(!GS.seen.stealth2){ GS.seen.stealth2=true; addMerit(3,true); }
               for(const d of ROAD_DOGS) d.st='sleep'; },
         fail(){ STEALTH.on=null; for(const d of ROAD_DOGS){ d.st='up'; d.wake=6; }
                 AU.whiff(); GS.shake=3; } }); } },
@@ -20826,7 +21464,7 @@ function almsInteract(set){
     GS.talked.alms=DAY.n;
     preteAct('give', 1.6, ()=>{
       bagTake(have,1); ALMS.given++;
-      addMerit(5); floatUp('+5 '+L('merit'), PAL.goldL, MONK.x, MONK.y-50);
+      addMerit(5);
       MONK.react={k:'wai',t:3.0,dur:3.0}; AU.metta&&AU.metta();
       pSpark(MONK.x, MONK.y-VILL_H+2, 12, '#ffe89a');
       heartAdd('monk', 30, MONK);
@@ -21101,7 +21739,7 @@ function stepAnthem(dt){
   /* and standing still for it is worth something, once a day */
   if(ANTHEM.t>6 && Math.abs(P.vx)<4 && !GS.seen['anthem_'+ANTHEM.at]){
     GS.seen['anthem_'+ANTHEM.at]=true;
-    addMerit(2,true); toast('+2', PAL.gold, 'merit');
+    addMerit(2,true);
   }
 }
 function drawAnthem(g){
@@ -21951,6 +22589,7 @@ function stateOK(){
     case 'act':    return !!(typeof ACT !=='undefined' && ACT);
     case 'shop':   return !!(typeof CNT !=='undefined' && CNT);
     case 'ascend': return !!(typeof ASC !=='undefined' && ASC);
+    case 'dream':  return !!(typeof DREAM2!=='undefined' && DREAM2.on);
     default:       return true;
   }
 }
@@ -22014,7 +22653,7 @@ function update(dt){
            to the end — but never past the point where the day turns over */
         if((press('act')||press('tap')) && DAY.sleeping>0.7){
           if(!DAY.done){ DAY.done=1; nightPass(); }
-          DAY.sleeping = Math.max(DAY.sleeping, SLEEP_DUR-0.5);
+          DAY.sleeping = Math.max(DAY.sleeping, SLEEP_DUR-LIE_OUT-0.05);
         }
         clearPress(); break;
       }
@@ -22078,6 +22717,7 @@ function update(dt){
     case 'store':    PROMPT=null; stepStore(dt); break;
     case 'tree':     PROMPT=null; stepTree(dt); break;
     case 'ascend':   PROMPT=null; stepAscend(dt); break;
+    case 'dream':    PROMPT=null; stepDream(dt); break;
     case 'ceremony': stepCeremony(dt); break;
     case 'sleep':    PROMPT=null; stepSleep(dt); break;
     case 'end':

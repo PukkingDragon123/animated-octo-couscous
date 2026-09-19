@@ -129,24 +129,28 @@ uses whatever is standing on the spot — tap the stove and he walks over and st
 cooking, tap a plant and he picks it, tap a ghost and he says hello. A gold mark
 pulses on the ground where you're headed. Drag to change your mind.
 
-**And when you get there, everything in reach gets an icon — and nothing gets
-a word.** There used to be a wooden plaque over whatever you were nearest with
-*talk to Lung Somchai* written across it. It is gone. What it named is the first
-icon in a row above his head, drawn bigger and ringed in gold; everything else
-within reach is one of the others, left to right in the order the things
-actually stand around him, each on a hair-thin thread down to the thing it
-belongs to. Tap one and he does that.
+**And when you get there, everything in reach is named, with an arrow pointing
+at it.** There used to be a wooden plaque over whatever you were nearest, naming
+one thing. Then, for a while, there was a row of little discs over his head with
+a picture in each — which was pretty and useless: a row of discs cannot tell you
+that this one is the water jar and that one is Yai Pen, and by the time you had
+learned twenty glyphs you had learned a second language for no reason.
 
-**A person's icon is the person.** Three identical speech bubbles cannot tell
-you which of the three people standing here is Yai Pen, and the words that used
-to do that are gone — so the icon is their face, cut into the disc, and you pick
-the one you meant by looking at them. A small pink heart in the corner means you
-could give them something as well as talk to them.
+So the words came back, one per thing. A small plate above each thing with its
+name on it and a gold arrow out of the bottom of the plate, tip on the thing.
+The one the button does is gold-edged; the rest are quiet. If two things stand
+so close that their labels would land on the same thumb, the later one goes up a
+row and drops a dotted thread back down to its own arrow — the layout is
+resolved against the tap target, not the plate, because two plates a hair apart
+still hand one thumb two answers. A small pink heart in the corner of a person's
+label means you could give them something as well as talk to them.
 
-The row exists because the game used to keep exactly one interaction at a time,
+The list exists because the game used to keep exactly one interaction at a time,
 and the shipping basket, the rice barn and a ghost all stand within about thirty
 pixels of each other — so two of the three were simply unusable, whichever way
 you shuffled along. Now none of them are.
+
+![a name and an arrow](screenshots/a-name-and-an-arrow.png)
 
 There are four buttons, bottom corners, and each one is a drawn picture rather
 than a letter:
@@ -473,16 +477,62 @@ An order is not a present, though, and never counts against the day's one: when
 somebody has asked you for two bowls of something by name, you can hand over
 both.
 
+## The night somebody explains it
+
+Everything in this game runs on merit, and for a long time nobody ever told you
+that. The pig in the corner and the number behind it were simply **there from
+the first frame** — a system handed to you before you had any reason to want it,
+which is the oldest sin in this kind of game.
+
+So the first night you sleep, you do not just sleep. You go up.
+
+There is a gold ปราสาท above the cloud with two ยักษ์ at its gate, and sitting in
+front of it is **พระอิศวร** — the Thai Shiva, blue through the skin, four arms, a
+ตรีศูล in the upper right hand, a ชฎา with the crescent bitten into it, and the
+third eye that opens while he talks. You kneel on the cloud in front of him and
+he tells you what you are, what บุญ is, what to do about it, and then a piggy
+bank comes down a beam of light and he gives it to you to keep it in.
+
+> *You were not made hungry to punish you. You were made hungry so you would go
+> and look for something.*
+
+> *What you are looking for is บุญ. It is not a coin and it is not a score. It is
+> what is left over when somebody is glad you were there.*
+
+**Until that has happened there is no pig and no merit anywhere on the screen.**
+Not in the corner, not on the morning card, not floating up off the thing you
+just did. The first time a stranger's day goes better because you were in it,
+you get a piggy bank from a god, and only then does the game start counting.
+
+He is the biggest thing on that screen on purpose, and the prasat is behind him
+rather than around him, because gold on gold is not a silhouette: there is a
+soft night painted behind his head so the crown reads.
+
+![พระอิศวร](screenshots/the-god.png)
+
+## Merit is a light, not a number
+
+It used to print **+2 merit** over whatever you had just done. Seven different
+places in the code did it, in three different phrasings, and none of them told
+you anything the pig in the corner was not already showing.
+
+Now nothing says a number. What comes off the thing you just did is a **mote of
+light** — a bright core, a halo that pulses, a six-step tail of itself and four
+spokes of glare so it survives being drawn over a bright sky — and it arcs
+across the screen into the slot on the pig's back. When it goes in the pig
+kicks, throws a few sparks, and **oinks**.
+
+The oink is fired by the mote landing rather than by a timer set when you did
+the good turn, which is a small thing and the difference between a sound effect
+and a reaction.
+
 ## The piggy bank, and four times it breaks
 
-The merit counter used to be a bar with a number beside it: **merit 41/108.**
-True, and worth nothing to look at.
-
-It is a **กระปุกออมสิน** now — the fat ceramic pig every Thai child has on a
-shelf — lying across the corner of the screen and filling with gold from the
-snout end. Merit goes in through the slot on its back. In the last quarter a
-thin gold arc comes up over it and coins start dropping into the slot on their
-own, because it knows.
+It is a **กระปุกออมสิน** — the fat ceramic pig every Thai child has on a shelf —
+lying across the corner of the screen and filling with gold from the snout end.
+Merit goes in through the slot on its back. In the last quarter a thin gold arc
+comes up over it and coins start dropping into the slot on their own, because it
+knows.
 
 **And then it breaks.** The village dims, the pig comes up out of the corner of
 the screen and stands over you three times its size with the cracks spreading
@@ -658,6 +708,29 @@ kitchen bolted to its side — glass case, gas bottle, awning, bell; a
 **delivery** with three gas bottles and a rack of eggs stacked far higher than
 is reasonable; a pickup with sacks roped in the tray; and a **สองแถว** with four
 people riding home on the benches.
+
+### The dogs asleep in it
+
+A soi dog asleep used to be a loaf with an ear on it: one oval, one smaller oval,
+a triangle, two rectangles for paws, and a sine wave for breathing.
+
+Now it is **flat out on its side in the dust**. All four legs push away from the
+body — out past the barrel at both ends, with a hock and an elbow in them, since
+a leg that stops inside the body is a leg nobody can see — and the front pair
+stretches on past the nose, which is how a dog that has given up on the day
+actually lies. The muzzle is down on the ground with a slack lip. The tail lies
+along the dirt and hooks back under. The ear is flopped over the side of its face
+and flicks every few seconds; a paw goes every few seconds after that; the eye is
+a shut *curve* rather than a dash, because a dash is a dead dog. Every so often a
+**z** comes off it.
+
+It breathes on **two clocks at once** — a slow one under a much slower one —
+because a single sine wave reads as a machine rather than an animal. Gohan, who
+is not a soi dog, got the same treatment through his coat, plus a crease cut into
+the ruff behind his head: white on white is nothing, and his head had been
+invisible for a month.
+
+![dogs asleep outside the shop](screenshots/dogs-asleep.png)
 
 **And they drive.** Speed is a throttle, not a switch: they come off it for the
 dog asleep in the road, they indicate and roll to a halt at the shop, they sit
@@ -1342,11 +1415,34 @@ does the rest: its own moon comes down, its own stars come out and go in, its
 own sun comes up behind the houses he was standing among.
 
 The overlay on top of that is only what the sky has no way of saying: the small
-hours pressed down over everything, a soft edge so it reads as his eyes closing,
-what the night was, and the new day's number arriving with the sun. Drawing a
-moon of my own on top only gave the village two of them.
+hours pressed down over everything, what the night was, and the new day's number
+arriving with the sun. Drawing a moon of my own on top only gave the village two
+of them.
 
-A tap skips it, but never past the point where the day turns over.
+**And he lies down.** Sleeping used to be a cut — you pressed the thing under
+the house and the screen was already going dark, so the one moment in the day
+when this enormous starved thing stops being upright happened entirely off
+camera. Now he folds up: the knees go first, the hip comes down, the whole long
+body tips over onto its side and the head lands last. He curls. He breathes on
+two clocks, a slow one under a much slower one, because one sine wave reads as a
+machine. Two z's come off him. In the morning he does the same thing backwards
+and stands up into the daylight.
+
+It is one continuous pose rather than two sprites cross-faded: `k` runs nought
+to one and every joint on him is a lerp along it, so there is no frame where he
+is in two places. At `k=0` the hip and chest are the standing prete's own
+numbers, so the hand-off from `drawPrete` is a step of a pixel or two rather
+than a jump.
+
+**His eyes close to a slot, not to black.** There used to be a fade to solid
+black at the start and another back out at the end, which meant the night I had
+spent all that time on was the night nobody could see. Two lids come across
+instead — the top one doing nearly all of the work, the way a real one does, and
+the bottom one stopping well short of the ground, because the thing you are
+meant to be looking at is him lying on it.
+
+A tap skips it, but never past the point where the day turns over, and never
+past him getting up.
 
 ![the night over the village](screenshots/sleep-night.png)
 
@@ -1746,6 +1842,15 @@ own grave used to print six narration cards in the first thirty seconds, which
 is a wall of reading before anybody has touched anything. It prints two, and the
 rest of it is in the animation.
 
+## Nothing in front of the game
+
+There used to be a layer of near-black grass blades drawn over the whole frame
+at a faster parallax than the world, to sell depth. What it actually did was put
+two hundred dark smears between you and the game: they crossed faces, they
+crossed the prompts, and along the bottom of the screen they read as dirt on the
+lens. Gone. The tall grass you can walk through still stands in the world, where
+it belongs.
+
 ## Nothing announces itself
 
 There is no signpost anywhere on this road any more. There were six, each a
@@ -2140,15 +2245,16 @@ with a fully stocked farm on screen.
   as everywhere else with a sitting pose added to it, and is reflected in the
   water in front of him by drawing him again upside down, clipped to the water
   and stepped with no time at all so his cloth is not simulated twice a frame.
-- **The interaction prompt is a picture, and a person's picture is their face.**
-  The plaque that named one thing at a time is gone: what it named is the first
-  icon in the row, drawn bigger and ringed in gold, and everything else in reach
-  is one of the others. Icons are painted once into small canvases and blitted,
-  keyed on what can actually change about them, so a row of seven costs seven
-  `drawImage` calls. A person's icon is their dialogue medallion built again at
-  sixteen pixels with the rim and the sky dropped and the head cropped a third
-  tighter — at that size the rim IS the picture otherwise, and every face comes
-  out the same smudge.
+- **The interaction prompt is the thing's name with an arrow under it.** The row
+  of pictures it replaced had a specific failure: the glyph for *talk* is the
+  same glyph whoever is standing there, so the one screen element whose entire
+  job is telling you which of three overlapping things you are about to use
+  could not do it. Each label is laid out against the box a **finger** has to
+  hit rather than the plate the words sit on, and collisions push the later
+  label up a whole target height; the arrow stays on the thing and a dotted
+  thread joins them. The hit record carries the arrow tip, so a test can assert
+  the invariant that actually matters — *the arrow points at the thing it
+  names* — instead of at pixels.
 - **How human he is, is a number between nought and one.** `drawPrete` takes it
   and lerps six things off it: two colour ramps towards skin, the rib contrast
   towards nothing, a belly scale, an eye scale, a hair count and a mouth radius.
