@@ -4398,7 +4398,7 @@ function drawPrete(g, p, o={}){
     const hx0=hipX+(L.back?-2.4:2.4)*face;
     /* sitting wants the knee ABOVE the line from hip to foot, which is the
        other bend from the one a walking leg takes */
-    const knee=ik2(hipX,hipY,L.fx,L.fy-5,TH*sY,SN*sY, face>0?1:-1);
+    const knee=ik2(hipX,hipY,L.fx,L.fy-5,TH*sY,SN*sY, face>0?-1:1);
     /* thin, because that is the folklore, but not knobbly. A visible joint
        at every hinge is a skeleton, and he is a hungry man, not a skeleton. */
     iTaper(g,hx0,hipY-2,knee.x,knee.y,3.8,3.2,col,OC);        // thigh
@@ -5070,7 +5070,7 @@ function drawKongKoi(g,e){
   pEll(g,x,y-1,8,2.4,'rgba(10,8,20,0.4)');
   // one short leg, and a foot like a mitten
   const footY=y-hop;
-  const knee=ik2(x,y-13-hop,x,footY,7.6,7.6,f>0?1:-1);
+  const knee=ik2(x,y-13-hop,x,footY,7.6,7.6,f>0?-1:1);
   pLimb(g,x,y-13-hop,knee.x,knee.y,4.2,skD); pLimb(g,knee.x,knee.y,x,footY,3.6,sk);
   pEll(g,x+1.2*f,footY-1.2,4.4,2.4,skD);
   // stubby arms, swung out where they can be seen
@@ -13390,7 +13390,7 @@ function drawVillager(g, v, o={}){
        whole cycle backwards whenever they walked left. */
     const G=gaitLeg(v.phase, i, stride, lift);
     const fx=v.x+G.x*face, fy=v.y+G.y;         // facing mirrors x; see gaitLeg
-    const knee=ik2(hipX,hipY,fx,fy-1,TH,SN,face>0?1:-1);
+    const knee=ik2(hipX,hipY,fx,fy-1,TH,SN,face>0?-1:1);
     const col=i===0? shade(legC,-0.24) : legC;
     if(!v.skirt){
       pLimb(g,hipX+(i?0.7:-0.7),hipY,knee.x,knee.y,3.1,col);

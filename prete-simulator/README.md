@@ -1597,6 +1597,36 @@ The same bug had a second head on it. The villagers' arm swing was multiplied by
 `face` *as well as* running on the reversed phase — two flips, which cancel — so
 walking left their arms swung in step with their legs instead of against them.
 
+### A third head: the knee hinged the wrong way
+
+Even after all that it still read as backwards, and this time the cause was one
+character. Both legs solved their knee with
+
+```js
+ik2(hipX, hipY, ankleX, ankleY, thigh, shin, face > 0 ? 1 : -1)
+```
+
+`ik2` places the knee at `atan2(ankle − hip) + acos(...) * flip`. The ankle is
+below the hip, so that base angle is about +π/2, and adding a positive term
+swings the knee round to **negative x** — behind him. Facing right, every knee
+in the village bent backwards. A human leg looks like `>` when it is walking
+right; these looked like `<`, in every frame of the cycle, and that alone is
+enough to make a perfectly correct walk cycle read as a man walking in reverse.
+
+It survived two passes of testing because the knee test measured
+
+```js
+Math.abs((k.x - ax)*dy - (k.y - ay)*dx) / L
+```
+
+**the absolute** distance of the knee from the hip-to-ankle line. A knee nine
+pixels off the line is a bent knee whichever side it is on. The test was asking
+*does the knee bend*, and the answer was yes; nobody had asked *which way*.
+
+The measurement now keeps the sign, and two checks say the knee must sit on the
+forward side of that line in every frame of the cycle — for him and for
+everybody else. Worst case now: 2.84 pixels forward, and 1.56.
+
 ### Everybody walks their own way
 
 One cycle, six ways of going through it, in a table of multipliers and offsets:
