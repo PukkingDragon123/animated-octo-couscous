@@ -1556,6 +1556,77 @@ the foot skates however you split the cycle. Both now come from one place,
 `villStride` and `villPhase`, and there is a test that greps the built file for
 anything advancing a `.phase` by anything else.
 
+### A knee that bends where a knee bends
+
+Everything on two legs in this village shared one fault, and it turned out to be
+arithmetic rather than art.
+
+**The thigh and the shin added up to more than the hip was high.** Forty-four
+against forty on the prete; eighteen against sixteen on everybody else. A
+two-bone solver has to put those spare pixels somewhere, and it puts all of them
+in the knee. So every leg was bent by the same nine pixels in every frame of the
+cycle — including the frames where a real leg is *dead straight* — and the whole
+walk read as a creep. The knee never articulated, because there was nothing left
+for it to articulate with.
+
+A leg is straight at heel strike, straight again as the body passes over it, and
+folded hard only while it is in the air. Getting that back took four things, and
+none of them was a bigger number:
+
+- **The segments now add up to a whisker over the standing hip-to-ankle
+  distance.** Straight under the body. The margin is thin on purpose: a hair
+  less and the leg is asked for more than it has and comes out drawn stretched;
+  a hair more and the crouch is back. There is a test on both ends of it.
+- **The hips ride an arc over the planted foot** rather than bobbing on a sine.
+  A stance leg is a rigid strut with a foot pinned to the ground, so how far the
+  hip has sunk falls straight out of how far forward the foot has got —
+  `gaitHip` is that one line of geometry. Guess it with a sine instead and the
+  two are out of step, the hip asks the leg for a length it has not got, and the
+  knee takes up the difference in the one place a knee does not bend. It also
+  comes out the right size on its own: about two and a half pixels on a forty
+  pixel leg, and more when the step is longer, without a constant to tune.
+- **The swing foot lifts far enough to fold the knee right up** — thirteen
+  pixels at a walk, where it used to be six.
+- **A step is worth taking.** The villagers' stride was a fifth of a leg length,
+  which is a shuffle; it is getting on for half of one now.
+
+**And the foot rolls.** It was a rigid slab that stayed level whatever the leg
+was doing, so everybody came down on the whole sole at once and pushed off with
+the whole sole at once, which is a plank walking. The sole pivots on whichever
+end of it is on the ground — heel first at the strike, up on the toe at the push
+— and the ankle comes up with the heel, because the foot is pivoting on its toe.
+Leaving the ankle down for the whole stance asked the trailing leg at toe-off
+for three per cent more than it had.
+
+The measurement, as a perpendicular distance from the knee to the line from hip
+to ankle, over a full cycle:
+
+| | midstance | in the air |
+|---|---|---|
+| the prete, 45px leg | **4.4px** (was ~9 all cycle) | **15.1px** |
+| everybody else, 17px leg | **2.0px** (was ~4 all cycle) | **6.1px** |
+
+And the planted foot still does not move over the ground: 0.000 pixels a frame,
+both directions, at every speed. The stance half of the cycle is still a
+straight line and nothing curved is allowed through it.
+
+### Everything above the hips
+
+While the legs were being rebuilt the rest of the body got the rest of a walk.
+The shoulders counter-rotate against the hips — the near one forward as the far
+one goes back — which is most of what separates a person from a paper doll
+swinging on a stick. The whole torso leans into the direction of travel, in whole
+pixels, because half a pixel of shoulder is a blurred shirt. The hand rises as
+the arm comes forward and hangs as it goes back, instead of being held at one
+height for the entire cycle like a hand on a string. The head takes back about
+half of the hip's sink, the way a head carried on a body does, and leads a shade
+into the turn. And standing still is no longer standing rigid: the weight goes
+onto one hip and comes back over about four seconds.
+
+The prete's hands used to hang below his knees, which — with the belly — is what
+made him read as hunched in every frame rather than gaunt. They come to just
+above the knee now, which bends the elbow, and his neck is longer and held up.
+
 ### And the rig no longer minds what the frame rate is
 
 The prete's hand spring and the cloth on every sarong run inside the *draw*

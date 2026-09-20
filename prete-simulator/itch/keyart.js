@@ -57,25 +57,38 @@ fs.mkdirSync(OUT,{recursive:true});
       }
     };
 
-    /* ---------- plate 1: the god, which is the most cinematic thing in it ---------- */
-    newGame(); GS.state='play'; GS.tut=99; GS.ch=chAt('free');
-    GS.q.metPhra=true; GS.q.blessed=false;
-    startDream();
-    DLG=null; DREAM2.phase=1; DREAM2.t=2.45; DREAM2.rays=7.4;
-    render();
-    const dream = copy();
-
-    /* ---------- plate 2: the village at dusk, lanterns lit ---------- */
+    /* ---------- plate 1: the pig, three times his size, cracking open over
+       him on the village road at dusk. It is the loudest thing that happens
+       in this game and the only moment the whole screen is about him. ------ */
     newGame(); GS.state='play'; GS.tut=99; GS.ch=chAt('free');
     DLG=null; VIG=null; HINT=null; FARM.rented=true; GS.q.blessed=true;
     for(const k in GS.seen) GS.seen[k]=true; CH.lock=false;
-    DAY.n=6; DAY.min=19.1*60; setTOD(todFromClock(DAY.min),true);
-    { const x=HOUSE_XS[2]+58; P.x=x; P.y=groundY(x); P.vx=0; P.face=-1;
-      GS.camX=clamp(x-W*0.66,0,WORLD_W-W);
+    DAY.n=7; DAY.min=18.4*60; setTOD(todFromClock(DAY.min),true);
+    { const x=HOUSE_XS[3]-30; P.x=x; P.y=groundY(x); P.vx=0; P.face=1;
+      GS.camX=clamp(x-W/2,0,WORLD_W-W);
+      for(let i=0;i<240;i++) update(1/60);
+      DAY.min=18.4*60; setTOD(todFromClock(DAY.min),true);
+      P.x=x; P.y=groundY(x); P.vx=0; P.face=1;
+      GS.camX=clamp(x-W/2,0,WORLD_W-W);
+      HINT=null; VIG=null; DLG=null; GS.toasts.length=0; SPOTS.length=0; PROMPT=null;
+      for(const n of NPCS){ n.bub=null; n.bubT=0; }
+      for(const sp of SPIRITS){ sp.bub=null; sp.bubT=0; }
+      GS.merit=40; GS.human=0;
+      startBurst(1); BURST.t=1.18; BURST.ph='charge'; BURST.shake=0;
+      render(); }
+    const dream = copy();
+
+    /* ---------- plate 2: the rice fields at first light ---------- */
+    newGame(); GS.state='play'; GS.tut=99; GS.ch=chAt('free');
+    DLG=null; VIG=null; HINT=null; FARM.rented=true; GS.q.blessed=true;
+    for(const k in GS.seen) GS.seen[k]=true; CH.lock=false;
+    DAY.n=6; DAY.min=7.2*60; setTOD(todFromClock(DAY.min),true);
+    { const x=PITCH_X-120; P.x=x; P.y=groundY(x); P.vx=0; P.face=-1;
+      GS.camX=clamp(x-W*0.62,0,WORLD_W-W);
       for(let i=0;i<300;i++) update(1/60);
-      DAY.min=19.1*60; setTOD(todFromClock(DAY.min),true);
+      DAY.min=7.2*60; setTOD(todFromClock(DAY.min),true);
       P.x=x; P.y=groundY(x); P.vx=0; P.face=-1;
-      GS.camX=clamp(x-W*0.66,0,WORLD_W-W);
+      GS.camX=clamp(x-W*0.62,0,WORLD_W-W);
       HINT=null; VIG=null; DLG=null; GS.toasts.length=0; SPOTS.length=0; PROMPT=null;
       for(const n of NPCS){ n.bub=null; n.bubT=0; }
       for(const s of SPIRITS){ s.bub=null; s.bubT=0; }
@@ -131,10 +144,10 @@ fs.mkdirSync(OUT,{recursive:true});
     /* ============ THE BANNER — 1920x620, composed at 480x155 ============ */
     const bw=480, bh=155;
     const bc=mkCv(bw,bh), bg=G2(bc); bg.imageSmoothingEnabled=false;
-    bg.drawImage(grade(vill,1.18,1.10,1.02), 0,-86, W,H);
+    bg.drawImage(grade(vill,1.16,1.11,1.04), 0,-113, W,H);
     { const gr=bg.createLinearGradient(0,0,bw*0.56,0);
-      gr.addColorStop(0,'rgba(14,12,34,0.88)');
-      gr.addColorStop(0.62,'rgba(14,12,34,0.58)');
+      gr.addColorStop(0,'rgba(14,12,34,0.76)');
+      gr.addColorStop(0.62,'rgba(14,12,34,0.46)');
       gr.addColorStop(1,'rgba(14,12,34,0)');
       bg.fillStyle=gr; bg.fillRect(0,0,bw*0.56,bh); }
     { const gr=bg.createLinearGradient(0,bh-40,0,bh);

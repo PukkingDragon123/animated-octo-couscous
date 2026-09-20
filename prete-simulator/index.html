@@ -4015,6 +4015,95 @@ function ik2(ax,ay,bx,by,l1,l2,flip){
   return {x:ax+Math.cos(ang)*l1, y:ay+Math.sin(ang)*l1};
 }
 
+/* ============================================================
+   A WALK, AS FOUR POSES
+
+   Everything on two legs in this village shared one fault, and it was
+   arithmetic rather than art. The thigh and the shin added up to a
+   little MORE than the hip was high — 44 against 40 on the prete, 18
+   against 16 on everybody else — so the solver had four spare pixels
+   to put somewhere and put them all in the knee. The result was a leg
+   bent nine pixels forward in every frame of the cycle, including the
+   frames where a real leg is dead straight, and it read as a creep
+   rather than a walk.
+
+   A leg is STRAIGHT at heel strike, straight again as the body passes
+   over it, and bent hard only while it is in the air. So: the segments
+   now add up to just over the standing hip-to-ankle distance, which
+   makes the stance leg straight; the hips DROP at each contact instead
+   of rising at each pass, which puts the give in the right place and
+   means the leg is never asked to reach further than it has; and the
+   swing foot lifts far enough to fold the knee right up.
+
+   gaitLeg() says where one foot is, and which way it is rolling.
+   gaitDrop() says how far the hips have sunk. Both take a phase and
+   hand back numbers in the figure's own units, so a hungry ghost and
+   a grandmother walk on the same clock at different sizes.
+   ============================================================ */
+/* how far the ankle has come up off the ground by the time the toe lets go */
+const HEEL_UP = 0.18;
+function gaitLeg(phase, i, stride, lift){
+  const t = ((phase + i*Math.PI) % TAU + TAU) % TAU;
+  if(t < Math.PI){
+    /* STANCE. The foot tracks straight back at exactly walking speed, which
+       is the whole reason a planted foot does not slide over the ground.
+       Nothing curved may go through the x here.
+
+       Heel down at the front of it, flat in the middle, up on the toe at the
+       back — and as the heel comes up the ANKLE comes up with it, because the
+       foot is pivoting on its toe. Leave the ankle on the ground through the
+       whole of the stance and the trailing leg is asked at toe-off for about
+       three per cent more than it has got, and comes out drawn stretched. */
+    const r = 1 - 2*(t/Math.PI);
+    const heelUp = Math.max(0, -r);
+    return { x: stride*(1 - 2*t/Math.PI), y: -heelUp*heelUp*lift*HEEL_UP,
+             roll: r, down: 1 };
+  }
+  /* SWING. Off the ground slowly, through fast with the knee up, and
+     decelerating into the heel strike — with a little reach past the mark
+     so the foot settles into the step rather than arriving at it. */
+  const u = (t - Math.PI)/Math.PI;
+  const e = u*u*(3-2*u) + Math.sin(u*TAU)*0.085;
+  const h = Math.pow(Math.sin(Math.pow(u,0.74)*Math.PI), 1.15);
+  /* the swing has to START where the stance left off — the ankle was already
+     up on the toe. Begin it back at ground level and the foot drops a couple
+     of pixels between two frames, which is both a visible pop and a leg asked
+     at that instant for three per cent more than it has got. */
+  return { x: -stride + 2*stride*clamp(e,0,1.06),
+           y: -(h*lift + HEEL_UP*lift*(1-u)*(1-u)),
+           roll: -1 + 2*clamp((u-0.10)/0.70,0,1), down: 0 };
+}
+/* The hips sink once a step. Not by a sine, though — by GEOMETRY. A stance
+   leg is a rigid strut with a foot pinned to the ground, so the hip rides an
+   arc over that foot, and how far it has sunk falls straight out of how far
+   forward or back the foot has got to. Guess it with a sine instead and the
+   two are out of step, the hip asks the leg for a length it has not got, and
+   the knee takes up the difference — in stance, which is the one place in the
+   whole cycle where a knee does not bend.
+
+   `reach` is the standing distance from hip to ankle. The result is how far
+   to lower the hip, and it comes out the right size on its own: about two
+   pixels on a forty-pixel leg at a fourteen-pixel stride. */
+function gaitHip(phase, stride, reach, off){
+  const t=((phase)%TAU+TAU)%TAU;
+  /* exactly one foot is planted at a time in this cycle: leg nought for the
+     first half of it and leg one for the second */
+  const u = t<Math.PI ? t/Math.PI : (t-Math.PI)/Math.PI;
+  /* `off` is how far the hip sits from where the feet are measured from —
+     the lean, mostly. Leave it out of the sum and the arc is centred on the
+     wrong point, which is worth four pixels of knee on a figure this tall. */
+  const h = Math.min(Math.abs(stride*(1-2*u) - (off||0)), reach*0.92);
+  return reach - Math.sqrt(reach*reach - h*h);
+}
+
+/* A foot that rolls. The sole pivots on whichever END of it is on the ground,
+   so `pivotY` is the line that end sits on — the ground itself while the foot
+   is planted, and the ankle once it is in the air. */
+function gaitFoot(roll, pivotY, k){
+  return roll >= 0 ? { heel: pivotY,                 toe: pivotY - roll*k }
+                   : { heel: pivotY + roll*k,        toe: pivotY };
+}
+
 /* ---------- sarong — a wrapped sarong, simulated ---------- */
 function makeCloth(n, len){
   const s={pts:[], n, len};
@@ -4202,11 +4291,17 @@ function drawPrete(g, p, o={}){
      hang past the hip, and a head far too big and far too awake */
   /* Two storeys of leg. He is about twice a grown man, which is what the
      folklore says and what makes a doorway a problem for him. */
-  const LEG=45, TH=22, SN=22, AU2=25, AL=28;
+  /* TH+SN is a whisker over the forty pixels from hip to ankle, ON PURPOSE:
+     it was forty-four, and four spare pixels in a two-bone solver all end up
+     in the knee, so he walked everywhere in a permanent half-crouch. Straight
+     now in stance, and folded right up in the air, which is where the bend
+     belongs. The margin is thin and deliberately so — a hair less and the leg
+     is asked for more than it has and comes out drawn stretched; a hair more
+     and the crouch is back. There is a test on both ends of it. */
+  const LEG=45, TH=20.2, SN=20.2, AU2=25, AL=28;
   const sp = Math.abs(p.vx);
   const stride = p.stride;
-  const lift   = clamp(sp*0.11, 0, 6);
-  const bobA   = p.onGround ? Math.abs(Math.sin(p.phase*2))*clamp(sp*0.03,0,2) : 0;
+  const lift   = clamp(sp*0.17, 0, 13);
   /* a gesture bends him in the middle: down and up over its whole length,
      so the crouch, the reach and the head all move on one clock. */
   const ACT = p.act;
@@ -4234,15 +4329,19 @@ function drawPrete(g, p, o={}){
      rest of the session walking around fully seated. */
   const sit = clamp(o.sit===true? 1 : (o.sit||0), 0, 1);
   const sitting = sit > 0.02;
+  /* the hips ride the arc over whichever foot is planted, about the point
+     the lean has actually put them over */
+  const hipOff = p.lean*2.4 + sway*0.4 + cWob*0.5;
+  const bobA   = p.onGround ? -gaitHip(p.phase, stride, LEG-5, hipOff) : 0;
   const hipY = by - LEG*sY*(1-sit*0.84) - bobA + kneel + carry*2.2;
-  const hipX = bx + p.lean*2.4 + sway*0.4 + cWob*0.5;
+  const hipX = bx + hipOff;
   const chestY = hipY - 26*sY + p.breath*0.4;
   const chestX = hipX + p.lean*3.2 + sway*0.5 - carry*3.4*face + cWob*0.4;
   const shY = chestY - 2;
 
   function legPose(i){
     const back = i===0;
-    let fx, fy;
+    let fx, fy, roll=0, down=0;
     /* feet well out in front of the hips, which is the only way a knee has
        anywhere to go: too close and the whole leg folds up behind the belly
        and he reads as squatting in a hole */
@@ -4250,42 +4349,43 @@ function drawPrete(g, p, o={}){
     else if(p.state==='block'){ fx=(back?-10:9)*face; fy=0; }
     else {
       /* A cosine can only hold a foot still for one instant, so a cosine walk
-         always skates. Split it instead: half the cycle is STANCE, where the
+         always skates. gaitLeg splits it: half the cycle is STANCE, where the
          foot tracks straight back at exactly his walking speed and therefore
          does not move over the ground at all; the other half is SWING.
          The sign comes from the phase, which is signed — multiplying by face
          as well is what sent the whole cycle backwards when he faced left. */
-      const t=((p.phase+i*Math.PI)%TAU+TAU)%TAU;
-      if(t<Math.PI){                                   // planted
-        fx=stride*(1-2*t/Math.PI); fy=0;
-      } else {                                         // swinging through
-        const u=(t-Math.PI)/Math.PI;
-        const e=u<0.5? 2*u*u : 1-2*(1-u)*(1-u);        // ease out of the ground and back into it
-        fx=-stride+2*stride*e; fy=-Math.sin(u*Math.PI)*lift;
-      }
+      const G=gaitLeg(p.phase, i, stride, lift);
+      fx=G.x; fy=G.y; roll=G.roll; down=G.down;
     }
     if(sitting){                                   // and fold toward sitting
       fx = lerp(fx, (back? 21:27)*face, sit);
       fy = lerp(fy, 5, sit);
+      roll = lerp(roll, 0, sit);
     }
-    return {back, fx:bx+fx, fy:by+fy};
+    return {back, fx:bx+fx, fy:by+fy, roll, down};
   }
   function drawLeg(i){
     const L=legPose(i), col=L.back?SHD:BODY;
     const hx0=hipX+(L.back?-2.4:2.4)*face;
     /* sitting wants the knee ABOVE the line from hip to foot, which is the
        other bend from the one a walking leg takes */
-    const knee=ik2(hx0,hipY,L.fx,L.fy-5,TH*sY,SN*sY, face>0?1:-1);
+    const knee=ik2(hipX,hipY,L.fx,L.fy-5,TH*sY,SN*sY, face>0?1:-1);
     /* thin, because that is the folklore, but not knobbly. A visible joint
        at every hinge is a skeleton, and he is a hungry man, not a skeleton. */
     iTaper(g,hx0,hipY-2,knee.x,knee.y,3.8,3.2,col,OC);        // thigh
     iTaper(g,knee.x,knee.y,L.fx,L.fy-5,3.2,2.6,col,OC);       // shin, thinner still
     pEll(g,knee.x,knee.y,2,2,col);                            // a soft knee
-    // one long flat foot with a heel under the ankle
-    const f0=L.fx-(face>0?4:9);
-    pR(g,f0-1,L.fy-5,15,5,OC);
-    pR(g,f0,L.fy-4,13,3,col);
-    pR(g,f0,L.fy-4,13,1.2,L.back?shade(SHD,0.08):shade(BODY,0.14));
+    /* One long flat foot — but it ROLLS. It used to be a rigid slab that
+       stayed level whatever the leg was doing, so he came down on the whole
+       sole at once and pushed off with the whole sole at once, which is a
+       plank walking, not a person. The sole pivots on whichever end of it is
+       on the ground: heel first at the strike, up on the toe at the push. */
+    const heelX=L.fx-4*face, toeX=L.fx+10*face;
+    const F=gaitFoot(L.roll, (L.down? by : L.fy)-2, 3.4);
+    pTaper(g, heelX, F.heel, toeX, F.toe, 6.0, 4.6, OC);
+    pTaper(g, heelX, F.heel-0.2, toeX, F.toe-0.2, 3.8, 2.8, col);
+    pTaper(g, heelX, F.heel-1.1, toeX-2*face, F.toe-1.0, 1.6, 1.2,
+           L.back?shade(SHD,0.08):shade(BODY,0.14));
     pEll(g,L.fx,L.fy-6,3,3,OC); pEll(g,L.fx,L.fy-6,2,2,col);
   }
   function armPose(back){
@@ -4334,9 +4434,14 @@ function drawPrete(g, p, o={}){
     else {
       /* they hang almost straight, swing a beat behind the legs, and drift
          on their own when he is standing still. never back across the chest. */
-      const ph=p.phase+(back?Math.PI:0)+0.5;
-      hx2=chestX+Math.cos(ph)*stride*0.62+(back?-5:7)*face+sway*(back?0.6:1.1);
-      hy2=chestY+45+Math.abs(Math.sin(ph))*2+Math.sin(p.swayT*1.3+(back?2:0))*1.2;
+      /* opposite the legs, a beat behind them, and the hand rises as it comes
+         forward the way a swinging arm does — a hand held at one height for
+         the whole cycle is a hand on a string */
+      const ph=p.phase+(back?Math.PI:0)+0.42;
+      const sw=Math.cos(ph);
+      hx2=chestX+sw*stride*0.78+(back?-5:7)*face+sway*(back?0.6:1.1);
+      hy2=chestY+37-Math.max(0,sw*face)*3.4-Math.abs(sw)*1.4
+          +Math.sin(p.swayT*1.3+(back?2:0))*1.2;
     }
     return {hx2,hy2};
   }
@@ -4395,6 +4500,10 @@ function drawPrete(g, p, o={}){
     const sx0=chestX+(back?-4:4)*face;
     /* both elbows drop outward under a load — the back one bending the usual
        way put its point above the shoulder, which reads as a hand on the hip */
+    /* The two elbows bend opposite ways on purpose: both bending backwards
+       puts two forearms across the front of him and reads as a man carrying
+       something invisible. Near arm out, far arm back — it separates them,
+       and at this size separation is worth more than anatomy. */
     const bend = (carry || (ACT&&ACT.k==='eat'))? (face>0?1:-1)
                  : (back?(face>0?1:-1):(face>0?-1:1));
     const el=ik2(sx0,shY,hx2,hy2,AU2,AL,bend);
@@ -4511,12 +4620,12 @@ function drawPrete(g, p, o={}){
   const headTilt = ACT ? (ACT.k==='wai'? -abell*2
                         : ACT.k==='eat'? (au<0.78? 2+clamp(au/0.30,0,1)*7 : 9-17*(au-0.78)/0.22)
                         : abell*5) : 0;   // he looks at his hands
-  const headY = chestY - 20 + p.headBob + Math.sin(p.anim*1.1)*0.5 + headTilt;
+  const headY = chestY - 22 + p.headBob + Math.sin(p.anim*1.1)*0.5 + headTilt;
   /* his face goes to the bowl, because the bowl is not going anywhere near it */
   const eatLean = (ACT && ACT.k==='eat') ? clamp(au/0.30,0,1)*(au<0.82?1:1-(au-0.82)/0.18)*4.5 : 0;
   const headX = chestX + p.lean*2.2 + p.headLag + sway*0.8 + (o.headX||0) + carry*2.2*face + eatLean*face
               + (ACT && ACT.k!=='wai' ? abell*3*face : 0);
-  iTaper(g, chestX, chestY-5, headX, headY+8, 4.4, 4.0, SHD, OC);
+  iTaper(g, chestX, chestY-4, headX, headY+9, 4.6, 3.8, SHD, OC);
   const HRX=11.4, HRY=11.6;
   /* round. It used to be a lumpy skull with a pointed jaw on it, which is a
      drawing of a dead man; this is a drawing of somebody who has had a very
@@ -4726,7 +4835,10 @@ function makeVillager(cfg){
    torso, a generous head, and eyes with a light in them.
    ============================================================ */
 const VILL_H   = 42;                 // heel to the top of the head
-const VILL_LEG = 17, VILL_TH = 9, VILL_SN = 9;
+/* The thigh and the shin add up to a whisker over the sixteen pixels from
+   hip to ankle. It was eighteen, and a two-bone solver puts every spare
+   pixel in the knee, so the whole village walked about bow-legged. */
+const VILL_LEG = 17, VILL_TH = 8.15, VILL_SN = 8.15;
 const VILL_CH  = 11;                 // how tall the torso is — the legs get the rest
 const villTop  = v => (v.y||0) - VILL_H;
 
@@ -4739,7 +4851,11 @@ const villTop  = v => (v.y||0) - VILL_H;
    foot skated; and because the foot offset was multiplied by `face` on top of
    a signed phase, the whole cycle ran backwards whenever they walked left.
    Anybody who moves a villager advances its phase through villPhase. */
-const villStride = vx => clamp(Math.abs(vx)*0.2, 1.6, 5.2);
+/* Getting on for half a leg length is what a step is. It was a fifth of one,
+   which is a shuffle, and the shuffle is most of why nobody here looked like
+   they were going anywhere. villPhase is defined off this, so the identity
+   that keeps a planted foot planted holds whatever this returns. */
+const villStride = vx => clamp(Math.abs(vx)*0.27, 2.2, 7.6);
 const villPhase  = (vx, dt) => vx * dt * Math.PI / (2*villStride(vx));
 
 /* poses beyond walking. Everything here is a hand target, so the same
@@ -13150,14 +13266,25 @@ function drawVillager(g, v, o={}){
      and the head stays generous, which is where the cute comes from. */
   const fold = (v.pose==='kneel')? 0.50 : (v.pose==='sit')? 0.42 : 1;
   const LEG=VILL_LEG*fold, TH=VILL_TH*fold, SN=VILL_SN*fold;
-  const stride=villStride(v.vx), lift=clamp(sp*0.1,0,2.4);
-  const bob = Math.abs(Math.sin(v.phase*2))*clamp(sp*0.03,0,1);
+  const stride=villStride(v.vx), lift=clamp(sp*0.20, 0, 5.0);
+  /* The hips ride the arc over whichever foot is planted. It was a sine, one
+     pixel deep, twice a step and upwards — the wrong size, the wrong rate and
+     the wrong direction — which asked the leg for a length it had not got and
+     put the difference in the knee. */
+  const drop = sp>3 ? gaitHip(v.phase, stride, LEG-1) : 0;
   const breathe = sp<4 ? Math.sin(v.breath)*0.35 : 0;
-  const hipY=v.y-LEG-bob, hipX=v.x;
+  /* standing still is not standing rigid: the weight goes onto one hip and
+     comes back over about four seconds, which is what people actually do */
+  const idle = sp<3 ? Math.sin(v.anim*0.62)*0.55 : 0;
+  /* into the walk, and the shoulders the other way from the hips */
+  const leanF = clamp(v.vx*0.030, -1.3, 1.3);
+  const twist = sp>3 ? Math.sin(v.phase)*clamp(sp*0.045, 0, 1.5) : 0;
+  const hipY=v.y-LEG+drop;
+  let   hipX=v.x+idle;
   const rk  = v.react ? v.react.k : null;
   const wai = v.state==='wai' || o.wai || rk==='wai';
   const legC = v.legs||'#3a3a44';
-  const chestY=hipY-9+breathe;
+  const chestY=hipY-9+breathe-drop*0.34;   // the chest rides the hips, but not all the way
 
   /* ---------- legs and sandals ---------- */
   /* kneeling and sitting: the shins go flat and the thighs come forward,
@@ -13175,35 +13302,39 @@ function drawVillager(g, v, o={}){
        so does not move over the ground at all, and half is SWING. The sign is
        already in the phase — multiplying by face as well is what sent the
        whole cycle backwards whenever they walked left. */
-    const tt=((v.phase+i*Math.PI)%TAU+TAU)%TAU;
-    let ox,oy;
-    if(tt<Math.PI){ ox=stride*(1-2*tt/Math.PI); oy=0; }
-    else { const u=(tt-Math.PI)/Math.PI;
-           const e=u<0.5? 2*u*u : 1-2*(1-u)*(1-u);   // out of the ground and back into it
-           ox=-stride+2*stride*e; oy=-Math.sin(u*Math.PI)*lift; }
-    const fx=v.x+ox, fy=v.y+oy;
-    const knee=ik2(hipX+(i?1:-1),hipY,fx,fy-1,TH,SN,face>0?1:-1);
+    const G=gaitLeg(v.phase, i, stride, lift);
+    const fx=v.x+G.x, fy=v.y+G.y;
+    const knee=ik2(hipX,hipY,fx,fy-1,TH,SN,face>0?1:-1);
     const col=i===0? shade(legC,-0.24) : legC;
     if(!v.skirt){
-      pLimb(g,hipX+(i?1:-1),hipY,knee.x,knee.y,3.1,col);
+      pLimb(g,hipX+(i?0.7:-0.7),hipY,knee.x,knee.y,3.1,col);
       pLimb(g,knee.x,knee.y,fx,fy-1,2.6,col);
       pR(g,R(knee.x)-1,R(knee.y),2,1,shade(col,-0.2));        // the knee itself
       // the shin below a rolled trouser leg
       pLimb(g,knee.x,knee.y+1.5,fx,fy-1,2.2, i===0? skD:sk);
     }
     /* a sandal: a sole with a lip at the front, a toe strap across the foot,
-       and a foot with a visible ankle above it */
+       and a foot with a visible ankle above it. The sole ROLLS — heel down at
+       the strike, up on the toe at the push — because a sole that stays level
+       whatever the leg is doing is a person walking on stilts. */
+    const F=gaitFoot(G.roll, G.down? v.y : fy, 1.8);
+    const hX=fx-2.2*face, tX=fx+3.6*face;
     pEll(g,fx+face*0.6,fy-1.8,2.5,1.9, i===0? skD:sk);
     pR(g,R(fx)-1,R(fy)-3,2,1, i===0? skD:skL);                    // ankle
-    pR(g,R(fx)-2,R(fy)-1,6,1,'#4a3a2c');
-    pR(g,R(fx)-2,R(fy),6,1,'#33281e');
-    pR(g,R(fx)+face*2.4,R(fy)-1,1,1,'#5c4936');                   // the lip at the toe
+    pTaper(g,hX,F.heel-1,tX,F.toe-1,2.1,1.7,'#4a3a2c');
+    pTaper(g,hX,F.heel,  tX,F.toe,  1.7,1.4,'#33281e');
+    pR(g,R(tX),R(F.toe-1),1,1,'#5c4936');                         // the lip at the toe
     pR(g,R(fx),R(fy)-2,2,1,'#6b5640');                            // the strap over the foot
   }
   if(v.skirt){
     stepCloth(v.cloth,hipX,hipY-1,LEG,o.dt||0.016,o.wind||0,v.vx);
     drawCloth(g,v.cloth,v.skirtPat||'plaid',face,{flare:4});
   }
+  /* The legs are done and they stay under the body. Everything above the hips
+     leans into the walk — one line, and it moves the torso, both arms, what is
+     in the hands and the head together, which is the only way they stay joined
+     on. Whole pixels: half a pixel of shoulder is a blurred shirt. */
+  hipX += R(leanF);
 
   /* ---------- torso ----------
      It used to be a straight-sided block nine pixels wide, which is a shirt
@@ -13240,10 +13371,17 @@ function drawVillager(g, v, o={}){
       /* arms hang from the shoulder, not from the middle of the chest. Swung
          from the centre they read as somebody holding their own stomach. */
       const ph=v.phase+(back?Math.PI:0);
-      hx2=hipX+(back?-4.2:4.4)*face+Math.cos(ph)*stride*0.7*face; hy2=chestY+9.6;
+      const sw=Math.cos(ph);
+      hx2=hipX+(back?-4.2:4.4)*face+sw*stride*0.92*face;
+      /* the hand rises as it comes forward and hangs as it goes back. Held at
+         one height for the whole cycle it reads as a hand on a string. */
+      hy2=chestY+9.6-Math.max(0,sw*face)*2.0-Math.abs(sw)*0.6;
     }
     if(!back){ v._hx=hx2; v._hy=hy2; }
-    const sx=hipX+(back?-3.4:3.4)*face, sy=chestY+1.4;
+    /* the near shoulder goes forward as the far one goes back, which is the
+       whole of what makes a walk look like a person rather than a paper doll
+       swinging from a stick */
+    const sx=hipX+(back?-3.4:3.4)*face+(back?-twist:twist)*face, sy=chestY+1.4;
     const el=ik2(sx,sy,hx2,hy2,5,5,back?(face>0?-1:1):(face>0?1:-1));
     // the cap of the sleeve, rounded over the shoulder
     pEll(g,sx,sy-0.4,2.5,2.6, back?shD:sh);
@@ -13350,8 +13488,10 @@ function drawVillager(g, v, o={}){
      nod and shake are set by whatever is talking: a head that moves while
      the words come out is most of what makes a line feel said rather than
      printed. */
-  const hy3=chestY-8.2 + (v.nod||0);
-  const hjx=(v.headX||0);
+  /* a head is steadier than the hips it is carried on — it takes back about
+     half of the sink, and leads a shade into the direction of travel */
+  const hy3=chestY-8.2 + (v.nod||0) - drop*0.34;
+  const hjx=(v.headX||0) + leanF*0.7;
   const look = clamp((v.glance||0)*0.7 + (o.lookAt? clamp((o.lookAt-v.x)/60,-1,1) : 0), -1, 1);
   // neck, and the shadow the jaw throws on it
   pR(g,R(hipX-1.2),R(hy3+3.9),3,4,skD);
