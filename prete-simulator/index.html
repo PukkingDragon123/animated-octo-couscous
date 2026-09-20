@@ -494,6 +494,23 @@ function pTaper(g,x1,y1,x2,y2,w1,w2,c){
   for(let i=0;i<=n;i++){ const t=i/n, w=lerp(w1,w2,t);
     g.fillRect(R(lerp(x1,x2,t)-w/2), R(lerp(y1,y2,t)-w/2), Math.max(1,R(w)), Math.max(1,R(w))); }
 }
+/* A taper that BOWS. Same two ends, but the line between them is a quadratic
+   pulled sideways by `bow` pixels at its middle, perpendicular to the segment.
+   This is what turns a rigid bone into a noodle: a limb whose middle lags
+   behind its ends reads as boneless, and boneless is the whole idea of him. */
+function pBow(g,x1,y1,x2,y2,w1,w2,c,bow){
+  if(!bow){ pTaper(g,x1,y1,x2,y2,w1,w2,c); return; }
+  const dx=x2-x1, dy=y2-y1, d=Math.hypot(dx,dy)||1;
+  /* the control point of a quadratic sits at twice the sag you want */
+  const mx=(x1+x2)/2 - dy/d*bow*2, my=(y1+y2)/2 + dx/d*bow*2;
+  g.fillStyle=c;
+  const n=Math.max(2,Math.ceil((d+Math.abs(bow)*2)/0.6));
+  for(let i=0;i<=n;i++){
+    const t=i/n, u=1-t, w=lerp(w1,w2,t);
+    const px=u*u*x1+2*u*t*mx+t*t*x2, py=u*u*y1+2*u*t*my+t*t*y2;
+    g.fillRect(R(px-w/2), R(py-w/2), Math.max(1,R(w)), Math.max(1,R(w)));
+  }
+}
 function pTri(g,ax,ay,bx,by,cx2,cy2,c){
   g.fillStyle=c;
   const miny=Math.floor(Math.min(ay,by,cy2)), maxy=Math.ceil(Math.max(ay,by,cy2));
@@ -1644,6 +1661,113 @@ const TH = {
 
   'may you go to a good place':'ขอให้ไปสู่สุคติ',
 
+  /* ---------- wind, seasons, replies and the second round of favours ---------- */
+  'Constantly.':'ตลอดเวลา',
+  'the hot season':'ฤดูร้อน',
+  'the rainy season':'ฤดูฝน',
+  'the cool season':'ฤดูหนาว',
+  'hot':'ร้อน',
+  'rains':'ฝน',
+  'cool':'หนาว',
+  'The ground is hard and everything is the colour of straw.':'ดินแข็งไปหมด ทุกอย่างสีเดียวกับฟาง',
+  'Everything is green to the point of rudeness.':'เขียวจนน่าหมั่นไส้',
+  'Cold enough at dawn to see your breath, if you had any.':'เช้ามืดหนาวพอจะเห็นลมหายใจ ถ้าเจ้ามีลมหายใจ',
+  'Farmer’s Hat':'งอบ',
+  'A Good Hoe':'จอบดีๆ อันหนึ่ง',
+  'A ngob. Woven palm, wide as a table. Nobody works a paddy without one.':'งอบ สานจากใบลาน กว้างเท่าโต๊ะ ไม่มีใครลงนาโดยไม่ใส่',
+  'A jorb. Somebody else wore this handle smooth first.':'จอบ ด้ามนี้มีคนอื่นจับจนลื่นมาก่อนแล้ว',
+  'Anything you need doing?':'มีอะไรให้ช่วยไหม',
+  'There is one thing.':'มีอยู่เรื่องหนึ่ง',
+  'Nothing. Just passing.':'ไม่มีอะไร แค่ผ่านมา',
+  'Pass by again, then.':'งั้นแวะมาอีกนะ',
+  'How high can Meow-Meow actually get?':'เหมียวเหมียวขึ้นได้สูงแค่ไหน',
+  'Higher than the roof. She did the wire once. Papa shouted at the cat and the cat won.':'สูงกว่าหลังคา มันเคยเดินบนสายไฟด้วย ป๊าตะโกนใส่แมว แล้วแมวชนะ',
+  'What did they say at school?':'ที่โรงเรียนเขาว่ายังไง',
+  'That I made you up.':'ว่าหนูแต่งเรื่องขึ้นมาเอง',
+  'So I drew you. Then the teacher put it on the wall, so now I didn\'t make you up.':'หนูก็เลยวาดรูปเจ้า ครูเอาไปติดฝาผนัง ทีนี้ก็ไม่ใช่เรื่องแต่งแล้ว',
+  'Does anything here frighten you?':'ที่นี่มีอะไรทำให้หนูกลัวไหม',
+  'The dark under the house.':'ใต้ถุนบ้านตอนมืดๆ',
+  'Not you though. You\'re just tall.':'แต่ไม่ใช่เจ้านะ เจ้าแค่สูง',
+  'You could come and see the farm.':'มาดูไร่นาบ้างสิ',
+  'Can I hold something? I\'m good at holding things.':'หนูขอถืออะไรสักอย่างได้ไหม หนูถือของเก่ง',
+  'Papa says I\'m not. Papa is wrong about holding things.':'ป๊าบอกว่าไม่เก่ง เรื่องถือของป๊าคิดผิด',
+  'Thirty years is a long time on one corner.':'สามสิบปีที่หัวมุมเดียว นานอยู่นะ',
+  'It\'s a good corner.':'มันเป็นหัวมุมที่ดี',
+  'You see everybody twice. Once going out and once coming back, and they\'re never the same person.':'เห็นทุกคนสองรอบ ขาไปทีขากลับที แล้วไม่เคยเป็นคนเดิมสักหน',
+  'When did you last close early?':'ปิดร้านเร็วครั้งสุดท้ายเมื่อไหร่',
+  'The night my wife left. Shut at nine.':'คืนที่เมียเดินออกไป ปิดตอนสามทุ่ม',
+  'Opened at four the next morning, mind. Stock doesn\'t care.':'แต่ตีสี่วันรุ่งขึ้นก็เปิด น้ำซุปมันไม่สนหรอก',
+  'Does the boy ever come back?':'ลูกชายเคยกลับมาบ้างไหม',
+  'He says at New Year. He means it when he says it.':'เขาบอกว่าปีใหม่ ตอนพูดเขาก็ตั้งใจจริง',
+  'I keep three chairs out the back. That\'s my answer.':'ข้าเก็บเก้าอี้ไว้หลังร้านสามตัว นั่นแหละคำตอบ',
+  'What\'s actually in the stock?':'ในหม้อน้ำซุปมีอะไรบ้าง',
+  'Bones, and thirty years.':'กระดูก กับสามสิบปี',
+  'I top it up. I\'ve never started it again. Same pot since before you were dead.':'ข้าเติมไปเรื่อย ไม่เคยตั้งใหม่ หม้อเดียวกันตั้งแต่ก่อนเจ้าตายเสียอีก',
+  'Am I doing any of this right?':'ข้าทำถูกบ้างไหม',
+  'You are doing it. That is most of right.':'เจ้าทำอยู่ นั่นก็ถูกไปเกินครึ่งแล้ว',
+  'The rest is doing it tomorrow as well.':'ที่เหลือคือพรุ่งนี้ทำอีก',
+  'Do the others talk about me?':'คนอื่นเขาพูดถึงข้าไหม',
+  'Mali has opinions. Nok has information. Yai Pen has both and no patience.':'มะลิมีความเห็น นกมีข้อมูล ยายเพ็ญมีทั้งสองอย่างและไม่มีความอดทน',
+  'What happens when the ledger is full?':'ถ้าบัญชีเต็มแล้วจะเป็นอย่างไร',
+  'You go.':'เจ้าก็ไป',
+  'I would not hurry it. A thing that took this long to be owed is worth being owed slowly.':'อย่ารีบเลย ของที่ค้างมานานขนาดนี้ ค่อยๆ ใช้คืนก็ได้',
+  'Is it strange, a monk talking to a prete?':'พระคุยกับเปรต แปลกไหม',
+  'It would be strange not to.':'ไม่คุยสิถึงจะแปลก',
+  'You are hungry and you are here. That is the entire test.':'เจ้าหิว และเจ้าอยู่ตรงนี้ มีแค่นั้นแหละ',
+  'Eighty-one and still on a ladder?':'แปดสิบเอ็ดแล้วยังขึ้นบันไดอยู่หรือ',
+  'Who else is going to do the gutters.':'ไม่งั้นใครจะขึ้นไปล้างรางน้ำ',
+  'My son rings. My son does not do the gutters.':'ลูกชายโทรมา ลูกชายไม่ล้างรางน้ำ',
+  'You knew this village before the road.':'ยายรู้จักหมู่บ้านนี้ตั้งแต่ก่อนมีถนน',
+  'Before the road, before the wires, before the shop.':'ก่อนมีถนน ก่อนมีสายไฟ ก่อนมีร้าน',
+  'It was darker and the same people were in it.':'มันมืดกว่านี้ แล้วก็เป็นคนกลุ่มเดิม',
+  'Your chillies are famous.':'พริกของยายขึ้นชื่อนะ',
+  'They are not famous. They are correct.':'ไม่ใช่ขึ้นชื่อ มันถูกต้อง',
+  'There is a difference and I will not be explaining it.':'มันคนละเรื่อง และยายจะไม่อธิบาย',
+  'Do you need anything lifting?':'มีของหนักให้ยกไหม',
+  'Not from you. You\'d do it in one go and then where\'s my afternoon.':'ไม่เอาจากเจ้า เจ้ายกทีเดียวจบ แล้วบ่ายนี้ยายจะทำอะไร',
+  'What\'s the talk this week?':'อาทิตย์นี้มีเรื่องอะไรเล่า',
+  'You, mostly.':'ส่วนใหญ่ก็เรื่องเจ้า',
+  'Somebody\'s saying the paddy grew overnight. I said nothing, which is how you know it\'s true.':'มีคนบอกว่านาโตข้ามคืน ข้าไม่ได้พูดอะไร ซึ่งแปลว่ามันจริง',
+  'Who buys all that chilli?':'ใครซื้อพริกเยอะขนาดนั้น',
+  'That\'s my business and I mean that literally.':'นั่นเรื่องของข้า และข้าหมายความตามตัวอักษร',
+  'Ask me again when you\'ve brought me bamboo.':'เอาไม้ไผ่มาให้ก่อนแล้วค่อยถามใหม่',
+  'Does it bother anybody, me being here?':'มีใครรำคาญที่ข้าอยู่แถวนี้ไหม',
+  'It bothered three people. Two changed their minds.':'เคยมีสามคน สองคนเปลี่ยนใจแล้ว',
+  'The third one\'s Uncle Dam and he\'s bothered by the road, the weather and his own truck.':'คนที่สามคือลุงดำ ซึ่งรำคาญทั้งถนน ทั้งอากาศ ทั้งรถตัวเอง',
+  'How\'s the awning holding?':'กันสาดยังอยู่ดีไหม',
+  'Leaning east. Everything here leans east eventually.':'เอียงไปทางตะวันออก ที่นี่อะไรๆ ก็เอียงไปทางนั้นทั้งนั้น',
+  'You built the west road?':'ลุงเป็นคนทำถนนฝั่งตะวันตกหรือ',
+  'Cleared it. Forty years of driving rice over it counts as building.':'ข้าเปิดทางมัน ขับข้าวผ่านมาสี่สิบปี ก็นับว่าสร้าง',
+  'Nobody agrees with me about that.':'ไม่มีใครเห็นด้วยกับข้าเรื่องนี้',
+  'What\'s wrong with that engine?':'เครื่องนั่นเป็นอะไร',
+  'Timing. Or the man driving it.':'ตั้งไฟไม่ตรง หรือไม่ก็คนขับ',
+  'It\'s the man driving it.':'คนขับนั่นแหละ',
+  'Best seat in the village, is it?':'เก้าอี้ที่ดีที่สุดในหมู่บ้านหรือ',
+  'You can see the crossroad, the shop and both houses.':'เห็นสี่แยก เห็นร้าน เห็นบ้านทั้งสองหลัง',
+  'Everything that happens here happens in front of this chair.':'อะไรที่เกิดขึ้นที่นี่ เกิดตรงหน้าเก้าอี้ตัวนี้ทั้งนั้น',
+  'Do you miss the work?':'คิดถึงงานไหม',
+  'I miss being asked.':'ข้าคิดถึงตอนที่มีคนมาขอให้ช่วย',
+  'That\'s not the same thing and I know it.':'มันคนละเรื่อง ข้ารู้',
+  'Three mangoes, unripe':'มะม่วงดิบสามลูก',
+  'Yai Pen wants them green and hard. She has been very clear about this.':'ยายเพ็ญเอาแบบเขียวแข็ง ย้ำแล้วย้ำอีก',
+  'Three mangoes. GREEN. If they are soft I will know and so will you.':'มะม่วงสามลูก เขียวนะ ถ้านิ่มยายรู้ แล้วเจ้าก็จะรู้ด้วย',
+  'Green ones go in the som tam. Ripe ones go to people I like less.':'ลูกเขียวไว้ทำส้มตำ ลูกสุกไว้ให้คนที่ยายชอบน้อยกว่า',
+  'Hard as a doorknob. Good. That is the correct mango.':'แข็งเหมือนลูกบิดประตู ดี นี่แหละมะม่วงที่ถูกต้อง',
+  'Coconuts for the stall':'มะพร้าวไปร้าน',
+  'Four, and she will not be told they are heavy.':'สี่ลูก และห้ามบอกว่ามันหนัก',
+  'Four coconuts. I can carry two. You could carry the tree.':'มะพร้าวสี่ลูก ข้าถือได้สอง เจ้าน่ะแบกทั้งต้นยังไหว',
+  'Do not shake them. I will know if you shook them.':'อย่าเขย่านะ ข้ารู้ถ้าเจ้าเขย่า',
+  'That is the week sorted. Sit down before you fall down.':'อาทิตย์นี้รอดแล้ว นั่งก่อนเถอะ เดี๋ยวล้ม',
+  'Clay for the old man':'ดินเหนียวให้ตาแก่',
+  'Uncle Dam used to throw pots. He says his hands remember.':'ลุงดำเคยปั้นหม้อ แกว่ามือแกยังจำได้',
+  'Three lumps of clay from the bank by the pond. I want to find out if my hands still know.':'ดินเหนียวสามก้อนจากริมสระ ข้าอยากรู้ว่ามือยังทำเป็นไหม',
+  'If they come out crooked I am blaming the clay.':'ถ้าออกมาเบี้ยว ข้าโทษดิน',
+  'Crooked. Every one. I will do better tomorrow, which is a thing I have not said in years.':'เบี้ยวทุกใบ พรุ่งนี้ข้าจะทำให้ดีกว่านี้ ซึ่งเป็นประโยคที่ข้าไม่ได้พูดมาหลายปี',
+  'Herbs for the temple pot':'สมุนไพรลงหม้อวัด',
+  'The kitchen at the wat feeds whoever turns up, and it is short.':'โรงครัววัดเลี้ยงทุกคนที่มา แล้วตอนนี้ของขาด',
+  'Four bunches of herbs, if the roadside has any. We feed whoever comes, and more come than used to.':'สมุนไพรสี่กำ ถ้าริมทางยังมี เราเลี้ยงทุกคนที่มา และมากันมากกว่าแต่ก่อน',
+  'Nothing rare. Whatever grows where nobody planted it.':'ไม่ต้องหายาก อะไรที่ขึ้นเองตรงที่ไม่มีใครปลูกก็ได้',
+  'That is a week of soup. You will not eat any of it, which I think you know.':'ได้แกงไปทั้งอาทิตย์ เจ้าไม่ได้กินสักหน่อย ซึ่งข้าว่าเจ้าก็รู้',
   /* ---------- everything the rewrite and the day loop added ---------- */
   'day':'วันที่',
   '(You ask if she knows. If anyone told her you came back.)':'(เจ้าถามว่านางรู้ไหม มีใครบอกนางไหมว่าเจ้ากลับมาแล้ว)',
@@ -3940,7 +4064,7 @@ const BUILD_STEPS=[
   ['planting the grove', paintBg],
   ['building the village', paintPlay],
   ['parking the cart', ()=>{ paintStory(); placePlats(); }],
-  ['letting the grass grow', ()=>{ seedGrass(); seedCritters(); seedFlies(); seedThings(); }],
+  ['letting the grass grow', ()=>{ seedGrass(); seedFlowers(); seedCritters(); seedFlies(); seedThings(); }],
 ];
 function buildStep(){
   if(BUILD_I>=BUILD_STEPS.length){ WORLD_READY=true; return true; }
@@ -4285,6 +4409,7 @@ function oEll(g,cx,cy,rx,ry,c,oc){ pEll(g,cx,cy,rx+1,ry+1,oc); pEll(g,cx,cy,rx,r
 function oRect(g,x,y,w,h,c,oc){ pR(g,x-1,y-1,w+2,h+2,oc); pR(g,x,y,w,h,c); }
 /* ink-rimmed shapes. a cartoon is an outline first and a colour second. */
 function iTaper(g,x1,y1,x2,y2,w1,w2,c,oc){ pTaper(g,x1,y1,x2,y2,w1+3,w2+3,oc); pTaper(g,x1,y1,x2,y2,w1,w2,c); }
+function iBow(g,x1,y1,x2,y2,w1,w2,c,oc,bow){ pBow(g,x1,y1,x2,y2,w1+3,w2+3,oc,bow); pBow(g,x1,y1,x2,y2,w1,w2,c,bow); }
 function iEll(g,cx,cy,rx,ry,c,oc){ pEll(g,cx,cy,rx+2,ry+2,oc); pEll(g,cx,cy,rx,ry,c); }
 
 function drawPrete(g, p, o={}){
@@ -4498,6 +4623,45 @@ function drawPrete(g, p, o={}){
     p._hticks = 0;
     while(p._hacc >= 1/60 && p._hticks < 16){ p._hticks++; p._hacc -= 1/60; }
   }
+  /* ---------------------------------------------------------------
+     NOODLE ARMS
+
+     He is a hungry ghost: nine feet of him and nothing inside. The arms
+     should not look like two sticks on a hinge, they should look like
+     somebody swung a length of wet noodle.
+
+     Two things do it, and neither is extra geometry.
+
+     One: the hand is on a SECOND-ORDER spring rather than the
+     exponential chase it had. An exponential chase can only ever arrive;
+     a spring with a little energy left in it overshoots, comes back, and
+     rings down. That ring is what a boneless limb does at the end of a
+     swing.
+
+     Two: the lag itself bends the arm. Whatever the hand is behind by,
+     taken perpendicular to the limb, is fed to `pBow` — so while the arm
+     is being dragged forwards it trails a curve behind it, and when it
+     stops the curve unwinds. A straight line between shoulder and elbow
+     is a bone. A line that bows against the direction of travel is not.
+     --------------------------------------------------------------- */
+  const NOODLE  = p.noodle===undefined? 1 : p.noodle;   // 0 turns it all off
+  /* TWO CHASES IN SERIES, not a spring.
+
+     A velocity spring with any life left in it looked wonderful and drifted
+     seven pixels between sixty frames a second and fifteen: the ring is
+     still going when the slow phone samples it. A spring stiff enough to
+     kill the ring then snapped his hands into place at the start of every
+     job.
+
+     Two exponential chases in series have neither problem. The first
+     follows the pose, the second follows the first, and the result lags
+     smoothly and NEVER overshoots — so there is nothing left ringing for a
+     frame rate to catch at the wrong moment, and nothing arrives in one
+     step. The lag between the pose and the hand is what gets fed to the
+     bow, and two stages of it is a much longer lag than one, which is
+     exactly the noodle. */
+  const N_K1 = 0.30, N_K2 = 0.26;    // per fixed tick
+  let   _bow = [0,0];
   function smoothHand(back, hx2, hy2){
     const i = back?0:1;
     if(!p._hand) p._hand=[null,null];
@@ -4506,8 +4670,22 @@ function drawPrete(g, p, o={}){
     const dt2 = o.dt===undefined? 1/60 : o.dt;
     /* first frame, a still, or a teleport: be where the pose says */
     if(!cur || !dt2 || Math.hypot(tx-cur.x, ty-cur.y) > 64){
-      p._hand[i]={x:tx,y:ty};
+      p._hand[i]={x:tx,y:ty,mx:tx,my:ty};
       return {hx2,hy2};
+    }
+    if(NOODLE){
+      if(cur.mx===undefined){ cur.mx=cur.x; cur.my=cur.y; }
+      for(let n2=0; n2<(p._hticks||0); n2++){
+        cur.mx += (tx-cur.mx)*N_K1;  cur.my += (ty-cur.my)*N_K1;
+        cur.x  += (cur.mx-cur.x)*N_K2; cur.y += (cur.my-cur.y)*N_K2;
+      }
+      /* how far behind the pose it is — the arm bends by this */
+      /* plus a slow ripple that never stops, so even standing still the
+         arms hang like something with no bones in it rather than like two
+         drawn lines */
+      const idle = Math.sin(p.anim*2.05 + i*2.4)*1.15 + Math.sin(p.anim*0.77 + i)*0.7;
+      _bow[i] = clamp(((tx-cur.x)*1.55 + idle)*NOODLE, -7, 7);
+      return {hx2: hipX+cur.x, hy2: hipY+cur.y, _i:i};
     }
     /* The spring lives in the draw pass, so how often it is advanced depends
        on the frame rate. Advancing it once per frame by the real elapsed time
@@ -4525,6 +4703,7 @@ function drawPrete(g, p, o={}){
   }
   function drawArm(back){
     const {hx2,hy2}=smoothHand(back, ...(pose=>[pose.hx2,pose.hy2])(armPose(back)));
+    const bow = _bow[back?0:1] || 0;
     const col=back?SHD:BODY;
     const sx0=chestX+(back?-4:4)*face;
     /* both elbows drop outward under a load — the back one bending the usual
@@ -4536,8 +4715,10 @@ function drawPrete(g, p, o={}){
     const bend = (carry || (ACT&&ACT.k==='eat'))? (face>0?1:-1)
                  : (back?(face>0?1:-1):(face>0?-1:1));
     const el=ik2(sx0,shY,hx2,hy2,AU2,AL,bend);
-    iTaper(g,sx0,shY,el.x,el.y,3.4,3.0,col,OC);
-    iTaper(g,el.x,el.y,hx2,hy2,3.0,2.6,col,OC);
+    /* the upper arm trails, the forearm trails harder and the other way —
+       that S is what reads as noodle rather than as a bent stick */
+    iBow(g,sx0,shY,el.x,el.y,3.4,3.0,col,OC, bow*0.55);
+    iBow(g,el.x,el.y,hx2,hy2,3.0,2.6,col,OC, -bow*0.85);
     pEll(g,el.x,el.y,1.8,1.8,col);
     /* ---------------------------------------------------------------
        THE HANDS — four long fingers and a thumb, and they move.
@@ -4834,6 +5015,40 @@ function drawPrete(g, p, o={}){
   }
   if(cos.beads) for(let i=0;i<9;i++){ const a=Math.PI*(i/8);
     pEll(g, chestX+Math.cos(a+Math.PI)*7, chestY+Math.sin(a)*6.6, 1.5,1.5, i%2?'#6b4a2c':'#8a6440'); }
+  /* ---- งอบ, and what you take to the field ----
+     A prete who has rented a farm and spent a season on it should be
+     allowed to look like a farmer. The hat is the villagers' งอบ at his
+     scale, tipped back because nobody wears one forward, and the hoe is
+     a real จอบ: a shaft, a neck, and a blade at the wrong angle to
+     everything, which is what makes a hoe read as a hoe. */
+  if(cos.ngob){
+    const hx4=headX+0.4*face, hy4=headY-10.5;
+    pTri(g,hx4-1*face,hy4-12, hx4-14,hy4+2.6, hx4+14,hy4+2.6, '#e0c684');
+    pTri(g,hx4-1*face,hy4-12, hx4-14,hy4+2.6, hx4-3,hy4+2.6, '#c1a765');
+    pEll(g,hx4,hy4+2.6,14.2,2.6,'#cfb26e');
+    for(let i=-6;i<=6;i++) pR(g,R(hx4+i*2.2),R(hy4+0.6-Math.abs(i)*0.72),1,1,'#ab8f52');
+    pR(g,R(hx4-2),R(hy4+4.4),5,1,'#7d6a3a');
+    /* the cord hangs down BEHIND the head. Across the face it read as a
+       crack in him, which is not the note this hat is going for. */
+    pTaper(g,hx4-11*face,hy4+3, headX-9*face, headY+11, 1.2,1.0,'#8a7346');
+  }
+  if(o.tool==='hoe' || cos.hoe){
+    const h=o.hands||{};
+    const hx5 = (h.nx!==undefined? h.nx : chestX+11*face);
+    const hy5 = (h.ny!==undefined? h.ny : chestY+22);
+    /* Held at his side, near enough upright, the way anybody carries a hoe
+       they are not using. Slung over the shoulder it crossed his chest and
+       his face and turned the whole sprite into a diagram. */
+    const bx2=hx5-3*face, by2=hy5-19, tx2=hx5+5*face, ty2=hy5+27;
+    iTaper(g,bx2,by2,tx2,ty2, 2.4,2.6, '#8a6a3e', OC);
+    pTaper(g,bx2,by2,tx2,ty2, 1.0,1.1, '#b58f57');
+    /* the neck, then the blade square across it */
+    const nx2=tx2+2.0*face, ny2=ty2+2.2;
+    pTaper(g,tx2,ty2,nx2,ny2,2.2,2.0,'#6f6a66');
+    pTri(g, nx2-6*face, ny2-1, nx2+6*face, ny2+1, nx2-4*face, ny2+8, '#4a4a4e');
+    pTri(g, nx2-5*face, ny2+0.4, nx2+5*face, ny2+1.6, nx2-3.4*face, ny2+6.8, '#6e6e74');
+    pTaper(g, nx2-4*face, ny2+8, nx2+5.4*face, ny2+2.2, 1.4,1.2, '#b9bcc2');
+  }
   if(cos.halo){
     const hr=16+Math.sin(p.anim*1.4)*0.9;
     for(let i=0;i<30;i++){ const a=i/30*TAU + p.anim*0.22;
@@ -4867,6 +5082,13 @@ const VILL_H   = 42;                 // heel to the top of the head
 /* The thigh and the shin add up to a whisker over the sixteen pixels from
    hip to ankle. It was eighteen, and a two-bone solver puts every spare
    pixel in the knee, so the whole village walked about bow-legged. */
+/* HOW FAST ANYBODY WALKS.
+   Everyone in the village moved at a brisk 22px/s, which at this scale is
+   a person hurrying, and a village where everybody is hurrying is not a
+   cozy village — it is a train station. Nobody here has anywhere to be.
+   One number, multiplied into every walk speed in the game, so the pace
+   of the whole place is a single knob. */
+const VILL_PACE = 0.58;
 const VILL_LEG = 17, VILL_TH = 8.15, VILL_SN = 8.15;
 const VILL_CH  = 11;                 // how tall the torso is — the legs get the rest
 const villTop  = v => (v.y||0) - VILL_H;
@@ -5528,6 +5750,9 @@ const COSMETICS = {
   sash:        {slot:'sash',   v:1, cost:6,  n:'Sabai Sash',   d:'Worn over one shoulder, the old way.'},
   beads:       {slot:'beads',  v:1, cost:5,  n:'Prayer Beads', d:'One hundred and eight of them. You know the number now.'},
   goldleaf:    {slot:'goldleaf',v:1,cost:10, n:'Gold Leaf',    d:'Pressed on square by square, the way people gild a Buddha.'},
+  /* the field kit — for when the farm is the thing you spend your days on */
+  ngob:        {slot:'ngob',   v:1, cost:5,  n:'Farmer’s Hat', d:'A ngob. Woven palm, wide as a table. Nobody works a paddy without one.'},
+  hoe:         {slot:'hoe',    v:1, cost:7,  n:'A Good Hoe',    d:'A jorb. Somebody else wore this handle smooth first.'},
   halo:        {slot:'halo',   v:1, cost:0,  n:'Radiance',     d:'Not bought. Earned, at the very end.', locked:'metta'},
 };
 
@@ -5567,8 +5792,20 @@ const VILLAGERS = [YAI,NOK,DAM];
    it is the only place in the game where a person tells you
    plainly what to go and do.
    ============================================================ */
+/* A fourth register, `rep`: things YOU can say, and what it gets you.
+   The whole point of a reply is that it costs you nothing and tells you
+   something — nobody here is being tested. Each entry is one thing you
+   could say and the two or three sentences it opens up. Pick two at
+   random per conversation and the same neighbour is a different
+   conversation on Tuesday. */
 const VOICE = {
   mali: {
+    rep:[
+      {t:"How high can Meow-Meow actually get?", a:["Higher than the roof. She did the wire once. Papa shouted at the cat and the cat won."]},
+      {t:"What did they say at school?", a:["That I made you up.","So I drew you. Then the teacher put it on the wall, so now I didn't make you up."]},
+      {t:"Does anything here frighten you?", a:["The dark under the house.","Not you though. You're just tall."]},
+      {t:"You could come and see the farm.", a:["Can I hold something? I'm good at holding things.","Papa says I'm not. Papa is wrong about holding things."]},
+    ],
     cold:["I'm seven. Papa says seven's old enough to carry things. It isn't.",
           "You're taller than the shop. Do you duck under the wires?"],
     warm:["Sit down. Lower. There — now we're nearly the same.",
@@ -5578,6 +5815,12 @@ const VOICE = {
           "Papa says don't talk to ghosts. You're not a ghost, you're you."],
     ask: ["I'm not allowed to ask grown-ups for things. You're not a grown-up."] },
   uncle: {
+    rep:[
+      {t:"Thirty years is a long time on one corner.", a:["It's a good corner.","You see everybody twice. Once going out and once coming back, and they're never the same person."]},
+      {t:"When did you last close early?", a:["The night my wife left. Shut at nine.","Opened at four the next morning, mind. Stock doesn't care."]},
+      {t:"Does the boy ever come back?", a:["He says at New Year. He means it when he says it.","I keep three chairs out the back. That's my answer."]},
+      {t:"What's actually in the stock?", a:["Bones, and thirty years.","I top it up. I've never started it again. Same pot since before you were dead."]},
+    ],
     cold:["Thirty years on this corner. Ask anyone where the noodles are.",
           "Sit if you like. Nobody ever sits."],
     warm:["There's a bowl with your name on it. No, you can't pay.",
@@ -5590,6 +5833,12 @@ const VOICE = {
           "Three chairs out the back. Nobody has needed three chairs in a while."],
     ask: ["I'd send the boy. The boy's thirty-one and lives in the city."] },
   monk: {
+    rep:[
+      {t:"Am I doing any of this right?", a:["You are doing it. That is most of right.","The rest is doing it tomorrow as well."]},
+      {t:"Do the others talk about me?", a:["Constantly.","Mali has opinions. Nok has information. Yai Pen has both and no patience."]},
+      {t:"What happens when the ledger is full?", a:["You go.","I would not hurry it. A thing that took this long to be owed is worth being owed slowly."]},
+      {t:"Is it strange, a monk talking to a prete?", a:["It would be strange not to.","You are hungry and you are here. That is the entire test."]},
+    ],
     cold:["Sit where you like. The step's cool at this hour.",
           "Nobody's been afraid of you all week. You may not have noticed."],
     warm:["You've been busy. The village says so, which is louder than you do.",
@@ -5599,6 +5848,12 @@ const VOICE = {
           "Sweeping. Always sweeping. Leaves don't take a holiday."],
     ask: ["I'm not supposed to want things. Here we are."] },
   yai: {
+    rep:[
+      {t:"Eighty-one and still on a ladder?", a:["Who else is going to do the gutters.","My son rings. My son does not do the gutters."]},
+      {t:"You knew this village before the road.", a:["Before the road, before the wires, before the shop.","It was darker and the same people were in it."]},
+      {t:"Your chillies are famous.", a:["They are not famous. They are correct.","There is a difference and I will not be explaining it."]},
+      {t:"Do you need anything lifting?", a:["Not from you. You'd do it in one go and then where's my afternoon."]},
+    ],
     cold:["Eighty-one. Still climb a ladder. That's what worries them.",
           "Speak up. And stop stooping, you'll get a back like mine."],
     warm:["You're a good one. I've been wrong before, but not often.",
@@ -5608,6 +5863,12 @@ const VOICE = {
           "Mind the chillies. They're drying."],
     ask: ["Ask my son, it takes a week. Ask you, it's done tonight."] },
   nok: {
+    rep:[
+      {t:"What's the talk this week?", a:["You, mostly.","Somebody's saying the paddy grew overnight. I said nothing, which is how you know it's true."]},
+      {t:"Who buys all that chilli?", a:["That's my business and I mean that literally.","Ask me again when you've brought me bamboo."]},
+      {t:"Does it bother anybody, me being here?", a:["It bothered three people. Two changed their minds.","The third one's Uncle Dam and he's bothered by the road, the weather and his own truck."]},
+      {t:"How's the awning holding?", a:["Leaning east. Everything here leans east eventually."]},
+    ],
     cold:["Stall's open, gossip's free, mind the step.",
           "You want to know something about this village? No — everything."],
     warm:["Anything you need, tall one, I know who's got it.",
@@ -5617,6 +5878,12 @@ const VOICE = {
           "Bring me anything. I'll find someone who wants it."],
     ask: ["I could get it myself. I'm not going to. That's neighbours."] },
   dam: {
+    rep:[
+      {t:"You built the west road?", a:["Cleared it. Forty years of driving rice over it counts as building.","Nobody agrees with me about that."]},
+      {t:"What's wrong with that engine?", a:["Timing. Or the man driving it.","It's the man driving it."]},
+      {t:"Best seat in the village, is it?", a:["You can see the crossroad, the shop and both houses.","Everything that happens here happens in front of this chair."]},
+      {t:"Do you miss the work?", a:["I miss being asked.","That's not the same thing and I know it."]},
+    ],
     cold:["Forty years driving rice. Then they gave me a chair.",
           "Don't tell me about the west road. I built the west road."],
     warm:["You lifted that tree like a broom handle. Still thinking about it.",
@@ -5967,7 +6234,7 @@ function stepNpcs(dt){
          story's own walks are not marked routine and carry on. */
       if(DLG && n.routine){ n.vx=0; }
       else if(Math.abs(d)<3){ n.vx=0; n.state=n.then||'idle'; n.then=null; n.routine=false; n.t=rnd(3,8); if(n.state==='pray') beginPray(n); }
-      else { n.vx=sign(d)*22*gaitOf(n).spd; n.face=sign(d); n.x+=n.vx*dt; }
+      else { n.vx=sign(d)*22*gaitOf(n).spd*VILL_PACE; n.face=sign(d); n.x+=n.vx*dt; }
     } else {
       n.vx = lerp(n.vx,0,1-Math.pow(0.001,dt));
       if(VILLAGERS.indexOf(n)>=0){
@@ -9327,6 +9594,7 @@ function render(){
 
   drawSigns(ctx);
   drawCrittersBack(ctx);
+  if(typeof drawFlowers==='function') drawFlowers(ctx);
   drawStoryBack(ctx);  // the stall, his house, the furrows
   drawFarm(ctx);
   drawNew(ctx);        // the barn, the jar, the log, and her
@@ -9419,11 +9687,13 @@ function render(){
   if(HT) drawTaskWorld(ctx);
   drawStoryFore(ctx);  // whoever is walking you home, and what you are holding
   drawCrittersFore(ctx);
+  if(typeof drawPetals==='function') drawPetals(ctx);
   drawNewFore(ctx);    // things in the air, and the mist over the road east
   drawParts(ctx);
   ctx.restore();
 
   drawLighting(ctx,cx,cy);
+  if(typeof drawSeasonTint==='function') drawSeasonTint(ctx);
   ctx.save(); ctx.translate(-cx,-cy);
   drawGlows(ctx);
   drawMotes(ctx);
@@ -10282,6 +10552,32 @@ function talkVillager(v){
     npcReact(v,'wai',1.6);
     lines.push({w:v.name, t: pick(V.chat||['The rice is doing what rice does.'])});
   }
+  /* ---------- and then it is your turn ----------
+     Two things drawn from what this person has to say, plus a way out,
+     plus — if they have one going spare — the question that gets you a
+     favour. Nothing here can go wrong for you. The point is that the
+     conversation has a shape instead of a length. */
+  const last = lines[lines.length-1];
+  const pool = (V.rep||[]).slice();
+  const opts = [];
+  for(let n=0; n<2 && pool.length; n++){
+    const r = pool.splice((Math.random()*pool.length)|0, 1)[0];
+    opts.push({ t:r.t, then: r.a.map(t=>({w:v.name, t})) });
+  }
+  const f = (typeof questFor==='function')? questFor(v.id) : null;
+  /* only the ones they have not been asked about yet, and only once the
+     day has come round to them */
+  if(f && !f.st && typeof questReady==='function' && questReady(f.id)){
+    opts.push({ t:L('Anything you need doing?'),
+                /* offerQuest says the ask itself, so this reply only gets
+                   you as far as them drawing breath */
+                then:[{w:v.name, e:'ask', t:L('There is one thing.')}],
+                do:()=>{ const id=f.id; DLG.done=()=>offerQuest(id); } });
+  }
+  opts.push({ t:L('Nothing. Just passing.'), e:'plain',
+              then:[{w:v.name, e:'warm',
+                     t: pick(V.warm||[L('Pass by again, then.')]) }] });
+  if(opts.length) last.r = opts;
   say(lines);
 }
 function talkMali(){
@@ -12419,14 +12715,22 @@ const _gSpr = new Map();
 const GRASS_C = ['#4a8259','#3f7550','#568c5c','#6b9a55'];
 const G_BEND = 3;                      // buckets either side of upright
 const gq = h => clamp(Math.round(h/3)*3, 6, 18);
-function grassSprite(kind, h, bendI, cI){
-  const key = kind+'|'+h+'|'+bendI+'|'+cI;
+/* The grass is a different colour in each of the three seasons — straw in
+   the hot one, violently green in the rains, somewhere between in the cool
+   one — so the season is part of the cache key. Three times the sprites,
+   still well under the cap, and the whole ground changes colour when the
+   calendar does. */
+function grassSprite(kind, h, bendI, cI, sid){
+  sid = sid || (typeof seasonNow==='function'? seasonNow() : 'rain');
+  const key = sid+'|'+kind+'|'+h+'|'+bendI+'|'+cI;
   let c=_gSpr.get(key);
   if(c) return c;
   const bend=(bendI-G_BEND)/G_BEND;          // -1 .. 1
   const w=Math.max(6, 10+Math.abs(bend)*h), cx=w/2;
   c=mkCv(w, h+3);
-  const g=G2(c), base=GRASS_C[cI];
+  const sc = (typeof SEASON!=='undefined' && SEASON[sid]) ? SEASON[sid] : null;
+  const g=G2(c), base = sc? mix(GRASS_C[cI], sc.grass, sid==='hot'? 0.62 : 0.34)
+                         : GRASS_C[cI];
   const blades = kind===0? 3 : kind===1? 4 : 5;
   for(let i=0;i<blades;i++){
     const t=(i/(blades-1||1)-0.5);
@@ -12440,7 +12744,7 @@ function grassSprite(kind, h, bendI, cI){
     pEll(g, tipx, h+2-h*0.98, 1.4, 2.6, '#c8bb7a');
   }
   _gSpr.set(key,c);
-  if(_gSpr.size>520) _gSpr.delete(_gSpr.keys().next().value);
+  if(_gSpr.size>900) _gSpr.delete(_gSpr.keys().next().value);
   return c;
 }
 
@@ -12881,6 +13185,273 @@ function drawCritter(g,c){
       pEll(g,x,y-2,2.6,1.6,'#7aa83c');
       pTaper(g,x-1,y-2.6,x-4,y-1,1.4,0.8,'#6b9430');
       break; }
+  }
+}
+/* ============================================================
+   WIND, FLOWERS, AND THE THREE SEASONS
+
+   Thailand does not have four seasons and pretending it does
+   would be the wrong game. It has three, and everybody who
+   lives here names them: ฤดูร้อน, the hot one, when the light
+   goes white and the grass goes to straw; ฤดูฝน, the rains,
+   when everything is violently green and the wind arrives in
+   slabs; and ฤดูหนาว, the cool one, which is not cold but is
+   the one everybody waits for — clear mornings, mist off the
+   paddy, and a breeze that does not stop for three weeks.
+
+   Ten days each. A save that runs a month sees all three, and
+   the village is a different colour in each of them.
+
+   The wind used to be two sine waves added together, which is
+   a fan rather than weather. Real wind is mostly nothing and
+   then a gust that arrives, crosses, and goes. So: a slow base
+   the season sets, plus gusts that are born off-screen, travel
+   at a speed, and lean everything they pass over in turn. That
+   last part is the whole trick — a field where every blade
+   leans at once is a texture, and a field where the lean
+   crosses it is a place with weather in it.
+   ============================================================ */
+
+const SEASON_LEN = 10;
+const SEASON_IDS = ['hot','rain','cool'];
+function seasonOf(day){
+  const d=Math.max(1,(day|0));
+  return SEASON_IDS[ Math.floor((d-1)/SEASON_LEN) % 3 ];
+}
+const seasonNow = ()=> seasonOf(typeof DAY!=='undefined'? DAY.n : 1);
+/* how far through the season we are, 0..1 — the edges blend */
+function seasonT(){
+  const d=Math.max(1,((typeof DAY!=='undefined'? DAY.n : 1)|0));
+  return ((d-1) % SEASON_LEN) / SEASON_LEN;
+}
+const SEASON = {
+  hot:  { name:'the hot season',  th:'ฤดูร้อน',
+          /* bleached, and the air has dust in it */
+          tint:'#ffd9a0', tintA:0.10, grass:'#9b9a55', wind:0.55, gust:[7,15], gustP:0.55,
+          flower:1.05, petal:'#f4c4d8', dry:0.62, mist:0,
+          note:'The ground is hard and everything is the colour of straw.' },
+  rain: { name:'the rainy season', th:'ฤดูฝน',
+          tint:'#8fb6c8', tintA:0.13, grass:'#2f7a46', wind:0.9, gust:[16,30], gustP:1.5,
+          flower:1.5, petal:'#e8e0b8', dry:0, mist:0.18,
+          note:'Everything is green to the point of rudeness.' },
+  cool: { name:'the cool season',  th:'ฤดูหนาว',
+          tint:'#cfe0ff', tintA:0.09, grass:'#4d8a5c', wind:1.25, gust:[10,20], gustP:1.0,
+          flower:1.25, petal:'#ffe9a8', dry:0.22, mist:0.34,
+          note:'Cold enough at dawn to see your breath, if you had any.' },
+};
+function seasonDef(){ return SEASON[seasonNow()] || SEASON.rain; }
+
+/* ---------- the wind ----------
+   `GS.wind` stays what it always was — one number, -1.5..1.5, that
+   everything already leaning on it keeps using. `windAt(x)` is the new
+   thing: the same wind plus whichever gusts happen to be over that
+   stretch of the world right now. */
+const GUSTS = [];
+function stepWind(dt){
+  const S=seasonDef();
+  GS.t = GS.t||0;
+  const base = (Math.sin(GS.t*0.31)*0.32 + Math.sin(GS.t*0.113)*0.18) * S.wind;
+  GS.wind = base;
+  /* a gust is born off one edge of the loaded world and crosses it */
+  if(Math.random() < S.gustP*dt*0.5 && GUSTS.length<5){
+    const dir = Math.random()<0.72? 1 : -1;      // mostly out of the west
+    const sp  = rnd(S.gust[0], S.gust[1]) * 9;
+    GUSTS.push({ x: dir>0? GS.camX-240 : GS.camX+W+240, v: dir*sp,
+                 w: rnd(150, 420), a:0, aT:rnd(0.45,1.0), t:0, life:rnd(3.5,7) });
+  }
+  for(let i=GUSTS.length-1;i>=0;i--){
+    const u=GUSTS[i];
+    u.t+=dt; u.x+=u.v*dt;
+    /* in over a beat, out over a beat */
+    const k=Math.min(u.t/0.8, (u.life-u.t)/1.1, 1);
+    u.a = u.aT*clamp(k,0,1);
+    if(u.t>u.life || u.x<GS.camX-900 || u.x>GS.camX+W+900) GUSTS.splice(i,1);
+  }
+  stepPetals(dt);
+  stepFlowers(dt);
+}
+/* the wind where you are standing, gusts and all */
+function windAt(x){
+  let w=GS.wind;
+  for(const u of GUSTS){
+    const d=Math.abs(x-u.x);
+    if(d>u.w) continue;
+    /* a raised cosine, so a gust has a shoulder rather than an edge */
+    w += u.a * sign(u.v) * 0.5*(1+Math.cos(d/u.w*Math.PI));
+  }
+  return w;
+}
+/* is a gust passing over x hard enough to lift things off the ground */
+function gustAt(x){
+  let g=0;
+  for(const u of GUSTS){ const d=Math.abs(x-u.x); if(d<u.w) g=Math.max(g, u.a*0.5*(1+Math.cos(d/u.w*Math.PI))); }
+  return g;
+}
+
+/* ---------- flowers ----------
+   Baked like the grass is, for the same reason: five heights, seven bends,
+   six kinds is 210 sprites and the cache never thrashes. They are the one
+   thing in the village that is a different colour every season. */
+const FLOW_C = {
+  hot:  [['#e8734f','#f0a05c'], ['#e0c24a','#f2dd7a'], ['#d6607f','#f0a0b4']],   // เฟื่องฟ้า, ทองอุไร
+  rain: [['#c74f8a','#e895bd'], ['#7a5fc4','#ac96e0'], ['#e8e0d0','#ffffff']],   // บัว, อัญชัน
+  cool: [['#e8d24a','#f5ea9a'], ['#e07a3f','#f2ab74'], ['#c8d8e8','#ffffff']],   // ดาวเรือง
+};
+const _fSpr = new Map();
+function flowerSprite(kind, h, bendI, cI, sid){
+  const key=sid+'|'+kind+'|'+h+'|'+bendI+'|'+cI;
+  let c=_fSpr.get(key); if(c) return c;
+  const bend=(bendI-G_BEND)/G_BEND;
+  const pal=(FLOW_C[sid]||FLOW_C.rain)[cI%3];
+  const w=Math.max(9, 12+Math.abs(bend)*h);
+  const cx=w/2;
+  c=mkCv(w, h+7); const g=G2(c);
+  const tipx = cx + bend*h*0.92, tipy = h+3-h;
+  /* stem, two leaves on it */
+  pTaper(g, cx, h+4, tipx, tipy+1, 1.7, 1.0, '#3f7a48');
+  pEll(g, lerp(cx,tipx,0.42)-2, h+4-h*0.42, 2.4, 1.2, '#4a8c52');
+  pEll(g, lerp(cx,tipx,0.66)+2, h+4-h*0.66, 2.0, 1.0, '#3f7a48');
+  if(kind===0){            // five little petals round a middle
+    for(let i=0;i<5;i++){
+      const a=i/5*TAU + bend*0.5;
+      pEll(g, tipx+Math.cos(a)*2.2, tipy+Math.sin(a)*2.0, 1.8, 1.7, pal[0]);
+    }
+    pEll(g, tipx, tipy, 1.3, 1.2, pal[1]);
+  } else if(kind===1){     // a spike of small ones, like ทองอุไร
+    for(let i=0;i<4;i++){
+      const t=i/3;
+      pEll(g, lerp(cx,tipx,0.55+t*0.45)+(i%2?1.4:-1.4), h+4-h*(0.55+t*0.45), 1.7, 1.5, i%2?pal[0]:pal[1]);
+    }
+  } else {                 // one wide open head
+    pEll(g, tipx, tipy+0.4, 3.0, 2.4, pal[0]);
+    pEll(g, tipx-0.6, tipy-0.2, 1.5, 1.2, pal[1]);
+  }
+  _fSpr.set(key,c);
+  if(_fSpr.size>640) _fSpr.delete(_fSpr.keys().next().value);
+  return c;
+}
+const FLOWERS=[], FBUCK=[], FBW=192;
+function fbucket(x){ return FBUCK[(x/FBW)|0] || (FBUCK[(x/FBW)|0]=[]); }
+function seedFlowers(){
+  FLOWERS.length=0; FBUCK.length=0;
+  const r=mulberry(515151);
+  /* They grow in patches, because that is how flowers grow. A flat
+     scatter at this density reads as confetti; a clump every eighty
+     pixels or so reads as a verge somebody has not cut. */
+  for(let x=30; x<WORLD_W-30; x += (r()<0.62? 3.5+r()*6 : 16+r()*34)){
+    const z=zoneAt(x);
+    if(typeof isRoad==='function' && isRoad(x) && r()<0.9) continue;
+    if(z.id==='charnel' && r()<0.8) continue;           // not much grows there
+    if(typeof BED_XS!=='undefined' && x>BED_XS[0]-24 && x<BED_XS[BED_XS.length-1]+24) continue;
+    if(x>780 && x<1460 && Math.sin(x*0.021)>-0.25 && r()<0.85) continue;
+    const f={ x:R(x), h:clamp(Math.round((7+r()*9)/3)*3, 6, 18), k:(r()*3)|0, c:(r()*3)|0,
+              ph:r()*TAU, b:0, bv:0, lush: z.id==='forest'||z.id==='grove'? 1.25 : 1 };
+    FLOWERS.push(f); fbucket(x).push(f);
+  }
+}
+function stepFlowers(dt){
+  if(!FLOWERS.length) return;
+  const i0=Math.max(0,((GS.camX-40)/FBW)|0), i1=((GS.camX+W+40)/FBW)|0;
+  for(let i=i0;i<=i1;i++){
+    const b=FBUCK[i]; if(!b) continue;
+    for(const t of b){
+      /* a flower on a long stem is floppier than a blade of grass: it
+         leans further and takes longer to come back */
+      const rest = windAt(t.x)*0.34 + Math.sin(GS.t*1.35+t.ph)*0.07;
+      t.bv += (rest-t.b)*17*dt;
+      t.bv *= Math.pow(0.05,dt);
+      t.b = clamp(t.b + t.bv*dt, -1.2, 1.2);
+    }
+  }
+  if(typeof P!=='undefined' && P && Math.abs(P.vx)>14) brushFlowers(P.x, 20, 4.2);
+}
+function brushFlowers(x, r, force){
+  const i0=((x-r)/FBW)|0, i1=((x+r)/FBW)|0;
+  for(let i=i0;i<=i1;i++){
+    const b=FBUCK[i]; if(!b) continue;
+    for(const t of b){
+      const d=t.x-x; if(Math.abs(d)>r) continue;
+      const k=1-Math.abs(d)/r;
+      t.bv += sign(d||1)*k*(force||4.2);
+      if(Math.random()<0.02*k) spawnPetal(t.x, groundY(t.x)-t.h-2);
+    }
+  }
+}
+function drawFlowers(g){
+  if(!FLOWERS.length) return;
+  const sid=seasonNow();
+  const i0=Math.max(0,((GS.camX-24)/FBW)|0), i1=((GS.camX+W+24)/FBW)|0;
+  for(let i=i0;i<=i1;i++){
+    const b=FBUCK[i]; if(!b) continue;
+    for(const t of b){
+      const bi=clamp(R(t.b*G_BEND)+G_BEND,0,G_BEND*2);
+      const sp=flowerSprite(t.k, t.h, bi, t.c, sid);
+      g.drawImage(sp, R(t.x-sp.width/2), R(groundY(t.x)-t.h-4));
+    }
+  }
+}
+
+/* ---------- what the wind carries ----------
+   Petals in the hot season, leaves in the rains, a haze of seed and dust
+   in the cool one. They are all the same particle with a different colour
+   and a different amount of flutter. */
+const PETALS=[];
+function spawnPetal(x,y,strong){
+  if(PETALS.length>110) return;
+  const S=seasonDef();
+  PETALS.push({ x, y, t:rnd(TAU), sp:rnd(0.8,1.9), life:rnd(3.0,7.5),
+                vy:rnd(-7,3), spin:rnd(2.5,6.5)*(Math.random()<0.5?-1:1),
+                c: S.petal, s: rnd(1.3,2.3), boost: strong? 1.8 : 1 });
+}
+function stepPetals(dt){
+  const S=seasonDef();
+  /* the gusts themselves shake things loose */
+  for(const u of GUSTS){
+    if(u.a<0.3) continue;
+    if(Math.random() < u.a*dt*14){
+      const x=u.x+rnd(-u.w*0.6,u.w*0.6);
+      if(x>GS.camX-40 && x<GS.camX+W+40) spawnPetal(x, groundY(x)-rnd(6,64), true);
+    }
+  }
+  for(let i=PETALS.length-1;i>=0;i--){
+    const p2=PETALS[i];
+    p2.t+=dt*p2.sp; p2.life-=dt;
+    const w=windAt(p2.x);
+    p2.x += (w*26 + Math.sin(p2.t*1.7)*7) * dt * p2.boost;
+    p2.y += (p2.vy + Math.sin(p2.t*2.3)*5 + 5) * dt;
+    if(p2.life<=0 || p2.y>groundY(p2.x)+2) PETALS.splice(i,1);
+  }
+  /* an ambient few, so the air is never completely dead */
+  if(PETALS.length<18 && Math.random()<dt*2.4*S.flower){
+    const x=GS.camX+rnd(-30,W+30);
+    spawnPetal(x, groundY(x)-rnd(10,80));
+  }
+}
+function drawPetals(g){
+  for(const p2 of PETALS){
+    if(p2.x<GS.camX-8 || p2.x>GS.camX+W+8) continue;
+    /* a petal on edge is a line, flat on is a dot — spin between the two */
+    const f=Math.abs(Math.sin(p2.t*p2.spin*0.4));
+    pEll(g, p2.x, p2.y, Math.max(0.6,p2.s*f), p2.s*0.75, p2.c);
+  }
+}
+
+/* ---------- the colour of the season ----------
+   One flat coat over the finished frame, weakest at night when the
+   night's own grade already owns the picture. */
+function drawSeasonTint(g){
+  const S=seasonDef();
+  const night = typeof isNight==='function' && isNight();
+  const a = S.tintA * (night? 0.35 : 1);
+  if(a<0.02) return;
+  g.fillStyle=rgba(S.tint, a);
+  g.fillRect(0,0,W,H);
+  /* the hot season also has the air full of dust, low down */
+  if(S.dry>0.4 && !night){
+    const gd=g.createLinearGradient(0,H*0.55,0,H);
+    gd.addColorStop(0,'rgba(226,196,140,0)');
+    gd.addColorStop(1,'rgba(226,196,140,'+(0.10*S.dry).toFixed(3)+')');
+    g.fillStyle=gd; g.fillRect(0,H*0.5,W,H*0.5);
   }
 }
 /* ============================================================
@@ -14065,7 +14636,7 @@ function chCard(txt, t=3.2){ CH.card=t; CH.cardMax=t; CH.cardTxt=L(txt); }
    whole point of the scene is that he is waiting for you. */
 const LUNG = UNCLE;
 function lungWalk(tx, speed){
-  CH.walk=true; CH.wtx=tx; CH.wspd=speed||54;
+  CH.walk=true; CH.wtx=tx; CH.wspd=(speed||54)*VILL_PACE;
 }
 function stepLung(dt){
   if(!CH.walk) return;
@@ -15516,8 +16087,43 @@ const CHAT = { act:null, listener:null, react:0, ref:null, i:-1 };
 const DLG_SPEED = 54;
 
 function say(lines, done){
-  DLG = {lines, i:0, ch:0, done:done||null, lt:0, hold:0.12, blip:0, said:0};
+  DLG = {lines, i:0, ch:0, done:done||null, lt:0, hold:0.12, blip:0, said:0, pick:0, rt:0};
   chatBegin();
+}
+/* ============================================================
+   REPLIES
+
+   Everything anybody said in this village landed on a mute wall. You
+   pressed a button and the next sentence appeared. That is a cutscene
+   with extra steps, and it is why talking to people felt like reading
+   the game rather than being in it.
+
+   A line may now carry `r`: two or three things you could say back.
+   Each is `{t, then, do}` — the words, the lines it leads to, and
+   anything it changes. Picking one splices its lines in after this
+   one, so a reply is not a branch in a tree that has to be maintained,
+   it is a handful of sentences pushed into the queue.
+
+   The rules it follows, which are the rules of the rest of the game:
+   there is never a wrong answer, nobody is ever locked out of anything
+   by being blunt, and the polite option is not the good option — it is
+   just one of the things a person might say.
+   ============================================================ */
+const dlgReplies = ln => (ln && ln.r && ln.r.length)? ln.r : null;
+function dlgChoose(k){
+  const ln=DLG && DLG.lines[DLG.i]; const rs=dlgReplies(ln);
+  if(!rs) return false;
+  const r=rs[clamp(k,0,rs.length-1)];
+  /* what you said, in your own bubble, then whatever it drew out of them */
+  const said = r.t? [{w:'You', t:r.t, e:r.e||'plain'}] : [];
+  const then = (typeof r.then==='function'? r.then() : r.then) || [];
+  DLG.lines = DLG.lines.slice(0,DLG.i+1)
+              .concat(said, then, DLG.lines.slice(DLG.i+1));
+  /* this line has been answered; it must not ask again */
+  DLG.lines[DLG.i] = Object.assign({}, ln, {r:null});
+  if(r.do) try{ r.do(); }catch(e){}
+  AU.blip();
+  return true;
 }
 /* Anything may hand us a DLG — a cutscene, a save being restored, a test
    jumping to line three — and whatever did it will not have told us who is
@@ -15653,10 +16259,35 @@ function stepDlg(dt){
   }
   if(CHAT.react>0) CHAT.react-=dt;
   chatDress();
+  /* a line with replies waits on you rather than on the button */
+  const rs = doneNow? dlgReplies(ln) : null;
+  if(rs){
+    DLG.rt += dt;
+    DLG.pick = clamp(DLG.pick|0, 0, rs.length-1);
+    if(press('up'))   { DLG.pick=(DLG.pick+rs.length-1)%rs.length; AU.tone(680,0.03,'square',0.008); }
+    if(press('down')) { DLG.pick=(DLG.pick+1)%rs.length;           AU.tone(560,0.03,'square',0.008); }
+    /* tapping a chip picks it directly — the boxes were laid out last frame */
+    if(press('tap') && DLG._chips){
+      for(let i=0;i<DLG._chips.length;i++){
+        const b=DLG._chips[i];
+        if(TAP.x>=b[0]-3 && TAP.x<=b[0]+b[2]+3 && TAP.y>=b[1]-3 && TAP.y<=b[1]+b[3]+3){
+          DLG.pick=i; dlgChoose(i); DLG.i++; DLG.ch=0; DLG.lt=0; DLG.hold=0.1;
+          DLG.blip=0; DLG.said=0; DLG.rt=0; DLG.pick=0; chatBegin(); return;
+        }
+      }
+    }
+    if(press('act')){
+      dlgChoose(DLG.pick);
+      DLG.i++; DLG.ch=0; DLG.lt=0; DLG.hold=0.1; DLG.blip=0; DLG.said=0;
+      DLG.rt=0; DLG.pick=0; chatBegin();
+    }
+    return;
+  }
   if(press('act')||press('tap')){
     if(!doneNow){ DLG.ch=txt.length; AU.blip(); }
     else {
       DLG.i++; DLG.ch=0; DLG.lt=0; DLG.hold=0.1; DLG.blip=0; DLG.said=0;
+      DLG.rt=0; DLG.pick=0;
       AU.blip();
       if(DLG.i>=DLG.lines.length){ const d=DLG.done; chatUndress(); DLG=null; if(d) d(); }
       else chatBegin();
@@ -15737,10 +16368,11 @@ function drawDialog(g){
        the parchment and half off it, with a pale rim so it reads either way */
     if(m.emote && ease>0.8)
       drawEmote(g, m.emote, clamp(bx+gwE-4, 12, W-12), by-3, 1, GS.t);
-    if(ease>0.9 && (DLG.ch|0)>=full.length){
+    if(ease>0.9 && (DLG.ch|0)>=full.length && !dlgReplies(ln)){
       g.globalAlpha=0.5+0.5*Math.sin(GS.t*6);
       icoDown(g, bx+gwE-9, by+ghE-4, 1.2, CL.gold); g.globalAlpha=1;
     }
+    drawReplies(g);
     return;
   }
 
@@ -15760,12 +16392,52 @@ function drawDialog(g){
   if(ln.w){ pTxt(g,L(ln.w),W/2,ty,'#f2c14e',7,'center'); ty+=lh; }
   for(const l of lines){ pTxt(g,l,W/2,ty,'#f2e6c8',7,'center'); ty+=lh; }
   g.globalAlpha=1;
-  if((DLG.ch|0)>=full.length){
+  if((DLG.ch|0)>=full.length && !dlgReplies(ln)){
     g.globalAlpha=0.45+0.45*Math.sin(GS.t*6);
     icoDown(g, W-18, H-11, 1.2, PAL.gold); g.globalAlpha=1;
   }
+  drawReplies(g);
 }
 
+
+/* ---------- the things you could say back ----------
+   Stacked bottom-left, out of the way of whoever is talking, because the
+   one place a bubble never goes is down in the corner. The one you are on
+   is lit and has a leaf on it; the others are quiet. No box round the set:
+   a box makes it a menu and this is supposed to be you thinking. */
+function drawReplies(g){
+  if(!DLG) return;
+  const ln=DLG.lines[DLG.i], rs=dlgReplies(ln);
+  if(!rs || (DLG.ch|0) < dlgText(ln).length){ if(DLG) DLG._chips=null; return; }
+  const ease=clamp((DLG.rt||0)/0.16,0,1);
+  const lh=lineStep(7), boxes=[];
+  const txts=rs.map(r=>L(r.t||'...'));
+  let wMax=0; for(const t of txts) wMax=Math.max(wMax, txtW(t,7));
+  const bw=Math.min(W-24, wMax+26), bh=lh+7;
+  let y = H - 10 - rs.length*(bh+3);
+  for(let i=0;i<rs.length;i++){
+    const on = (DLG.pick|0)===i;
+    const x = 10 + (on? 0 : 3);
+    const yy = Math.round(y + (1-ease)*8);
+    g.globalAlpha = ease*(on?1:0.72);
+    pR(g, x+1, yy+1, bw, bh, 'rgba(18,12,8,0.55)');
+    pR(g, x, yy, bw, bh, on? '#f6ecd2' : '#d9cdb2');
+    pR(g, x, yy, bw, 1, on? '#fffaea' : '#e8dfc6');
+    pR(g, x, yy+bh-1, bw, 1, '#b3a488');
+    if(on){
+      pR(g, x, yy, 2, bh, CL.gold);
+      /* a leaf rather than an arrow — everything else in this game that
+         points at something is a plant */
+      pEll(g, x+10, yy+bh/2, 3.2, 2.0, '#4f8a4e');
+      pR(g, R(x+7), R(yy+bh/2), 6, 1, '#2f5c30');
+    }
+    pTxt(g, txts[i], x+17, yy+bh-6, on? '#3b2b18' : '#6a5c46', 7);
+    boxes.push([x,yy,bw,bh]);
+    y += bh+3;
+  }
+  g.globalAlpha=1;
+  DLG._chips = boxes;
+}
 /* the ambient one-liners villagers and spirits mutter get the same cloud */
 /* drawn inside the world transform, so this one works in world coordinates
    and does not clamp to the screen the way the dialogue cloud does */
@@ -16572,7 +17244,11 @@ function drawDayCard(g){
   const w=196, h=86, x=W/2-w/2, y=H/2-h/2-6;
   cloud(g,x,y,w,h,{seed:311});
   pTxt(g,L('DAY ')+c.day, x+w/2, y+20, '#8f6a1e', 13,'center');
-  let ty=y+38;
+  /* which of the three it is. A calendar you cannot see is a calendar
+     nobody knows about, and the season is the slowest thing in the game. */
+  if(typeof seasonDef==='function')
+    pTxt(g, L(seasonDef().name), x+w/2, y+29, CL.ink3, 6, 'center');
+  let ty=y+40;
   const row=(l,r,col)=>{ pTxt(g,l,x+16,ty,CL.ink2,7); pTxt(g,r,x+w-16,ty,col||CL.ink,7,'right'); ty+=11; };
   if(c.shipped) row('shipped', c.shipped+' · +'+c.coins+'฿', '#3f6a2c');
   else          row('shipped', 'nothing', CL.ink3);
@@ -16767,11 +17443,16 @@ function drawDayHUD(g){
      the wrong size for "วันที่ ๖" and "11:05น." — in Thai the two printed on
      top of each other. It takes the width it needs now and keeps its right
      edge where it always was. */
+  /* the day, and under it the season — one more word, and the year
+     suddenly has a shape */
   const dtxt=L('day')+' '+DAY.n, ctxt=clockText();
   const w = clamp(24 + txtW(dtxt,6) + txtW(ctxt,8), 86, 156);
   const bx = W-6-w, by=6;
   cloud(g,bx,by,w,32,{seed:412});
-  pTxt(g, dtxt, bx+8, by+12, CL.ink2, 6);
+  pTxt(g, dtxt, bx+8, by+8, CL.ink2, 6);
+  if(typeof seasonDef==='function')
+    pTxt(g, L(seasonDef().th==='ฤดูร้อน'?'hot':seasonDef().th==='ฤดูฝน'?'rains':'cool'),
+         bx+8, by+15, CL.ink3, 6);
   pTxt(g, ctxt, bx+w-8, by+13, DAY.min>22*60? '#a8392c' : CL.ink, 8, 'right');
   // energy
   const bw=w-16;
@@ -17623,7 +18304,7 @@ function stepFootball(dt){
   for(const k of team){
     if(k===chaser){
       const d=BALL.x-k.x;
-      if(Math.abs(d)>9){ k.vx=clamp(d*3.2,-58,58); k.face=k.vx<0?-1:1; }
+      if(Math.abs(d)>9){ k.vx=clamp(d*3.2,-58,58)*VILL_PACE; k.face=k.vx<0?-1:1; }
       else if(Math.abs(BALL.vx)<30 && BALL.y>gy-4){
         const others=team.filter(o=>o!==k);
         const to=others[(Math.random()*others.length)|0];
@@ -17636,7 +18317,7 @@ function stepFootball(dt){
       /* everybody else drifts toward where it is going, badly */
       const want = clamp(BALL.x + (k.x<BALL.x? -34:34), PITCH_GOAL[0]-40, PITCH_GOAL[1]+40);
       const d=want-k.x;
-      if(Math.abs(d)>12){ k.vx=clamp(d*1.2,-34,34); k.face=k.vx<0?-1:1; }
+      if(Math.abs(d)>12){ k.vx=clamp(d*1.2,-34,34)*VILL_PACE; k.face=k.vx<0?-1:1; }
       else k.vx*=0.8;
     }
     k.x += k.vx*dt; k.y=groundY(k.x);
@@ -17877,6 +18558,55 @@ const QUESTS = {
     have(){ return (GS.bag.tomyum||0); },
     take(){ bagTake('tomyum',2); },
   },
+  /* ---- the second round ----
+     Six favours ran out somewhere in the second week, and a village that
+     stops asking you for things is a village that has finished with you.
+     These four come later, they come from people you already know, and
+     between them they use every basket in the game. */
+  mangoes: {
+    who:'yai', icon:'pick', need:3,
+    t:'Three mangoes, unripe',
+    d:'Yai Pen wants them green and hard. She has been very clear about this.',
+    ask:'Three mangoes. GREEN. If they are soft I will know and so will you.',
+    yes:'Green ones go in the som tam. Ripe ones go to people I like less.',
+    got:'Hard as a doorknob. Good. That is the correct mango.',
+    have(){ return (GS.bag.mango||0); },
+    take(){ bagTake('mango',3); },
+    merit:6, heart:'yai',
+  },
+  coconuts: {
+    who:'nok', icon:'lift', need:4,
+    t:'Coconuts for the stall',
+    d:'Four, and she will not be told they are heavy.',
+    ask:'Four coconuts. I can carry two. You could carry the tree.',
+    yes:'Do not shake them. I will know if you shook them.',
+    got:'That is the week sorted. Sit down before you fall down.',
+    have(){ return (GS.bag.coconut||0); },
+    take(){ bagTake('coconut',4); },
+    merit:6, heart:'nok',
+  },
+  pots: {
+    who:'dam', icon:'build', need:3,
+    t:'Clay for the old man',
+    d:'Uncle Dam used to throw pots. He says his hands remember.',
+    ask:'Three lumps of clay from the bank by the pond. I want to find out if my hands still know.',
+    yes:'If they come out crooked I am blaming the clay.',
+    got:'Crooked. Every one. I will do better tomorrow, which is a thing I have not said in years.',
+    have(){ return (GS.bag.clay||0); },
+    take(){ bagTake('clay',3); },
+    merit:8, heart:'dam',
+  },
+  herbs: {
+    who:'monk', icon:'pick', need:4,
+    t:'Herbs for the temple pot',
+    d:'The kitchen at the wat feeds whoever turns up, and it is short.',
+    ask:'Four bunches of herbs, if the roadside has any. We feed whoever comes, and more come than used to.',
+    yes:'Nothing rare. Whatever grows where nobody planted it.',
+    got:'That is a week of soup. You will not eat any of it, which I think you know.',
+    have(){ return (GS.bag.herb||0); },
+    take(){ bagTake('herb',4); },
+    merit:7, heart:'monk',
+  },
 };
 const QUEST_IDS = Object.keys(QUESTS);
 
@@ -17897,7 +18627,8 @@ function questFor(npcId){
   return null;
 }
 /* quests unlock with the day, so the village does not hand you six at once */
-const QUEST_DAY = {lotus:3, somtam:4, bamboo:5, krathong:7, tomyum:6, collar:8};
+const QUEST_DAY = {lotus:3, somtam:4, bamboo:5, tomyum:6, krathong:7, collar:8,
+                   mangoes:9, coconuts:10, pots:12, herbs:14};
 function questReady(id){ return DAY.n >= (QUEST_DAY[id]||1); }
 
 /* ---------- being asked ---------- */
@@ -21689,7 +22420,7 @@ function stepAlms(dt){
   MONK.jobOn = true; MONK.job='alms';
   const tx = ALMS.leg===0? 2300 : MONK.home;
   const d = tx-MONK.x;
-  if(Math.abs(d)>4){ MONK.vx=sign(d)*19; MONK.face=sign(d); MONK.x+=MONK.vx*dt; MONK.phase+=villPhase(MONK.vx, dt, gaitOf(MONK).step); }
+  if(Math.abs(d)>4){ MONK.vx=sign(d)*19*VILL_PACE; MONK.face=sign(d); MONK.x+=MONK.vx*dt; MONK.phase+=villPhase(MONK.vx, dt, gaitOf(MONK).step); }
   else if(ALMS.leg===0){ ALMS.leg=1; }
   else { ALMS.on=false; MONK.jobOn=false; MONK.vx=0; }
   MONK.y=groundY(MONK.x);
@@ -22848,7 +23579,8 @@ function update(dt){
   GS.t+=dt;
   stepTOD(dt);
   AU.tick(dt);
-  GS.wind = Math.sin(GS.t*0.31)*0.32 + Math.sin(GS.t*0.113)*0.18;
+  if(typeof stepWind==='function') stepWind(dt);
+  else GS.wind = Math.sin(GS.t*0.31)*0.32 + Math.sin(GS.t*0.113)*0.18;
   GS.shake = Math.max(0, GS.shake - dt*16);
   if(meritFlash>0) meritFlash-=dt*2;
   for(const m of MOTES) m.t+=dt*m.sp;

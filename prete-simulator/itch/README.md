@@ -4,12 +4,11 @@ Everything here is generated out of the game itself by
 [`keyart.js`](keyart.js). Nothing was drawn by hand, and neither picture can go
 stale: change the game and re-run it.
 
-**The cover is quiet.** No tagline, no English, no arrow, no reaction face, no
-caption bar — just the village road at twenty to seven in the evening with the
-lanterns lit and one thin ghost standing in it, and the game's name in Thai
-across the empty half of the sky. It is drawn at one to one rather than blown
-up: enlarged, the ground line ends up so near the bottom of the frame that the
-only person in the picture is standing in the title.
+**The cover is the game's best afternoon.** He is standing in his own paddy
+in a งอบ with a จอบ at his side, there is a plate of som tam on the dike at
+his feet, and the buffalo is out in the rice with an egret on its back. No
+tagline, no English, no arrow — just the name in Thai across the top of the
+sky. Every single thing in that picture is something you actually do.
 
 **The banner is the temple at first light**, gold bell and chedi against the
 hills, with the same name on the left over a gradient that gets out of the way
@@ -20,7 +19,7 @@ of everything you would want to look at.
 | `prete-simulator-html5.zip` | the whole game, one `index.html` at the root of the zip | **Uploads** → tick *This file will be played in the browser* |
 | `cover-630x500.png` | 630×500 cover | **Cover image** (itch shows it at 315×250) |
 | `banner-1920x620.png` | 1920×620 page banner | **Theme** → *Banner image* |
-| `title-1440x810.png` | the village road at dusk, at 3× | **Screenshots** |
+| `title-1440x810.png` | the paddy, the buffalo and the som tam, at 3× | **Screenshots** |
 
 More screenshots for the page are in [`../screenshots`](../screenshots).
 

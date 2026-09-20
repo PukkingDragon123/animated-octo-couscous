@@ -1597,6 +1597,122 @@ The same bug had a second head on it. The villagers' arm swing was multiplied by
 `face` *as well as* running on the reversed phase — two flips, which cancel — so
 walking left their arms swung in step with their legs instead of against them.
 
+### Arms like noodles, and why it had to be two chases and not a spring
+
+He is nine feet of hungry ghost with nothing inside. His arms should not
+read as two sticks on a hinge.
+
+The obvious answer is a spring: give the hand some mass and let it overshoot
+at the end of a swing. It looked wonderful and it failed two tests at once.
+At fifteen frames a second the hand landed **seven pixels** from where it
+landed at sixty, because the spring is still ringing when the slow phone
+samples it and the phase of a ring is not frame-rate independent. Stiffen it
+enough to kill the ring and his hands then **snapped** into place at the
+start of every job — twenty-two pixels in one frame, on a body forty-two
+pixels tall.
+
+Two exponential chases in series have neither problem:
+
+```js
+cur.mx += (tx - cur.mx) * 0.30;      // the first follows the pose
+cur.x  += (cur.mx - cur.x) * 0.26;   // the second follows the first
+```
+
+It lags smoothly and it **never overshoots**, so there is nothing left
+ringing for a frame rate to catch at the wrong moment, and nothing ever
+arrives in one step. Drift at 30/20/15/120fps: 0.08, 0.19, 0.34, 0.00 pixels.
+Worst single-frame hand movement: 2.4 of a 5.46 budget.
+
+And the lag is the whole point. Two stages of lag is a long lag, and the
+distance between where the pose says the hand is and where the hand actually
+is gets fed, perpendicular to the limb, to a new `pBow` — a taper whose
+middle is pulled sideways by a quadratic. The upper arm trails one way, the
+forearm trails harder the other, and that S is what reads as boneless. A
+straight line between shoulder and elbow is a bone. There is a slow ripple
+under it too, so even standing still the arms hang like something with no
+skeleton in them.
+
+### Nobody in this village has anywhere to be
+
+Everyone walked at 22 pixels a second, which at this scale is a person
+hurrying, and a village where everybody is hurrying is a train station. One
+constant — `VILL_PACE = 0.58` — is multiplied into every walk speed in the
+game: the villagers' routines, the monk on his alms round, the children
+after the ball, and the cutscene walks home. The pace of the whole place is
+a single knob now.
+
+### Three seasons, because Thailand has three
+
+Not four. It has ฤดูร้อน, the hot one, when the light goes white and the
+grass goes to straw; ฤดูฝน, the rains, when everything is violently green;
+and ฤดูหนาว, the cool one — not cold, but clear at dawn with mist off the
+paddy and a breeze that does not stop for three weeks. Ten days each, so a
+save that runs a month sees all three.
+
+The season is part of the **cache key** for the baked grass tufts, so the
+whole ground changes colour with the calendar rather than being tinted at
+draw time. It also sets the wind strength, how often it gusts, what blows
+through the air, how much dust hangs low in the frame, and a flat coat of
+its own colour over the finished picture — weakest at night, when the
+night's grade already owns the shot. It says which season it is on the
+morning card and under the clock.
+
+### Wind that arrives, crosses, and goes
+
+The wind was two sine waves added together, which is a fan rather than
+weather. Real wind is mostly nothing and then a gust.
+
+So a gust is now an object: born off one edge of the loaded world, with a
+width, a speed and a strength that comes in over a beat and out over a beat,
+travelling across everything in its path. `windAt(x)` is the base wind plus
+a raised cosine for every gust overlapping that x — a shoulder rather than
+an edge. That last part is the whole trick: a field where every blade leans
+at once is a texture, and a field where the lean **crosses** it is a place
+with weather in it.
+
+Gusts shake petals loose as they pass. The flowers are baked the same way
+the grass is — five heights, seven bends, three kinds, three colourways per
+season — and they lean further and come back slower than grass does, because
+a flower is on a long stem. Walking through them knocks them over and
+occasionally knocks something out of them.
+
+### Replies
+
+Everything anybody said in this village landed on a mute wall. You pressed a
+button and the next sentence appeared. That is a cutscene with extra steps,
+and it is why talking to people felt like reading the game rather than being
+in it.
+
+A line may now carry `r`: two or three things you could say back, each one
+`{t, then, do}` — the words, the lines it leads to, and anything it changes.
+Picking one **splices** its lines into the queue after the current one, so a
+reply is not a branch in a tree that has to be maintained.
+
+Every voice got a fourth register, `rep`, next to how they talk to a
+stranger, to a friend, and when they are asking for something. Two are drawn
+at random per conversation, so the same neighbour is a different conversation
+on Tuesday. The rules are the rules of the rest of the game: there is never a
+wrong answer, nobody is ever locked out of anything by being blunt, and the
+polite option is not the good option — it is just one of the things a person
+might say.
+
+One of the options, when somebody has a favour going spare, is *"Anything you
+need doing?"* — which is how the favours are found now, rather than by an
+icon over a head.
+
+### Four more favours, and a field kit
+
+Six favours ran out somewhere in the second week, and a village that stops
+asking you for things is a village that has finished with you. Three green
+mangoes for Yai Pen, four coconuts for Nok's stall, three lumps of clay so
+Uncle Dam can find out whether his hands still remember how to throw a pot,
+and four bunches of roadside herbs for the temple kitchen. Between them they
+use every basket in the game.
+
+And two new things to wear, because a prete who has rented a farm and spent a
+season on it should be allowed to look like a farmer: a งอบ at his scale,
+tipped back the way anybody actually wears one, and a จอบ carried at his side.
+
 ### A third head: the knee hinged the wrong way
 
 Even after all that it still read as backwards, and this time the cause was one
