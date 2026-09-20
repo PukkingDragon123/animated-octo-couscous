@@ -1556,6 +1556,95 @@ the foot skates however you split the cycle. Both now come from one place,
 `villStride` and `villPhase`, and there is a test that greps the built file for
 anything advancing a `.phase` by anything else.
 
+### They were walking backwards, and no test could see it
+
+This one took four goes, and the reason it kept coming back is worth writing
+down.
+
+A walk cycle has **a direction in time.** The foot leaves the ground at the
+back, swings forward fast with the knee up, and lands at the front. The lift
+peaks early in the swing. The heel comes up at toe-off and not at heel strike.
+Every one of those is asymmetric, and every one of them is what tells you a
+person is walking forwards rather than backwards.
+
+The phase advanced on `vx * dt` — **signed**. Walk left, and vx is negative, so
+the phase ran backwards, so the whole cycle played in reverse: the foot lifted
+at the front, drifted back through the air, and planted at the back.
+
+**And it does not make the planted foot slide.** That is why it survived. Slip
+is a symmetric property — it measured 0.000 pixels a frame the entire time, in
+both directions, at every speed, and there was a test saying so. Every test I
+had said the walk was fine while it was visibly running in reverse.
+
+The fix is one rule, and it is now written at the top of `gaitLeg` in capitals:
+
+> **The phase advances on distance travelled, `|vx|`, always forwards. Facing
+> is a mirror in x, never a reversal in time.**
+
+Every x that comes out of the cycle is multiplied by `face` at the point of use.
+The no-slip identity still holds, because `face === sign(vx)` whenever anybody
+is actually walking:
+
+```
+d(worldX)/dt = vx + face*stride*(-2/π)*(|vx|*π/(2*stride)) = 0
+```
+
+And the test that actually catches it walks somebody each way and compares the
+two cycles **pose for pose**, measured along whichever way they are facing.
+Before: 15.2 pixels of mismatch. Now: 0.00, for the villagers and for him.
+
+The same bug had a second head on it. The villagers' arm swing was multiplied by
+`face` *as well as* running on the reversed phase — two flips, which cancel — so
+walking left their arms swung in step with their legs instead of against them.
+
+### Everybody walks their own way
+
+One cycle, six ways of going through it, in a table of multipliers and offsets:
+
+| | step | lift | arm | stoop | lurch | pace |
+|---|---|---|---|---|---|---|
+| **ลุง Somchai**, thirty years at a wok | 0.64 | 0.5 | 0.45 | 2.3 | 1.6 | 0.60 |
+| **Yai Pen**, eighty-one, still climbs ladders | 0.56 | 0.45 | 0.4 | 2.7 | 0.9 | 0.54 |
+| **Luang Pi**, nowhere to be | 0.9 | 0.75 | 0.3 | — | — | 0.78 |
+| **P'Nok**, runs the stall | 1.08 | 1.05 | 1.2 | — | — | 1.18 |
+| **Loong Dam**, drove the rice truck | 1.12 | 0.95 | 1.4 | — | 1.2 | 0.95 |
+| **the children** | 0.76 | 1.55 | 1.55 | — | — | 1.28 |
+
+Lung Somchai takes short steps, stoops, hangs his head, rolls from one hip to
+the other once per stride rather than once per step, and his eyes are half shut
+before you have said a word to him. The children take small quick steps with
+their knees right up and their arms going. Yai Pen shuffles. The monk is even.
+
+Two things are deliberately **not** in that table. The stride multiplier is, and
+it is handed to `villStride` **and** `villPhase` — that is the one place it
+could be, because that is where the no-slip identity is defined, and a stride
+scaled in only one of them would put every foot back to sliding. And nothing in
+it moves the **hip**: the legs are solved against the hip and the stance leg is
+a rigid strut at ninety-seven per cent of its own length, so a hip nudged
+sideways for a lurch or lifted for a child's bounce is a leg asked for more than
+it has. The lurch and the bounce are applied to everything *above* the hips
+instead — which is safe, and is also what a lurch actually looks like: the body
+swinging over feet that stay where they were put.
+
+### A wrist, and a sarong that is not a plank
+
+The hand used to be one blob pinned to the end of the forearm at the same angle
+all day, which is a mitten. There is a **wrist** now: the hand hangs off the
+forearm, swings a little late, and carries two fingers and a thumb, so the arm
+has three joints in it and the hand arrives after the elbow does.
+
+And two bugs that had been in plain sight for a long time, both found by
+photographing a walk cycle frame by frame rather than watching it:
+
+- **`stepCloth` was being handed the length of a leg as the width of a waist.**
+  Seventeen pixels of waistband on a seven pixel hip, so every ผ้าถุง in the
+  village was a flat slab sticking out either side of her. Everywhere else in
+  the game passes nine to twelve.
+- **Anybody in a skirt had no legs.** The thigh *and* the shin were both inside
+  an `if(!v.skirt)` guard, so a skirted villager was a torso, a sarong, and a
+  pair of sandals walking along nine pixels underneath her with nothing in
+  between. Under a ผ้าถุง the thigh is cloth and the shin is not.
+
 ### A knee that bends where a knee bends
 
 Everything on two legs in this village shared one fault, and it turned out to be

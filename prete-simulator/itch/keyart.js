@@ -57,28 +57,27 @@ fs.mkdirSync(OUT,{recursive:true});
       }
     };
 
-    /* ---------- plate 1: the pig, three times his size, cracking open over
-       him on the village road at dusk. It is the loudest thing that happens
-       in this game and the only moment the whole screen is about him. ------ */
+    /* ---------- plate 1: the village road at dusk, lanterns lit ----------
+       The cover used to shout. It does not any more: no tagline, no English,
+       no arrow, no reaction face, no caption bar. A warm evening with the
+       lamps on and one thin ghost standing in it, and the game's name. */
     newGame(); GS.state='play'; GS.tut=99; GS.ch=chAt('free');
     DLG=null; VIG=null; HINT=null; FARM.rented=true; GS.q.blessed=true;
     for(const k in GS.seen) GS.seen[k]=true; CH.lock=false;
-    DAY.n=7; DAY.min=18.4*60; setTOD(todFromClock(DAY.min),true);
-    { const x=HOUSE_XS[3]-30; P.x=x; P.y=groundY(x); P.vx=0; P.face=1;
-      GS.camX=clamp(x-W/2,0,WORLD_W-W);
-      for(let i=0;i<240;i++) update(1/60);
-      DAY.min=18.4*60; setTOD(todFromClock(DAY.min),true);
-      P.x=x; P.y=groundY(x); P.vx=0; P.face=1;
-      GS.camX=clamp(x-W/2,0,WORLD_W-W);
+    DAY.n=6; DAY.min=18.6*60; setTOD(todFromClock(DAY.min),true);
+    { const x=HOUSE_XS[2]+34; P.x=x; P.y=groundY(x); P.vx=0; P.face=-1;
+      GS.camX=clamp(x-W*0.40,0,WORLD_W-W);
+      for(let i=0;i<320;i++) update(1/60);
+      DAY.min=18.6*60; setTOD(todFromClock(DAY.min),true);
+      P.x=x; P.y=groundY(x); P.vx=0; P.face=-1;
+      GS.camX=clamp(x-W*0.40,0,WORLD_W-W);
       HINT=null; VIG=null; DLG=null; GS.toasts.length=0; SPOTS.length=0; PROMPT=null;
       for(const n of NPCS){ n.bub=null; n.bubT=0; }
       for(const sp of SPIRITS){ sp.bub=null; sp.bubT=0; }
-      GS.merit=40; GS.human=0;
-      startBurst(1); BURST.t=1.18; BURST.ph='charge'; BURST.shake=0;
-      render(); }
-    const dream = copy();
+      GS.plate=1; render(); GS.plate=0; }
+    const dusk = copy();
 
-    /* ---------- plate 2: the rice fields at first light ---------- */
+    /* ---------- plate 2: the temple at first light ---------- */
     newGame(); GS.state='play'; GS.tut=99; GS.ch=chAt('free');
     DLG=null; VIG=null; HINT=null; FARM.rented=true; GS.q.blessed=true;
     for(const k in GS.seen) GS.seen[k]=true; CH.lock=false;
@@ -91,80 +90,61 @@ fs.mkdirSync(OUT,{recursive:true});
       GS.camX=clamp(x-W*0.62,0,WORLD_W-W);
       HINT=null; VIG=null; DLG=null; GS.toasts.length=0; SPOTS.length=0; PROMPT=null;
       for(const n of NPCS){ n.bub=null; n.bubT=0; }
-      for(const s of SPIRITS){ s.bub=null; s.bubT=0; }
-      render(); }
-    const vill = copy();
+      for(const sp of SPIRITS){ sp.bub=null; sp.bubT=0; }
+      GS.plate=1; render(); GS.plate=0; }
+    const dawn = copy();
 
-    /* ---------- plate 3: his face, for the corner of the cover ---------- */
-    const FW=120, FH=150;
-    const fc=mkCv(FW,FH), fg=G2(fc);
-    drawPrete(fg, {...P, x:FW/2, y:FH-6, vx:0, vy:0, state:'idle', act:null, rise:0,
-                   onGround:true, phase:0, face:1, eye:1.4, brow:0.8, mouthS:0.6,
-                   lean:0, squash:0, swayT:0.7, anim:0, breath:0, headBob:0, headLag:0,
-                   blink:3, talk:0, stride:6, chatX:0},
-              {dt:1/60, wind:0, sit:0, mouth:0.85, cos:GS.cos, human:0});
+    /* the name, and nothing else. A soft shadow under it rather than a black
+       edge — an outline is for shouting over a busy thumbnail and this one is
+       not busy. */
+    const name = (g,x,y,size)=>{
+      pTxt(g,'เปรต ซิมูเลเตอร์', x+1, y+2, 'rgba(18,10,6,0.55)', size, 'center');
+      pTxt(g,'เปรต ซิมูเลเตอร์', x,   y,   '#ffeec6',            size, 'center');
+    };
 
     /* ============ THE COVER — 630x500, composed at 315x250 ============ */
     const cw=315, ch=250;
     const cc=mkCv(cw,ch), cg=G2(cc); cg.imageSmoothingEnabled=false;
-    /* the god, blown up and pushed right of centre so the face has a corner */
-    cg.drawImage(grade(dream,1.28,1.14,1.04), -113, -12, W*1.2, H*1.2);
-    vign(cg, cw, ch, 0.62);
-    { const gr=cg.createLinearGradient(0,0,0,118);
-      gr.addColorStop(0,'rgba(10,8,30,0.72)'); gr.addColorStop(1,'rgba(10,8,30,0)');
-      cg.fillStyle=gr; cg.fillRect(0,0,cw,118); }
-    /* his face in the corner, staring at it */
-    { const fx=56, fy=190, r=42;
-      pEll(cg,fx,fy+3,r+4,r+4,'rgba(6,4,14,0.55)');
-      pEll(cg,fx,fy,r+3,r+3,'#1d1730');
-      pEll(cg,fx,fy,r+1,r+1,'#ffdf9e');
-      cg.save(); cg.beginPath(); cg.arc(fx,fy,r,0,TAU); cg.clip();
-      pEll(cg,fx,fy,r,r,'#2b2444');
-      cg.imageSmoothingEnabled=false;
-      /* his head sits about ninety-one pixels up from his heel; put THAT point
-         in the middle of the circle, at two and a half times the size */
-      const S=3.15, hSX=FW/2, hSY=FH-6-91;
-      cg.drawImage(fc, fx - hSX*S, fy - 3 - hSY*S, FW*S, FH*S);
-      cg.restore();
-      /* and the arrow from him to the thing he is looking at */
-      arrow(cg, [[fx+r-6,fy-28],[fx+r+22,fy-54],[fx+r+44,fy-68]], 4.2, '#ffd34a', '#20160a');
-    }
-    bold(cg,'PRETE',     cw/2, 62, 44, PAL.gold,  '#221604');
-    bold(cg,'SIMULATOR', cw/2, 86, 20, '#ffeec4', '#221604');
-    pTxt(cg,'เปรต ซิมูเลเตอร์', cw/2+1, 106, 'rgba(8,5,14,0.8)', 9,'center');
-    pTxt(cg,'เปรต ซิมูเลเตอร์', cw/2,   105, '#ffd9a0', 9,'center');
-    /* one line at the bottom, on a bar, the way a thumbnail carries its claim */
-    { const cap='YOU DIED HUNGRY. NOW FARM.';
-      const tw=txtW(cap,9)+16;
-      pR(cg, cw/2-tw/2, ch-24, tw, 16, 'rgba(12,8,20,0.82)');
-      pR(cg, cw/2-tw/2, ch-24, tw, 1,  '#ffd34a');
-      pR(cg, cw/2-tw/2, ch-9,  tw, 1,  '#ffd34a');
-      pTxt(cg, cap, cw/2, ch-12, '#ffe9b3', 9, 'center'); }
+    /* a light touch on the grade: cozy is warm, not loud. And drawn at one
+       to one — blown up, the ground line ends up so near the bottom of the
+       frame that the one person in the picture is standing in the title. */
+    cg.drawImage(grade(dusk,1.10,1.05,1.03), -(W-cw)/2, -8);
+    vign(cg, cw, ch, 0.38);
+    { /* the name goes at the TOP, over the empty half of an evening sky, so
+         the road and everybody on it is left alone */
+      const gr=cg.createLinearGradient(0,0,0,86);
+      gr.addColorStop(0,'rgba(16,11,30,0.70)');
+      gr.addColorStop(0.62,'rgba(16,11,30,0.34)');
+      gr.addColorStop(1,'rgba(16,11,30,0)');
+      cg.fillStyle=gr; cg.fillRect(0,0,cw,86); }
+    name(cg, cw/2, 44, 26);
+    /* a hairline the width of the word, with a lantern-gold dot on it */
+    { const w2=Math.min(cw-44, txtW('เปรต ซิมูเลเตอร์',26)+34);
+      pR(cg, cw/2-w2/2, 55, w2, 1, 'rgba(255,214,140,0.34)');
+      pEll(cg, cw/2, 55, 1.6, 1.6, 'rgba(255,226,166,0.85)'); }
 
     /* ============ THE BANNER — 1920x620, composed at 480x155 ============ */
     const bw=480, bh=155;
     const bc=mkCv(bw,bh), bg=G2(bc); bg.imageSmoothingEnabled=false;
-    bg.drawImage(grade(vill,1.16,1.11,1.04), 0,-113, W,H);
-    { const gr=bg.createLinearGradient(0,0,bw*0.56,0);
-      gr.addColorStop(0,'rgba(14,12,34,0.76)');
-      gr.addColorStop(0.62,'rgba(14,12,34,0.46)');
+    bg.drawImage(grade(dawn,1.12,1.06,1.03), 0,-113, W,H);
+    { const gr=bg.createLinearGradient(0,0,bw*0.52,0);
+      gr.addColorStop(0,'rgba(14,12,34,0.72)');
+      gr.addColorStop(0.62,'rgba(14,12,34,0.40)');
       gr.addColorStop(1,'rgba(14,12,34,0)');
-      bg.fillStyle=gr; bg.fillRect(0,0,bw*0.56,bh); }
-    { const gr=bg.createLinearGradient(0,bh-40,0,bh);
-      gr.addColorStop(0,'rgba(10,8,24,0)'); gr.addColorStop(1,'rgba(10,8,24,0.55)');
-      bg.fillStyle=gr; bg.fillRect(0,bh-40,bw,40); }
-    { const tx=bw*0.235;
-      bold(bg,'PRETE',     tx, 64, 40, PAL.gold,  '#221604');
-      bold(bg,'SIMULATOR', tx, 86, 17, '#ffeec4', '#221604');
-      pTxt(bg,'เปรต ซิมูเลเตอร์', tx+1, 105, 'rgba(8,5,14,0.8)', 9,'center');
-      pTxt(bg,'เปรต ซิมูเลเตอร์', tx,   104, '#ffd9a0', 9,'center');
-      pTxt(bg,'a cozy Thai ghost-village life', tx+1, 120, 'rgba(8,5,14,0.8)', 7,'center');
-      pTxt(bg,'a cozy Thai ghost-village life', tx,   119, '#e8e0f4', 7,'center'); }
+      bg.fillStyle=gr; bg.fillRect(0,0,bw*0.52,bh); }
+    { const gr=bg.createLinearGradient(0,bh-34,0,bh);
+      gr.addColorStop(0,'rgba(10,8,24,0)'); gr.addColorStop(1,'rgba(10,8,24,0.42)');
+      bg.fillStyle=gr; bg.fillRect(0,bh-34,bw,34); }
+    { const sz=21, w2=txtW('เปรต ซิมูเลเตอร์',sz)+26;
+      const tx=Math.max(w2/2+14, bw*0.255);
+      name(bg, tx, bh*0.55, sz);
+      pR(bg, tx-w2/2, bh*0.55+10, w2, 1, 'rgba(255,214,140,0.30)');
+      pEll(bg, tx, bh*0.55+10, 1.6, 1.6, 'rgba(255,226,166,0.8)'); }
 
     /* ---------- and a plain screenshot of the village for the page ---------- */
     return { cover: up(cc,2).toDataURL('image/png'),
              banner: up(bc,4).toDataURL('image/png'),
-             title:  up(vill,3).toDataURL('image/png') };
+             title:  up(dusk,3).toDataURL('image/png') };
   });
   if(shots.err){ console.log('FAILED:', shots.err); await b.close(); return; }
   for(const [k,name] of [['cover','cover-630x500.png'],['banner','banner-1920x620.png'],['title','title-1440x810.png']]){
