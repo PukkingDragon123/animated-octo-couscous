@@ -310,15 +310,13 @@ The lines land on the frame where it does not work. Then he puts it back down.
 > it properly.*
 
 He tells you to sleep somewhere that is not the road. There is space under his
-floor, between the stilts. The night passes in five lines and a gecko saying
-its own name seven times directly above your head, and the sky over the paddy
-goes the colour of the inside of a shell.
+floor, between the stilts. You crawl in, you lie down — and you go up.
 
 | | |
 |---|---|
 | ![he is not afraid of you](screenshots/he-is-not-afraid.png) | ![walking him home](screenshots/walking-him-home.png) |
 | ![rice on the step](screenshots/rice-on-the-step.png) | ![the food you cannot eat](screenshots/the-food-you-cannot-eat.png) |
-| ![the night passes](screenshots/the-night-passes.png) | ![carrying the jar](screenshots/carrying-the-jar.png) |
+| ![the night he goes up](screenshots/the-night-he-goes-up.png) | ![carrying the jar](screenshots/carrying-the-jar.png) |
 
 ## The plough, the jars, and the seed
 
@@ -485,6 +483,18 @@ the first frame** — a system handed to you before you had any reason to want i
 which is the oldest sin in this kind of game.
 
 So the first night you sleep, you do not just sleep. You go up.
+
+**And the first night you sleep is the first night of the game** — the one
+where Lung Somchai points under his own floor and you crawl in between the
+stilts. That used to be its own little screen: the underside of the boards
+three feet above your face, your own knees in the bottom of frame, and five
+lines of prose about a gecko saying its own name. It was nice, and it was the
+one and only time this game asked anybody to read five paragraphs, and it sat
+exactly where the most important thing in the story should have been. The god
+was arriving a whole chapter later, on the first *ordinary* sleep, which meant
+you met him after somebody had already handed you a farm. Wrong way round.
+The prose screen is gone; he crawls under the boards, shuts his eyes, and goes
+up, and comes back down into the morning under the same house.
 
 There is a gold ปราสาท above the cloud with two ยักษ์ at its gate, and sitting in
 front of it is **พระอิศวร** — the Thai Shiva, blue through the skin, four arms, a
@@ -1632,14 +1642,43 @@ straight line between shoulder and elbow is a bone. There is a slow ripple
 under it too, so even standing still the arms hang like something with no
 skeleton in them.
 
+### Four segments in an arm
+
+Two bones and a hinge is a pair of chopsticks. It was shoulder → elbow → hand,
+and at his length that reads as an armature however nicely it bends.
+
+There are three joints on it now — one halfway up the humerus, the elbow, and a
+wrist — and the important part is that **the IK did not change.** The solver
+still places the elbow for shoulder-to-hand exactly as it did, so reach and
+frame-rate behaviour are untouched; the extra joints are placed *along* what
+came back, at t = 0.52 and t = 0.74 of the two segments. Along the drawn curve,
+not the straight line between the ends, which is what `bowPt` is for: a joint
+interpolated on the chord sits off the inside of every bend, which is where a
+bone would be and a noodle would not.
+
+They are drawn as **creases, not beads.** Ringed in the outline colour each one
+came out very nearly the width of the limb, notched the silhouette, and turned
+the arm into a length of bamboo. A joint is a place where the light changes: a
+shade dot inside the limb, and a pixel of highlight on the near side of it.
+
 ### Nobody in this village has anywhere to be
 
 Everyone walked at 22 pixels a second, which at this scale is a person
 hurrying, and a village where everybody is hurrying is a train station. One
-constant — `VILL_PACE = 0.58` — is multiplied into every walk speed in the
-game: the villagers' routines, the monk on his alms round, the children
-after the ball, and the cutscene walks home. The pace of the whole place is
-a single knob now.
+constant — `VILL_PACE`, now **0.38** — is multiplied into every walk speed in
+the game: the villagers' routines, the monk on his alms round, the children
+after the ball, and the cutscene walks home. The fastest anybody moves is a
+little over eight pixels a second, which at this scale is a stroll in the heat.
+
+Turning it down broke the step length, which is the part worth writing down.
+`villStride` was 0.27 of the speed with a floor of 2.2, tuned when everybody
+walked at twenty-two. At eight it pinned to the floor and the whole village
+**shuffled** — two-pixel steps taken twice a second, which is not slow, it is
+frantic. It is 0.62 of the speed with a floor of 3.2 now, and the character's
+own step multiplier moved *inside* the clamp so the floor is a floor for
+everybody: outside it, ลุง's short tired step scaled the minimum down to two
+pixels and he took them 1.09 times a second. A slow walk is a long step taken
+rarely — everybody now lands between 0.75 and 0.8 steps a second.
 
 ### Three seasons, because Thailand has three
 
