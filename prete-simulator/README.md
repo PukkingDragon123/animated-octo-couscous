@@ -316,6 +316,7 @@ floor, between the stilts. You crawl in, you lie down — and you go up.
 |---|---|
 | ![he is not afraid of you](screenshots/he-is-not-afraid.png) | ![walking him home](screenshots/walking-him-home.png) |
 | ![rice on the step](screenshots/rice-on-the-step.png) | ![the food you cannot eat](screenshots/the-food-you-cannot-eat.png) |
+| ![the cloud stair](screenshots/the-cloud-stair.png) | ![นนทก](screenshots/nonthok.png) |
 | ![the night he goes up](screenshots/the-night-he-goes-up.png) | ![carrying the jar](screenshots/carrying-the-jar.png) |
 
 ## The plough, the jars, and the seed
@@ -1641,6 +1642,153 @@ forearm trails harder the other, and that S is what reads as boneless. A
 straight line between shoulder and elbow is a bone. There is a slow ripple
 under it too, so even standing still the arms hang like something with no
 skeleton in them.
+
+### The arm is a noodle, not a linkage
+
+Two bones and a hinge, then two bones with beads on. Both of those are a
+linkage with decoration, and a linkage is what makes him look like a puppet:
+the eye finds the hinge and everything past it swings as one rigid piece.
+
+It is a **chain** now: fourteen points from shoulder to palm, with a travelling
+wave run down the whole length of it — a sine in arc position, moving outwards
+in time, with an amplitude that is nought at the shoulder, largest around the
+forearm, and nought again at the hand. Both ends stay pinned exactly where they
+were, so nothing about reach changes and nothing pops; everything between them
+ripples.
+
+Laying those fourteen points along the two bones did not help, though, because
+six of them were on one straight line and seven on another and the eye still
+found the vertex where they met. So the elbow stopped being a point *on* the
+path and became the **control point of one quadratic**. Pushed out by four
+thirds it makes the curve pass exactly through the elbow at its halfway mark:
+the arm bends as far as the solver says, with no corner anywhere in it. An arm
+at full stretch has its elbow on the chord, which puts the control on the chord
+too, and gives back the straight line it should be.
+
+Then the last thing that read as a hinge: two bones of 25 and 28 spanning 46
+put the elbow thirteen pixels off the line no matter how straight the arm
+looks, and following that gave two arms bowing opposite ways around him like a
+barrel hoop. That displacement belongs to a linkage. It is taken at full
+strength only while the arm reaches out sideways and faded out as the arm turns
+vertical, where the slack goes downward instead — which is what slack in a rope
+actually does. The hand hangs at seven eighths of the arm's own length rather
+than at a fixed 37 pixels, so there is far less slack to dispose of, and the
+two hands are held twenty pixels apart so the pair does not close into a loop.
+
+Two things keep the wave from being janky. It is driven by `p.anim`, which
+advances in fixed simulation steps, so it is identical on any frame rate —
+nothing here integrates against the draw clock. And the amplitude scales with
+how hard the arm is being swung, so a still arm barely ripples and an arm at
+the end of a fast swing carries a long one down to the fingers.
+
+Drift at 30/20/15/120fps is 0.08/0.19/0.34/0.00 pixels, and the worst
+single-frame hand movement is 1.6 of a 5.46 budget.
+
+One bug fell out of this. `sitting` was true from two per cent of a sit, and
+the seated arm pose — one hand planted behind him taking his weight, the other
+held out flat — came on at full strength with it. A scene asking for a tenth of
+a crouch got the whole seated pose on a character who was standing up, which is
+what had him on all fours in front of พระอิศวร. The arms wait for `sit > 0.35`
+now.
+
+### The night he goes up, in five acts
+
+One static tableau with a wall of speech in front of it is a slideshow. The
+dream is five scenes now.
+
+**He folds up.** Under Lung Somchai's boards, in the actual village, with the
+camera easing onto him and three z's coming off him. This one is drawn as an
+*overlay on the ordinary world pass*, not instead of it — an earlier cut called
+`render()` from inside `render()`, which is a trap with a canvas this shares.
+
+**The stair.** Sixteen slabs of cloud going up and away, a gold ปราสาท very
+small at the top of them, and a long climb. He gets smaller as he goes, which
+is the cheapest way to say "a long way".
+
+**นนทก.** This is the opening of the รามเกียรติ์, and it is the best scene in
+this game. Nonthok knelt at the foot of ไกรลาส washing the devas' feet, and
+every time one went past it took a handful of his hair, until he was bald and
+weeping. In the epic he goes up and asks พระอิศวร for a diamond finger, takes
+his revenge, and it ends with an army and a bridge to Lanka. Here somebody
+else arrives first: a nine-foot starving ghost the devas have never seen
+before, who is not frightened of them because he has nothing left to lose. You
+stand all the way up and you wail, and they run.
+
+> *Nobody has ever done that. Three hundred years of them, and nobody.*
+>
+> *I was going to ask him for a weapon, you know. I had the words ready.*
+
+That is the first merit you ever earn and nobody tells you it counts. The monk
+and Phra Phum and Tani all bring it up afterwards, and the monk finishes the
+story you interrupted.
+
+**The throne.** The aura went through four versions and every one of them was
+sticks. Eleven long gold tapers out of the spire; then thirteen short ones;
+then eleven short ones cut into four pieces each with the alpha falling off
+square along the length. All of them came out as pale straight rods driven
+through the chedi, because that is what a straight line of constant colour
+*is* at this resolution, whatever you fade it to.
+
+There are no beams at all now. What reads as heaven is a very soft radial
+bloom, two slow rings going out of it, and one enormous shaft of light coming
+down from above the frame and widening as it falls — eight nested wedges at
+two and a half per cent each. Light with no edge in it.
+
+He kneels in front of it with his palms together and his head lowered. Holding
+a ไหว้ is not the same as *performing* one: the action version is a bell that
+rises, peaks and lets his arms drop again, so the rig grew an `o.wai` that
+simply holds.
+
+**The gift.** The pig is not handed over, it is *summoned*: three rings draw
+themselves in the air out of nothing, petals open on the outer one, the light
+falls inward and collapses, and the thing bangs into existence with a flash and
+a squash. Then he picks it up — he comes up out of the ไหว้ to take its weight,
+because you cannot hold a thing that size with your palms together, and it goes
+exactly where the rig says his palms ended up rather than at a height guessed
+off the floor. And he is **still holding it when he wakes**, for seven seconds,
+in the morning under the same house. Being handed something in a dream and
+waking with your arms empty is the oldest cheat there is.
+
+One more thing had to land before any of this read: the two devas. They stood
+to Nonthok's right holding a tuft of hair in the air *beside* them, and what
+the frame showed was two shining people minding their own business next to a
+yaksha doing the washing-up. Only the near one grabs now — a short arm straight
+down onto the crown of his head, with the hair drawn stretched from his scalp
+to the fist and giving way. The far one waits its turn with the last handful
+held up where he can see it. Both of them reaching gave two arms sixty pixels
+long crossing the frame, and an arm that long is a plank.
+
+### เพื่อน, as postcards
+
+The friends page was a list: a name, ten little hearts, and the thing they
+want. That is a save-file inspector, not a page about people.
+
+Everyone you know gets a **postcard** now — their face, a gold rule round the
+inside, a franked stamp in the corner with one bar per heart, and a line that
+changes with how well they know you. The one you are on lifts off the page and
+catches a little light from somewhere above it, and its message side opens
+underneath. Same heaven the god sits in: parchment, gold, and an aura on the
+card in hand.
+
+### LOOKS, with him actually standing in it
+
+Four rows of round badges and a line of type is a shopping list. He stands on
+the left now at full height on a plinth of cloud, wearing whatever is on, and
+the rack is beside him — so choosing a sarong is looking at a sarong.
+
+### A map with a thickness
+
+The map was coloured bands on paper, which is a diagram. Each row of country is
+a **slab**: a top face you look down on at a shallow angle, a cliff of earth
+under its front edge, and a shadow on the paper below that. Everything standing
+on the land — trees, roofs, the town, the chedi — gets a one-pixel contact
+shadow, which at this size is the entire difference between a picture of a
+country and a picture of a coloured rectangle. Paddy dikes stand proud of their
+water so a field reads as terraced instead of as graph paper.
+
+And what you have not walked is not bare paper any more, it is **cloud lying on
+it**: you can see there is country under there and nothing at all about what it
+is.
 
 ### Four segments in an arm
 

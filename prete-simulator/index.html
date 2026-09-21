@@ -1664,6 +1664,40 @@ const TH = {
 
   'may you go to a good place':'ขอให้ไปสู่สุคติ',
 
+  /* ---------- the night he goes up: the stair, นนทก, and the pig ---------- */
+  'There is a stair, and it is made of the same thing you are standing on.':'มีบันได และมันทำจากสิ่งเดียวกับที่เจ้ายืนอยู่',
+  'Something gold at the top of it. A long way up.':'มีอะไรสีทองอยู่ข้างบนสุด ไกลขึ้นไปมาก',
+  'Somebody is kneeling at the foot of the stair with a basin.':'มีคนคุกเข่าอยู่เชิงบันได มีอ่างน้ำใบหนึ่ง',
+  'Two of the shining ones are taking his hair. A handful each, on their way past. They are laughing.':'เทวดาสององค์กำลังถอนผมเขา องค์ละกำมือตอนเดินผ่าน แล้วก็หัวเราะ',
+  'He does not stop washing their feet.':'เขาไม่หยุดล้างเท้าให้พวกนั้นเลย',
+  '…They ran.':'…พวกนั้นวิ่งหนี',
+  'Nobody has ever done that. Three hundred years of them, and nobody.':'ไม่เคยมีใครทำแบบนั้น สามร้อยปีมาแล้ว ไม่เคยมีสักคน',
+  'I was going to ask him for a weapon, you know. I had the words ready.':'ข้าจะไปขออาวุธจากพระองค์อยู่แล้วนะ เตรียมคำพูดไว้เรียบร้อย',
+  'A finger that kills whatever it points at. I had thought about it a great deal.':'นิ้วที่ชี้ใครก็ตาย ข้าคิดเรื่องนี้มานานมาก',
+  'Go up. He is expecting somebody. It was going to be me.':'ขึ้นไปเถอะ พระองค์รอใครอยู่ เดิมทีน่าจะเป็นข้า',
+  'I will hold the basin for you on the way down.':'ขากลับลงมา ข้าจะถืออ่างให้เอง',
+  'You found that out on my stair just now, before I had said a word of it.':'เจ้าเพิ่งรู้เรื่องนี้บนบันไดของข้า ก่อนที่ข้าจะพูดสักคำ',
+  'Take it in both hands. It is yours now, and it is heavier than it looks.':'รับไว้ด้วยสองมือ มันเป็นของเจ้าแล้ว และหนักกว่าที่เห็น',
+  'I met somebody on a stair who washes feet.':'ข้าเจอคนหนึ่งบนบันได คนที่คอยล้างเท้าให้เทวดา',
+  'Nonthok. Everyone knows that story and nobody finishes it.':'นนทก ทุกคนรู้เรื่องนี้ แต่ไม่มีใครเล่าจนจบ',
+  'He asks for a weapon, he is given one, and it ends with an army and a bridge to Lanka.':'เขาขออาวุธ เขาได้มา แล้วจบลงด้วยกองทัพกับสะพานข้ามไปลงกา',
+  'You got there first, is what you are telling me.':'แปลว่าเจ้าไปถึงก่อน อย่างนั้นสินะ',
+  'Hm. Then it is a different story now, and nobody has written it down.':'อืม งั้นมันก็เป็นอีกเรื่องหนึ่งแล้ว และยังไม่มีใครจดไว้',
+  'What happens to somebody nobody is kind to?':'คนที่ไม่มีใครเมตตา สุดท้ายเป็นยังไง',
+  'They go looking for a way to be feared instead.':'เขาก็จะไปหาทางให้คนกลัวแทน',
+  'It is not a mystery and it is not a punishment. It is arithmetic.':'ไม่ใช่เรื่องลึกลับ ไม่ใช่การลงโทษ มันเป็นเลขคณิต',
+  'Word came down about the stair. The one with the basin. Whatever you did, it has not stopped being talked about up there.':'ข่าวเรื่องบันไดลงมาถึงแล้ว เรื่องคนที่ถืออ่างน่ะ เจ้าทำอะไรไว้ก็ไม่รู้ ข้างบนยังพูดกันไม่เลิก',
+  'You scared two shining ones off a stair. I have been telling the bananas about it all week.':'เจ้าไล่เทวดาสององค์ลงจากบันได ฉันเล่าให้ต้นกล้วยฟังทั้งอาทิตย์เลย',
+  'a friend':'เพื่อนกัน',
+  'getting there':'เริ่มสนิท',
+  'barely knows you':'แทบไม่รู้จักเจ้า',
+  'what you wear':'ที่นุ่งห่ม',
+  'on your head':'บนหัว',
+  'in your hand':'ในมือ',
+  'round your neck':'คล้องคอ',
+  'over one shoulder':'พาดบ่า',
+  'and the rest':'ที่เหลือ',
+  'tap':'แตะ',
   /* ---------- wind, seasons, replies and the second round of favours ---------- */
   'Constantly.':'ตลอดเวลา',
   'the hot season':'ฤดูร้อน',
@@ -4545,14 +4579,25 @@ function drawPrete(g, p, o={}){
   }
   function armPose(back){
     let hx2,hy2;
-    if(ACT && ACT.k==='wai'){
+    if(o.wai){
+      /* held, not performed: a scene can put him in a ไหว้ and leave him
+         there, which the action version cannot do — it is a bell that
+         rises and falls and then lets his arms drop again. */
+      hx2=chestX+(back?3:6)*face; hy2=chestY+13;
+    }
+    else if(ACT && ACT.k==='wai'){
       // both palms together at the chest, the way you thank anyone here
       hx2=chestX+(back?2.5:5.5)*face; hy2=chestY+30-abell*27;
     }
     else if(ACT && ACT.k==='give'){
       hx2=chestX+(10+abell*13)*face+(back?-6*face:0); hy2=chestY+34-abell*13+(back?5:0);
     }
-    else if(sitting && !ACT){
+    else if(sit > 0.35 && !ACT){
+      /* the arms go to the seated pose only once he is actually DOWN.
+         `sitting` is true from two per cent, so a scene asking for a tenth
+         of a crouch got a hand planted behind him and the other held out
+         flat — the whole seated pose, at full strength, on a character
+         who was standing up. */
       /* the back hand takes his weight behind him; the front one is held out
          flat and open, which is the whole reason anything lands on it */
       if(back){ hx2=chestX-11*face; hy2=chestY+38; }
@@ -4594,8 +4639,20 @@ function drawPrete(g, p, o={}){
          the whole cycle is a hand on a string */
       const ph=p.phase+(back?Math.PI:0)+0.42;
       const sw=Math.cos(ph);
-      hx2=chestX+sw*stride*0.78*face+(back?-5:7)*face+sway*(back?0.6:1.1);
-      hy2=chestY+37-Math.max(0,sw)*3.4-Math.abs(sw)*1.4
+      /* hung from the arm's OWN length, not from a number. At chestY+37 the
+         hand sat thirty-nine pixels below a shoulder on a fifty-three pixel
+         arm, and the fourteen pixels of slack had to go somewhere: out
+         sideways, as a permanent bent elbow that read as a hand on the hip
+         in every single idle frame. Hung at seven eighths of its length it
+         is nearly straight, with the little bend a long arm actually has. */
+      /* and held apart. The two arms bow opposite ways so you can tell
+         them apart, which worked while they hinged and turned into a
+         closed almond the moment they became smooth curves: two arcs from
+         the same shoulders to nearly the same point is a loop, not a pair
+         of arms. Twenty pixels between the hands instead of twelve opens
+         it back up, and on a prete hands outside the hips are right. */
+      hx2=chestX+sw*stride*0.78*face+(back?-7:9)*face+sway*(back?0.6:1.1);
+      hy2=shY+(AU2+AL)*0.875-Math.max(0,sw)*3.4-Math.abs(sw)*1.4
           +Math.sin(p.swayT*1.3+(back?2:0))*1.2;
     }
     return {hx2,hy2};
@@ -4717,45 +4774,119 @@ function drawPrete(g, p, o={}){
                  : (back?(face>0?1:-1):(face>0?-1:1));
     const el=ik2(sx0,shY,hx2,hy2,AU2,AL,bend);
     /* ---------------------------------------------------------------
-       FOUR SEGMENTS, THREE JOINTS
+       THE ARM IS A NOODLE, NOT A LINKAGE
 
-       It was a shoulder, an elbow and a hand: two bones, and at this
-       length two bones is a pair of chopsticks with a hinge. A prete's
-       arm is supposed to look like there is no skeleton in it at all,
-       and the cheapest way to say "no skeleton" is more places where it
-       can change its mind.
+       It has been two bones, then two bones with beads on. Both of those
+       are a linkage with decoration, and a linkage is what makes him look
+       like a puppet: the eye finds the hinge and everything after it
+       swings as one rigid piece.
 
-       So: shoulder, a joint halfway up the humerus, the elbow, the
-       wrist, and then the palm. The IK still solves shoulder-to-hand
-       exactly as before — the extra joints are placed ALONG what the
-       solver returned, on the bowed curve rather than on the straight
-       line between the ends, so nothing about reach or frame-rate
-       behaviour changes and the beads sit on the arm instead of
-       floating off the inside of the bend.
+       So the arm is a CHAIN now. Fourteen points from shoulder to palm,
+       laid along the two bowed curves the solver and the lag give us, and
+       then a travelling wave is run down the whole length of it — a sine
+       in arc position, moving outwards in time, with an amplitude that is
+       nought at the shoulder, largest around the forearm, and nought
+       again at the hand. Both ends stay pinned exactly where they were,
+       so nothing about reach changes and nothing pops; everything between
+       them ripples.
+
+       Two things keep it honest rather than janky:
+
+       - The wave is driven by `p.anim`, which advances in fixed
+         simulation steps, so it is the same on any frame rate. Nothing
+         here integrates against the draw clock.
+       - The amplitude is scaled by how hard the arm is being swung. An
+         arm that is not moving barely ripples; an arm at the end of a
+         fast swing carries a long one down to the fingers.
        --------------------------------------------------------------- */
-    const bowU = bow*0.55, bowF = -bow*0.85;
-    /* the wrist, three quarters of the way down the forearm, and the
-       mid-arm joint halfway up the humerus */
-    const wr  = bowPt(el.x,el.y,hx2,hy2, bowF, 0.74);
-    const mid = bowPt(sx0,shY,el.x,el.y, bowU, 0.52);
-    /* the upper arm trails, the forearm trails harder and the other way —
-       that S is what reads as noodle rather than as a bent stick */
-    iBow(g,sx0,shY,el.x,el.y,3.4,3.0,col,OC, bowU);
-    iBow(g,el.x,el.y,hx2,hy2,3.0,2.6,col,OC, bowF);
-    /* The joints are CREASES, not beads. Ringed in the outline colour they
-       came out to very nearly the width of the limb itself, so each one
-       notched the silhouette and the arm read as a length of bamboo. A
-       joint is a place where the light changes, not a lump: a shade dot
-       inside the limb, and a pixel of highlight on the near side of it. */
-    const crease = back? mix(SHD,OC,0.45) : SHD;
-    pEll(g,mid.x,mid.y,1.3,1.3,crease);
-    pEll(g,el.x, el.y, 1.8,1.8,crease);
-    pEll(g,wr.x, wr.y, 1.3,1.3,crease);
-    if(!back){
-      pEll(g,el.x-1.1*face,el.y-1.0,0.9,0.9,HI);
-      pEll(g,wr.x-0.9*face,wr.y-0.8,0.7,0.7,HI);
-      pEll(g,mid.x-0.9*face,mid.y-0.7,0.6,0.6,HI);
+    const NSEG = 13;                         // fourteen points, thirteen links
+    const SPLIT = 6;                         // where the elbow falls in the chain
+    /* ---------------------------------------------------------------
+       ONE CURVE, NOT TWO BONES WITH A CORNER
+
+       Laying the chain along the two bones left the thing it was meant to
+       cure: a corner at the elbow. Fourteen points do not help if six of
+       them are on one straight line and seven on another — the eye still
+       finds the vertex, and a vertex is a hinge, and a hinge is a puppet.
+       It showed worst wherever the hand was near the shoulder and the
+       solver had to fold the arm hard: two forearms meeting at a spike.
+
+       So the elbow stops being a point ON the path and becomes the
+       CONTROL POINT of one quadratic. Pushed out by four thirds, the
+       curve passes exactly through it at the halfway mark, so the arm
+       still bends as far as the solver says — there is simply no corner
+       in it any more. The two ends are pinned as before, and an arm at
+       full stretch has its elbow on the chord, which puts the control on
+       the chord too and gives back the straight line it should be.
+
+       Slack is then the whole character of the thing: the more of the
+       arm's length the reach does not use, the further the control is
+       off the chord and the deeper the sag, so a hand held close hangs
+       in one long droop instead of folding up like a ruler.
+       --------------------------------------------------------------- */
+    const dxc=hx2-sx0, dyc=hy2-shY, dc=Math.hypot(dxc,dyc)||1;
+    const slack = clamp(1 - dc/(AU2+AL), 0, 1);
+    const mxc=(sx0+hx2)/2, myc=(shY+hy2)/2;
+    /* A HANGING ARM SAGS; IT DOES NOT BULGE SIDEWAYS.
+       Two bones of 25 and 28 spanning 46 put the elbow thirteen pixels off
+       the line no matter how straight the arm looks, and following that
+       with the curve gave two arms bowing opposite ways around him like a
+       barrel hoop. That displacement is a hinge's, and a hinge is what we
+       are trying not to be. So the solver's elbow is taken at full
+       strength only while the arm reaches out sideways, and faded out as
+       the arm turns vertical, where the slack goes downward instead —
+       which is what slack in a rope actually does. */
+    const vert = Math.abs(dyc)/dc;
+    const sideK = 1 - vert*vert*0.74;
+    let ctlX = mxc + (el.x-mxc)*(4/3)*sideK - dyc/dc*bow*0.95;
+    let ctlY = myc + (el.y-myc)*(4/3)*sideK + dxc/dc*bow*0.95
+             + slack*(6 + vert*26)*NOODLE;   // and it sags, because nothing holds it
+    /* how much wave there is: the lag the smoothing left, plus a floor so a
+       still arm is still boneless */
+    const wAmp = clamp(Math.abs(bow)*0.30 + 0.55 + slack*0.75, 0, 3.4) * NOODLE;
+    const chain=[];
+    for(let i=0;i<=NSEG;i++){
+      const s2 = i/NSEG, u2 = 1-s2;
+      chain.push({ x: u2*u2*sx0 + 2*u2*s2*ctlX + s2*s2*hx2,
+                   y: u2*u2*shY + 2*u2*s2*ctlY + s2*s2*hy2, s:s2 });
     }
+    /* the wave, applied perpendicular to the local direction of the chain.
+       Pinned at both ends by the sin(pi*s) envelope. */
+    for(let i=1;i<NSEG;i++){
+      const a2=chain[i-1], b2=chain[i+1];
+      const dx=b2.x-a2.x, dy=b2.y-a2.y, d2=Math.hypot(dx,dy)||1;
+      const s2=chain[i].s;
+      const env = Math.sin(Math.PI*s2) * (0.35+0.65*s2);   // fattest towards the hand
+      const w2 = Math.sin(s2*5.6 - p.anim*5.2 + (back?2.1:0)) * env * wAmp
+               + Math.sin(s2*9.1 - p.anim*3.1 + (back?1.2:0)) * env * wAmp * 0.35;
+      chain[i].x += -dy/d2*w2;
+      chain[i].y +=  dx/d2*w2;
+    }
+    /* drawn link by link, tapering the whole way down. Ink first for the
+       entire arm, then the fill over it, or every link's outline cuts a
+       notch in the one before it. */
+    const wAt = t => lerp(3.5, 2.5, t);
+    for(const pass of [0,1]){
+      for(let i=0;i<NSEG;i++){
+        const a2=chain[i], b2=chain[i+1];
+        const w1=wAt(a2.s), w2b=wAt(b2.s);
+        if(pass===0) pTaper(g,a2.x,a2.y,b2.x,b2.y, w1+3, w2b+3, OC);
+        else         pTaper(g,a2.x,a2.y,b2.x,b2.y, w1,   w2b,   col);
+      }
+    }
+    /* Creases, not beads — a ring in the outline colour is as wide as the
+       limb and notches the silhouette. Every third point, so the arm reads
+       as jointed all the way down without turning into a chain of pearls. */
+    const crease = back? mix(SHD,OC,0.45) : SHD;
+    for(let i=2;i<NSEG;i+=3){
+      const c2=chain[i];
+      pEll(g,c2.x,c2.y, 1.5,1.5, crease);
+      if(!back) pEll(g,c2.x-0.9*face,c2.y-0.8, 0.6,0.6, HI);
+    }
+    /* the elbow is still the elbow: a little heavier than the rest */
+    { const e2=chain[SPLIT];
+      pEll(g,e2.x,e2.y,1.9,1.9,crease);
+      if(!back) pEll(g,e2.x-1.1*face,e2.y-1.0,0.9,0.9,HI); }
     /* ---------------------------------------------------------------
        THE HANDS — four long fingers and a thumb, and they move.
 
@@ -4863,13 +4994,15 @@ function drawPrete(g, p, o={}){
   o.hands=[handB,handF];
 
   /* ---- the head. it is the reason anybody remembers him. ---- */
-  const headTilt = ACT ? (ACT.k==='wai'? -abell*2
+  const headTilt = (o.bowHead? o.bowHead*6 : 0)
+                 + (ACT ? (ACT.k==='wai'? -abell*2
                         : ACT.k==='eat'? (au<0.78? 2+clamp(au/0.30,0,1)*7 : 9-17*(au-0.78)/0.22)
-                        : abell*5) : 0;   // he looks at his hands
+                        : abell*5) : 0);   // he looks at his hands
   const headY = chestY - 22 + p.headBob + Math.sin(p.anim*1.1)*0.5 + headTilt;
   /* his face goes to the bowl, because the bowl is not going anywhere near it */
   const eatLean = (ACT && ACT.k==='eat') ? clamp(au/0.30,0,1)*(au<0.82?1:1-(au-0.82)/0.18)*4.5 : 0;
   const headX = chestX + p.lean*2.2 + p.headLag + sway*0.8 + (o.headX||0) + carry*2.2*face + eatLean*face
+              + (o.bowHead? o.bowHead*2.4*face : 0)
               + (ACT && ACT.k!=='wai' ? abell*3*face : 0);
   iTaper(g, chestX, chestY-4, headX, headY+9, 4.6, 3.8, SHD, OC);
   const HRX=11.4, HRY=11.6;
@@ -5884,8 +6017,10 @@ const VOICE = {
     rep:[
       {t:"Am I doing any of this right?", a:["You are doing it. That is most of right.","The rest is doing it tomorrow as well."]},
       {t:"Do the others talk about me?", a:["Constantly.","Mali has opinions. Nok has information. Yai Pen has both and no patience."]},
+      {t:"What happens to somebody nobody is kind to?", a:["They go looking for a way to be feared instead.","It is not a mystery and it is not a punishment. It is arithmetic."]},
       {t:"What happens when the ledger is full?", a:["You go.","I would not hurry it. A thing that took this long to be owed is worth being owed slowly."]},
       {t:"Is it strange, a monk talking to a prete?", a:["It would be strange not to.","You are hungry and you are here. That is the entire test."]},
+      {t:"I met somebody on a stair who washes feet.", a:["Nonthok. Everyone knows that story and nobody finishes it.","He asks for a weapon, he is given one, and it ends with an army and a bridge to Lanka.","You got there first, is what you are telling me.","Hm. Then it is a different story now, and nobody has written it down."]},
     ],
     cold:["Sit where you like. The step's cool at this hour.",
           "Nobody's been afraid of you all week. You may not have noticed."],
@@ -9606,7 +9741,12 @@ function render(){
   if(GS.state==='title'){ drawTitle(); return; }
   if(GS.state==='memory'){ drawMem(); return; }
   if(GS.state==='ascend'){ drawAscend(ctx); return; }
-  if(GS.state==='dream'){ drawDream(ctx); drawDialog(ctx); drawWipe(ctx); return; }
+  /* the dream is its own screen for four of its five acts; the first one
+     is him lying down in the actual village, so that one falls through to
+     the ordinary pass and is painted over at the end of it */
+  const _lieDream = GS.state==='dream' && DREAM2.act==='lie';
+  if(GS.state==='dream' && !_lieDream){ drawDream(ctx); drawDialog(ctx); drawWipe(ctx); return; }
+  if(_lieDream) GS.state='play';
   if(GS.state==='store'){ drawStore(ctx); drawWipe(ctx); return; }
 
   const sh=GS.shake>0?GS.shake:0;
@@ -9716,11 +9856,12 @@ function render(){
 
   /* while the night is going over he is lying under the house, which is a
      pose of its own rather than the standing one bent double */
-  if(DAY.sleeping && typeof LIE!=='undefined' && LIE.k>0.012){
+  if((DAY.sleeping || _lieDream) && typeof LIE!=='undefined' && LIE.k>0.012){
     drawPreteLie(ctx, P.x, P.y, LIE.k, GS.t, P.face||1);
   } else {
   pEll(ctx,P.x,P.y+1,9,2.6,'rgba(10,8,24,0.4)');
-  drawPrete(ctx,P,{dt:GS.rdt||1/60, wind:GS.wind, mouth:P.state==='wail'?1:(P.talk||0),
+  const _rig={};
+  drawPrete(ctx,P,Object.assign(_rig,{dt:GS.rdt||1/60, wind:GS.wind, mouth:P.state==='wail'?1:(P.talk||0),
     headX:(P.chatX||0),
     sit: clamp((typeof SNEAK!=='undefined'? SNEAK.k*0.55 : 0) + (P.stoop||0), 0, 0.8),
     armTarget: HT? {x:HT.hx,y:HT.hy}
@@ -9728,9 +9869,23 @@ function render(){
     /* asked this way rather than through carriedJars(), which built a throwaway
        array twice a frame for the ninety-nine per cent of the time he is not
        carrying anything at all */
-    carry: P.carry? P.carry.jars.length : 0,
+    carry: (P.carry? P.carry.jars.length : 0) || (GS.pigHold>0? 1 : 0),
     carryWater: P.carry? P.carry.jars : null,
-    gold: GS.cos.halo?1:0, rise:P.rise||0});
+    gold: GS.cos.halo?1:0, rise:P.rise||0}));
+  /* He was given it in a dream and he is still holding it. Waking up with
+     your arms empty after that is the oldest cheat there is. */
+  if(GS.pigHold>0 && _rig.hands && typeof drawLuckyPig==='function'){
+    const h0=_rig.hands[0]||{x:P.x,y:P.y-30}, h1=_rig.hands[1]||h0;
+    const px=(h0.x+h1.x)/2, py=(h0.y+h1.y)/2 - 5;
+    ctx.globalAlpha=clamp(GS.pigHold/1.2,0,1);
+    for(let i=0;i<4;i++){
+      const a=(i/4)*TAU + GS.t*0.8;
+      pEll(ctx, px+Math.cos(a)*11, py+Math.sin(a)*9, 1.1,1.1,'#ffe9a8'); }
+    drawLuckyPig(ctx, px, py, 0.72,
+      {fill:0, glow:0.35+0.2*Math.sin(GS.t*3), blink:0, look:0,
+       ear:Math.sin(GS.t*4)*1.2, shadow:false});
+    ctx.globalAlpha=1;
+  }
   }
   if(HT) drawTaskWorld(ctx);
   drawStoryFore(ctx);  // whoever is walking you home, and what you are holding
@@ -9767,6 +9922,11 @@ function render(){
   vg.addColorStop(1,`rgba(8,6,20,${0.38-0.26*TOD.v})`);
   ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
+  if(_lieDream){
+    GS.state='dream';
+    drawDreamLie(ctx); drawDialog(ctx); drawWipe(ctx);
+    return;
+  }
   if(typeof drawSprayHUD==='function') drawSprayHUD(ctx);
   if(typeof drawQuestCard==='function') drawQuestCard(ctx);   // what you said yes to
   if(typeof drawSneakUI==='function') drawSneakUI(ctx);
@@ -10667,6 +10827,7 @@ function talkPhra(){
     if(!FARM.rented) tips.push("There's a place out west nobody's worked in years. Notice is still on the gate.");
     else if(!FARM.paddies) tips.push('A farm with no paddy is a garden. Build a dike when you can.');
     else if(!handCount() && SPIRITS.some(s=>s.friend)) tips.push('Your dead friends have hands and nothing to do. Ask them.');
+    if(GS.q.nonthok) tips.push('Word came down about the stair. The one with the basin. Whatever you did, it has not stopped being talked about up there.');
     tips.push('Merit for wandering souls means you. Stand here when somebody prays.');
     say([{w:'Phra Phum',t:pick(tips)}]);
   }
@@ -10689,6 +10850,7 @@ function talkTani(){
     if(!has('eye')) t.push("Get Inner Eye when you can. Then you see what people are hoping for.");
     for(const s of SPIRITS) if(!s.friend && s.met) t.push(s.name+' has been waiting for '+(has('eye')?ITEMS[s.wants].n:'something')+'. Go on.');
     t.push('Cook at the stove by the cart. Weave at the mat by the stall.');
+    if(GS.q.nonthok) t.push("You scared two shining ones off a stair. I have been telling the bananas about it all week.");
     t.push('The fireflies like you. They think you\'re a slow lamppost.');
     say([{w:'Tani',t:pick(t)}]);
   }
@@ -12400,55 +12562,9 @@ function drawLedger(g){
   hitAdd(lx,8,lw+4,18,()=>{ toggleLang(); AU.sel(); });
 
   if(TREE.tab===1){
-    const ids=Object.keys(COSMETICS).filter(c=>!COSMETICS[c].locked||GS.seen['own_'+c]);
-    ids.forEach((id,i)=>{
-      const c=COSMETICS[id], x=18+(i%4)*114, y=58+Math.floor(i/4)*44;
-      const owned=GS.seen['own_'+id]||c.cost===0, worn=GS.cos[c.slot]===c.v, sel=TREE.row===i;
-      if(sel) cloud(g,x,y,104,38,{seed:140+i,top:'#fff8e0',body:'#f4e8c4',under:'#dcc890',edge:'#b09a62'});
-      else cloud(g,x+2,y+2,100,34,{seed:140+i,drop:1,top:'#e4dcc8',body:'#d2c9b2',under:'#b8ae98',edge:'#978f7c'});
-      if(c.slot==='skirt'){ const S2=SKIRTS[c.v];
-        pR(g,x+8,y+8,19,21,S2.base); pR(g,x+19,y+8,8,21,S2.dark);
-        for(let k=0;k<4;k++) pR(g,x+8,y+11+k*5,19,1,S2.mark);
-      } else { pCirc(g,x+18,y+19,10,owned?PAL.gold:'#a89e8c'); pCirc(g,x+18,y+19,6,'#fffdf2');
-        cosBadge(g,c.slot,x+18,y+19,owned?'#8f6a1e':'#6a6478'); }
-      pTxt(g,c.n,x+33,y+15,owned?CL.ink:CL.ink3,7);
-      /* Thai drops a tail below the baseline; at y+33 in a 38-tall card the
-         tail of บุญ hung over the edge */
-      pTxt(g,owned?(worn?'worn':'wear'):(c.cost+' '+L('merit')),x+33,y+30,owned?(worn?'#3f6a2c':CL.ink2):'#8f6a1e',6);
-      hitAdd(x,y,104,38,()=>{ const same=TREE.row===i;
-        TREE.row=i; if(same) PRESS.act=true; else AU.blip(); });
-    });
-    const c=COSMETICS[ids[TREE.row]];
-    if(c){ cloud(g,12,H-30,W-24,22,{seed:150}); pTxt(g,c.d,W/2,H-15,CL.ink2,7,'center'); }
+    drawLooks(g);
   } else if(TREE.tab===2){
-    const list=GIFTEES();
-    list.forEach((t,i)=>{
-      const x=14+(i%3)*154, y=56+Math.floor(i/3)*36;
-      const sel=TREE.row===i, made=GS.friends[t.id];
-      if(sel) cloud(g,x,y,148,32,{seed:160+i,top:'#fff8e0',body:'#f4e8c4',under:'#dcc890',edge:'#b09a62'});
-      else cloud(g,x+2,y+2,144,28,{seed:160+i,drop:1,top:'#e4dcc8',body:'#d2c9b2',under:'#b8ae98',edge:'#978f7c'});
-      pTxt(g,t.name,x+10,y+13, CL.ink,8);
-      const knows=has('eye')||made;
-      const hn=heartsOf(t.id);
-      for(let k=0;k<10;k++){
-        const hx=x+14+k*9;
-        icoHeart(g,hx,y+25,0.95,'#b9ac93');
-        icoHeart(g,hx,y+25,0.72,sel?'#f4e8c4':'#d2c9b2');
-        if(k<hn){ icoHeart(g,hx,y+25,0.95,'#7a2840'); icoHeart(g,hx,y+24.6,0.72,'#e8829e'); }
-      }
-      if(knows) drawIcon(g,t.wants,x+132,y+16,0.58);
-      hitAdd(x,y,148,32,()=>{ TREE.row=i; AU.blip(); });
-    });
-    const t=list[TREE.row];
-    if(t){ cloud(g,12,H-44,W-24,36,{seed:170});
-      let y=H-29;
-      for(const l of wrap(g,t.about||t.line||'',W-46,7).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,7); y+=10; }
-      if(t.wish && !GS.friends[t.id] && has('eye')) pTxt(g,L('wish: ')+L(t.wish), 22, H-11, '#3a4a30',6);
-      /* a count of recipes used to sit here, on the page about people, which
-         made no sense on either. How many of them you have got to know does. */
-      const made=list.filter(q=> q.art? q.friend : !!GS.friends[q.id]).length;
-      pTxt(g,L('friends made')+' '+made+'/'+list.length,W-22,H-11,CL.ink3,6,'right');
-    }
+    drawPostcards(g);
   } else if(TREE.tab===3){
     drawMap(g,6,51,W-12,H-57);
   } else {
@@ -12500,6 +12616,150 @@ function drawPast(g){
   pTxt(g,got+' '+L('of')+' '+MEMS.length+' '+L('pages'),W/2,H-6,'#cfc4ae',6,'center');
 }
 
+
+/* ============================================================
+   เพื่อน — THE POSTCARDS
+
+   It was a list: a name, ten little hearts, and the thing they
+   want. Which is a save-file inspector, not a page about people.
+
+   A postcard instead. Everyone you know gets a card with their
+   face on it, a gold rule, a stamp in the corner worth as many
+   ticks as you have hearts with them, and one line in their own
+   voice — cold if they barely know you, warm if they do. The
+   card you are on lifts, catches a little light from somewhere
+   above the page, and shows the rest of what they said
+   underneath.
+
+   The theme is the same heaven the god sits in: parchment,
+   gold rules, a soft aura on the one you are looking at.
+   ============================================================ */
+function stampTicks(g,x,y,n){
+  /* a franked stamp: the perforated edge, the head, and one tick per heart */
+  const w2=24,h2=17;
+  for(let i=0;i<w2;i+=3) pEll(g,x+i,y,1.4,1.4,'#efe4c6');
+  for(let i=0;i<w2;i+=3) pEll(g,x+i,y+h2,1.4,1.4,'#efe4c6');
+  for(let j=0;j<h2;j+=3){ pEll(g,x,y+j,1.4,1.4,'#efe4c6'); pEll(g,x+w2,y+j,1.4,1.4,'#efe4c6'); }
+  pR(g,x,y,w2,h2,'#efe4c6');
+  pR(g,x+1,y+1,w2-2,h2-2,'#f7efd8');
+  pR(g,x+2,y+2,w2-4,h2-4,'#e8d9ae');
+  /* a little gold chedi on the stamp, because every stamp here has one */
+  pTri(g,x+w2/2,y+3, x+w2/2-4,y+12, x+w2/2+4,y+12,'#d8a83c');
+  pTri(g,x+w2/2,y+5, x+w2/2-2,y+12, x+w2/2+2,y+12,'#ffe089');
+  pR(g,R(x+3),R(y+12),Math.max(1,R(w2-6)),2,'#c9932c');
+  /* the franking: one bar per heart */
+  for(let i=0;i<Math.min(n,10);i++)
+    pR(g,R(x+2+ (i%5)*4.6), R(y+2+Math.floor(i/5)*2.4), 3,1,'rgba(150,40,64,0.55)');
+}
+function drawPostcards(g){
+  const list=GIFTEES();
+  /* fourteen of them, so four across and four down at 110 by 38 —
+     three across at 148 ran the last two rows off the bottom of the page */
+  const cw=112, ch=38, gap=5;
+  const cols=4, x0=10, y0=54;
+  list.forEach((t,i)=>{
+    const x=x0+(i%cols)*(cw+gap), y=y0+Math.floor(i/cols)*(ch+gap);
+    const sel=TREE.row===i, made=!!(t.art? t.friend : GS.friends[t.id]);
+    const lift = sel? 2 : 0;
+    /* the aura behind the one you are on */
+    if(sel){ for(let k=4;k>=1;k--){ g.globalAlpha=0.055;
+      pEll(g,x+cw/2,y+ch/2-lift, cw*0.5+k*7, ch*0.55+k*5, '#ffe9a8'); } g.globalAlpha=1; }
+    /* the card */
+    pR(g,x+2,y+3,cw,ch,'rgba(18,14,34,0.35)');
+    pR(g,x,y-lift,cw,ch, sel? '#fbf3dd':'#ece1c2');
+    pR(g,x,y-lift,cw,1,'#fffaea');
+    pR(g,x,y-lift+ch-1,cw,1,'#c6b894');
+    /* a gold rule round the inside */
+    pR(g,x+3,y-lift+3,cw-6,1,'#d8b768'); pR(g,x+3,y-lift+ch-4,cw-6,1,'#d8b768');
+    pR(g,x+3,y-lift+3,1,ch-6,'#d8b768'); pR(g,x+cw-4,y-lift+3,1,ch-6,'#d8b768');
+    /* their face */
+    const pk = t.art? t.art : t.id;
+    try{ const pr=portrait(pk,24,false); g.drawImage(pr, R(x+6), R(y-lift+7)); }catch(e){}
+    /* the name, and under it what they are to you */
+    pTxt(g,t.name, x+34, y-lift+15, CL.ink, 7);
+    pTxt(g, made? L('a friend') : (heartsOf(t.id)>0? L('getting there') : L('barely knows you')),
+         x+34, y-lift+25, made? '#3f6a2c' : CL.ink3, 6);
+    /* the stamp, franked with the hearts */
+    stampTicks(g, x+cw-31, y-lift+5, heartsOf(t.id));
+    /* and the postmark: what they want, if you can see it */
+    if((has('eye')||made) && t.wants) drawIcon(g, t.wants, x+cw-18, y-lift+31, 0.5);
+    hitAdd(x,y-lift,cw,ch,()=>{ TREE.row=i; AU.blip(); });
+  });
+  /* the message side of the card you are on */
+  const t=list[TREE.row];
+  if(t){
+    const by=H-42;
+    cloud(g,12,by,W-24,36,{seed:170});
+    pR(g,20,by+6,W-40,1,'rgba(200,170,100,0.5)');
+    let y=by+17;
+    const line = t.about || t.line || '';
+    for(const l of wrap(g,line,W-56,7).slice(0,2)){ pTxt(g,l,22,y,CL.ink2,7); y+=10; }
+    if(t.wish && !GS.friends[t.id] && has('eye')) pTxt(g,L('wish: ')+L(t.wish), 22, H-9, '#3a4a30',6);
+    const made=list.filter(q=> q.art? q.friend : !!GS.friends[q.id]).length;
+    pTxt(g,L('friends made')+' '+made+'/'+list.length, W-22, H-9, CL.ink3, 6,'right');
+  }
+}
+
+/* ============================================================
+   LOOKS — with him actually standing in it
+
+   Four rows of little round badges and a line of type is a
+   shopping list. What you want to know is what you look like,
+   so he stands on the left at full height wearing whatever is
+   on, and the rack is beside him, grouped by where it goes.
+   ============================================================ */
+const COS_SLOTS = [['skirt','what you wear'],['ngob','on your head'],['hoe','in your hand'],
+                   ['garland','round your neck'],['sash','over one shoulder'],
+                   ['beads','and the rest'],['goldleaf','and the rest'],['halo','and the rest']];
+let _cosPrete=null;
+function drawLooks(g){
+  const ids=Object.keys(COSMETICS).filter(c=>!COSMETICS[c].locked||GS.seen['own_'+c]);
+  /* ---- him, on a plinth of cloud ---- */
+  const px=58, py=H-30;
+  for(let k=4;k>=1;k--){ g.globalAlpha=0.05;
+    pEll(g,px,py-46,22+k*9,44+k*9,'#ffe9a8'); }
+  g.globalAlpha=1;
+  dreamCloudish(g,px,py+2,40,8);
+  if(!_cosPrete){ _cosPrete=makePrete(); _cosPrete.blink=3; }
+  _cosPrete.x=px; _cosPrete.y=py; _cosPrete.face=1; _cosPrete.onGround=true;
+  _cosPrete.anim+=1/60; _cosPrete.swayT+=1/180;
+  try{ drawPrete(g,_cosPrete,{dt:1/60, wind:0.2, cos:GS.cos, gold:GS.cos.halo?1:0}); }catch(e){}
+  /* ---- the rack ---- */
+  const rx=112, rw=W-rx-14;
+  const per=3, cw=Math.floor((rw-8)/per);
+  ids.forEach((id,i)=>{
+    const c=COSMETICS[id];
+    const x=rx+(i%per)*cw, y=56+Math.floor(i/per)*34;
+    const owned=GS.seen['own_'+id]||c.cost===0, worn=GS.cos[c.slot]===c.v, sel=TREE.row===i;
+    if(sel){ for(let k=3;k>=1;k--){ g.globalAlpha=0.06;
+      pEll(g,x+cw/2-3,y+14,cw*0.5+k*5,17+k*4,'#ffe9a8'); } g.globalAlpha=1; }
+    pR(g,x+1,y+2,cw-6,30,'rgba(18,14,34,0.28)');
+    pR(g,x,y,cw-6,30, sel? '#fbf3dd' : (owned? '#e8ddbe':'#d8cfb6'));
+    pR(g,x,y,cw-6,1,'#fffaea');
+    pR(g,x+2,y+2,cw-10,1, worn? '#d8b768':'rgba(200,170,100,0.35)');
+    /* what it is */
+    if(c.slot==='skirt'){ const S2=SKIRTS[c.v];
+      pR(g,x+5,y+6,15,18,S2.base); pR(g,x+14,y+6,6,18,S2.dark);
+      for(let k=0;k<3;k++) pR(g,x+5,y+9+k*5,15,1,S2.mark);
+    } else { pCirc(g,x+13,y+15,9,owned?PAL.gold:'#a89e8c'); pCirc(g,x+13,y+15,6,'#fffdf2');
+      cosBadge(g,c.slot,x+13,y+15,owned?'#8f6a1e':'#6a6478'); }
+    pTxt(g,c.n,x+26,y+13, owned?CL.ink:CL.ink3, 7);
+    pTxt(g, owned? (worn? L('worn'):L('wear')) : (c.cost+' '+L('merit')),
+         x+26, y+25, owned? (worn?'#3f6a2c':CL.ink2) : '#8f6a1e', 6);
+    if(worn) pEll(g,x+cw-12,y+8,2.2,2.2,'#3f6a2c');
+    hitAdd(x,y,cw-6,30,()=>{ const same=TREE.row===i;
+      TREE.row=i; if(same) PRESS.act=true; else AU.blip(); });
+  });
+  const c=COSMETICS[ids[TREE.row]];
+  if(c){ cloud(g,12,H-26,W-24,20,{seed:150}); pTxt(g,c.d,W/2,H-12,CL.ink2,7,'center'); }
+}
+/* one soft bank of cloud, for the plinth he stands on */
+function dreamCloudish(g,x,y,w,h){
+  g.globalAlpha=0.85;
+  pEll(g,x,y,w,h,'#efe6cc'); pEll(g,x-w*0.34,y+h*0.2,w*0.5,h*0.7,'#e4d9ba');
+  pEll(g,x+w*0.3,y-h*0.2,w*0.44,h*0.7,'#f8f1dc');
+  g.globalAlpha=1;
+}
 /* ============================================================
    THE CLOCK
 
@@ -16658,10 +16918,32 @@ function drawMap(g,x0,y0,w,h){
     const X=wx => mx + mw*((wx-wa)/seg);
     const bend = wx => Math.sin(wx*0.0016)*2.6 + Math.sin(wx*0.00052+1.1)*1.7;
     rowRy.push(ry);
-    /* the strip of paper this row of country sits on */
-    pR(g,mx-2,ty-2,mw+4,th+4,'#e7dab6');
+    /* ---------------------------------------------------------------
+       THE SLAB
+
+       The map was flat: coloured bands on paper, which is a diagram.
+       Each row of country is a SLAB now — a top face you look down on
+       at a shallow angle, a cliff of earth under its front edge, and a
+       shadow on the paper underneath that. Everything that stands on
+       the land gets drawn with a one-pixel shadow to the right, which
+       is the whole of the trick: at this size, consistent contact
+       shadows are the difference between a picture of a country and a
+       picture of a coloured rectangle.
+       --------------------------------------------------------------- */
+    const LIFT=4;                    // how thick the slab is
+    /* the shadow it throws onto the paper */
+    g.globalAlpha=0.16;
+    pR(g,mx+1,ty+th+LIFT,mw+3,3,'#8a7450');
+    pR(g,mx+3,ty+th+LIFT+3,mw-1,1,'#8a7450');
+    g.globalAlpha=1;
+    /* the cliff: darker at the bottom, with a lip of light along the top */
+    pR(g,mx-2,ty+th,mw+4,LIFT,'#b9a479');
+    pR(g,mx-2,ty+th+LIFT-1,mw+4,1,'#9c8760');
+    /* the top face */
+    pR(g,mx-2,ty-2,mw+4,th+2,'#e7dab6');
     pR(g,mx-2,ty-2,mw+4,1,'#f6eed4');
-    pR(g,mx-2,ty+th+1,mw+4,1,'#cbb88e');
+    pR(g,mx-2,ty-1,mw+4,1,'#fbf5e2');
+    pR(g,mx-2,ty+th-1,mw+4,1,'#d3c096');
     /* the country, zone by zone, and only where you have been */
     ZONES.forEach(z=>{
       const a=Math.max(z.a,wa), b=Math.min(z.b,wb);
@@ -16670,32 +16952,55 @@ function drawMap(g,x0,y0,w,h){
       const t=MAP_TERRAIN[z.id]||{c:'#d8cdb0',k:'grass'};
       const known=seenSpan(a,b);
       if(!known){
-        /* unwalked: bare paper, and only a suggestion that anything is there */
+        /* unwalked: cloud lying on it. You can see that there is country
+           under there and nothing about what it is. */
+        pR(g,xa,ty,ww,th,'#d8ccae');
+        const fs=mulberry(R(z.a)+7);
+        for(let i=0;i<ww;i+=5){
+          const fy=ty+2+fs()*(th-8);
+          g.globalAlpha=0.5; pEll(g,xa+i,fy,5+fs()*4,2.4,'#efe6cf');
+          g.globalAlpha=0.35; pEll(g,xa+i+2,fy-1.4,3.4,1.6,'#fbf5e6');
+          g.globalAlpha=1;
+        }
         for(let i=0;i<ww;i+=6) for(let j=0;j<th;j+=6)
-          pR(g,xa+i+((j/6)%2)*3, ty+j, 1,1,'rgba(176,154,114,0.28)');
+          pR(g,xa+i+((j/6)%2)*3, ty+j, 1,1,'rgba(176,154,114,0.20)');
       } else {
         pR(g,xa,ty,ww,th,t.c);
         const seed=mulberry(R(z.a));
         if(t.k==='paddy'){
-          for(let i=0;i<ww;i+=7) pR(g,xa+i,ty+2,1,th-4,'rgba(120,160,160,0.55)');
-          for(let j=3;j<th-1;j+=5) pR(g,xa+1,ty+j,ww-2,1,'rgba(255,255,255,0.42)');
+          /* the dikes stand a pixel proud of the water, so the field reads
+             as terraced rather than as graph paper */
+          for(let i=0;i<ww;i+=7){ pR(g,xa+i,ty+2,1,th-4,'rgba(120,160,160,0.55)');
+                                  pR(g,xa+i+1,ty+2,1,th-4,'rgba(60,84,84,0.18)'); }
+          for(let j=3;j<th-1;j+=5){ pR(g,xa+1,ty+j,ww-2,1,'rgba(255,255,255,0.46)');
+                                    pR(g,xa+1,ty+j+1,ww-2,1,'rgba(80,110,110,0.16)'); }
           for(let i=2;i<ww;i+=12) mapIcon(g,'rice',xa+i,ty+th*0.30,'rgba(70,120,92,0.50)');
         } else if(t.k==='trees'){
           for(let i=0;i<ww;i+=6){ const jy=ty+3+(seed()*(th-9));
-            pEll(g,xa+i+2,jy,2.6,2.2,'rgba(74,118,72,0.55)');
-            pR(g,R(xa+i+2),R(jy+2),1,2,'rgba(92,74,52,0.5)'); }
+            /* the shadow first, one pixel down and to the right, then the
+               tree standing on it */
+            pEll(g,xa+i+3.4,jy+2.4,2.8,1.5,'rgba(90,74,48,0.28)');
+            pR(g,R(xa+i+2),R(jy+1),1,3,'rgba(92,74,52,0.62)');
+            pEll(g,xa+i+2,jy,2.6,2.2,'rgba(74,118,72,0.62)');
+            pEll(g,xa+i+1.2,jy-0.8,1.4,1.1,'rgba(128,176,110,0.55)'); }
         } else if(t.k==='roofs'){
           for(let i=0;i<ww-6;i+=10){ const jy=ty+3+(seed()*(th-12));
-            pTri(g,xa+i+4,jy,xa+i,jy+3,xa+i+8,jy+3,'rgba(150,86,60,0.62)');
-            pR(g,R(xa+i+1),R(jy+3),7,3,'rgba(196,168,122,0.6)'); }
+            pR(g,R(xa+i+2),R(jy+6),8,2,'rgba(90,74,48,0.24)');        // shadow
+            pR(g,R(xa+i+1),R(jy+3),7,3,'rgba(196,168,122,0.72)');     // the wall
+            pR(g,R(xa+i+1),R(jy+3),7,1,'rgba(232,212,168,0.8)');
+            pTri(g,xa+i+4,jy,xa+i,jy+3,xa+i+8,jy+3,'rgba(150,86,60,0.78)');
+            pTri(g,xa+i+4,jy+0.8,xa+i+1.4,jy+3,xa+i+4,jy+3,'rgba(186,116,84,0.7)'); }
         } else if(t.k==='blocks'){
           for(let i=0;i<ww-5;i+=8){ const hh=4+R(seed()*5);
-            pR(g,xa+i+1,ty+th-3-hh,6,hh,'rgba(130,126,120,0.55)');
-            pR(g,xa+i+1,ty+th-3-hh,6,1,'rgba(230,226,216,0.6)'); }
+            pR(g,xa+i+2,ty+th-3,7,2,'rgba(90,74,48,0.22)');           // shadow
+            pR(g,xa+i+1,ty+th-3-hh,6,hh,'rgba(130,126,120,0.68)');
+            pR(g,xa+i+5,ty+th-3-hh,2,hh,'rgba(96,92,88,0.6)');        // the shaded side
+            pR(g,xa+i+1,ty+th-3-hh,6,1,'rgba(230,226,216,0.7)'); }
         } else if(t.k==='stone'){
           for(let i=0;i<ww-3;i+=10) mapIcon(g,'chedi',xa+i+4,ty+th*0.36,'rgba(120,114,104,0.5)');
         } else if(t.k==='chedi'){
-          mapIcon(g,'chedi',xa+ww*0.5,ty+th*0.34,'rgba(176,140,52,0.72)');
+          pEll(g,xa+ww*0.5+2,ty+th*0.34+7,5,2,'rgba(90,74,48,0.26)');
+          mapIcon(g,'chedi',xa+ww*0.5,ty+th*0.34,'rgba(176,140,52,0.85)');
         } else if(t.k==='road'){
           for(let i=0;i<ww;i+=5) pR(g,xa+i,ty+2,2,1,'rgba(150,130,95,0.5)');
         } else {
@@ -20350,18 +20655,44 @@ function drawBurst(g){
    the oldest sin in this kind of game: a system handed to you
    before you have any reason to want it.
 
-   So the first night you sleep, you do not just sleep. You go
-   up. There is a temple above the cloud with the god of the
-   third eye sitting in it, and he tells you what you are, what
-   merit is, what to do about it, and then he gives you the pig
-   to keep it in. Until that has happened there is no pig and no
-   merit anywhere on the screen.
+   So the first night you sleep — the night under Lung Somchai's
+   floor — you do not just sleep. You go up.
+
+   FIVE ACTS, because one static tableau with a wall of speech
+   in front of it is a slideshow, not a scene:
+
+     lie      he folds up under the boards, the z's come off him,
+              and the world washes out into cloud
+     stair    a stair of cloud, a gold ปราสาท very small at the
+              top of it, and a long walk up
+     nonthok  and at the foot of it, นนทก. This is the opening of
+              the รามเกียรติ์: the yaksha who washed the devas'
+              feet at the foot of ไกรลาส, and whose hair they
+              pulled out every time they passed, one head at a
+              time, until he was bald and weeping. In the epic he
+              asks พระอิศวร for a diamond finger and takes his
+              revenge, and it goes badly for everyone for about
+              three hundred years. Here somebody else arrives
+              first: a nine-foot starving ghost that the devas
+              have never seen before, and who is not frightened
+              of them because he has nothing left to lose. You
+              scare them off. That is the first merit you ever
+              earn and nobody tells you it counts.
+     throne   up the last of the stair, into the aura, and the god
+              tells you what you are and what บุญ is
+     gift     and the pig is not handed over — it is SUMMONED. A
+              mandala draws itself in the air out of nothing, the
+              light falls into the middle of it, and the thing
+              bangs into existence. Then he picks it up, and he is
+              still holding it when he wakes up.
 
    Phra Isuan is the Thai Shiva: the ชฎา on his head with the
    crescent in it, the third eye, the ตรีศูล in his hand, blue
    through the skin, sat on a lotus that is also a cloud.
    ============================================================ */
-const DREAM2 = { on:false, t:0, phase:0, said:0, given:0, out:0, rays:0, first:false };
+const DREAM2 = { on:false, t:0, phase:0, said:0, given:0, out:0, rays:0, first:false,
+                 act:'lie', walk:0, scare:0, fled:0, mandala:0, held:0, z:0 };
+const DREAM_ACTS = ['lie','stair','nonthok','throne','gift'];
 
 function dreamDue(){
   /* The story now sends him up on his first night under the house, so for
@@ -20371,19 +20702,28 @@ function dreamDue(){
      a pig. */
   return !GS.q.blessed && GS.q.metPhra !== undefined;
 }
+function dreamGo(act){
+  DREAM2.act=act; DREAM2.t=0; DREAM2.said=0;
+  clearPress();
+  if(act==='stair')  { DREAM2.walk=0; AU.tone(392,0.5,'sine',0.03); }
+  if(act==='nonthok'){ DREAM2.scare=0; DREAM2.fled=0; }
+  if(act==='throne') { if(AU.gong) AU.gong(); }
+  if(act==='gift')   { DREAM2.mandala=0; DREAM2.held=0; }
+}
 function startDream(o){
   /* `first` is the night under Lung Somchai's house — the one the story
      sends him to. It comes back down to a morning rather than to the
      middle of an ordinary night. */
   DREAM2.first = !!(o && o.first);
   DREAM2.on=true; DREAM2.t=0; DREAM2.phase=0; DREAM2.said=0;
-  DREAM2.given=0; DREAM2.out=0; DREAM2.rays=0;
+  DREAM2.given=0; DREAM2.out=0; DREAM2.rays=0; DREAM2.z=0;
   GS.state='dream';
   AU.ensure();
-  if(AU.gong) AU.gong();
   clearPress();
-  dreamSay();
+  dreamGo('lie');
 }
+
+/* ---------- what is said, act by act ---------- */
 const DREAM_LINES = [
   {t:'You are a long way up, and the floor is cloud.'},
   {w:'god', t:'Come here. I have been waiting for somebody to die badly enough to be sent up.'},
@@ -20391,42 +20731,118 @@ const DREAM_LINES = [
   {w:'god', t:'You were not made hungry to punish you. You were made hungry so you would go and look for something.'},
   {w:'god', t:'What you are looking for is บุญ. Merit. It is not a coin and it is not a score.'},
   {w:'god', t:'It is what is left over when somebody is glad you were there.'},
+  {w:'god', t:'You found that out on my stair just now, before I had said a word of it.'},
   {w:'god', t:'Help them. Fix what is broken. Feed what is thin. Kneel when the line goes past.'},
   {w:'god', t:'You will not be able to count it, so I am going to give you something that can.'},
 ];
-function dreamSay(){
-  say(DREAM_LINES.map(l=>({w:l.w==='god'? 'Phra Isuan' : '', t:l.t})), ()=>{
-    DREAM2.phase=1;                      // and then he hands it over
-    DREAM2.t=0;
-  });
-}
+const NONTHOK_BEFORE = [
+  {w:'', t:'Somebody is kneeling at the foot of the stair with a basin.'},
+  {w:'', t:'Two of the shining ones are taking his hair. A handful each, on their way past. They are laughing.'},
+  {w:'', t:'He does not stop washing their feet.'},
+];
+const NONTHOK_AFTER = [
+  {e:'awe',  w:'Nonthok', t:'…They ran.'},
+  {e:'sad',  w:'Nonthok', t:'Nobody has ever done that. Three hundred years of them, and nobody.'},
+  {e:'sad',  w:'Nonthok', t:'I was going to ask him for a weapon, you know. I had the words ready.'},
+  {e:'warm', w:'Nonthok', t:'A finger that kills whatever it points at. I had thought about it a great deal.'},
+  {e:'warm', w:'Nonthok', t:'Go up. He is expecting somebody. It was going to be me.'},
+  {e:'glad', w:'Nonthok', t:'I will hold the basin for you on the way down.'},
+];
+
+function dreamSay(lines, then){ say(lines, then); }
+
 function stepDream(dt){
   DREAM2.t+=dt;
   DREAM2.rays+=dt;
   if(DLG){ stepDlg(dt); return; }
-  if(DREAM2.phase===1){
-    /* the pig comes down the light and settles in front of him */
-    if(DREAM2.t>2.4 && !DREAM2.given){
+  const A=DREAM2.act;
+
+  /* ---- he folds up under the boards ---- */
+  if(A==='lie'){
+    if(typeof LIE!=='undefined') LIE.k = clamp(DREAM2.t/1.5,0,1);
+    /* the ordinary pass draws whatever the camera is looking at, and the
+       camera does not follow anybody while the world is not stepping */
+    GS.camX = lerp(GS.camX, clamp(P.x-W*0.42,0,WORLD_W-W), 1-Math.pow(0.02,dt));
+    GS.camY = lerp(GS.camY, 0, 1-Math.pow(0.05,dt));
+    DREAM2.z += dt;
+    if(DREAM2.t>3.1 || press('act')||press('tap')){
+      if(typeof LIE!=='undefined') LIE.k=1;
+      wipeTo(()=>dreamGo('stair'), 'iris');
+      DREAM2.act='wait';
+    }
+    return;
+  }
+  /* ---- the long stair ---- */
+  if(A==='stair'){
+    DREAM2.walk = clamp(DREAM2.walk + dt*0.20, 0, 1);
+    if(!DREAM2.said && DREAM2.t>1.0){ DREAM2.said=1;
+      dreamSay([{w:'', t:'There is a stair, and it is made of the same thing you are standing on.'},
+                {w:'', t:'Something gold at the top of it. A long way up.'}]); }
+    if(DREAM2.walk>=1 || ((press('act')||press('tap')) && DREAM2.t>2.4)){
+      wipeTo(()=>dreamGo('nonthok'), 'iris'); DREAM2.act='wait';
+    }
+    return;
+  }
+  /* ---- นนทก, and the two who are pulling his hair ---- */
+  if(A==='nonthok'){
+    if(!DREAM2.said && DREAM2.t>0.8){ DREAM2.said=1; dreamSay(NONTHOK_BEFORE); }
+    if(DREAM2.said && !DREAM2.scare && (press('act')||press('tap'))){
+      /* he stands all the way up, and wails. It is the only thing he has. */
+      DREAM2.scare=1; DREAM2.t=0;
+      if(AU.wail) AU.wail(); else AU.tone(150,0.7,'sawtooth',0.05);
+      GS.shake=Math.max(GS.shake,4.5);
+    }
+    if(DREAM2.scare===1 && DREAM2.t>0.55 && !DREAM2.fled){
+      DREAM2.fled=1;
+      dreamSay(NONTHOK_AFTER, ()=>{
+        GS.q.nonthok = true; saveGame();
+        addMerit(2); toast('+2', PAL.gold, 'merit');
+        wipeTo(()=>dreamGo('throne'), 'iris'); DREAM2.act='wait';
+      });
+    }
+    return;
+  }
+  /* ---- the throne ---- */
+  if(A==='throne'){
+    if(!DREAM2.said && DREAM2.t>0.9){ DREAM2.said=1;
+      DREAM2.phase=0;
+      dreamSay(DREAM_LINES, ()=>{ DREAM2.phase=1; dreamGo('gift'); }); }
+    return;
+  }
+  /* ---- and the pig is summoned out of nothing ---- */
+  if(A==='gift'){
+    DREAM2.mandala = clamp(DREAM2.t/1.5, 0, 1);
+    if(DREAM2.t>1.5 && !DREAM2.given){
       DREAM2.given=1;
+      if(AU.bigDing) AU.bigDing();
       if(AU.oink) AU.oink();
+      GS.shake=Math.max(GS.shake,3.2);
       GS.q.blessed = true;               // and from here the corner has a pig in it
       GS.bankDue = 0;
       saveGame();
-      say([{w:'Phra Isuan', t:'Keep it where you can see it. Every good turn is a coin through the slot.'},
-           {w:'Phra Isuan', t:'Fill it, and it breaks, and you come back a little further from what you were.'},
-           {w:'Phra Isuan', t:'Go on. They are waiting on the morning and you are keeping them.'}],
-        ()=>{ DREAM2.phase=2; DREAM2.t=0; });
+      for(let i=0;i<26;i++) part({k:'sp', x:W*0.5-66+rnd(-18,18), y:H*0.46+rnd(-18,18),
+                                  vx:rnd(-60,60), vy:rnd(-60,60), life:rnd(.5,1.2), c:PAL.goldL});
     }
-  } else if(DREAM2.phase===2){
-    if(DREAM2.t>0.6 && !DREAM2.out){
+    if(DREAM2.given && !DREAM2.said && DREAM2.t>2.3){ DREAM2.said=1;
+      dreamSay([{w:'Phra Isuan', t:'Keep it where you can see it. Every good turn is a coin through the slot.'},
+                {w:'Phra Isuan', t:'Fill it, and it breaks, and you come back a little further from what you were.'},
+                {w:'Phra Isuan', t:'Take it in both hands. It is yours now, and it is heavier than it looks.'},
+                {w:'Phra Isuan', t:'Go on. They are waiting on the morning and you are keeping them.'}],
+        ()=>{ DREAM2.held=1; DREAM2.t=0; });
+    }
+    /* he picks it up, and then he is gone */
+    if(DREAM2.held && DREAM2.t>1.2 && !DREAM2.out){
       DREAM2.out=1;
       wipeTo(()=>{ DREAM2.on=false; GS.state='play'; dreamWake(); }, 'iris');
     }
+    return;
   }
-  if(press('act')||press('tap')){ /* the lines are advanced by stepDlg */ }
 }
 /* what the morning is when you come back down */
 function dreamWake(){
+  /* and he is still holding it. Being handed a thing in a dream and then
+     waking up with your arms empty is the oldest cheat there is. */
+  GS.pigHold = 7.0;
   if(DREAM2.first && typeof storyDreamWake==='function'){ storyDreamWake(); return; }
   /* back into the night he left, already flat out and most of the way through
      it: the lying-down happened before the dream and does not happen twice */
@@ -20437,24 +20853,451 @@ function dreamWake(){
   clearPress();
 }
 
-/* ---------- the temple above the cloud ----------
-   He is the biggest thing on the screen, because he is the only
-   thing up here that matters. The prasat is behind him and the
-   two ยักษ์ are at the far edges, so the eye lands on the god and
-   then finds the little grey thing kneeling at the left. ------- */
+/* ============================================================
+   THE FIRST FOUR ACTS
+
+   Everything up here is drawn from the same three ideas: cloud
+   that is lit from underneath, gold, and a lot of empty space
+   above the horizon so the one figure in frame has somewhere to
+   be small.
+   ============================================================ */
+
+/* a bank of cloud, lit gold along its top edge */
+function dreamCloud(g,x,y,w,h,a,warm){
+  g.globalAlpha=a;
+  pEll(g,x,y,w,h,warm?'#f2ddab':'#cfd0ee');
+  pEll(g,x-w*0.34,y+h*0.22,w*0.52,h*0.7,warm?'#eed59c':'#c3c5e6');
+  pEll(g,x+w*0.36,y+h*0.26,w*0.46,h*0.66,warm?'#e8cd91':'#b9bcdf');
+  pEll(g,x+w*0.10,y-h*0.36,w*0.46,h*0.6,warm?'#fbf0ce':'#e4e6ff');
+  g.globalAlpha=1;
+}
+/* the sky everything up here shares */
+function dreamSky(g,rays){
+  pVGrad(g,0,0,W,H*0.66,'#161540','#57468f',7);
+  pVGrad(g,0,H*0.62,W,H*0.44,'#57468f','#f0c86a',7);
+  for(const s of STARS){
+    if(s[1]>0.5) continue;
+    g.fillStyle=`rgba(255,246,224,${(0.28*(0.3+s[3]*0.7)*(0.6+0.4*Math.sin(GS.t*1.4+s[2]))).toFixed(3)})`;
+    g.fillRect(R(s[0]*W),R(s[1]*H*0.8),1,1);
+  }
+  for(let i=0;i<11;i++){
+    const cx=((i*131 + rays*3)%(W+240))-120, cy=H*0.24+((i*41)%76);
+    dreamCloud(g,cx,cy,20+((i*13)%24), 5+((i*3)%5), 0.16, i%3===0);
+  }
+}
+/* ---------- ACT ONE: he folds up under the boards ----------
+   The world is still there — this is not a cut to somewhere else, it is
+   him lying down in the place he is actually lying down in. It just goes
+   soft as he goes under. */
+/* Drawn as an OVERLAY on the ordinary world pass, not instead of it: the
+   render already knows how to draw the village and he is lying in it. An
+   earlier cut of this called render() from inside itself, which is a trap
+   with a canvas this shares. */
+function drawDreamLie(g){
+  const soft=clamp((DREAM2.t-1.1)/2.0,0,1);
+  /* it stops being the village. A wash that closes in from the edges
+     rather than a screenful of grey discs — he has to stay visible in the
+     middle of it right up to the cut, because he is the thing going under. */
+  if(soft>0.01){
+    g.globalAlpha=soft*0.62;
+    pVGrad(g,0,0,W,H,'#221f52','#4a3f86',6);
+    g.globalAlpha=1;
+    const vg=g.createRadialGradient(P.x-GS.camX, P.y-GS.camY-10, 10,
+                                    P.x-GS.camX, P.y-GS.camY-10, W*0.62);
+    vg.addColorStop(0,'rgba(34,31,82,0)');
+    vg.addColorStop(1,'rgba(34,31,82,'+(soft*0.86).toFixed(3)+')');
+    g.fillStyle=vg; g.fillRect(0,0,W,H);
+    /* and a very few wisps, low and faint. Anything bigger than this over
+       a village reads as a flying saucer. */
+    for(let i=0;i<5;i++){
+      const cx=((i*151 + DREAM2.t*5)%(W+180))-90, cy=H*0.46+((i*37)%(H*0.40));
+      g.globalAlpha=soft*0.16;
+      pEll(g,cx,cy, 12+((i*7)%10), 2.6+((i*2)%2), '#e2ddff');
+      pEll(g,cx+5,cy-1.4, 7, 1.8, '#f2efff');
+      g.globalAlpha=1;
+    }
+  }
+  /* three z's, coming off him and going up */
+  for(let i=0;i<3;i++){
+    const a=DREAM2.z*0.62 - i*0.55;
+    if(a<0) continue;
+    const u=(a%1.8)/1.8;
+    const zx = P.x-GS.camX + 12 + u*16, zy = P.y-GS.camY - 14 - u*30;
+    g.globalAlpha=clamp((1-u)*1.4,0,1)*(1-soft*0.6)*0.9;
+    pTxt(g,'z', zx, zy, '#e8e4ff', 6+Math.round(u*3), 'center');
+    g.globalAlpha=1;
+  }
+  if(DREAM2.t>2.0){
+    g.globalAlpha=0.35+0.3*Math.sin(GS.t*5);
+    pTxt(g, L('tap'), W-24, H-10, 'rgba(230,226,255,0.8)', 6, 'right');
+    g.globalAlpha=1;
+  }
+}
+/* ---------- ACT TWO: the stair ----------
+   A flight of cloud going up to the right, the ปราสาท tiny and gold at
+   the top of it, and him climbing. The camera holds still and he gets
+   smaller, which is the cheapest way to say "a long way". */
+function drawDreamStair(g){
+  const t=DREAM2.t, u=DREAM2.walk;
+  dreamSky(g,DREAM2.rays);
+  /* the stair: sixteen slabs of cloud going up and away */
+  const N=16;
+  const stepX = i => W*0.05 + i*(W*0.0455);
+  const stepY = i => H*0.97 - i*(H*0.0425);
+  for(let i=N-1;i>=0;i--){
+    const x=stepX(i), y=stepY(i), sc=1-i*0.035;
+    g.globalAlpha=0.30;
+    pEll(g,x+4,y+5,40*sc,7*sc,'#8f86c0');            // the shadow under the slab
+    g.globalAlpha=1;
+    dreamCloud(g,x,y,38*sc,8*sc,0.96,true);
+    pEll(g,x,y-3*sc,30*sc,4*sc,'#fdf3d6');
+  }
+  /* the palace, small and gold, at the top */
+  { const px=stepX(N-1)+30, py=stepY(N-1)-30;
+    /* a halo, not a starburst: nine long spikes made it a compass rose and
+       you could not see the building inside them */
+    for(let i=5;i>=1;i--){ g.globalAlpha=0.055;
+      pEll(g,px,py-8,16+i*10,18+i*11,'#ffe9a8'); }
+    /* feathered: a taper drawn at one alpha for its whole length ends in a
+       tip you can see, and a tip you can see is a stick. Seven of them
+       around a building make a spider. So each ray is four pieces whose
+       alpha falls off square, and it is gone before it arrives anywhere. */
+    for(let i=0;i<7;i++){ const a=i/7*TAU + DREAM2.rays*0.05, len=24;
+      for(let k=0;k<4;k++){
+        const r0=6+len*(k/4), r1=6+len*((k+1)/4), f=1-k/4;
+        g.globalAlpha=0.16*f*f;
+        pTaper(g, px+Math.cos(a)*r0, py-8+Math.sin(a)*r0,
+                  px+Math.cos(a)*r1, py-8+Math.sin(a)*r1,
+                  lerp(3,1,k/4), lerp(3,1,(k+1)/4), '#ffe9a8'); } }
+    g.globalAlpha=1;
+    pR(g,px-15,py+4,30,9,'#d8a83c'); pR(g,px-15,py+4,30,1,'#ffe089');
+    for(let i=0;i<4;i++){ const w2=lerp(26,9,i/3);
+      pR(g,px-w2/2,py-2-i*5,w2,5,i%2?'#d8a83c':'#e8bc52');
+      pR(g,px-w2/2,py-2-i*5,w2,1,'#ffe089'); }
+    pTaper(g,px,py-21,px,py-34,3,0.8,'#ffe089');
+    pEll(g,px,py-35,1.8,1.8,'#fff4c8');
+    g.globalAlpha=0.5; pEll(g,px,py-35,6,6,'#ffe9a8'); g.globalAlpha=1; }
+  /* him, climbing */
+  { const i = u*(N-2.4);
+    const hx = stepX(i)+2, hy = stepY(i)-4;
+    const sc = 1 - (i/N)*0.42;
+    g.save(); g.translate(hx,hy); g.scale(sc,sc); g.translate(-hx,-hy);
+    const q={...P, x:hx, y:hy, vx:26, vy:0, face:1, onGround:true, act:null,
+             rise:0, state:'walk', phase: u*46};
+    try{ drawPrete(g,q,{dt:1/60, wind:0, sit:0, cos:GS.cos}); }catch(e){}
+    g.restore(); }
+  /* motes going up past him */
+  for(let i=0;i<26;i++){
+    const mx=((i*61 + DREAM2.rays*4)%(W+40))-20;
+    const my=H - ((DREAM2.rays*14 + i*41)%(H+40));
+    g.globalAlpha=0.20+0.2*Math.sin(DREAM2.rays*2+i);
+    pEll(g,mx,my,1.1,1.1,'#ffe9a8'); g.globalAlpha=1;
+  }
+}
+/* ---------- ACT THREE: นนทก ----------
+   The basin, the yaksha on his knees, and two devas who have been doing
+   this every single day for three hundred years. */
+function drawStairDeva(g,x,y,face,flee,t){
+  /* a shining one: white and gold, a little crown, and an unbearable
+     expression. Drawn small — they are not the subject. */
+  const bob=Math.sin(t*3+x)*1.2 - flee*22;
+  const yy=y-bob;
+  g.globalAlpha=0.22; pEll(g,x,yy-16,17,20,'#fff4c8'); g.globalAlpha=1;
+  pEll(g,x,yy+1,8,2.4,'rgba(20,16,40,0.28)');
+  pR(g,R(x-5),R(yy-17),10,17,'#f6eed4'); pR(g,R(x-5),R(yy-17),10,2,'#fffaf0');
+  pR(g,R(x+2),R(yy-17),3,17,'#ded2b0');
+  pTaper(g,x-4,yy-15, x-10-flee*5, yy-6+flee*3, 2.4,1.8,'#f6eed4');
+  pTaper(g,x+4,yy-15, x+10+flee*5, yy-9-flee*2, 2.4,1.8,'#ded2b0');
+  pR(g,R(x-5),R(yy-20),10,3,'#e8bc52');
+  pEll(g,x,yy-25,5.6,5.8,'#f8f0dc');
+  pR(g,R(x-4+ (face>0?2:0)),R(yy-26),2,2,'#2a2450');
+  pR(g,R(x+1+ (face>0?2:0)),R(yy-26),2,2,'#2a2450');
+  if(flee>0.1){ pEll(g,x,yy-22,2.4,2.8,'#2a2450'); }       // a mouth, open
+  pTri(g,x,yy-36, x-5,yy-29, x+5,yy-29,'#e8bc52');
+  pTri(g,x,yy-33, x-2,yy-29, x+2,yy-29,'#ffe089');
+  if(flee>0.1) for(let i=0;i<3;i++){                        // speed lines
+    const sx=x - face*(10+i*7), sy=yy-14+i*5;
+    g.globalAlpha=0.5-i*0.13; pR(g,R(sx),R(sy),6,1,'#fffaf0'); g.globalAlpha=1; }
+}
+function drawNonthok(g,x,y,t,looked){
+  /* green, heavy, on his knees at a basin. The hair is the point: a few
+     tufts left and a lot of bare scalp, and one of the tufts is still in
+     somebody's fist somewhere up the stair. */
+  const br=Math.sin(t*1.1)*0.8;
+  pEll(g,x,y+1,22,4,'rgba(20,16,40,0.32)');
+  /* shins folded under */
+  pEll(g,x-4,y-4,15,5,'#2f6b4e'); pEll(g,x+11,y-4,9,4,'#24523c');
+  /* the body, bent forward over the basin */
+  pTaper(g,x-2,y-8, x+9,y-24-br, 13,11,'#2f6b4e');
+  pTaper(g,x+4,y-9, x+11,y-22-br, 7,6,'#24523c');
+  pR(g,R(x-8),R(y-13),16,4,'#8a5a8c'); pR(g,R(x-8),R(y-13),16,1,'#b07ab0');
+  /* both arms down into the water */
+  pTaper(g,x+8,y-22-br, x+20,y-7, 3.4,2.6,'#2f6b4e');
+  pTaper(g,x+4,y-21-br, x+16,y-6, 3.2,2.4,'#24523c');
+  pEll(g,x+21,y-6,3,2.6,'#3b7d5c'); pEll(g,x+17,y-5,2.6,2.4,'#2a5c44');
+  /* the head, looking down — or up, once somebody has helped him */
+  const hx=x+11+(looked?2:0), hy=y-32-br-(looked?3:0);
+  pEll(g,hx,hy,8.4,8.6,'#2f6b4e');
+  pEll(g,hx+3,hy+2,4,5,'#24523c');
+  pEll(g,hx-3,hy-3,3.2,2.6,'#45876a');
+  /* what is left of the hair: three tufts and a lot of nothing */
+  for(const [dx,dy,w2] of [[-5,-7,3],[0,-8.6,2],[6,-6,2.4]]){
+    pTaper(g,hx+dx,hy+dy, hx+dx-1, hy+dy-4, w2,1,'#1c3c2c'); }
+  pR(g,R(hx-6),R(hy-7),12,1,'#3b7d5c');
+  /* the face */
+  const ey=hy+(looked?-1:1);
+  pR(g,R(hx-6),R(ey),5,3,'#f4f0e0'); pR(g,R(hx+1),R(ey),5,3,'#f4f0e0');
+  pR(g,R(hx-5),R(ey),2,3,'#c02a2a'); pR(g,R(hx+3),R(ey),2,3,'#c02a2a');
+  pR(g,R(hx-6),R(ey-2),5,1,'#1c3c2c'); pR(g,R(hx+1),R(ey-2),5,1,'#1c3c2c');
+  pR(g,R(hx-3),R(hy+5),7,2,'#1c3c2c');
+  pR(g,R(hx-2),R(hy+6),1,2,'#f6f2e2'); pR(g,R(hx+2),R(hy+6),1,2,'#f6f2e2');
+  /* and he is crying, which is in the text and is usually left out */
+  if(!looked){
+    for(let i=0;i<2;i++){
+      const u=((t*0.8+i*0.5)%1);
+      g.globalAlpha=(1-u)*0.8;
+      pEll(g,hx-4+i*8, ey+3+u*9, 1, 1.6, '#bfe4ff'); g.globalAlpha=1; }
+  }
+  /* the basin */
+  pEll(g,x+22,y-2,13,5,'#9a8a5e'); pEll(g,x+22,y-3,11,4,'#b9d8e0');
+  pEll(g,x+22,y-3.4,8,2.6,'#dceef4');
+  for(let i=0;i<3;i++){ const u=((t*0.6+i*0.33)%1);
+    g.globalAlpha=0.5*(1-u); pEll(g,x+22,y-3,3+u*9,1.4+u*3,'#eaf8ff'); g.globalAlpha=1; }
+}
+function drawDreamNonthok(g){
+  const t=DREAM2.t;
+  dreamSky(g,DREAM2.rays);
+  const base=H*0.80;
+  /* the bottom of the stair, going up and off to the right */
+  for(let i=7;i>=0;i--){
+    const x=W*0.30 + i*(W*0.072), y=base - i*(H*0.052), sc=1-i*0.05;
+    g.globalAlpha=0.28; pEll(g,x+4,y+5,40*sc,7*sc,'#8f86c0'); g.globalAlpha=1;
+    dreamCloud(g,x,y,38*sc,8*sc,0.96,true);
+    pEll(g,x,y-3*sc,30*sc,4*sc,'#fdf3d6');
+  }
+  /* the cloud floor at the foot of it */
+  for(let i=0;i<8;i++) dreamCloud(g,((i*83+DREAM2.rays*2)%(W+160))-80, base+14+((i*17)%10),
+                                  44+((i*19)%30), 9, 0.7, true);
+  pVGrad(g,0,base+20,W,H-base-20,'#f0d89a','#e6c078',5);
+  /* นนทก. Drawn at one and three quarters — he is a ยักษ์, and at the size
+     the sketch came out he read as a frog in a bowl. */
+  const nx=W*0.36, ny=base+8;
+  g.save(); g.translate(nx,ny); g.scale(1.75,1.75); g.translate(-nx,-ny);
+  drawNonthok(g, nx, ny, t, DREAM2.fled?1:0);
+  g.restore();
+  /* ---------------------------------------------------------------
+     THE TWO WHO HAVE BEEN PULLING HIS HAIR
+
+     They stood to the right of him with a tuft held in the air beside
+     them, and what the frame showed was two shining people minding their
+     own business next to a yaksha washing up. The bullying has to LAND:
+     one of them hovers over his head with a fist actually in what is
+     left of it, and the hair is drawn stretched from his scalp to that
+     fist. So the arm is built out here in the world's own coordinates,
+     from his scalp back to the shoulder, instead of inside the deva's
+     own little scale transform where it can only ever reach near him.
+     --------------------------------------------------------------- */
+  const SC=1.75;
+  const nhx = nx + 11*SC, nhy = ny - 32*SC;      // his head, at his scale
+  const fl = DREAM2.scare? clamp((t)/0.6,0,1) : 0;
+  const ease = fl*fl*(3-2*fl);
+  const dface = DREAM2.scare? 1 : -1;            // watching him, then fleeing
+  /* One of them does it; the other waits its turn with a tuft already in
+     its hand. Both reaching gave two arms sixty pixels long crossing the
+     frame, and an arm that long is a plank. */
+  for(let i=1;i>=0;i--){
+    const dx = nx+40+i*46 + ease*(150+i*50);
+    const dy = ny-68-i*12 - ease*26;
+    /* a wisp under each: they hover, and a cast shadow on nothing is worse
+       than no shadow at all */
+    g.globalAlpha=0.55*(1-ease);
+    dreamCloud(g, dx, dy+4, 15, 4, 0.5, true);
+    g.globalAlpha=1;
+    g.save(); g.translate(dx,dy); g.scale(1.25,1.25); g.translate(-dx,-dy);
+    drawStairDeva(g, dx, dy, dface, ease, t+i*1.7);
+    g.restore();
+    if(DREAM2.scare) continue;
+    const shx = dx-5, shy = dy-20;             // the shoulder, out of the scale
+    if(i===0){
+      /* the near one: a short arm straight down onto the crown of his head */
+      const pull = Math.sin(t*1.6)*0.8;
+      const fx = nhx - 4 + pull*0.4, fy = nhy - 25 - pull;
+      pTaper(g, shx, shy, fx, fy, 3.2, 2.2, '#f6eed4');
+      pEll(g, fx, fy, 2.9, 2.6, '#fffaf0');
+      /* and the hair, stretched out of the scalp and giving way */
+      for(let k=0;k<3;k++)
+        pBow(g, nhx-6+k*5, nhy-12, fx-2+k*2, fy+3, 1.8, 0.8, '#1c3c2c', (2.4-k)*(1+pull*0.5));
+    } else {
+      /* the far one: the last handful, held up where he can see it */
+      const fx = dx+13, fy = dy-16+Math.sin(t*1.3)*1.2;
+      pTaper(g, dx+5, dy-19, fx, fy, 2.8, 2.0, '#ded2b0');
+      pEll(g, fx, fy, 2.5, 2.3, '#f6eed4');
+      for(let k=0;k<3;k++)
+        pBow(g, fx+1, fy+1, fx+2+k*2, fy+9+k, 1.6, 0.7, '#1c3c2c', 1.6-k);
+    }
+  }
+  /* him: he comes up to full height the moment you press it */
+  { const px=W*0.12, py=base+10;
+    const rise = DREAM2.scare? clamp(t/0.30,0,1) : 0;
+    const q={...P, x:px, y:py, vx:0, vy:0, face:1, onGround:true, act:null,
+             rise:0, state: DREAM2.scare? 'wail':'idle', phase:0};
+    try{
+      /* the cower is his head, not a crouch: a tenth of a sit does nothing
+         to his height and everything to his arms */
+      drawPrete(g,q,{dt:1/60, wind:0, cos:GS.cos,
+                     bowHead: 0.55*(1-rise), mouth: DREAM2.scare? 1:0,
+                     gold: GS.cos.halo?1:0});
+    }catch(e){}
+    /* the wail, as rings */
+    if(DREAM2.scare) for(let i=0;i<3;i++){
+      const u=((t*1.5 - i*0.3));
+      if(u<0||u>1) continue;
+      g.globalAlpha=(1-u)*0.5;
+      pEll(g,px+10,py-58,10+u*80,7+u*54,'rgba(0,0,0,0)');
+      g.strokeStyle='rgba(214,226,255,'+((1-u)*0.55).toFixed(3)+')';
+      g.lineWidth=1; g.beginPath();
+      g.ellipse(R(px+10),R(py-58),R(10+u*80),R(7+u*54),0,0,TAU); g.stroke();
+      g.globalAlpha=1;
+    }
+  }
+  if(DREAM2.said && !DREAM2.scare && !DLG){
+    g.globalAlpha=0.45+0.35*Math.sin(GS.t*5);
+    pTxt(g, L('tap'), W-24, H-10, 'rgba(255,240,200,0.9)', 6, 'right');
+    g.globalAlpha=1;
+  }
+}
+/* ---------- the mandala the pig arrives through ---------- */
+function drawMandala(g,cx,cy,u,t){
+  if(u<=0) return;
+  const R0=46;
+  /* three rings, each drawing itself in turn */
+  for(let ring=0;ring<3;ring++){
+    const a0=clamp((u-ring*0.17)/0.5,0,1);
+    if(a0<=0) continue;
+    const rr=R0*(1-ring*0.22)*(0.6+0.4*a0);
+    const n=48;
+    for(let i=0;i<n*a0;i++){
+      const a=(i/n)*TAU - t*(ring%2?0.5:-0.5);
+      g.globalAlpha=0.55*a0;
+      pEll(g, cx+Math.cos(a)*rr, cy+Math.sin(a)*rr*0.9, 1.1,1.1,
+           ring===1?'#fff4c8':'#ffd77a');
+      g.globalAlpha=1;
+    }
+    /* petals on the outer ring */
+    if(ring===0) for(let i=0;i<8;i++){
+      const a=(i/8)*TAU + t*0.3;
+      g.globalAlpha=0.5*a0;
+      pTaper(g, cx+Math.cos(a)*rr*0.82, cy+Math.sin(a)*rr*0.74,
+                cx+Math.cos(a)*rr*1.14, cy+Math.sin(a)*rr*1.02, 4,0.6,'#ffe9a8');
+      g.globalAlpha=1;
+    }
+  }
+  /* the light falling into the middle of it */
+  const fall=clamp((u-0.45)/0.55,0,1);
+  if(fall>0){
+    for(let i=0;i<10;i++){
+      const a=(i/10)*TAU + t*1.2;
+      const rr=R0*(1-fall);
+      g.globalAlpha=0.6*fall;
+      pTaper(g, cx+Math.cos(a)*rr, cy+Math.sin(a)*rr*0.9, cx,cy, 2.6,0.5,'#fff4c8');
+      g.globalAlpha=1;
+    }
+    g.globalAlpha=0.35*fall*fall;
+    pEll(g,cx,cy, 6+26*fall, 6+22*fall, '#fff8dc'); g.globalAlpha=1;
+  }
+}
+/* ---------- ACT FIVE: the gift ----------
+   Same throne room, so it is drawn by the throne function; this is only
+   the bit that happens in front of it. */
+function drawDreamGift(g){
+  drawDreamThrone(g);
+  const cx=W*0.5-66, cy=H*0.46;
+  const t=DREAM2.t;
+  if(!DREAM2.given){
+    drawMandala(g,cx,cy,DREAM2.mandala,t);
+  } else {
+    /* the bang, then the pig sitting in the air, then him taking it */
+    const since=t-1.5;
+    if(since<0.28){
+      const f=1-since/0.28;
+      g.globalAlpha=f*0.9; pEll(g,cx,cy,20+90*(1-f),16+70*(1-f),'#fffaea'); g.globalAlpha=1;
+    }
+    g.globalAlpha=0.12+0.10*Math.sin(t*5);
+    pEll(g,cx,cy,34,30,'#ffe9a8'); g.globalAlpha=1;
+    const pop = clamp(since/0.34,0,1);
+    const sq  = pop<1 ? 1+Math.sin(pop*Math.PI)*0.45 : 1;
+    const hold= DREAM2.held? clamp(DREAM2.t/1.2,0,1) : 0;
+    /* on the way into his hands */
+    const hh = DREAM2._hands;
+    const h0 = (hh&&hh[0]) || {x:W*0.5-105, y:H*0.66};
+    const h1 = (hh&&hh[1]) || h0;
+    const px = lerp(cx, (h0.x+h1.x)/2,     hold);
+    const py = lerp(cy, (h0.y+h1.y)/2 - 7, hold) + (hold?0:Math.sin(t*2.4)*2.2);
+    /* smaller in his arms than it was in the air: at full size it covered
+       him from knee to chin and you could not see who was holding it */
+    if(typeof drawLuckyPig==='function')
+      drawLuckyPig(g, px, py, 1.25*(1-hold*0.30)*(pop<1? sq : 1),
+        {fill:0, glow:0.55+0.3*Math.sin(t*3), blink:0, look:-0.4,
+         ear:Math.sin(t*5)*1.8, shadow:false});
+    for(let i=0;i<5;i++){
+      const a=(i/5)*TAU + t*0.9;
+      g.globalAlpha=0.35+0.25*Math.sin(t*4+i);
+      pEll(g, px+Math.cos(a)*24, py+Math.sin(a)*20, 1.3,1.3, '#fff4c8');
+      g.globalAlpha=1;
+    }
+  }
+}
+
 function drawDream(g){
+  switch(DREAM2.act){
+    case 'lie':     drawDreamLie(g);     return;
+    case 'stair':   drawDreamStair(g);   return;
+    case 'nonthok': drawDreamNonthok(g); return;
+    case 'gift':    drawDreamGift(g);    return;
+    case 'wait':    drawDreamThrone(g);  return;
+    default:        drawDreamThrone(g);  return;
+  }
+}
+function drawDreamThrone(g){
   const t=DREAM2.t, rays=DREAM2.rays;
   const cx=W/2, base=H*0.72;
   /* the sky up here: gold at the floor, deep blue overhead */
   pVGrad(g,0,0,W,H*0.62,'#161540','#57468f',7);
   pVGrad(g,0,H*0.60,W,H*0.42,'#57468f','#f0c86a',7);
-  /* the long rays, out of the spire behind him */
-  for(let i=0;i<11;i++){
-    const a=(i/11)*TAU + rays*0.05;
-    const w2=8+Math.sin(rays*0.7+i)*3;
-    g.globalAlpha=0.085+0.04*Math.sin(rays*1.1+i*1.7);
-    pTaper(g, cx, H*0.34, cx+Math.cos(a)*320, H*0.34+Math.sin(a)*320, w2, 1, '#ffe9a8');
+  /* THE AURA. Eleven long tapers out of the spire read as scaffolding —
+     straight lines that reach the edge of the frame are girders, whatever
+     colour they are. What a heavenly aura actually is: a very soft radial
+     bloom, a slow ring or two going out of it, and a handful of SHORT
+     beams that die before they get anywhere. */
+  { const ay=H*0.36;
+    for(let i=9;i>=1;i--){
+      g.globalAlpha=0.030+0.012*Math.sin(rays*0.8+i);
+      pEll(g, cx, ay, 40+i*26, 34+i*22, '#ffe9a8'); }
     g.globalAlpha=1;
+    /* NO BEAMS AT ALL. They were eleven, then thirteen, then eleven short
+       and feathered ones, and every version came out as pale straight
+       sticks driven through the chedi — because that is what a straight
+       line of constant colour IS at this resolution, whatever you fade
+       it to. What is left is what actually reads as heaven: the bloom,
+       two slow rings, and one enormous soft shaft coming down from above
+       and widening as it falls. Light with no edge in it. */
+    { const topY=-30, botY=H*1.02;
+      for(let k=7;k>=0;k--){
+        const f=(k+1)/8;
+        g.globalAlpha=0.026;
+        g.fillStyle='#ffe9a8'; g.beginPath();
+        g.moveTo(R(cx-10*f), R(topY)); g.lineTo(R(cx+10*f), R(topY));
+        g.lineTo(R(cx+96*f), R(botY)); g.lineTo(R(cx-96*f), R(botY));
+        g.closePath(); g.fill(); }
+      g.globalAlpha=1; }
+    /* two rings going out, one behind the other */
+    for(let k=0;k<2;k++){
+      const u=((rays*0.22 + k*0.5)%1);
+      g.globalAlpha=(1-u)*0.16;
+      g.strokeStyle='#ffe9a8'; g.lineWidth=1; g.beginPath();
+      g.ellipse(R(cx),R(ay),R(30+u*190),R(24+u*150),0,0,TAU); g.stroke();
+      g.globalAlpha=1;
+    }
   }
   /* stars, because it is still night underneath all this */
   for(const s of STARS){
@@ -20619,28 +21462,25 @@ function drawDream(g){
   pEll(g,cx,hy-42,2,2,'#fff4c8');
   g.globalAlpha=0.5; pEll(g,cx,hy-42,5,5,'#ffe9a8'); g.globalAlpha=1;
 
-  /* ---------- and him, kneeling on the cloud ---------- */
+  /* ---------- and him, kneeling on the cloud ----------
+     Down on his knees with his palms together and his head lowered. He
+     was sitting here before, with one arm out behind him taking his
+     weight and the other held flat — the pose he uses on a step, which
+     in front of a god read as a thing that had fallen over. */
   { const px2=cx-112, py2=base+9;
+    /* and once the pig is in his arms he comes up out of the wai and
+       takes the weight of it, because you cannot hold a thing that
+       size with your palms together */
+    const carrying = DREAM2.act==='gift' && DREAM2.held;
+    const _rig = {dt:1/60, wind:0, sit: carrying?0.52:0.62,
+                  wai: carrying?0:1, carry: carrying?1:0,
+                  bowHead: carrying?0.15:1, cos:GS.cos};
     drawPrete(g, {...P, x:px2, y:py2, vx:0, vy:0, state:'idle', act:null,
-                  rise:0, onGround:true, phase:0, face:1},
-              {dt:1/60, wind:0, sit:0.86, cos:GS.cos}); }
+                  rise:0, onGround:true, phase:0, face:1}, _rig);
+    /* the rig hands back where his palms ended up, and the pig goes there
+       rather than at a height guessed from the floor */
+    DREAM2._hands = _rig.hands; }
 
-  /* ---------- the pig coming down the light ---------- */
-  if(DREAM2.phase>=1){
-    const u=clamp(DREAM2.t/2.4,0,1);
-    const px2=cx-66, py2=lerp(H*0.06, base-6, 1-Math.pow(1-u,3));
-    g.globalAlpha=0.20*(1-Math.abs(u-0.5)*1.1);
-    pTaper(g, px2, -10, px2, py2, 4, 20, '#ffe9a8');
-    g.globalAlpha=1;
-    if(u>=1){
-      const s2=Math.sin(DREAM2.t*7)*0.5+0.5;
-      g.globalAlpha=0.16+0.20*s2;
-      pEll(g,px2,py2-12,30,26,'#ffe9a8'); g.globalAlpha=1;
-    }
-    if(typeof drawLuckyPig==='function')
-      drawLuckyPig(g, px2, py2-13, 1.25, {fill:0, glow:0.4+0.3*Math.sin(DREAM2.t*3),
-                   blink:0, look:-0.4, ear:Math.sin(DREAM2.t*5)*1.6, shadow:u>=1});
-  }
   /* motes drifting up through all of it */
   for(let i=0;i<22;i++){
     const mx=((i*57 + rays*5)%(W+40))-20;
@@ -23595,6 +24435,7 @@ function update(dt){
   if(typeof stepWind==='function') stepWind(dt);
   else GS.wind = Math.sin(GS.t*0.31)*0.32 + Math.sin(GS.t*0.113)*0.18;
   GS.shake = Math.max(0, GS.shake - dt*16);
+  if(GS.pigHold>0) GS.pigHold=Math.max(0, GS.pigHold-dt);   // still holding it
   if(meritFlash>0) meritFlash-=dt*2;
   for(const m of MOTES) m.t+=dt*m.sp;
   for(const f of FIREFLIES){
