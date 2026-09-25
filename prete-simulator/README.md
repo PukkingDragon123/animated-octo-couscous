@@ -152,7 +152,7 @@ you shuffled along. Now none of them are.
 
 ![a name and an arrow](screenshots/a-name-and-an-arrow.png)
 
-There are four buttons, bottom corners, and each one is a drawn picture rather
+There are five buttons, bottom corners, and each one is a drawn picture rather
 than a letter:
 
 | Button | What it does |
@@ -161,6 +161,7 @@ than a letter:
 | the sound, bottom left | the prete's whistle, which is just a hello |
 | the heart, bottom right | give somebody something you made |
 | the chevron, bottom right | jump |
+| whatever you are holding, above the book | the ring of tools: hands, net, rod, spade, axe, can |
 
 **And you can jump.** He always could; there was simply nothing to land on.
 Now there is: the low wall out of the graveyard, the crates by the noodle cart,
@@ -183,7 +184,8 @@ for left and right.
 
 A keyboard still works if you have one: arrows walk, **space** jumps, **shift**
 runs, **E** confirms, **G** gives, **C** whistles, **Tab** opens the ledger,
-**Q** jumps to the map, **V** switches between English and Thai, **Esc** goes
+**Q** jumps to the map, **X** opens the ring of tools and **1**–**6** pick one
+straight off, **V** switches between English and Thai, **Esc** goes
 back. Turn a phone sideways. Progress saves in the browser.
 
 | | |
@@ -316,8 +318,68 @@ floor, between the stilts. You crawl in, you lie down — and you go up.
 |---|---|
 | ![he is not afraid of you](screenshots/he-is-not-afraid.png) | ![walking him home](screenshots/walking-him-home.png) |
 | ![rice on the step](screenshots/rice-on-the-step.png) | ![the food you cannot eat](screenshots/the-food-you-cannot-eat.png) |
-| ![the cloud stair](screenshots/the-cloud-stair.png) | ![นนทก](screenshots/nonthok.png) |
+| ![the top of the ladder](screenshots/the-cloud-stair.png) | ![นนทก](screenshots/nonthok.png) |
 | ![the night he goes up](screenshots/the-night-he-goes-up.png) | ![carrying the jar](screenshots/carrying-the-jar.png) |
+
+## Heaven, which you can walk around in
+
+The dream used to be five tableaux you watched. It is a place now: three
+thousand pixels of ดาวดึงส์, the heaven of the thirty-three, built from the
+Thai pictures of it and walked west to east on your own two very long legs.
+
+Everything in it is out of real Thai art, not a guess at it. The roofs are Wat
+Phra Kaew's: layered orange-and-green tile, gold ช่อฟ้า hooking up off every
+ridge, red-glass pediments with gold ลายกนก flame scrollwork, and Erawan in the
+middle of the big ones. The two guardians at the gate are the two most famous
+yaksha in Bangkok — green ทศกัณฐ์ and white สหัสเดชะ, who stand at Wat Phra
+Kaew's east gate with their clubs. The three ladders at the edge you come up
+over are gold, silver and crystal, which is the ladder of the เทโวโรหณะ — the
+Buddha coming back down from this heaven — that every temple re-enacts at the
+end of Lent. The tree dropping red flowers on you is the ปาริชาต, the tree of
+heaven. The hall is สุธรรมา, where พระอินทร์ sits green with his vajra and
+thirty-two others agree with him. The gold chedi is the จุฬามณี, which holds a
+lock of hair a prince cut off the day he stopped being one. The kinnari at the
+pond is มโนราห์, who left a prince to come home and regrets it. And at the top
+of the naga stair is ไกรลาส, with นนทก washing feet at the bottom of it and
+พระอิศวร at the top: white, with a blue throat, a third eye, a crescent moon, a
+naga round his neck, the trident and the little hourglass drum.
+
+| | |
+|---|---|
+| ![the top of the ladder](screenshots/heaven-the-ladder.png) | ![the parijata](screenshots/heaven-parijata.png) |
+| ![the lotus pond, and Manora](screenshots/heaven-lotus-pond.png) | ![the hall of the thirty-three](screenshots/heaven-sudhamma.png) |
+| ![Erawan](screenshots/heaven-erawan.png) | ![the Culamani](screenshots/heaven-culamani.png) |
+| ![the gate](screenshots/heaven-the-gate.png) | ![นนทก, and the two in his hair](screenshots/heaven-nonthok.png) |
+
+![the throne of พระอิศวร](screenshots/heaven-the-throne.png)
+
+**Everybody up there is somebody.** Nang Kaeo meets you at the ladder with a
+tray. The devas walk their stretch of cloud and have opinions about you. The
+yaksha at the gate have not stopped anybody in four hundred years and say so.
+พระอินทร์ will talk if you come into the hall, and the meetings are long.
+Erawan lets you scratch one of his three trunks. You can take three
+flowers a visit from under the Parijata and bring them home — they are worth
+something to somebody down here.
+
+**And they all have faces.** Every deva, nang fa and god is drawn fresh from
+parts — a crown with tiers of gems, a collar, armlets, a sash that moves, a
+chada for the gods and a crown of flame for the yaksha — and the face on it is
+built from nineteen expressions, not three: calm, warm, happy, laughing,
+bright, shocked, asking, thinking, sad, tired, cross, shy, in awe, fond,
+frightened, crying, smug, stern, serene. Brows move, eyes narrow or go round
+or shut in a smile, the mouth opens, tears run. Every line anybody says up
+there carries its own.
+
+![nineteen faces](screenshots/heaven-faces.png)
+
+![everybody in heaven](screenshots/heaven-cast.png)
+
+**You can go back.** After the first night, fold your hands in front of the
+chedi at the temple and ask; that night the ladder comes down again. The
+second time nobody is waiting on you, so you can stay: Nang Kaeo has kept the
+ladder polished, Nonthok has hair again and tells everybody about you, and the
+Culamani and Erawan are merit now in a way they were not the first night,
+which belongs to the story.
 
 ## The plough, the jars, and the seed
 
@@ -1215,7 +1277,7 @@ drawn out of the same parts as the rest of the game:
 
 ![a cover, half way across](screenshots/a-transition.png)
 
-## Ten thousand pixels of road, and you have to walk it to know it
+## Sixteen thousand pixels of road, and you have to walk it to know it
 
 The world used to stop at seven thousand two hundred pixels of country lane.
 Past the old forest there is now:
@@ -1252,6 +1314,59 @@ architecture. They march the whole way and out into the far paddies.
 |---|---|
 | ![the shop](screenshots/the-shop.png) | ![the far paddies](screenshots/the-far-paddies.png) |
 
+### And past the far paddies, four more places
+
+The road used to stop at the last paddy. It goes on for another five thousand
+pixels now, through four places each drawn after a real one, and there is
+something to do the whole length of it.
+
+**The river, and the long bridge.** The Mon bridge at Sangkhlaburi is the
+longest wooden bridge in the country, teak piles standing in the water with
+the raft houses tied up along the far side and a gold chedi on the hill over
+it. This is that bridge: nine hundred pixels of planks on piles, cross-braced,
+with lanterns on posts, ผ้าสามสี tied round one of them for luck on the
+crossing, and water hyacinth drifting under it. You fish off it.
+
+**The landing.** Steps down to the water on the far bank, a sala with a red
+pediment, the ลำพู trees the fireflies live in, and **แม่จันทร์**, who keeps her
+boat tied at the bottom step and buys fish for a quarter more than the shop
+will, because the shop has never seen a fish in its life.
+
+**The lotus lake.** ทะเลบัวแดง at Nong Han is a lake so thick with pink lotus
+you can hardly see water, and boats go out into it at dawn. The boardwalk goes
+straight across it to a sala in the middle, the lotus stand up out of the
+water on their stalks the way lotus do — leaves like shallow bowls, pink buds,
+green seed heads — and there are fighting fish and gourami in it, and giant
+water bugs at night.
+
+**The cave hill.** Limestone, the way the north has it: grey cliffs fluted by
+the rain and streaked rust and black where the water runs, trees on every
+ledge, roots hanging down the face. The cave mouth has teeth in it, two nagas
+rear up at the door, and inside, lit by candles, a gold Buddha lies on his
+side on a red plinth with his head on his hand — the soles of his feet set with
+mother-of-pearl, the way they are at Wat Pho. **ปู่ฤๅษี** the hermit keeps the
+cave, and keeps whatever you dig up, for merit. You can light incense.
+
+**The ruins.** Ayutthaya: a brick wall with a pointed window you can see the
+sky through, a row of Buddhas on a laterite platform with their heads gone and
+saffron tied round two of them, a Khmer prang with its top fallen in and the
+rubble still lying round its foot, the columns of a vihara with no roof, a
+bodhi tree propped up with the sticks people bring at Songkran — and the stone
+head the banyan grew around at Wat Mahathat, looking out from between the
+roots. You kneel to be lower than it, which is the rule there and a kind one.
+And at the very end the land stops, and there is a bench, and a view of the
+whole next country with a river through it.
+
+| | |
+|---|---|
+| ![the long bridge at dusk](screenshots/east-the-long-bridge.png) | ![the landing, and แม่จันทร์](screenshots/east-the-landing.png) |
+| ![the lotus lake](screenshots/east-the-lotus-lake.png) | ![the cave](screenshots/east-the-cave.png) |
+| ![the headless Buddhas](screenshots/east-the-ruins.png) | ![the prang](screenshots/east-the-prang.png) |
+| ![the head in the banyan](screenshots/east-the-stone-head.png) | ![the view](screenshots/east-the-view.png) |
+
+The map grew a third strip for it, and every one of those places is a pin on
+it once you have been past.
+
 ### The map starts blank
 
 It used to open with the whole seven miles on it, every zone named and every pin
@@ -1262,6 +1377,64 @@ on it until you have met them where they stand, and the corner tells you what
 percentage of the road you have actually seen.
 
 ![a map with most of it still blank](screenshots/the-map-unread.png)
+
+## Tools, the way Animal Crossing does it
+
+You used to walk up to a bug and press E, and a little hand job started with
+three tries in it. Now you hold something, and what you hold decides what E
+does — the way it works in Animal Crossing.
+
+There are six things to hold: your **hands**, a **bug net**, a **fishing rod**,
+a **spade**, an **axe** and a **watering can**. **X** (or the tool button on a
+phone, or the number keys) opens a ring of whatever you own around him; turn
+it, pick one, and he holds it. The right tool for the thing in front of you
+wins E outright. The wrong one only ever goes to the back: holding the rod,
+a butterfly is just the word *butterfly*, and pressing E at it tells you what
+you would need.
+
+![the ring](screenshots/tool-the-ring.png)
+
+**The net** is a real swing: an arc out in front of him, high to low, and
+whatever is under it when it passes is caught. Bugs notice you now — each kind
+has its own distance and its own nerve, a dragonfly hangs and then darts, a
+firefly cannot be rushed — so you creep up slowly, and a miss scatters
+everything close by.
+
+**The rod** you find leaning against a log at the end of the clay pond. Stand
+by water, cast, and a shadow comes to look. It nibbles, and nibbles, and you
+wait — strike on a nibble and it is gone — and then it takes it properly and
+you have a little over half a second. There are thirteen fish, in the pond,
+the river, the lotus lake and the pond in heaven, some by day and some at
+night, from climbing perch to the Mekong giant catfish.
+
+**The spade** is by the barn. Where the ground is cracked in a star, something
+is buried; there are new ones every morning, and more of them out in the hills
+and the ruins, where there is more to find: dinosaur bone, fossil shell, old
+coins, an amulet, Ban Chiang pottery with its red spirals, a clay elephant
+with an ear missing, cave crystal, an empty bottle of Mekhong.
+
+**The axe** takes three cuts a day from a tree before it has given enough. With
+bare hands you can shake a tree once a day, and fruit comes down — or a bug
+falls out, or nothing does but leaves. **The can** waters the flowers, and a
+watered flower has company by the next morning.
+
+![the net](screenshots/tool-the-net.png)
+
+Everything you catch or dig up stops the world for a second and is held up to
+the light on a card, with its name and one line about it. Then you choose:
+**keep it**, or **let it go**. Letting a creature go — ปล่อยสัตว์ — is one of
+the oldest ways there is to make merit in Thailand, and it is merit here.
+
+| | |
+|---|---|
+| ![the card](screenshots/tool-the-card.png) | ![the rod](screenshots/tool-the-rod.png) |
+| ![the spade](screenshots/tool-the-spade.png) | ![the catches](screenshots/the-catches.png) |
+
+**The ledger has a drawer for all of it.** A fifth tab, CATCHES: sixteen bugs,
+thirteen fish and nine finds, drawn when you have held one and a dark shadow
+when you have not. Point at a shadow and it tells you where to look — the
+river at night, the cave hill, the ruins. Point at one you have and it tells
+you how many, and the biggest.
 
 ## The rice fields, which is what this game is a picture of
 
@@ -1692,6 +1865,11 @@ what had him on all fours in front of พระอิศวร. The arms wait fo
 now.
 
 ### The night he goes up, in five acts
+
+*This was the dream before heaven became a place you walk through — the stair
+below is the naga stair to ไกรลาส now, at the east end of three thousand
+pixels of heaven (see* Heaven, which you can walk around in*, above). The
+rest of it — Nonthok, the throne, the pig — is still how it goes.*
 
 One static tableau with a wall of speech in front of it is a slideshow. The
 dream is five scenes now.

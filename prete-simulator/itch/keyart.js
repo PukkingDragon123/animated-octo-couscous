@@ -77,6 +77,51 @@ fs.mkdirSync(OUT,{recursive:true});
       GS.plate=1; render(); GS.plate=0; }
     const dusk = copy();
 
+    /* ---------- plate 1b: THE COVER PROPER ----------
+       Him in the paddy in a งอบ with a hoe, the buffalo up to its back
+       in the flooded field behind him, and a plate of som tam on the
+       dike. Everything in this picture is a thing you actually do. */
+    newGame(); GS.state='play'; GS.tut=99; GS.ch=chAt('free');
+    DLG=null; VIG=null; HINT=null; GS.q.blessed=true;
+    for(const k in GS.seen) GS.seen[k]=true; CH.lock=false;
+    /* a farm that has been worked: rented, diked, flooded, and a buffalo
+       in the pen to come and lie in it */
+    FARM.rented=true; FARM.paddies=true;
+    if(FARM.pen) FARM.pen.buffalo=Math.max(1, FARM.pen.buffalo|0);
+    for(const pd of PADDIES){ pd.flood=1; pd.stage=Math.max(pd.stage||0, 3); }
+    DAY.n=6; DAY.min=9.4*60; setTOD(1,true);
+    GS.cos = Object.assign({}, GS.cos, {skirt:'mudmee', ngob:1, hoe:1});
+    { const px=PADDY_XS[0]-26;
+      P.x=px; P.y=groundY(px); P.vx=0; P.face=1; P.phase=0.55;
+      GS.camX=clamp(px-W*0.40,0,WORLD_W-W);
+      for(let i=0;i<200;i++) update(1/60);
+      /* the buffalo does not walk there in three seconds, so put it there */
+      /* grazing, not wallowing: wallowing sinks it into water that is not
+         drawn this far up the field, and a buffalo floating at chest height
+         over a paddy is a bug rather than a cover */
+      BUFF.st='graze'; BUFF.goal='graze'; BUFF.wall=0; BUFF.vx=0; BUFF.head=1;
+      BUFF.x=PADDY_XS[0]+70; BUFF.y=groundY(BUFF.x); BUFF.face=-1; BUFF.bird=1;
+      DAY.min=9.4*60; setTOD(1,true);
+      P.x=px; P.y=groundY(px); P.vx=0; P.face=1;
+      GS.camX=clamp(px-W*0.40,0,WORLD_W-W);
+      /* lift the camera so the whole of him is in the picture. He is nine
+         feet tall and the frame was cutting him off at the shins. */
+      GS.camY=36;
+      HINT=null; VIG=null; DLG=null; GS.toasts.length=0; SPOTS.length=0; PROMPT=null;
+      for(const n of NPCS){ n.bub=null; n.bubT=0; }
+      for(const sp of SPIRITS){ sp.bub=null; sp.bubT=0; }
+      GS.plate=1; render(); GS.plate=0; }
+    const field = copy(); GS.camY=0;
+    /* the som tam goes on last, on the dike at his feet, at three times the
+       size the inventory draws it — it is a prop in the picture, not an icon */
+    { const fg=G2(field);
+      const sx2=Math.round(PADDY_XS[0]-58-GS.camX), sy2=Math.round(groundY(PADDY_XS[0]-56)-7);
+      pEll(fg,sx2,sy2+3,17,5,'rgba(20,14,8,0.28)');
+      drawIcon(fg,'somtam',sx2,sy2,2.1);
+      /* a fork of bamboo stuck in it, because nobody photographs som tam
+         without something stuck in it */
+      pTaper(fg,sx2+5,sy2-2,sx2+11,sy2-13,1.6,1.2,'#c9a866'); }
+
     /* ---------- plate 2: the temple at first light ---------- */
     newGame(); GS.state='play'; GS.tut=99; GS.ch=chAt('free');
     DLG=null; VIG=null; HINT=null; FARM.rented=true; GS.q.blessed=true;
@@ -108,7 +153,13 @@ fs.mkdirSync(OUT,{recursive:true});
     /* a light touch on the grade: cozy is warm, not loud. And drawn at one
        to one — blown up, the ground line ends up so near the bottom of the
        frame that the one person in the picture is standing in the title. */
-    cg.drawImage(grade(dusk,1.10,1.05,1.03), -(W-cw)/2, -8);
+    /* a touch over one to one — at 1:1 the one figure in the picture is
+       forty pixels tall in a 315-wide frame, which is a landscape with a
+       person in it rather than a cover */
+    { const z=1.22, sw=Math.round(cw/z), sh=Math.round(ch/z);
+      /* keep him a third in from the left and standing on the lower third */
+      const sx0=Math.round(W*0.5-sw*0.52), sy0=Math.round(H-sh-6);
+      cg.drawImage(grade(field,1.14,1.06,1.05), sx0, sy0, sw, sh, 0,0, cw, ch); }
     vign(cg, cw, ch, 0.38);
     { /* the name goes at the TOP, over the empty half of an evening sky, so
          the road and everybody on it is left alone */
@@ -144,7 +195,7 @@ fs.mkdirSync(OUT,{recursive:true});
     /* ---------- and a plain screenshot of the village for the page ---------- */
     return { cover: up(cc,2).toDataURL('image/png'),
              banner: up(bc,4).toDataURL('image/png'),
-             title:  up(dusk,3).toDataURL('image/png') };
+             title:  up(field,3).toDataURL('image/png') };
   });
   if(shots.err){ console.log('FAILED:', shots.err); await b.close(); return; }
   for(const [k,name] of [['cover','cover-630x500.png'],['banner','banner-1920x620.png'],['title','title-1440x810.png']]){
