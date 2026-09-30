@@ -29308,7 +29308,7 @@ FX.init = function(){
     gl.uniform1i(FX.u.uBloomC,3); gl.uniform1i(FX.u.uLight,4); gl.uniform1i(FX.u.uMask,5);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
     FX.gl=gl; FX.cv=c; FX.prog=p;
-    Object.defineProperty(FX, 'kind', {value:(gl.getParameter(gl.VERSION)||'webgl'), writable:true, configurable:true});
+    Object.defineProperty(FX, 'kind', {value:(gl.getParameter(gl.VERSION)||'webgl'), writable:true, configurable:true, enumerable:false});
     FX.resize();
   }catch(e){ FX.err=String(e && e.message || e); FX.gl=null; if(FX.cv){ FX.cv.remove(); FX.cv=null; } }
 };
