@@ -2503,6 +2503,58 @@ and the game is exactly the game it was, drawn in two dimensions. With it, if th
 last few seconds of frames have been slow, it switches itself off for the rest
 of the session — not for good, because the next device might be faster.
 
+## Icons, people, a book and a map
+
+**Every item is pixel art now.** The icons used to be four or five ellipses
+drawn at whatever size the caller asked for, which in the basket came out as
+nine pixels of blob. All eighty-six items and all six tools are sixteen-pixel
+sprites, painted a pixel at a time the way item icons in a good RPG are: light
+from the top left, a highlight you can see, three or four tones down each form,
+and one dark line round the outside that takes its colour from whatever it
+touches, so a mango's line is a dark red-brown and a lime's a dark green. The
+fruit is lit like fruit, the fish have fins and gills, the beetles have legs,
+the green coconut has its top off and a straw in it, the sticky rice comes in a
+กระติบ, and the clay elephant is still missing an ear. Each is painted once and
+kept.
+
+![every item and tool](screenshots/the-icons.png)
+
+**A line round everybody, and taller.** The prete, the elephants and the gods
+have always had an ink line; the villagers did not, so against a busy lane a
+shirt and an awning were the same thing. Every person is now drawn into a
+scratch canvas and stamped into the world with one near-black line round the
+whole figure. They are four pixels taller, all of it leg, and the sarongs got
+longer to match.
+
+**The interface holds things like an RPG's does.** The toolbar is a walnut
+plank with iron brackets at the ends and a gold-framed slot for each thing, the
+icon sitting on dark leather with its count in a dark-edged number. The catches
+are three walnut drawers of the same slots. Every box in the game has a grained
+wooden frame with a lit top edge and gold on its corners, round a parchment
+field with a little tooth to it. The ledger is a book: a stitched red leather
+cover with brass corners, a wooden header, and leather tabs that turn into a
+gold-framed page when they are open.
+
+![the toolbar, and a line round everybody](screenshots/toolbar-and-people.png)
+
+![the catches, in drawers](screenshots/ledger-catches.png)
+
+**The map is painted.** It was three strips of coloured country cut off square
+at both ends, with the road running off the right of one and back on at the left
+of the next. It is one picture now, and nothing on it is cut off: the road
+snakes west to east along the top, round a bend at the right-hand edge, back
+across the middle, round again at the left, and east to the end of the world
+along the bottom. The land is painted the whole height of the page, one country
+blending into the next, with far hills blue along the top of each row: paddies
+in their dikes, stilt houses under palms, the wat and its chedi, the forest
+thickening into the deep country, the shophouses of the town, the river under
+the long bridge, the lotus lake, the limestone hills and the red prangs of the
+ruins. Where you have never walked, mist lies on it. Every place has a medallion
+and its name on a ribbon, and a test checks that no name lands on another or
+falls outside the frame.
+
+![the painted map](screenshots/ledger-map.png)
+
 ## It speaks Thai, properly
 
 **It opens in Thai, and in Thai there is no English left.** The village is

@@ -10,7 +10,7 @@ const EXE = process.env.CHROMIUM || '/opt/pw-browsers/chromium';
 const SW = ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
 
 /* a village shot: day, hour, where he stands, and anything else to set up */
-const V = (day, hr, x, extra, keep) => ({ kind: 'village', day, hr, x, extra: extra || '', keep: keep || null });
+const V = (day, hr, x, extra, keep, js) => ({ kind: 'village', day, hr, x, extra: extra || '', keep: keep || null, js: js || null });
 const SHOTS = {
   'elephant-morning': V(1, 6.85, 2470, 'ELE.x=2600; ELE.lastX=ELE.x; window.elePlan=()=>({x:ELE.x-30,at:"walk"});'),
   'elephant-bath':    V(1, 13.1, 688, 'ELE.x=ELE_BATH; ELE.lastX=ELE.x; ELE.t=5.5;', 'Boonmee'),
@@ -22,6 +22,15 @@ const SHOTS = {
   'heaven-erawan':      { kind: 'heaven', x: 1420 },
   'heaven-erawan-lift': { kind: 'heaven', x: 1450, lift: true },
   'the-controls':     { kind: 'phone', x: 2600, hr: 6.7 },
+  /* this round's: the ledger as a book, the painted map, the icons, the toolbar */
+  'ledger-map':       V(1, 9, 2400, '', null, 'GS.seenX={}; for(let x=0;x<WORLD_W;x+=90) markSeen(x); GS.state="tree"; TREE.tab=3; render();'),
+  'ledger-catches':   V(1, 9, 2400, '', null, 'GS.state="tree"; TREE.tab=5; for(const id of [...DEX_BUGS.slice(0,11),...DEX_FISH.slice(0,8),...DEX_FINDS.slice(0,6)]) dexAdd(id); render();'),
+  'toolbar-and-people': V(1, 9.4, 2700, '', null, 'for(const k of ["banana","mango","chili","coconut","somtam","basil","egg","wood"]) GS.bag[k]=3; render();'),
+  'the-icons':        V(1, 9, 2400, '', null, `render(); const c=document.createElement('canvas'); c.width=360; c.height=202;
+    c.style.cssText='position:fixed;left:0;top:0;width:1440px;height:810px;image-rendering:pixelated;z-index:99'; document.body.appendChild(c);
+    const g=c.getContext('2d'); g.imageSmoothingEnabled=false; g.fillStyle='#f6e8d8'; g.fillRect(0,0,360,202);
+    Object.keys(ITEMS).forEach((id,i)=>drawIcon(g,id,14+(i%16)*22,14+((i/16)|0)*24,1));
+    TOOL_ORDER.forEach((t,i)=>toolIcon(g,t,14+i*22,184,1.2));`),
 };
 
 (async () => {
@@ -65,6 +74,7 @@ const SHOTS = {
     await p.waitForTimeout(150);
     await p.evaluate((S) => {
       if (S.kind === 'heaven') { DLG = null; render(); return; }
+      if (S.js) { (new Function(S.js))(); return; }
       checkInteract();
       /* one prompt where the picture is about one, and none where it is not */
       if (S.keep) { const re = new RegExp(S.keep), k = SPOTS.filter(q => re.test(q.txt));
