@@ -3254,9 +3254,12 @@ function puffs(w,h,seed){
   p={top,bot,side,base}; _puffCache.set(key,p); return p;
 }
 function cloudDraw(g,x,y,w,h,o={}){
-  /* Stardew's box: a dark plank edge, a lit inner bevel, a parchment field.
-     It stays exactly inside its rectangle — the old cloud lobes overhung by
-     fifteen pixels on every side, which is what buried the game underneath. */
+  /* A framed box, the way the item panels in a good pixel RPG are framed:
+     an ink line round the outside, a wooden frame with a lit top edge, grain
+     in it and a shadowed underside, small gold pieces on the corners, and a
+     parchment field with a little tooth to it. It stays exactly inside its
+     rectangle and the field starts where it always did, so nothing that
+     writes inside one of these has had to move. */
   const BG  = o.body || CL.body;
   const BGD = o.under|| shade(BG,-0.12);
   const F0  = o.edge || CL.edge;
@@ -3265,16 +3268,37 @@ function cloudDraw(g,x,y,w,h,o={}){
   if(w<6||h<6){ pR(g,x,y,w,h,F0); pR(g,x+1,y+1,w-2,h-2,BG); return; }
   if(drop){ g.save(); g.globalAlpha=(g.globalAlpha||1)*0.30;
     pR(g,x+1,y+drop,w-2,h-1,'#0b0814'); g.restore(); }
-  // outer plank, corners notched a pixel so it reads as rounded
+  const r=mulberry(((w*31+h*17+(o.seed||0)*7)|0)+1);
+  // the ink line, corners notched so it reads as rounded
   pR(g,x,y+1,w,h-2,F0); pR(g,x+1,y,w-2,h,F0);
-  // the lit bevel
+  // the frame: lit on top, in shade underneath, with grain along it
   pR(g,x+1,y+2,w-2,h-4,F1); pR(g,x+2,y+1,w-4,h-2,F1);
-  // the field
+  pR(g,x+2,y+1,w-4,1,shade(F1,0.28));
+  pR(g,x+1,y+2,1,h-4,shade(F1,0.14));
+  pR(g,x+2,y+h-2,w-4,1,shade(F1,-0.30)); pR(g,x+w-2,y+2,1,h-4,shade(F1,-0.18));
+  for(let i=0;i<(w+h)/5;i++){ const t=r();
+    if(t<0.5){ const gx=x+3+R(r()*(w-6)); pR(g,gx,y+1+(r()<0.5?0:h-3),1+R(r()*2),1,shade(F1,-0.16)); }
+    else { const gy=y+3+R(r()*(h-6)); pR(g,x+1+(r()<0.5?0:w-3),gy,1,1+R(r()*2),shade(F1,-0.16)); } }
+  // the field, with a little tooth to it
   pR(g,x+2,y+3,w-4,h-6,BG); pR(g,x+3,y+2,w-6,h-4,BG);
-  pR(g,x+3,y+3,w-6,1,o.rim||shade(BG,0.30));
+  if(!o.flat) for(let i=0;i<(w*h)/60;i++){
+    const px=x+3+R(r()*(w-7)), py=y+3+R(r()*(h-7));
+    pR(g,px,py,1,1, r()<0.5? shade(BG,-0.045) : shade(BG,0.05)); }
+  pR(g,x+3,y+2,w-6,1,shade(BG,-0.10));                  // the frame's shadow falling on the page
+  pR(g,x+3,y+3,w-6,1,o.rim||shade(BG,0.22));
   pR(g,x+3,y+h-4,w-6,1,BGD);
-  pR(g,x+2,y+h-3,w-4,1,CL.woodD);           // the frame's underside, in shadow
+  pR(g,x+2,y+h-3,w-4,1,CL.woodD);
   if(o.acc) pR(g,x+3,y+h-5,w-6,1,o.acc);
+  // gold on the corners, where there is room for it
+  if(w>=26 && h>=18 && !o.plain){
+    const G='#f2c94c', GL='#fff0a8', GD='#a8741c';
+    for(const [cx,cy,sx,sy] of [[x,y,1,1],[x+w-1,y,-1,1],[x,y+h-1,1,-1],[x+w-1,y+h-1,-1,-1]]){
+      pR(g,cx+sx*1,cy+sy*1,1,1,G); pR(g,cx+sx*2,cy+sy*1,1,1,G); pR(g,cx+sx*1,cy+sy*2,1,1,G);
+      pR(g,cx+sx*3,cy+sy*1,1,1,GD); pR(g,cx+sx*1,cy+sy*3,1,1,GD); pR(g,cx+sx*2,cy+sy*2,1,1,GL);
+    }
+    /* and a rivet in the middle of each long side */
+    if(w>=90){ for(const X of [x+R(w/2)-1]){ pR(g,X,y+1,2,1,'#6a8a96'); pR(g,X,y+h-2,2,1,'#4a6470'); } }
+  }
 }
 /* a free-floating cartoon cloud, for skies */
 function puffCloudDraw(g,cx,cy,w,h,seed,o={}){
@@ -5511,7 +5535,7 @@ function drawPrete(g, p, o={}){
    ============================================================ */
 function makeVillager(cfg){
   return Object.assign({ x:0,y:0,vx:0,face:1,phase:0,anim:rnd(9),state:'idle',
-    cloth:makeCloth(4,9), bob:0 }, cfg);
+    cloth:makeCloth(4,13), bob:0 }, cfg);
 }
 /* ============================================================
    EVERYBODY
@@ -5526,7 +5550,7 @@ function makeVillager(cfg){
    Taller than it was, and cuter with it: long legs, a narrow
    torso, a generous head, and eyes with a light in them.
    ============================================================ */
-const VILL_H   = 42;                 // heel to the top of the head
+const VILL_H   = 46;                 // heel to the top of the head
 /* The thigh and the shin add up to a whisker over the sixteen pixels from
    hip to ankle. It was eighteen, and a two-bone solver puts every spare
    pixel in the knee, so the whole village walked about bow-legged. */
@@ -5539,7 +5563,7 @@ const VILL_H   = 42;                 // heel to the top of the head
    now; at 0.38 the fastest anybody moves is a little over eight pixels
    a second, which at this scale is a stroll in the heat. */
 const VILL_PACE = 0.38;
-const VILL_LEG = 17, VILL_TH = 8.15, VILL_SN = 8.15;
+const VILL_LEG = 21, VILL_TH = 10.15, VILL_SN = 10.15;   // four pixels taller than they were, all of it leg
 const VILL_CH  = 11;                 // how tall the torso is — the legs get the rest
 const villTop  = v => (v.y||0) - VILL_H;
 
@@ -5591,7 +5615,7 @@ const POSE = {
    rounded rectangles and a fractional transform turns every one of them
    soft. So a scaled person is drawn once at 1x into a scratch canvas and
    blitted up with smoothing off, which keeps the pixels square. */
-const _PCV_W = 52, _PCV_H = 56, _PCV_FX = 26, _PCV_FY = 52;
+const _PCV_W = 64, _PCV_H = 78, _PCV_FX = 32, _PCV_FY = 70;
 let _pcv=null, _pcg=null;
 function _personCv(){
   if(!_pcv){ _pcv=mkCv(_PCV_W,_PCV_H); _pcg=G2(_pcv); }
@@ -5621,7 +5645,7 @@ function _personObj(o){
      alms round is walking and still holding the bowl. */
   v.react = o.job? {k:o.job} : null;
   v.jobOn=!!o.job; v.job=o.job||null;
-  if(v.skirt && !v.cloth) v.cloth=makeCloth(4,9);
+  if(v.skirt && !v.cloth) v.cloth=makeCloth(4,13);
   return v;
 }
 function drawPerson(g, o){
@@ -9393,6 +9417,8 @@ function npcReact(n, k, t){ if(n && NPCS.indexOf(n)>=0) n.react = {k, t, dur:t};
    ============================================================ */
 function drawIcon(g,id,x,y,s=1){
   const it=ITEMS[id]; if(!it) return;
+  /* the sixteen-pixel sprites in fx/50-icons.js, where there is one */
+  if(typeof iconSprite==='function' && iconSprite(g,id,x,y,s)) return;
   /* things added after this table was written draw themselves */
   if(ITEM_ICON[id]){ ITEM_ICON[id](g,x,y,s); return; }
   const S2=v=>v*s;
@@ -12000,7 +12026,7 @@ function buildPortrait(key, S2, flat){
     place(()=>GHOST_ART[s.art](g,{x:0,y:0,face:1,anim:1.3,hurtT:0,attackT:0,hop:0,h:46,friendly:1}), 2.4, 0, hy);
   } else {
     const n=NPCS.find(v=>v.id===key);
-    if(n){ const m=makeVillager(Object.assign({},n,{x:0,y:0,vx:0,phase:0,face:1,cloth:makeCloth(4,9)}));
+    if(n){ const m=makeVillager(Object.assign({},n,{x:0,y:0,vx:0,phase:0,face:1,cloth:makeCloth(4,13)}));
       for(let k=0;k<16;k++) stepCloth(m.cloth,0,-10,9,1/60,0,0);
       /* Framed on the head rather than on a number that used to work: the
          head centre is LEG + torso + neck above the feet, which is twenty-six
@@ -12372,15 +12398,18 @@ function drawHUD(){
   const ids=DLG? [] : Object.keys(GS.bag).filter(k=>GS.bag[k]>0).slice(0,8);
   GS._bar = ids.length>0;
   if(ids.length){
-    const SL=22, n=Math.max(4,ids.length), tw=n*SL+6, tx=R(W/2-tw/2), ty=H-SL-8;
-    cloud(g,tx,ty,tw,SL+4,{seed:2});
+    /* a walnut plank with iron at the ends, and a gold-framed slot for each
+       thing, the icon sitting on dark leather in the middle of it */
+    const SL=25, n=Math.max(4,ids.length), tw=n*SL+11, tx=R(W/2-tw/2), ty=H-SL-8;
+    if(typeof uiPlank==='function') uiPlank(g,tx,ty,tw,SL+4,2); else cloud(g,tx,ty,tw,SL+4,{seed:2});
     for(let i=0;i<n;i++){
-      const sx=tx+3+i*SL, sy=ty+3;
-      pR(g,sx,sy,SL-2,SL-2,'#b89a6e'); pR(g,sx+1,sy+1,SL-4,SL-4,'#e8d3a6');
-      pR(g,sx+1,sy+1,SL-4,1,'#f6e7c6'); pR(g,sx+1,sy+SL-4,SL-4,1,'#c9ac80');
-      const id=ids[i]; if(!id) continue;
-      drawIcon(g,id,sx+(SL-2)/2,sy+9,0.66);
-      pTxt(g,''+GS.bag[id],sx+SL-5,sy+SL-5,CL.ink,7,'right');
+      const sx=tx+6+i*SL, sy=ty+3, id=ids[i];
+      if(typeof uiSlot==='function') uiSlot(g,sx,sy,SL-2,SL-2,{on:!!id});
+      else { pR(g,sx,sy,SL-2,SL-2,'#b89a6e'); pR(g,sx+1,sy+1,SL-4,SL-4,'#e8d3a6'); }
+      if(!id) continue;
+      drawIcon(g,id,sx+(SL-2)/2,sy+(SL-2)/2,0.66);
+      if(typeof uiCount==='function') uiCount(g,GS.bag[id],sx+SL-4,sy+SL-5);
+      else pTxt(g,''+GS.bag[id],sx+SL-5,sy+SL-5,CL.ink,7,'right');
     }
   }
 
@@ -12886,22 +12915,24 @@ function drawLedger(g){
       {top:'#dfe6ff',body:'#c4cdf0',under:'#a6b0dc',edge:'#8f99c8',rim:'#f0f4ff'});
     g.globalAlpha=1;
   }
-  cloud(g,8,4,W-16,26,{seed:101});
-  pTxt(g,'THE LEDGER',16,22,'#8f6a1e',13);
+  if(typeof uiBookCover==='function') uiBookCover(g);
+  if(typeof uiPlank==='function'){ uiPlank(g,8,4,W-16,26,101); uiText(g,'THE LEDGER',18,22,'#f2c94c',13); }
+  else { cloud(g,8,4,W-16,26,{seed:101}); pTxt(g,'THE LEDGER',16,22,'#8f6a1e',13); }
   /* right-aligned clear of the language key at W-84, which it used to run
      straight underneath */
   /* Thai is taller and wider than Latin at the same nominal size. Two
      stacked lines at eight and six fit in English and collide in Thai, and
      both of them ran under the language key, so Thai gets the same three
      numbers on one line instead of two. */
+  const _T = typeof uiText==='function'? uiText : pTxt;
   if(LANG==='th'){
-    pTxt(g, GS.merit+' '+L('merit')+' · '+L('day')+' '+DAY.n, W-118, 21, '#8f6a1e', 6, 'right');
+    _T(g, GS.merit+' '+L('merit')+' · '+L('day')+' '+DAY.n, W-118, 21, '#fff0c8', 6, 'right');
   } else {
-    pTxt(g,GS.merit+' '+L('merit'),W-90,17,'#8f6a1e',8,'right');
-    pTxt(g,L('day')+' '+DAY.n,W-90,25,CL.ink3,6,'right');
+    _T(g,GS.merit+' '+L('merit'),W-90,17,'#fff0c8',8,'right');
+    _T(g,L('day')+' '+DAY.n,W-90,26,'#e8c890',6,'right');
   }
   /* a close chevron in the corner of the header */
-  icoDown(g,W-26,17,1.5,CL.ink2);
+  icoDown(g,W-26,17,1.5,'#f2c94c');
   hitAdd(W-42,4,38,26,()=>{ GS.state='play'; AU.sel(); });
   /* the language key. Thai is drawn from whatever Thai face the device has. */
   const lw=30, lx=W-84;
@@ -12933,11 +12964,14 @@ function drawLedgerTabs(g){
   LEDGER_ORDER.forEach(function(i,j){
     const t=LEDGER_TABS[i];
     const x=6+j*LEDGER_TW, on=TREE.tab===i, y=on?33:35, h=on?17:15, tw=LEDGER_TW-4;
+    if(typeof uiTab==='function'){ uiTab(g,x,y,tw,h,on);
+      (on? pTxt : uiText)(g,t,x+tw/2,y+11,on?CL.ink:'#f0d8a8',6,'center'); }
+    else {
     pR(g,x,y+1,tw,h-2,CL.edge); pR(g,x+1,y,tw-2,h,CL.edge);
     pR(g,x+1,y+2,tw-2,h-4,on?CL.woodL:CL.woodD); pR(g,x+2,y+1,tw-4,h-2,on?CL.woodL:CL.woodD);
     pR(g,x+2,y+3,tw-4,h-5,on?CL.body:'#4a3018'); pR(g,x+3,y+2,tw-6,h-3,on?CL.body:'#4a3018');
     if(on) pR(g,x+3,y+3,tw-6,1,CL.rim);
-    pTxt(g,t,x+tw/2,y+11,on?CL.ink:'#c2a880',6,'center');
+    pTxt(g,t,x+tw/2,y+11,on?CL.ink:'#c2a880',6,'center'); }
     // a page you have not read yet nags at you from the tab
     if(i===4 && GS.seen.newmem && !on) pEll(g,x+tw-9,41,2.6,2.6,'#e05a48');
     if(i===5 && GS.seen.newcatch && !on) pEll(g,x+tw-9,41,2.6,2.6,'#e05a48');
@@ -12990,22 +13024,21 @@ function drawCatches(g){
   rows.forEach((ids,ri)=>{
     const y=56+ri*60;
     /* the drawer itself: dark wood with a lip of light */
-    pR(g,8,y,W-16,56,'rgba(18,16,30,0.62)');
-    pR(g,8,y,W-16,1,'rgba(255,255,255,0.12)'); pR(g,8,y+55,W-16,1,'rgba(0,0,0,0.3)');
-    toolIcon(g, tools[ri], 20, y+10, 1);
-    pTxt(g, L(names[ri]), 30, y+13, '#e8d8b0', 7);
+    if(typeof uiDrawer==='function') uiDrawer(g,8,y,W-16,56,ri+3);
+    else { pR(g,8,y,W-16,56,'rgba(18,16,30,0.62)');
+      pR(g,8,y,W-16,1,'rgba(255,255,255,0.12)'); pR(g,8,y+55,W-16,1,'rgba(0,0,0,0.3)'); }
+    toolIcon(g, tools[ri], 22, y+10, 1);
+    (typeof uiText==='function'? uiText : pTxt)(g, L(names[ri]), 34, y+13, '#f0dcb0', 7);
     const n=ids.filter(id=>d[id]).length; got+=n; total+=ids.length;
-    pTxt(g, n+' / '+ids.length, W-14, y+13, n===ids.length?'#9fd07c':'#cfc4ae', 6, 'right');
-    const cw=Math.min(30, (W-28)/ids.length);
+    (typeof uiText==='function'? uiText : pTxt)(g, n+' / '+ids.length, W-20, y+13, n===ids.length?'#9fd07c':'#f0dcb0', 6, 'right');
+    const cw=Math.min(30, (W-36)/ids.length);
     ids.forEach((id,i)=>{
-      const cx=14+cw/2+i*cw, cy=y+36, on=!!d[id], here=sel.ri===ri && sel.i===i;
-      pR(g, R(cx-cw/2+1), cy-15, R(cw-2), 30, on? '#f4e8c4' : 'rgba(40,36,60,0.9)');
-      pR(g, R(cx-cw/2+1), cy-15, R(cw-2), 1, on? '#fff8e0' : 'rgba(255,255,255,0.08)');
+      const cx=18+cw/2+i*cw, cy=y+36, on=!!d[id], here=sel.ri===ri && sel.i===i;
+      if(typeof uiSlot==='function') uiSlot(g, R(cx-cw/2+1), cy-13, R(cw-2), 26, {on, sel:here});
+      else pR(g, R(cx-cw/2+1), cy-15, R(cw-2), 30, on? '#f4e8c4' : 'rgba(40,36,60,0.9)');
       if(on) drawIcon(g, id, cx, cy, 1);
-      else drawShadow(g, id, cx, cy, '#141224');
-      if(on && d[id].n>1) pTxt(g, ''+d[id].n, R(cx+cw/2-3), cy+13, '#8f6a1e', 6, 'right');
-      if(here){ pR(g,R(cx-cw/2),cy-16,R(cw),1,'#ffd060'); pR(g,R(cx-cw/2),cy+15,R(cw),1,'#ffd060');
-                pR(g,R(cx-cw/2),cy-16,1,32,'#ffd060'); pR(g,R(cx+cw/2)-1,cy-16,1,32,'#ffd060'); }
+      else drawShadow(g, id, cx, cy, '#1a100c');
+      if(on && d[id].n>1) (typeof uiCount==='function'? uiCount(g, d[id].n, R(cx+cw/2-2), cy+11) : pTxt(g, ''+d[id].n, R(cx+cw/2-3), cy+13, '#8f6a1e', 6, 'right'));
       let base=0; for(let k=0;k<ri;k++) base+=rows[k].length;
       hitAdd(R(cx-cw/2), cy-16, R(cw), 32, ()=>{ TREE.row=base+i; AU.blip(); });
     });
@@ -14664,7 +14697,8 @@ function gaitOf(v){
   return GAITS[v.gait] || GAITS[v.id] || (v.kid? GAITS.kid : GAITS.def);
 }
 
-function drawVillager(g, v, o={}){
+/* drawn plain here; fx/45-people.js puts the ink line round it */
+function drawVillagerRaw(g, v, o={}){
   stepFace(v, o.dt||1/60);
   const sk=v.skin||PAL.skin, skD=v.skinD||PAL.skinD;
   const skL=shade(sk,0.16);
@@ -17371,7 +17405,8 @@ const MAP_TERRAIN = {
   lake:{c:'#bcd6c8', k:'lotus'},    hill:{c:'#d2cdbc', k:'karst'},
   ruins:{c:'#d9cdb0', k:'ruins'},
 };
-function drawMap(g,x0,y0,w,h){
+/* the strip map this replaced; fx/60-map.js paints the one that is drawn */
+function drawMapStrips(g,x0,y0,w,h){
   cloud(g,x0,y0,w,h,{seed:97,top:'#fdf6e2',body:'#f1e5c8',under:'#d9c9a2',edge:'#b09a72'});
   /* the paper: fold lines and a wash of age */
   g.globalAlpha=0.45;
@@ -24463,6 +24498,7 @@ function drawToolHUD(g){
 }
 /* the little pictures of each tool */
 function toolIcon(g, t, x, y, s){
+  if(typeof toolSpriteDraw==='function' && s>=0.7 && toolSpriteDraw(g,t,x,y,s)) return;
   const S2=v=>v*s, I='#4a3020';
   switch(t){
     case 'hand':

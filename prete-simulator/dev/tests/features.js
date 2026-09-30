@@ -101,6 +101,28 @@ const SW = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-
       const a = P2[i], q = P2[j]; if (Math.hypot(a.x - q.x, a.y - q.y) < a.r + q.r + 2) { window.__t = a.id + ' on ' + q.id; return false; } }
     window.__t = P2.length + ' pads'; return true; }), await get(() => window.__t));
 
+  /* ---- icons, people, the map ---- */
+  chk('every item and every tool has a sixteen-pixel sprite with an outline', await get(() => {
+    const miss = Object.keys(ITEMS).filter(id => !icoSprite(id)).concat(TOOL_ORDER.filter(t => !toolSprite(t)));
+    const c = icoSprite('mango'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    let dark = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] + d[i + 1] + d[i + 2] < 150) dark++;
+    window.__i = miss.join(' ') || (dark + ' outline pixels on the mango'); return miss.length === 0 && dark > 20; }), await get(() => window.__i));
+  chk('every person is drawn with a dark line round them, and is taller than before', await get(() => {
+    const c = mkCv(80, 90), g = c.getContext('2d'); const n = NPCS[0], o = { x: n.x, y: n.y };
+    n.x = 40; n.y = 80; drawVillager(g, n, { dt: 1 / 60 }); Object.assign(n, o);
+    const d = g.getImageData(0, 0, 80, 90).data; let top = 90, bot = 0, ink = 0;
+    for (let y = 0; y < 90; y++) for (let x = 0; x < 80; x++) { const i = (y * 80 + x) * 4; if (d[i + 3] < 200) continue;
+      top = Math.min(top, y); bot = Math.max(bot, y); if (d[i] < 40 && d[i + 1] < 30 && d[i + 2] < 40) ink++; }
+    window.__v = (bot - top) + 'px tall, ' + ink + ' ink pixels'; return bot - top >= 46 && ink > 60 && VILL_H >= 46; }), await get(() => window.__v));
+  chk('the map is one road that turns at the ends, and nothing on it is cut off by the frame', await get(() => {
+    GS.seenX = {}; for (let x = 0; x < WORLD_W; x += 90) markSeen(x);
+    GS.state = 'tree'; TREE.tab = 3; render(); GS.state = 'play';
+    const G = pmGeo(6, 51, W - 12, H - 57), s1 = G.seg;
+    const snake = G.X(s1 * 1.1) > G.X(s1 * 1.9) && G.X(s1 * 0.1) < G.X(s1 * 0.9) && G.X(s1 * 2.1) < G.X(s1 * 2.9);
+    const out = MAP_LABELS.filter(l => l.a < 6 || l.b > W - 6);
+    window.__m = MAP_LABELS.length + ' names, ' + out.length + ' off the page' + (snake ? '' : ', not a snake');
+    return snake && out.length === 0 && MAP_LABELS.length >= 20; }), await get(() => window.__m));
+
   /* ---- Thai ---- */
   chk('every new line has its Thai', await get(() => {
     const need = ['give Boonmee a banana', "stroke Boonmee's trunk", 'talk to Lung Kham', 'ask Boonmee for a shower',
