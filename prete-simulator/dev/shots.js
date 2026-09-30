@@ -34,6 +34,27 @@ const SHOTS = {
     const g=c.getContext('2d'); g.imageSmoothingEnabled=false; g.fillStyle='#f6e8d8'; g.fillRect(0,0,360,202);
     Object.keys(ITEMS).forEach((id,i)=>drawIcon(g,id,14+(i%16)*22,14+((i/16)|0)*24,1));
     TOOL_ORDER.forEach((t,i)=>toolIcon(g,t,14+i*22,184,1.2));`),
+  /* this round's: the start graded as night, the new map of the road through
+     Isan, the cats and dogs, the sugar palms */
+  'the-title':        { kind: 'title' },
+  'the-first-night':  { kind: 'start' },
+  'map-early':        V(1, 9, 2400, '', null, 'GS.seenX={}; for(let x=0;x<3400;x+=90) markSeen(x); P.x=2400; PMAP.key=""; GS.state="tree"; TREE.tab=3; GS.t=3.3; render();'),
+  'the-cats-and-dogs': V(1, 9, 2400, '', null, `render(); const c=document.createElement('canvas'); c.width=360; c.height=202;
+    c.style.cssText='position:fixed;left:0;top:0;width:1440px;height:808px;image-rendering:pixelated;z-index:99'; document.body.appendChild(c);
+    const g=c.getContext('2d'); g.imageSmoothingEnabled=false; g.fillStyle='#c8bc88'; g.fillRect(0,0,360,202);
+    for(let y=0;y<202;y+=2) for(let x=(y%4?1:0);x<360;x+=4) if(((x*7+y*13)%11)<2){ g.fillStyle='#bcb07c'; g.fillRect(x,y,1,1); }
+    const row=(y)=>{ g.fillStyle='#a89a64'; g.fillRect(0,y+1,360,1); };
+    const cats=[['Meow-Meow','siamese'],['Noodle','korat'],["The Monk's",'manee'],['Two-Socks','tux'],['Shop Cat','calico'],['Fat Somchai','greytab'],['Biscuit','biscuit'],['the cat','ginger']];
+    row(52); cats.forEach(([n,k],i)=>{ const x=24+i*44; drawCat(g,{x,y:52,face:i%2?-1:1,anim:1.1+i,state:i===7?'walk':'sit',phase:1,coat:k,collar:i===3}); pTxt(g,n,x,62,'#3a2618',6,'center'); });
+    row(108); cats.forEach(([n,k],i)=>{ const x=24+i*44; drawCat(g,{x,y:108,face:1,anim:2+i,state:i%2?'sleep':'walk',phase:i,coat:k}); });
+    const dogs=[['Daeng','red'],['Tao','blacktan'],['Moo','patch'],['Lucky','tan'],['Boss','black'],['Crossroad','dusty'],['Nine','brindle']];
+    row(160); dogs.forEach(([n,k],i)=>{ const x=26+i*44; drawRoadDog(g,{x,y:160,face:1,st:i===2?'sleep':'up',t:1+i,sp:i===4,bark:i===5?0.12:0,look:k,collar:i===0}); pTxt(g,n,x,172,'#3a2618',6,'center'); });
+    drawFluffyDog(g,{x:334,y:160,face:-1,t:1,st:'sit'}); pTxt(g,'Gohan',334,172,'#3a2618',6,'center');
+    pTxt(g,'the cats and the dogs',180,196,'#3a2618',7,'center');`),
+  'sugar-palms':      V(3, 6.45, 9790, ''),
+  'dogs-asleep':      V(1, 13.2, 8190, '', null, 'P.x=8900; for(let i=0;i<900;i++){ DAY.min=13.2*60; update(1/30); P.x=8900; GS.camX=7950; DLG=null; VIG=null; HINT=null; } GS.plate=1; render(); GS.plate=0;'),
+  'gohan':            V(1, 9.2, 6230, 'const g=PETS.find(p=>p.coat==="fluffy"); g.x=6180; g.st="sit"; g.face=1;'),
+  'the-old-forest':   V(1, 9.4, 5090, ''),
 };
 
 (async () => {
@@ -53,6 +74,8 @@ const SHOTS = {
       setLang('en');
       const clean = () => { DLG = null; VIG = null; HINT = null; GS.toasts.length = 0;
         for (const n of NPCS) { n.bub = null; } };
+      if (S.kind === 'title') { GS.state = 'title'; TT.plate = 0; return; }
+      if (S.kind === 'start') { clearSave(); newGame(); for (let i = 0; i < 90; i++) update(1 / 60); clean(); return; }
       if (S.kind === 'heaven') {
         newGame(); GS.mem = { wake: 1, take: 1, drink: 1, scale: 1, bowl: 1 }; GS.q.metPhra = true;
         startDream({ first: true }); dreamGo('arrive'); HVN.said0 = 1; HVN.greeted = true; HVN.nonthokSeen = true;
@@ -77,6 +100,8 @@ const SHOTS = {
     await p.waitForTimeout(150);
     await p.evaluate((S) => {
       if (S.kind === 'heaven') { DLG = null; render(); return; }
+      if (S.kind === 'title') { GS.t = 2; drawTitle(); return; }
+      if (S.kind === 'start') { HINT = null; render(); return; }
       if (S.js) { (new Function(S.js))(); return; }
       checkInteract();
       /* one prompt where the picture is about one, and none where it is not */

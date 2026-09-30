@@ -18,6 +18,11 @@ fs.mkdirSync(OUT,{recursive:true});
   const shots = await p.evaluate(()=>{
     setLang('en');
     if(cv.width!==W) return {err:'canvas is '+cv.width+'x'+cv.height};
+    /* the plates are copied off the game's own canvas, and with the light pass
+       on the world is handed to the WebGL canvas under it and this one is
+       cleared for the interface — a copy of it is a blank sheet with a plate
+       of som tam on it. So these are made from the painting itself. */
+    if(typeof FX!=='undefined' && FX.set) FX.set(0);
 
     /* ---------- helpers ---------- */
     const copy=()=>{ const c=mkCv(W,H), g=G2(c); g.imageSmoothingEnabled=false;
@@ -61,7 +66,7 @@ fs.mkdirSync(OUT,{recursive:true});
        The cover used to shout. It does not any more: no tagline, no English,
        no arrow, no reaction face, no caption bar. A warm evening with the
        lamps on and one thin ghost standing in it, and the game's name. */
-    newGame(); GS.state='play'; GS.tut=99; GS.ch=chAt('free');
+    newGame(); chGo('free'); CH.lock=false; GS.state='play'; GS.tut=99;
     DLG=null; VIG=null; HINT=null; FARM.rented=true; GS.q.blessed=true;
     for(const k in GS.seen) GS.seen[k]=true; CH.lock=false;
     DAY.n=6; DAY.min=18.6*60; setTOD(todFromClock(DAY.min),true);
@@ -81,7 +86,7 @@ fs.mkdirSync(OUT,{recursive:true});
        Him in the paddy in a งอบ with a hoe, the buffalo up to its back
        in the flooded field behind him, and a plate of som tam on the
        dike. Everything in this picture is a thing you actually do. */
-    newGame(); GS.state='play'; GS.tut=99; GS.ch=chAt('free');
+    newGame(); chGo('free'); CH.lock=false; GS.state='play'; GS.tut=99;
     DLG=null; VIG=null; HINT=null; GS.q.blessed=true;
     for(const k in GS.seen) GS.seen[k]=true; CH.lock=false;
     /* a farm that has been worked: rented, diked, flooded, and a buffalo
@@ -123,7 +128,7 @@ fs.mkdirSync(OUT,{recursive:true});
       pTaper(fg,sx2+5,sy2-2,sx2+11,sy2-13,1.6,1.2,'#c9a866'); }
 
     /* ---------- plate 2: the temple at first light ---------- */
-    newGame(); GS.state='play'; GS.tut=99; GS.ch=chAt('free');
+    newGame(); chGo('free'); CH.lock=false; GS.state='play'; GS.tut=99;
     DLG=null; VIG=null; HINT=null; FARM.rented=true; GS.q.blessed=true;
     for(const k in GS.seen) GS.seen[k]=true; CH.lock=false;
     DAY.n=6; DAY.min=7.2*60; setTOD(todFromClock(DAY.min),true);

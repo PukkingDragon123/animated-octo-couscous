@@ -869,21 +869,15 @@ people riding home on the benches.
 A soi dog asleep used to be a loaf with an ear on it: one oval, one smaller oval,
 a triangle, two rectangles for paws, and a sine wave for breathing.
 
-Now it is **flat out on its side in the dust**. All four legs push away from the
-body — out past the barrel at both ends, with a hock and an elbow in them, since
-a leg that stops inside the body is a leg nobody can see — and the front pair
-stretches on past the nose, which is how a dog that has given up on the day
-actually lies. The muzzle is down on the ground with a slack lip. The tail lies
-along the dirt and hooks back under. The ear is flopped over the side of its face
-and flicks every few seconds; a paw goes every few seconds after that; the eye is
-a shut *curve* rather than a dash, because a dash is a dead dog. Every so often a
-**z** comes off it.
-
-It breathes on **two clocks at once** — a slow one under a much slower one —
-because a single sine wave reads as a machine rather than an animal. Gohan, who
-is not a soi dog, got the same treatment through his coat, plus a crease cut into
-the ruff behind his head: white on white is nothing, and his head had been
-invisible for a month.
+Then it was flat out on its side in the dust, legs pushed away from it. Now,
+drawn again with every other animal in the village, it is **curled up nose to
+tail** in a ring on the warm concrete: the round of its back, a haunch, the
+tail brought round the front along the ground, and its head down on its paws
+inside the curl, one ear laid back and flicking every few seconds, a paw going
+now and then, the eye a shut curve. It still breathes on **two clocks at once**
+— a slow one under a much slower one — because a single sine wave reads as a
+machine rather than an animal, and every so often a **z** comes off it. Gohan
+curls up the same way with his plume laid over his nose like a blanket.
 
 ![dogs asleep outside the shop](screenshots/dogs-asleep.png)
 
@@ -1058,7 +1052,8 @@ way a dog does when it is making a decision about you; then it leans on your
 shin, which is as high as it can reach, and after that it is your dog and you can
 scratch its ear.
 
-**And fourteen more, with names.** Seven cats and seven dogs live the length of
+**And fourteen more, with names**, and every one of them looks like itself.
+Seven cats and seven dogs live the length of
 the map — under the stall, on the temple wall, asleep in the shade of the shop,
 in the long grass behind the farm. Every one of them can be sat with **once a
 day**: he folds all the way down, they lean into it, a heart comes up, and that
@@ -1072,7 +1067,21 @@ over a villager's head fills at about half speed while it is with you; **a cat
 halves what gets into the crop** overnight. One at a time, and you can leave it
 wherever you like and ask another.
 
-![the animals](screenshots/the-animals.png)
+They used to be one orange cat drawn seven times and one tan dog drawn seven
+times. Now the cats are the cats of Thailand — Meow-Meow a Siamese,
+วิเชียรมาศ, cream with her points gone dark and blue eyes; Noodle a silver-blue
+Korat, สีสวาด, the luck-cat; the temple's cat a white Khao Manee, ขาวมณี, with
+one blue eye and one gold; Two-Socks a tuxedo in white socks; the shop's cat a
+calico; Fat Somchai a grey tabby too round to jump; Biscuit the colour of one —
+and the ginger that gets stuck in the tamarind. The dogs are soi dogs, lean
+and short-haired with their ears up and their tails curled over their backs:
+Daeng is red, Tao black and tan with tan eyebrows, Moo pink-white with a black
+patch over one eye, Lucky tan with a dark muzzle, Boss black with a white bib
+and socks, Crossroad dusty white, Nine brindle. Big heads, eyes with a light in
+them, a line round every one; cats curl into a loaf to sleep with the tail over
+their paws, and the one that is walking with you wears a red collar.
+
+![the cats and the dogs](screenshots/the-cats-and-dogs.png)
 
 **And they have a day of their own.** A village animal is not a wander with a
 radius on it. A cat is flat out in the shade from nine until four and then owns
@@ -1089,9 +1098,9 @@ anywhere — it is a picture over their heads and a change in what they are doin
 which is how you read an animal in life too.
 
 **Gohan.** Fifteen now, because one of them is not a soi dog. The others are
-short-haired, lean and the colour of the road; he has a thick white coat that
-moves a beat behind him, a ruff round his neck and a plumed tail carried up over
-his back. He is somebody's dog who stopped having a somebody, and he still sits
+short-haired, lean and the colour of the road; he is a **Bangkaew**, บางแก้ว,
+the white spitz of Phitsanulok — a thick white coat, a cream ruff round his neck
+like a collar, a fox's face, and a plumed tail carried up over his back. He is somebody's dog who stopped having a somebody, and he still sits
 when a person walks past, out of a habit nobody rewards any more. Loong Dam will
 tell you where the collar came off.
 
@@ -1260,27 +1269,17 @@ recovered memories, one flat page each, blank and question-marked until they com
 back, with a red dot on the tab when there's one you haven't read — and the whole
 ten-thousand-pixel road drawn as a **map**.
 
-It used to be one straight line across a sheet of paper with every label dealt
-out onto four rows above it, which is a diagram of a road rather than a map of a
-country — and ten thousand six hundred pixels will not fit on one line at a
-readable scale anyway. So it is **two strips now**, west to east and then east
-again, folded the way a strip map folds a long road onto a short page, with an
-arrow off the end of the first strip and back in at the start of the second.
+It has been a straight line, then two strips, then three painted strips. It is
+now a **map of the road through Isan**, drawn from nothing: the road snakes
+across one page through the country of the northeast, every place a stop on
+it with its name on a tag beside it, and every house, palm, buffalo and wat a
+small inked sprite. It has [a section of its own below](#a-new-map-the-road-through-isan).
+Nothing on it lands on anything else, and there is a test that proves it.
 
-Each strip is drawn country rather than a coloured band: hatched paddy, roof
-triangles over the village, blobs of tree through the grove and the forest, a
-gold chedi at the temple, grey blocks along the town, and the road wandering
-down the middle of it — inked where you have walked and dotted where you have
-not. Every landmark is a **small picture on a post**: a chedi, a wok, a spirit
-house, a cat, a crossroad, a shop. Each one's name sits on its own scrap of
-paper, and when two names want the same inch of road the second one slides along
-until it is clear, with a hairline back to the post it belongs to. Nothing on
-that map lands on anything else, and there is a test that proves it.
-
-Underneath: the ghosts you have met as small dots on the road, a red pin bobbing
-where you are standing, a compass rose, a scale bar that says **half an hour's
-walk**, how many friends you have made, and how much of the road you have
-actually covered.
+Underneath: the ghosts you have met, standing by the road where you met them;
+you, as your own pale face on a red pin with a ring pulsing under it; a
+compass rose; a scale bar that says **half an hour's walk**; how many friends
+you have made; and how much of the road you have actually covered.
 
 Every card is a tap target: tap it to read it, tap it again to choose it.
 
@@ -1463,13 +1462,14 @@ it once you have been past.
 ### The map starts blank
 
 It used to open with the whole seven miles on it, every zone named and every pin
-already placed, which is a map somebody else drew for you. The paper is blank
-now. Zones appear when you have walked them, pins when you have been past them,
-the road is inked behind you and dotted ahead, your ghost friends are not
-on it until you have met them where they stand, and the corner tells you what
+already placed, which is a map somebody else drew for you. Now cloud lies over
+everything you have not walked — fat inked clouds over bare paper, with the
+road dotted on through them. Country comes out from under it as you walk,
+stops appear when you have been past them, your ghost friends are not on it
+until you have met them where they stand, and the corner tells you what
 percentage of the road you have actually seen.
 
-![a map with most of it still blank](screenshots/the-map-unread.png)
+![a map with most of it still under cloud](screenshots/map-early.png)
 
 ## Tools, the way Animal Crossing does it
 
@@ -2539,21 +2539,10 @@ gold-framed page when they are open.
 
 ![the catches, in drawers](screenshots/ledger-catches.png)
 
-**The map is painted.** It was three strips of coloured country cut off square
-at both ends, with the road running off the right of one and back on at the left
-of the next. It is one picture now, and nothing on it is cut off: the road
-snakes west to east along the top, round a bend at the right-hand edge, back
-across the middle, round again at the left, and east to the end of the world
-along the bottom. The land is painted the whole height of the page, one country
-blending into the next, with far hills blue along the top of each row: paddies
-in their dikes, stilt houses under palms, the wat and its chedi, the forest
-thickening into the deep country, the shophouses of the town, the river under
-the long bridge, the lotus lake, the limestone hills and the red prangs of the
-ruins. Where you have never walked, mist lies on it. Every place has a medallion
-and its name on a ribbon, and a test checks that no name lands on another or
-falls outside the frame.
+**The map was painted** — one picture with the road snaking across it — and
+has since been [drawn again from nothing](#a-new-map-the-road-through-isan).
 
-![the painted map](screenshots/ledger-map.png)
+
 
 ## The world, shaded like the icons, and moving in the wind
 
@@ -2595,10 +2584,109 @@ swings out of your way.
 |---|---|
 | ![flags at the wat](screenshots/flags-at-the-wat.png) | ![the washing](screenshots/washing-line.png) |
 
-**The map got the same treatment**: its houses, trees, hills, prangs and
-shophouses are painted on a layer of their own, inked and lit like the icons,
-and laid over ground that is shaded for the lie of the land, on paper that
-darkens toward its edges.
+## The road through Isan
+
+### A night that looks like night
+
+**The start of the game was super saturated, and now it is not.** The first
+night of a new game — climbing out of the grave by moonlight — is pinned dark
+while the clock already says 6:36 in the morning, and the light pass read how
+much of a dawn it was off the clock. So it laid the whole dawn grade over a
+night picture: a hard black point, a fifth more colour, a quarter more
+contrast, a warm top. On a picture that dark that crushed everything into one
+saturated navy, three times darker than the painting underneath it. The grade
+now reads the hour off the sky as it is drawn, so a night is graded as a night
+whatever the clock says, and the whole grade is gentler than it was: the pass
+lights the painting — the lamps, the bloom, the water, the sun — and no longer
+recolours it. Measured against the plain painting, every hour of the day now
+sits within about a tenth of its colour, where the first night used to have
+more than twice as much.
+
+| | |
+|---|---|
+| ![the title](screenshots/the-title.png) | ![the first night](screenshots/the-first-night.png) |
+
+The distant trees behind the graveyard were drawn at half opacity, so you could
+see the sky through their trunks, and at night the wash over that layer lit one
+of them into a pale column standing next to the grave. They are solid now, and
+go pale with distance the way far things do.
+
+### A new map: the road through Isan
+
+The old maps are gone, all of them, and so is their code. The new map is the
+road snaking across the page through the country of the northeast, and every
+single thing standing on it is a small sprite painted a pixel at a time like
+the item icons — lit from the top left, three or four tones down each form,
+and a black line round the outside. Paddies laid out in their bunds, some green,
+some gold, some standing in water just planted, with **sugar palms** on the
+bunds; **stilt houses** with the jars and the hammock underneath and a pot of
+basil on the rail; **rice barns**; **field huts** with a ผ้าขาวม้า drying;
+**buffalo** with an egret riding; chickens; a scarecrow and a farmer in her
+hat; the white **sim** and the lotus-bud **that** of the wat inside its wall
+with the bodhi tree and its props and cloths; a **morlam stage** in the middle
+of the village with speaker stacks as tall as the band; the red laterite earth
+and thin crooked trees of the **dry forest** and its **termite mounds**, one
+with a cloth tied round it; the deep forest with its stream; shophouses, the
+bus stop and a songthaew in the town; gold paddies with haystacks and a
+**bang fai** tower; the river with fishing boats and **raft houses** under the
+long bridge; the **red lotus sea** and its sala; flat-topped **sandstone hills**
+with mushroom rocks, a waterfall and the cave; and a **Khmer prasat** on its
+laterite terrace by its baray, with the stone head in its roots and the flag
+at the viewpoint. Cute where it can be: dogs asleep, a cat up the tamarind, a
+kid flying a humming ว่าวแอก, Nang Tani peeping round her banana, the elephant
+by the pond.
+
+Every place is **a stop on the road**, like a railway map, with its picture in a
+gold medallion and its name on a paper tag just above or below; stops that
+crowd are pushed apart shoulder to shoulder, and a tag that has to move away
+from its stop keeps a line back to it. That leaves most of every row to the
+country. The scale is an illustrator's, not a surveyor's: the road turns at
+the edge of the grove and at the river, so each row is one kind of journey —
+the village; the long way through the forest and the town; the water and the
+old country — and the busy places get more of the page than the empty ones.
+The title, the scale, the compass and your friends sit on paper cartouches laid
+over the corners, and the border is a band of **khit**, the diamond weave of
+Isan cloth, red and gold on indigo. Birds cross it, the water glints, smoke
+goes up from the kitchen, the kite swings on its string, and every nine seconds
+a bang fai goes up off its tower.
+
+![the new map](screenshots/ledger-map.png)
+
+Everything on it is placed by hand where it matters — the grave, the cart, his
+house, the kitchen, the temple, the shop, the bridge, the prasat — and grown
+into the rest by a scatter as thick as that country grows: a canopy of trees
+in the deep forest, a few palms dotting the paddies. Nothing is put down on the
+road or under a name, which a grid of taken pixels checks for every sprite.
+The painting is made once and kept until you have walked more of the road; in
+Thai the tags grow to hold the marks above and below the letters.
+
+### Cats and dogs who are somebody
+
+Every cat and every dog was drawn again, [with the line round them everybody
+else has](#and-everything-else-that-lives-here) — a Siamese, a Korat, a Khao
+Manee, a tuxedo, a calico, a fat grey tabby, the ginger in the tamarind, seven
+soi dogs each in their own coat, and Gohan as a Bangkaew.
+
+| | |
+|---|---|
+| ![dogs asleep outside the shop](screenshots/dogs-asleep.png) | ![Gohan](screenshots/gohan.png) |
+
+### The northeast, from the road
+
+What says Isan from any distance is the **sugar palm**, ต้นตาล: a bare dark
+trunk twice the height of a coconut, standing alone out in the paddies with a
+round crown of fan leaves and last year's fronds hanging dead under it. They
+stand on the bunds of the terraces behind the farm and all through the far
+paddies now, smaller and paler the further back they are, taller ones in the
+middle distance, and a few by the road that move in the wind with the other
+trees. Out in the far paddies there is a field hut on its posts and buffalo
+with an egret up; in the old forest the earth has grown **termite mounds**,
+and somebody has tied a red cloth round one and left a garland and a stick of
+incense, because a mound that has stood that long is asked for things.
+
+| | |
+|---|---|
+| ![sugar palms at first light](screenshots/sugar-palms.png) | ![termite mounds in the old forest](screenshots/the-old-forest.png) |
 
 ## It speaks Thai, properly
 
@@ -3005,7 +3093,8 @@ with a fully stocked farm on screen.
 **Where the source is.** `index.html` is built, not edited. The game is
 [`dev/src/game.js`](dev/src/game.js); what was added on top of it lives in
 [`dev/src/fx/`](dev/src/fx) — the clouds, the light pass, the air, the
-elephants — and [`dev/build.sh`](dev/build.sh) stitches them into one file
+elephants, the cats and dogs, the icons, the map and its sprites, the shading,
+the cloth, the sugar palms — and [`dev/build.sh`](dev/build.sh) stitches them into one file
 between `head.html` and `tail.html`, syntax-checks the result, and refuses any
 function declared twice unless it is one of the old ones that already was.
 [`dev/tests/`](dev/tests) runs the built file headless in Chromium: `smoke.js`
