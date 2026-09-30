@@ -4430,15 +4430,24 @@ for(let i=0;i<54;i++){
 /* Weather, not a gate. It used to be called drawMist, which is also what the
    retired wall across the road east was called, and the wall's stub — loaded
    later — quietly took the name and the village lost its fog. */
+/* each bank painted once into its own little sprite and laid down with an
+   alpha: drawn row by row in translucent paint it was a thousand fills a
+   frame, and the opening in the graveyard, where most of the mist is, lagged */
+function mistSprite(m){
+  if(m.spr) return m.spr;
+  const w=R(m.w)+4, h=R(m.h)+4, c=mkCv(w,h), g=G2(c);
+  pEll(g,w/2,h/2,m.w/2,m.h/2,'rgb(168,196,224)');
+  g.globalAlpha=0.7; pEll(g,w/2+m.w*0.18,h/2-m.h*0.16,m.w/3,m.h/2.6,'rgb(196,216,238)');
+  return m.spr=c;
+}
 function drawWeatherMist(g){
   for(const m of MIST){
     const x = m.x + Math.sin(GS.t*0.12+m.ph)*m.sp*3;
     if(x-GS.camX<-140||x-GS.camX>W+140) continue;
     const a=m.a*(0.6+0.4*Math.sin(GS.t*0.4+m.ph))*(1-TOD.v*0.55);
-    const y=m.y+Math.sin(GS.t*0.3+m.ph)*2;
-    g.fillStyle=`rgba(168,196,224,${a})`;
-    pEll(g,x,y,m.w/2,m.h/2,`rgba(168,196,224,${a})`);
-    pEll(g,x+m.w*0.18,y-m.h*0.16,m.w/3,m.h/2.6,`rgba(196,216,238,${a*0.7})`);
+    if(a<=0.004) continue;
+    const y=m.y+Math.sin(GS.t*0.3+m.ph)*2, sp=mistSprite(m);
+    g.globalAlpha=a; g.drawImage(sp,R(x-sp.width/2),R(y-sp.height/2)); g.globalAlpha=1;
   }
 }
 /* spirit-motes, drifting where the dead are */
@@ -4778,7 +4787,7 @@ function drawPreteRaw(g, p, o={}){
   const BODY = gold?'#f0dfae':mix('#ded5c4', PAL.skin, hum*0.78);
   const SHD  = gold?'#c9a45e':mix('#a89880', PAL.skinD, hum*0.78);
   const HI   = gold?'#fff6dc':mix('#f7f1e2', '#f2cda4', hum*0.72);
-  const OC   = gold?'#2a1a0c':mix('#1c1418','#221410',hum*0.55);   // a black line, all the way round, like everybody else
+  const OC   = gold?'#5a3e1c':mix('#5a4a48','#5a4434',hum*0.55);   // a soft dark line all the way round: black was too heavy on him
   const BLUSH= gold?'#e0b070':mix('#d89a90','#d4737e',hum*0.6);
   const alpha = o.alpha!==undefined?o.alpha:(p.alpha||1);
   if(alpha<1){ g.save(); g.globalAlpha=alpha; }
@@ -13280,11 +13289,20 @@ const hazeAmt = ()=> clamp((TOD.v-0.44)/0.5,0,1);
    the blue above it keeps the hills reading as hills a long way off. */
 function hazeColour(){ const s=skyNow(); return mix(s.c[3], s.c[2], 0.45); }
 
+/* the sky's three dithered bands are seven thousand little fills; they only
+   change when the hour does, so they are painted once and kept until then */
+const SKYG = { key:'', cv:null };
 function drawSky(g){
-  const S = skyNow();
-  pVGrad(g,0,0,W,76,S.c[0],S.c[1],8);
-  pVGrad(g,0,76,W,66,S.c[1],S.c[2],8);
-  pVGrad(g,0,142,W,H-142,S.c[2],S.c[3],7);
+  const S = skyNow(), key = S.c.join();
+  if(SKYG.key!==key){
+    if(!SKYG.cv) SKYG.cv=mkCv(W,H);
+    const b=G2(SKYG.cv); b.clearRect(0,0,W,H);
+    pVGrad(b,0,0,W,76,S.c[0],S.c[1],8);
+    pVGrad(b,0,76,W,66,S.c[1],S.c[2],8);
+    pVGrad(b,0,142,W,H-142,S.c[2],S.c[3],7);
+    SKYG.key=key;
+  }
+  g.drawImage(SKYG.cv,0,0);
 
   if(S.star>0.02){
     for(const s of STARS){
@@ -14472,7 +14490,7 @@ function drawPreteLie(g, x, y, k, t, face){
   const BODY = mix('#ded5c4', PAL.skin, hum*0.78);
   const SHD  = mix('#a89880', PAL.skinD, hum*0.78);
   const HI   = mix('#f7f1e2', '#f2cda4', hum*0.72);
-  const OC   = mix('#1c1418', '#221410', hum*0.55);
+  const OC   = mix('#5a4a48', '#5a4434', hum*0.55);
   const BLUSH= mix('#d89a90', '#d4737e', hum*0.6);
   const e  = clamp(k,0,1); const ee = e*e*(3-2*e);        // soft at both ends
   const br = Math.sin(t*1.25)*(0.4+1.0*ee);               // the breath, deeper once he is out

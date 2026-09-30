@@ -151,12 +151,15 @@ const SW = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-
     const pushed = Math.abs(low().x - x0);
     window.__c = 'hangs ' + hang.toFixed(0) + 'px, pushed ' + pushed.toFixed(1) + 'px';
     return hang > 10 && pushed > 1.5; }), await get(() => window.__c));
-  chk('the prete has a black line round him now', await get(() => {
+  chk('the prete has a soft dark line round him, not a hard black one', await get(() => {
     const c = mkCv(160, 180), g = c.getContext('2d'); const o = { x: P.x, y: P.y }; P.x = 80; P.y = 150;
     drawPrete(g, P, { dt: 1 / 60 }); Object.assign(P, o);
     const d = g.getImageData(0, 0, 160, 180).data; let ink = 0;
-    for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] < 45 && d[i + 1] < 35 && d[i + 2] < 40) ink++;
-    window.__p = ink + ' black pixels'; return ink > 120; }), await get(() => window.__p));
+    let black = 0;
+    for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 200) continue;
+      if (d[i] < 45 && d[i + 1] < 35 && d[i + 2] < 40) black++;
+      else if (d[i] > 70 && d[i] < 110 && d[i + 1] > 55 && d[i + 1] < 90 && d[i + 2] > 45 && d[i + 2] < 85) ink++; }
+    window.__p = ink + ' soft line pixels, ' + black + ' black'; return ink > 120 && black < 60; }), await get(() => window.__p));
 
   /* ---- the start, the new map, the cats and dogs, Isan ---- */
   chk('a new game opens at night and is graded as night, not as dawn', await get(() => {
