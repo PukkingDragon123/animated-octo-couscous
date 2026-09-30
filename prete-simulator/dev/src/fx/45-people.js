@@ -38,3 +38,40 @@ function drawVillager(g, v, o){
   g.drawImage(PPL.t, X, Y-1); g.drawImage(PPL.t, X, Y+1);
   g.drawImage(PPL.c, X, Y);
 }
+
+/* ---------- and the prete ----------
+   He has always had his own line; it is black now, like everybody's. On top
+   of the flat colour goes a grain — a fixed speckle of light and dark laid
+   over his pixels only — and a little shade gathering toward the ground,
+   so he reads as something with a surface rather than a cut-out. */
+const PRT = { c:null, g:null, grain:null };
+const PRT_W = 150, PRT_H = 170, PRT_OX = 75, PRT_OY = 140;
+function prtGrain(){
+  if(PRT.grain) return PRT.grain;
+  const c=mkCv(PRT_W,PRT_H), g=G2(c), r=mulberry(909);
+  for(let y=0;y<PRT_H;y++) for(let x=0;x<PRT_W;x++){
+    const v=r();
+    if(v<0.10){ g.fillStyle='rgba(40,24,30,0.16)'; g.fillRect(x,y,1,1); }
+    else if(v<0.16){ g.fillStyle='rgba(255,250,236,0.14)'; g.fillRect(x,y,1,1); }
+  }
+  /* the shade that gathers low on him */
+  const gr=g.createLinearGradient(0,PRT_OY-60,0,PRT_OY);
+  gr.addColorStop(0,'rgba(40,24,40,0)'); gr.addColorStop(1,'rgba(40,24,40,0.16)');
+  g.fillStyle=gr; g.fillRect(0,PRT_OY-60,PRT_W,60);
+  PRT.grain=c; return c;
+}
+function drawPrete(g, p, o){
+  o=o||{};
+  if(!PRT.c){ PRT.c=mkCv(PRT_W,PRT_H); PRT.g=G2(PRT.c); }
+  const bx=R(p.x), by=R(p.y), a=PRT.g;
+  a.setTransform(1,0,0,1,0,0); a.globalAlpha=1; a.globalCompositeOperation='source-over';
+  a.clearRect(0,0,PRT_W,PRT_H);
+  a.setTransform(1,0,0,1, PRT_OX-bx, PRT_OY-by);
+  a.imageSmoothingEnabled=false;
+  const res=drawPreteRaw(a, p, o);
+  a.setTransform(1,0,0,1,0,0); a.globalAlpha=1;
+  a.globalCompositeOperation='source-atop'; a.drawImage(prtGrain(),0,0);
+  a.globalCompositeOperation='source-over';
+  g.drawImage(PRT.c, bx-PRT_OX, by-PRT_OY);
+  return res;
+}

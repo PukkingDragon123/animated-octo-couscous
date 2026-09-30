@@ -123,6 +123,37 @@ const SW = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-
     window.__m = MAP_LABELS.length + ' names, ' + out.length + ' off the page' + (snake ? '' : ', not a snake');
     return snake && out.length === 0 && MAP_LABELS.length >= 20; }), await get(() => window.__m));
 
+  /* ---- the world, shaded and alive ---- */
+  chk('what is stamped into the world is inked and lit, like the icons', await get(() => {
+    const c = artShaded(ART.house[0], 1), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    let ink = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] < 40 && d[i + 1] < 36 && d[i + 2] < 40) ink++;
+    window.__s = ink + ' ink pixels round a house'; return ink > 150; }), await get(() => window.__s));
+  chk('the trees are alive: a gust bends them over and they come back', await get(() => {
+    newGame(); chGo('free'); GS.state = 'play'; GS.tut = 99; DLG = null; VIG = null; P.x = 2600; P.y = groundY(2600); GS.camX = 2360;
+    const T = treesInView(0); if (!T.length) { window.__t = 'no trees in view'; return false; }
+    for (let i = 0; i < 90; i++) { GUSTS.length = 0; GUSTS.push({ x: 2600, v: 40, w: 600, a: 1.5, aT: 1.5, t: 1, life: 99 }); update(1 / 60); GS.camX = 2360; }
+    const bent = Math.max(...T.map(t => Math.abs(t.a)));
+    GUSTS.length = 0; for (let i = 0; i < 600; i++) { GS.wind = 0; update(1 / 60); GS.wind = 0; GS.camX = 2360; }
+    const back = Math.max(...T.map(t => Math.abs(t.a)));
+    window.__t = SHADE.trees.length + ' trees; bent ' + bent.toFixed(1) + 'px, settled to ' + back.toFixed(1);
+    return SHADE.trees.length > 50 && bent > 2 && back < bent * 0.6; }), await get(() => window.__t));
+  chk('the washing hangs, blows, and swings out of the way of anybody walking through it', await get(() => {
+    const L = CLOTH.items.find(i => i.kind === 'line'); if (!L) return false;
+    const hg = L.hangs[1].c, low = () => hg.pts[hg.pts.length - 1];
+    P.x = L.x + 200; P.y = groundY(P.x); GS.camX = clamp(L.x - 200, 0, WORLD_W - 480);
+    for (let i = 0; i < 120; i++) { GS.wind = 0; GUSTS.length = 0; update(1 / 60); }
+    const hang = low().y - hg.pts[0].y, x0 = low().x;
+    P.x = x0 - 3; P.vx = 30; for (let i = 0; i < 20; i++) { P.x = x0 - 3; P.vx = 30; stepClothes(1 / 60); }
+    const pushed = Math.abs(low().x - x0);
+    window.__c = 'hangs ' + hang.toFixed(0) + 'px, pushed ' + pushed.toFixed(1) + 'px';
+    return hang > 10 && pushed > 1.5; }), await get(() => window.__c));
+  chk('the prete has a black line round him now', await get(() => {
+    const c = mkCv(160, 180), g = c.getContext('2d'); const o = { x: P.x, y: P.y }; P.x = 80; P.y = 150;
+    drawPrete(g, P, { dt: 1 / 60 }); Object.assign(P, o);
+    const d = g.getImageData(0, 0, 160, 180).data; let ink = 0;
+    for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] < 45 && d[i + 1] < 35 && d[i + 2] < 40) ink++;
+    window.__p = ink + ' black pixels'; return ink > 120; }), await get(() => window.__p));
+
   /* ---- Thai ---- */
   chk('every new line has its Thai', await get(() => {
     const need = ['give Boonmee a banana', "stroke Boonmee's trunk", 'talk to Lung Kham', 'ask Boonmee for a shower',

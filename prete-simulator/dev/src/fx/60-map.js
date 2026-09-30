@@ -130,7 +130,7 @@ function pmStupa(g,x,y){ pR(g,x-2,y-1,5,2,'#8a867a'); pTri(g,x+0.5,y-6,x-2,y-1,x
 /* ---------- the painting ---------- */
 function pmPaint(G){
   const {x0,y0,w,h}=G;
-  const c=mkCv(w,h), g=G2(c), r=mulberry(4040);
+  const c=mkCv(w,h), r=mulberry(4040); let g=G2(c);
   const ox=-x0, oy=-y0;
   g.translate(ox,oy);
   /* the paper, with age in it */
@@ -157,6 +157,9 @@ function pmPaint(G){
           col = n>0.64? shade(zb.g,0.08) : n>0.42? zb.g : zb.g2;
           if(v<0.1) col=mix(col,'#dfe4d0',0.25*(1-v/0.1));      // the far edge of each row lies in a haze
           if(v>0.88) col=shade(col,-0.10);
+          /* the lie of the land, lit from the top left like everything else */
+          const rel=(pmNoise(px-1,py-1,9)-pmNoise(px+1,py+1,9))*2.2;
+          col=shade(col, clamp(rel,-0.13,0.13));
         }
         g.fillStyle=col; g.fillRect(px,py,1,1);
       }
@@ -167,6 +170,9 @@ function pmPaint(G){
     /* the rows meet in a soft fold, not a cut */
     g.globalAlpha=0.35; pR(g,R(G.mx),t1-1,R(G.mw),1,'#8a7450'); g.globalAlpha=0.18; pR(g,R(G.mx),t1,R(G.mw),1,'#fff4d8'); g.globalAlpha=1;
   }
+  /* what stands on it goes on a layer of its own, so it can be inked and
+     lit the way the icons are before it is laid onto the ground */
+  const gMain=g, fcv=mkCv(w,h); g=G2(fcv); g.translate(ox,oy);
   /* what stands on it, zone by zone, where you have been */
   const road=(px,py,row)=> Math.abs(py-G.Y(G.W(px,row)))<4.5;
   for(let row=0; row<G.rows; row++){
@@ -179,8 +185,8 @@ function pmPaint(G){
       const rr=r();
       if(k==='paddy'){
         if(px%7===0) for(let py=t0+4;py<t1-2;py+=5) if(!road(px,py,row)){ const y2=py;
-          items.push({py:y2-100, fn:()=>{ pR(g,px,y2,6,4,'#7cb86e'); pR(g,px,y2,6,1,'#a8d890'); pR(g,px,y2+3,6,1,'#5e9a58');
-            for(let i=0;i<3;i++) pR(g,px+1+i*2,y2+1,1,2,'#4e8a48'); }}); }
+          items.push({py:y2-100, fn:()=>{ const G2m=gMain; pR(G2m,px,y2,6,4,'#7cb86e'); pR(G2m,px,y2,6,1,'#a8d890'); pR(G2m,px,y2+3,6,1,'#5e9a58');
+            for(let i=0;i<3;i++) pR(G2m,px+1+i*2,y2+1,1,2,'#4e8a48'); }}); }
       } else if(k==='forest' || k==='deep'){
         if(rr<(k==='deep'?0.34:0.24)) put(()=>pmTree(g,px,items._y,2.4+r()*1.8,k==='deep'), t0+4+r()*(BAND-8));
       } else if(k==='grove'){
@@ -194,20 +200,20 @@ function pmPaint(G){
       } else if(k==='town'){
         if(px%9===0){ for(const yy of [t0+14, t1-4]) put(()=>pmShop(g,px,items._y,5+R(r()*6),r()<0.5?'#c8c4bc':'#b8b0a4'), yy); }
       } else if(k==='river'){
-        if(rr<0.5){ const yy=t0+2+r()*(BAND-4); items.push({py:yy, fn:()=>{ pR(g,px,R(yy),2+R(r()*3),1,'rgba(255,255,255,0.55)'); }}); }
+        if(rr<0.5){ const yy=t0+2+r()*(BAND-4); items.push({py:yy, fn:()=>{ pR(gMain,px,R(yy),2+R(r()*3),1,'rgba(255,255,255,0.55)'); }}); }
       } else if(k==='lake'){
         if(rr<0.12) put(()=>{ pEll(g,px,items._y,2,1,'#4e9a5a'); if(r()<0.4) pR(g,px,R(items._y)-2,1,1,'#f08ab0'); }, t0+4+r()*(BAND-6));
       } else if(k==='karst'){
         if(rr<0.13) put(()=>pmKarst(g,px,items._y,8+R(r()*12)), t0+16+r()*(BAND-20));
         else if(rr<0.12) put(()=>pmTree(g,px,items._y,2,true), t0+6+r()*(BAND-8));
       } else if(k==='ruins'){
-        if(wx>EAST.edge){ if(px%3===0) items.push({py:t0-50, fn:()=>{ for(let yy=t0+2; yy<t1-1; yy+=3) pR(g,px,R(yy),3,1,'rgba(150,180,110,0.5)'); }}); }
+        if(wx>EAST.edge){ if(px%3===0) items.push({py:t0-50, fn:()=>{ for(let yy=t0+2; yy<t1-1; yy+=3) pR(gMain,px,R(yy),3,1,'rgba(150,180,110,0.5)'); }}); }
         else if(rr<0.05) put(()=>pmPrang(g,px,items._y), t0+14+r()*(BAND-18));
         else if(rr<0.12) put(()=>pmTree(g,px,items._y,2.2,false), t0+6+r()*(BAND-8));
       } else if(k==='grave'){
         if(rr<0.05) put(()=>pmStupa(g,px,items._y), t0+8+r()*(BAND-12));
       } else if(k==='cross'){
-        if(Math.abs(wx-CROSS_X)<14) items.push({py:t0-60, fn:()=>{ pR(g,px-1,t0+2,4,BAND-4,'#d8c8a0'); pR(g,px-1,t0+2,1,BAND-4,'#b8a47a'); }});
+        if(Math.abs(wx-CROSS_X)<14) items.push({py:t0-60, fn:()=>{ pR(gMain,px-1,t0+2,4,BAND-4,'#d8c8a0'); pR(gMain,px-1,t0+2,1,BAND-4,'#b8a47a'); }});
         else if(rr<0.05) put(()=>pmTree(g,px,items._y,2,false), t0+6+r()*(BAND-10));
       } else {
         if(rr<0.05) put(()=>pmTree(g,px,items._y,2.2,false), t0+6+r()*(BAND-10));
@@ -226,6 +232,8 @@ function pmPaint(G){
     if(seenAt(SALA_X) && G.row(SALA_X)===row){ const x=G.X(SALA_X); pmWat(g,x-14,G.Y(SALA_X)-6); pmChedi(g,x+14,G.Y(SALA_X)-6,1.1); }
     for(const [wx2,s2] of [[112,0.8],[GRAVE_X,0.7]]) if(seenAt(wx2) && G.row(wx2)===row) pmChedi(g,G.X(wx2)+8,G.Y(wx2)-7,s2,'#b8b4a4');
   }
+  g=gMain;
+  { const sh=artShadeCanvas(fcv,{grain:0.04}); g.save(); g.setTransform(1,0,0,1,0,0); g.drawImage(sh,-1,-1); g.restore(); }
   /* mist over what you have not walked */
   for(let row=0; row<G.rows; row++){
     const t0=G.top+row*BAND;
@@ -256,6 +264,11 @@ function pmPaint(G){
       else if(R(a*50)%4===0) pR(g,R(px),R(py),1,1,'rgba(120,98,66,0.55)');
     }
   }
+  /* the paper darkens toward its edges, as old paper does */
+  { g.save(); g.setTransform(1,0,0,1,0,0);
+    const vg=g.createRadialGradient(w/2,h/2,Math.min(w,h)*0.35,w/2,h/2,Math.max(w,h)*0.62);
+    vg.addColorStop(0,'rgba(120,80,40,0)'); vg.addColorStop(1,'rgba(120,80,40,0.22)');
+    g.fillStyle=vg; g.fillRect(0,0,w,h); g.restore(); }
   /* the border: a double rule in ink with a gold key-pattern between */
   pR(g,x0,y0,w,2,PM_INK); pR(g,x0,y0+h-2,w,2,PM_INK); pR(g,x0,y0,2,h,PM_INK); pR(g,x0+w-2,y0,2,h,PM_INK);
   pR(g,x0+4,y0+4,w-8,1,PM_INK); pR(g,x0+4,y0+h-5,w-8,1,PM_INK); pR(g,x0+4,y0+4,1,h-8,PM_INK); pR(g,x0+w-5,y0+4,1,h-8,PM_INK);

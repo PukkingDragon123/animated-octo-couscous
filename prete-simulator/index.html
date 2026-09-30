@@ -4136,6 +4136,8 @@ function paintTerraces(g, sc, r, PA, PB){
 /* ---------- the play layer: ground, road, props ---------- */
 const PROPS = [];     // {img,x,y,w,h,depth} drawn from playCv, kept for reference
 function stamp(img,x,y,sc2=1){
+  /* fx/65-world.js shades it, or makes a live tree of it */
+  if(typeof artShadeStamp==='function' && artShadeStamp(img,x,y,sc2)) return;
   playG.drawImage(img, R(x-img.width*sc2/2), R(y-img.height*sc2), R(img.width*sc2), R(img.height*sc2));
 }
 function paintPlay(){
@@ -4771,7 +4773,8 @@ function iTaper(g,x1,y1,x2,y2,w1,w2,c,oc){ pTaper(g,x1,y1,x2,y2,w1+3,w2+3,oc); p
 function iBow(g,x1,y1,x2,y2,w1,w2,c,oc,bow){ pBow(g,x1,y1,x2,y2,w1+3,w2+3,oc,bow); pBow(g,x1,y1,x2,y2,w1,w2,c,bow); }
 function iEll(g,cx,cy,rx,ry,c,oc){ pEll(g,cx,cy,rx+2,ry+2,oc); pEll(g,cx,cy,rx,ry,c); }
 
-function drawPrete(g, p, o={}){
+/* drawn plain here; fx/45-people.js lays the grain over it */
+function drawPreteRaw(g, p, o={}){
   const face = p.face, gold = o.gold;
   const cos = o.cos || GS.cos;
   /* HOW HUMAN HE IS. Four times in a game the piggy bank fills and breaks,
@@ -4787,9 +4790,9 @@ function drawPrete(g, p, o={}){
      brown line round him rather than a black one, and a blush. Everything
      that used to make him read as a monster was a colour choice. */
   const BODY = gold?'#f0dfae':mix('#ded5c4', PAL.skin, hum*0.78);
-  const SHD  = gold?'#c9a45e':mix('#b6a894', PAL.skinD, hum*0.78);
+  const SHD  = gold?'#c9a45e':mix('#a89880', PAL.skinD, hum*0.78);
   const HI   = gold?'#fff6dc':mix('#f7f1e2', '#f2cda4', hum*0.72);
-  const OC   = gold?'#5c4418':mix('#5c4a3c','#4a3024',hum*0.55);   // a soft brown line, all the way round
+  const OC   = gold?'#2a1a0c':mix('#1c1418','#221410',hum*0.55);   // a black line, all the way round, like everybody else
   const BLUSH= gold?'#e0b070':mix('#d89a90','#d4737e',hum*0.6);
   const alpha = o.alpha!==undefined?o.alpha:(p.alpha||1);
   if(alpha<1){ g.save(); g.globalAlpha=alpha; }
@@ -10116,7 +10119,9 @@ function render(){
   coat(0.05);
 
   ctx.save(); ctx.translate(-cx,-cy);
+  if(typeof drawTreesDyn==='function') drawTreesDyn(ctx);      // the live trees, under the ground's edge
   ctx.drawImage(playCv, cx, 0, W, H, cx, 0, W, H);
+  if(typeof drawClothes==='function') drawClothes(ctx);        // flags and washing, in front of the houses
   drawWeatherMist(ctx);
   drawLanternString(ctx);
   if(typeof drawFestSky==='function') drawFestSky(ctx);   // โคมลอย, over the rooftops
@@ -14506,9 +14511,9 @@ function drawPreteLie(g, x, y, k, t, face){
   face = face||1;
   const hum  = clamp(typeof humanAmt==='function'? humanAmt():0, 0, 1);
   const BODY = mix('#ded5c4', PAL.skin, hum*0.78);
-  const SHD  = mix('#b6a894', PAL.skinD, hum*0.78);
+  const SHD  = mix('#a89880', PAL.skinD, hum*0.78);
   const HI   = mix('#f7f1e2', '#f2cda4', hum*0.72);
-  const OC   = mix('#5c4a3c', '#4a3024', hum*0.55);
+  const OC   = mix('#1c1418', '#221410', hum*0.55);
   const BLUSH= mix('#d89a90', '#d4737e', hum*0.6);
   const e  = clamp(k,0,1); const ee = e*e*(3-2*e);        // soft at both ends
   const br = Math.sin(t*1.25)*(0.4+1.0*ee);               // the breath, deeper once he is out
@@ -28762,6 +28767,8 @@ function update(dt){
       stepNew(dt);
       stepBuff(dt);
       if(typeof stepEle==='function') stepEle(dt);
+      if(typeof stepTreesDyn==='function') stepTreesDyn(dt);
+      if(typeof stepClothes==='function') stepClothes(dt);
       stepBuilds(dt);
       stepLife(dt);
       stepStory(dt);
@@ -30629,6 +30636,43 @@ function drawVillager(g, v, o){
   g.drawImage(PPL.t, X, Y-1); g.drawImage(PPL.t, X, Y+1);
   g.drawImage(PPL.c, X, Y);
 }
+
+/* ---------- and the prete ----------
+   He has always had his own line; it is black now, like everybody's. On top
+   of the flat colour goes a grain — a fixed speckle of light and dark laid
+   over his pixels only — and a little shade gathering toward the ground,
+   so he reads as something with a surface rather than a cut-out. */
+const PRT = { c:null, g:null, grain:null };
+const PRT_W = 150, PRT_H = 170, PRT_OX = 75, PRT_OY = 140;
+function prtGrain(){
+  if(PRT.grain) return PRT.grain;
+  const c=mkCv(PRT_W,PRT_H), g=G2(c), r=mulberry(909);
+  for(let y=0;y<PRT_H;y++) for(let x=0;x<PRT_W;x++){
+    const v=r();
+    if(v<0.10){ g.fillStyle='rgba(40,24,30,0.16)'; g.fillRect(x,y,1,1); }
+    else if(v<0.16){ g.fillStyle='rgba(255,250,236,0.14)'; g.fillRect(x,y,1,1); }
+  }
+  /* the shade that gathers low on him */
+  const gr=g.createLinearGradient(0,PRT_OY-60,0,PRT_OY);
+  gr.addColorStop(0,'rgba(40,24,40,0)'); gr.addColorStop(1,'rgba(40,24,40,0.16)');
+  g.fillStyle=gr; g.fillRect(0,PRT_OY-60,PRT_W,60);
+  PRT.grain=c; return c;
+}
+function drawPrete(g, p, o){
+  o=o||{};
+  if(!PRT.c){ PRT.c=mkCv(PRT_W,PRT_H); PRT.g=G2(PRT.c); }
+  const bx=R(p.x), by=R(p.y), a=PRT.g;
+  a.setTransform(1,0,0,1,0,0); a.globalAlpha=1; a.globalCompositeOperation='source-over';
+  a.clearRect(0,0,PRT_W,PRT_H);
+  a.setTransform(1,0,0,1, PRT_OX-bx, PRT_OY-by);
+  a.imageSmoothingEnabled=false;
+  const res=drawPreteRaw(a, p, o);
+  a.setTransform(1,0,0,1,0,0); a.globalAlpha=1;
+  a.globalCompositeOperation='source-atop'; a.drawImage(prtGrain(),0,0);
+  a.globalCompositeOperation='source-over';
+  g.drawImage(PRT.c, bx-PRT_OX, by-PRT_OY);
+  return res;
+}
 /* ============================================================
    THE ICONS, REDRAWN
 
@@ -31536,7 +31580,7 @@ function pmStupa(g,x,y){ pR(g,x-2,y-1,5,2,'#8a867a'); pTri(g,x+0.5,y-6,x-2,y-1,x
 /* ---------- the painting ---------- */
 function pmPaint(G){
   const {x0,y0,w,h}=G;
-  const c=mkCv(w,h), g=G2(c), r=mulberry(4040);
+  const c=mkCv(w,h), r=mulberry(4040); let g=G2(c);
   const ox=-x0, oy=-y0;
   g.translate(ox,oy);
   /* the paper, with age in it */
@@ -31563,6 +31607,9 @@ function pmPaint(G){
           col = n>0.64? shade(zb.g,0.08) : n>0.42? zb.g : zb.g2;
           if(v<0.1) col=mix(col,'#dfe4d0',0.25*(1-v/0.1));      // the far edge of each row lies in a haze
           if(v>0.88) col=shade(col,-0.10);
+          /* the lie of the land, lit from the top left like everything else */
+          const rel=(pmNoise(px-1,py-1,9)-pmNoise(px+1,py+1,9))*2.2;
+          col=shade(col, clamp(rel,-0.13,0.13));
         }
         g.fillStyle=col; g.fillRect(px,py,1,1);
       }
@@ -31573,6 +31620,9 @@ function pmPaint(G){
     /* the rows meet in a soft fold, not a cut */
     g.globalAlpha=0.35; pR(g,R(G.mx),t1-1,R(G.mw),1,'#8a7450'); g.globalAlpha=0.18; pR(g,R(G.mx),t1,R(G.mw),1,'#fff4d8'); g.globalAlpha=1;
   }
+  /* what stands on it goes on a layer of its own, so it can be inked and
+     lit the way the icons are before it is laid onto the ground */
+  const gMain=g, fcv=mkCv(w,h); g=G2(fcv); g.translate(ox,oy);
   /* what stands on it, zone by zone, where you have been */
   const road=(px,py,row)=> Math.abs(py-G.Y(G.W(px,row)))<4.5;
   for(let row=0; row<G.rows; row++){
@@ -31585,8 +31635,8 @@ function pmPaint(G){
       const rr=r();
       if(k==='paddy'){
         if(px%7===0) for(let py=t0+4;py<t1-2;py+=5) if(!road(px,py,row)){ const y2=py;
-          items.push({py:y2-100, fn:()=>{ pR(g,px,y2,6,4,'#7cb86e'); pR(g,px,y2,6,1,'#a8d890'); pR(g,px,y2+3,6,1,'#5e9a58');
-            for(let i=0;i<3;i++) pR(g,px+1+i*2,y2+1,1,2,'#4e8a48'); }}); }
+          items.push({py:y2-100, fn:()=>{ const G2m=gMain; pR(G2m,px,y2,6,4,'#7cb86e'); pR(G2m,px,y2,6,1,'#a8d890'); pR(G2m,px,y2+3,6,1,'#5e9a58');
+            for(let i=0;i<3;i++) pR(G2m,px+1+i*2,y2+1,1,2,'#4e8a48'); }}); }
       } else if(k==='forest' || k==='deep'){
         if(rr<(k==='deep'?0.34:0.24)) put(()=>pmTree(g,px,items._y,2.4+r()*1.8,k==='deep'), t0+4+r()*(BAND-8));
       } else if(k==='grove'){
@@ -31600,20 +31650,20 @@ function pmPaint(G){
       } else if(k==='town'){
         if(px%9===0){ for(const yy of [t0+14, t1-4]) put(()=>pmShop(g,px,items._y,5+R(r()*6),r()<0.5?'#c8c4bc':'#b8b0a4'), yy); }
       } else if(k==='river'){
-        if(rr<0.5){ const yy=t0+2+r()*(BAND-4); items.push({py:yy, fn:()=>{ pR(g,px,R(yy),2+R(r()*3),1,'rgba(255,255,255,0.55)'); }}); }
+        if(rr<0.5){ const yy=t0+2+r()*(BAND-4); items.push({py:yy, fn:()=>{ pR(gMain,px,R(yy),2+R(r()*3),1,'rgba(255,255,255,0.55)'); }}); }
       } else if(k==='lake'){
         if(rr<0.12) put(()=>{ pEll(g,px,items._y,2,1,'#4e9a5a'); if(r()<0.4) pR(g,px,R(items._y)-2,1,1,'#f08ab0'); }, t0+4+r()*(BAND-6));
       } else if(k==='karst'){
         if(rr<0.13) put(()=>pmKarst(g,px,items._y,8+R(r()*12)), t0+16+r()*(BAND-20));
         else if(rr<0.12) put(()=>pmTree(g,px,items._y,2,true), t0+6+r()*(BAND-8));
       } else if(k==='ruins'){
-        if(wx>EAST.edge){ if(px%3===0) items.push({py:t0-50, fn:()=>{ for(let yy=t0+2; yy<t1-1; yy+=3) pR(g,px,R(yy),3,1,'rgba(150,180,110,0.5)'); }}); }
+        if(wx>EAST.edge){ if(px%3===0) items.push({py:t0-50, fn:()=>{ for(let yy=t0+2; yy<t1-1; yy+=3) pR(gMain,px,R(yy),3,1,'rgba(150,180,110,0.5)'); }}); }
         else if(rr<0.05) put(()=>pmPrang(g,px,items._y), t0+14+r()*(BAND-18));
         else if(rr<0.12) put(()=>pmTree(g,px,items._y,2.2,false), t0+6+r()*(BAND-8));
       } else if(k==='grave'){
         if(rr<0.05) put(()=>pmStupa(g,px,items._y), t0+8+r()*(BAND-12));
       } else if(k==='cross'){
-        if(Math.abs(wx-CROSS_X)<14) items.push({py:t0-60, fn:()=>{ pR(g,px-1,t0+2,4,BAND-4,'#d8c8a0'); pR(g,px-1,t0+2,1,BAND-4,'#b8a47a'); }});
+        if(Math.abs(wx-CROSS_X)<14) items.push({py:t0-60, fn:()=>{ pR(gMain,px-1,t0+2,4,BAND-4,'#d8c8a0'); pR(gMain,px-1,t0+2,1,BAND-4,'#b8a47a'); }});
         else if(rr<0.05) put(()=>pmTree(g,px,items._y,2,false), t0+6+r()*(BAND-10));
       } else {
         if(rr<0.05) put(()=>pmTree(g,px,items._y,2.2,false), t0+6+r()*(BAND-10));
@@ -31632,6 +31682,8 @@ function pmPaint(G){
     if(seenAt(SALA_X) && G.row(SALA_X)===row){ const x=G.X(SALA_X); pmWat(g,x-14,G.Y(SALA_X)-6); pmChedi(g,x+14,G.Y(SALA_X)-6,1.1); }
     for(const [wx2,s2] of [[112,0.8],[GRAVE_X,0.7]]) if(seenAt(wx2) && G.row(wx2)===row) pmChedi(g,G.X(wx2)+8,G.Y(wx2)-7,s2,'#b8b4a4');
   }
+  g=gMain;
+  { const sh=artShadeCanvas(fcv,{grain:0.04}); g.save(); g.setTransform(1,0,0,1,0,0); g.drawImage(sh,-1,-1); g.restore(); }
   /* mist over what you have not walked */
   for(let row=0; row<G.rows; row++){
     const t0=G.top+row*BAND;
@@ -31662,6 +31714,11 @@ function pmPaint(G){
       else if(R(a*50)%4===0) pR(g,R(px),R(py),1,1,'rgba(120,98,66,0.55)');
     }
   }
+  /* the paper darkens toward its edges, as old paper does */
+  { g.save(); g.setTransform(1,0,0,1,0,0);
+    const vg=g.createRadialGradient(w/2,h/2,Math.min(w,h)*0.35,w/2,h/2,Math.max(w,h)*0.62);
+    vg.addColorStop(0,'rgba(120,80,40,0)'); vg.addColorStop(1,'rgba(120,80,40,0.22)');
+    g.fillStyle=vg; g.fillRect(0,0,w,h); g.restore(); }
   /* the border: a double rule in ink with a gold key-pattern between */
   pR(g,x0,y0,w,2,PM_INK); pR(g,x0,y0+h-2,w,2,PM_INK); pR(g,x0,y0,2,h,PM_INK); pR(g,x0+w-2,y0,2,h,PM_INK);
   pR(g,x0+4,y0+4,w-8,1,PM_INK); pR(g,x0+4,y0+h-5,w-8,1,PM_INK); pR(g,x0+4,y0+4,1,h-8,PM_INK); pR(g,x0+w-5,y0+4,1,h-8,PM_INK);
@@ -31760,6 +31817,358 @@ function drawMap(g,x0,y0,w,h){
     pTxt(g,L("half an hour's walk"),sx+sw+6,sy+2,PM_INK,6); }
   icoHeart(g,x0+w-110,y0+h-9,0.7,PM_INK);
   pTxt(g,SPIRITS.filter(s=>s.friend).length+'/'+SPIRITS.length,x0+w-102,y0+h-7,PM_INK,6);
+}
+/* ============================================================
+   THE WORLD, SHADED LIKE THE ICONS
+
+   The icons came out lit and inked and the village around them
+   did not: houses, stalls and shrines were flat colour straight
+   onto the sky. Everything that is stamped into the world now goes
+   through one pass on its way in — at the size it will be drawn, so
+   the line is always exactly one pixel —
+
+     · a dark line round the outside, coloured from what it touches
+     · a lit edge wherever the sky is above it, a shaded one below
+     · a little grain in every flat fill, so paint reads as a surface
+
+   And the trees are no longer painted into the ground at all. They
+   are drawn every frame, bending: each one is a spring, pushed by the
+   wind where it stands and by the gusts that cross the village, and
+   pushed again by anybody walking through its lower branches. A tree
+   that is shaken hard enough drops a leaf or two.
+   ============================================================ */
+const SHADE = { cache:new Map(), trees:[], tset:null, ready:false };
+function shHash(x,y){ const h=Math.sin(x*12.9898+y*78.233)*43758.5453; return h-Math.floor(h); }
+/* the pass itself, on a canvas already at its final size */
+function artShadeCanvas(src, o){
+  o=o||{};
+  const w=src.width+2, h=src.height+2, c=mkCv(w,h), g=c.getContext('2d',{willReadFrequently:true});
+  g.drawImage(src,1,1);
+  const id=g.getImageData(0,0,w,h), d=id.data, out=new Uint8ClampedArray(d);
+  const A=(x,y)=> (x<0||y<0||x>=w||y>=h)? 0 : d[(y*w+x)*4+3];
+  const INK=[20,12,16], grain=o.grain===undefined? 0.05 : o.grain;
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    const i=(y*w+x)*4, a=d[i+3];
+    if(a<128){
+      /* the line round the outside */
+      if(o.ink===false) continue;
+      let r=0,gg=0,b=0,n=0;
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const X=x+dx, Y=y+dy; if(A(X,Y)<128) continue;
+        const q=(Y*w+X)*4; r+=d[q]; gg+=d[q+1]; b+=d[q+2]; n++; }
+      if(!n) continue;
+      out[i]=R(INK[0]*0.75+r/n*0.25*0.5); out[i+1]=R(INK[1]*0.75+gg/n*0.25*0.5); out[i+2]=R(INK[2]*0.75+b/n*0.25*0.5); out[i+3]=255;
+      continue;
+    }
+    /* lit where the sky is over it, shaded where it sits on something */
+    let k=1;
+    if(A(x,y-1)<128) k+=0.20; else if(A(x,y-2)<128) k+=0.08;
+    if(A(x-1,y)<128) k+=0.07;
+    if(A(x,y+1)<128) k-=0.16;
+    if(A(x+1,y)<128) k-=0.08;
+    /* grain: two scales of noise, so it reads as texture and not as static */
+    const n1=shHash(x>>1,y>>1)-0.5, n2=shHash(x,y)-0.5;
+    k += (n1*0.7+n2*0.3)*grain*2;
+    const lift = k>1? (k-1) : 0, drop = k<1? (1-k) : 0;
+    for(let c2=0;c2<3;c2++){ let v=d[i+c2]; v = v + (255-v)*lift*0.9 - v*drop; out[i+c2]=clamp(v,0,255); }
+  }
+  id.data.set(out); g.putImageData(id,0,0);
+  return c;
+}
+/* the stamped image at its drawn size, shaded, kept */
+function artShaded(img, sc){
+  const key=sc.toFixed(3);
+  let m=SHADE.cache.get(img); if(!m){ m=new Map(); SHADE.cache.set(img,m); }
+  let c=m.get(key); if(c) return c;
+  const w=Math.max(1,R(img.width*sc)), h=Math.max(1,R(img.height*sc));
+  const s=mkCv(w,h), g=G2(s); g.imageSmoothingEnabled=false; g.drawImage(img,0,0,w,h);
+  c=artShadeCanvas(s); m.set(key,c); return c;
+}
+function treeSet(){
+  if(SHADE.tset) return SHADE.tset;
+  const S=new Map();
+  const add=(arr,kind)=>{ if(arr) for(const c of arr) S.set(c,kind); };
+  add(ART.palm,'palm'); add(ART.banana,'banana'); add(ART.tam,'tam'); add(ART.bamboo,'bamboo');
+  add(ART.dead,'dead'); add(ART.blossom,'blossom');
+  SHADE.tset=S; return S;
+}
+/* stamp() asks this first. A tree becomes a live tree; anything else is
+   shaded and painted into the ground as before. */
+function artShadeStamp(img, x, y, sc){
+  if(!img || !img.width) return false;
+  const kind=treeSet().get(img);
+  const c=artShaded(img, sc);
+  const X=R(x-img.width*sc/2)-1, Y=R(y-img.height*sc)-1;
+  if(kind){
+    /* painted twice (a new game repaints the story props) is still one tree */
+    if(SHADE.trees.some(t=>t.x===X && t.y===Y && t.c===c)) return true;
+    SHADE.sorted=false;
+    SHADE.trees.push({ c, x:X, y:Y, w:c.width, h:c.height, bx:x, kind, a:0, v:0,
+      ph:shHash(R(x),7)*TAU, give: TREE_GIVE[kind]||1 });
+    return true;
+  }
+  playG.drawImage(c, X, Y);
+  return true;
+}
+/* how far each kind bends in the same wind */
+const TREE_GIVE = { palm:1.6, bamboo:2.0, banana:1.3, tam:0.8, blossom:0.9, dead:0.35 };
+function treesSorted(){
+  if(!SHADE.sorted){ SHADE.trees.sort((a,b)=>a.x-b.x); SHADE.sorted=true; }
+  return SHADE.trees;
+}
+function treesInView(pad){
+  const T=treesSorted(), a=GS.camX-pad, b=GS.camX+W+pad, out=[];
+  for(const t of T){ if(t.x+t.w<a) continue; if(t.x>b) break; out.push(t); }
+  return out;
+}
+function stepTreesDyn(dt){
+  if(!SHADE.trees.length) return;
+  const T=treesInView(120);
+  for(const t of T){
+    const wv=(typeof windAt==='function'? windAt(t.bx) : GS.wind||0);
+    /* the wind leans it over, and it flutters round where the wind is holding it */
+    const target = wv*3.2*t.give + Math.sin(GS.t*(1.3+t.give*0.4)+t.ph)*Math.abs(wv)*0.9*t.give;
+    t.v += ((target - t.a)*9 - t.v*2.6)*dt;
+    /* anybody walking through the low branches pushes it */
+    if(typeof P!=='undefined' && Math.abs(P.x-t.bx) < t.w*0.3 && Math.abs(P.vx)>8 && GS.state==='play')
+      t.v += P.vx*0.012*t.give;
+    t.a += t.v*dt;
+    t.a = clamp(t.a, -9, 9);
+    /* shaken hard enough, or in a strong gust, it lets a leaf go */
+    const shake=Math.abs(t.v)+Math.abs(wv)*1.4;
+    if(t.kind!=='dead' && shake>2.2 && Math.random()<dt*(shake-2)*0.9){
+      const col = t.kind==='blossom'? pick(['#f0a0c0','#ffd0e0','#f8b8d0']) : pick(['#4f8a4a','#6aa85a','#8ab85a','#c8b048']);
+      part({k:'petal', x:t.x+t.w*(0.2+Math.random()*0.6), y:t.y+t.h*(0.1+Math.random()*0.35),
+            vx:wv*14+rnd(-6,6), vy:rnd(6,16), life:rnd(2.2,4.2), sw:rnd(9), c:col});
+    }
+  }
+  /* the shake-the-tree trees give their shake to the tree they are */
+  if(typeof TREE_SPOTS!=='undefined') for(const s of TREE_SPOTS){ if(s.wob>0.95){
+    const t=T.find(q=>Math.abs(q.bx-s.x)<24); if(t) t.v += 18*(Math.random()<0.5?-1:1); } }
+}
+/* drawn before the ground layer, so the ground covers the foot of every trunk */
+function drawTreesDyn(g){
+  if(!SHADE.trees.length) return;
+  const T=treesInView(40);
+  for(const t of T){
+    const s=t.a;
+    if(Math.abs(s)<0.5){ g.drawImage(t.c, t.x, t.y); continue; }
+    /* bent a whole pixel at a time, row by row, more the higher up it goes */
+    const SL=3;
+    for(let sy=0; sy<t.h; sy+=SL){
+      const hf=1-(sy+SL/2)/t.h, off=R(s*Math.pow(clamp(hf,0,1),1.6));
+      g.drawImage(t.c, 0, sy, t.w, Math.min(SL,t.h-sy), t.x+off, t.y+sy, t.w, Math.min(SL,t.h-sy));
+    }
+  }
+}
+
+/* ---------- grain in the big layers ----------
+   The ground, the hedges and the rooftops behind are big flat fills. A
+   pass of smooth noise over them, a few percent either way, and paint reads
+   as earth and thatch and leaf. */
+function layerGrain(cv, amt, step){
+  const g=cv.getContext('2d',{willReadFrequently:true}), W2=cv.width, H2=cv.height, band=1024;
+  for(let x0=0; x0<W2; x0+=band){
+    const bw=Math.min(band, W2-x0), id=g.getImageData(x0,0,bw,H2), d=id.data;
+    for(let y=0;y<H2;y++) for(let x=0;x<bw;x++){
+      const i=(y*bw+x)*4; if(d[i+3]<200) continue;
+      const X=x0+x, n=(shHash(X>>2,y>>2)-0.5)*0.6 + (shHash(X>>1,y>>1)-0.5)*0.4 + (shHash(X,y)-0.5)*0.25;
+      const k=1+n*amt;
+      d[i]=clamp(d[i]*k,0,255); d[i+1]=clamp(d[i+1]*k,0,255); d[i+2]=clamp(d[i+2]*k,0,255);
+    }
+    g.putImageData(id,x0,0);
+  }
+}
+BUILD_STEPS.push(['giving it some grain', ()=>{ layerGrain(playCv,0.16); layerGrain(bgCv,0.12); layerGrain(midCv,0.08); SHADE.ready=true; }]);
+TH['giving it some grain'] = 'แต่งพื้นผิว';
+/* ============================================================
+   CLOTH IN THE WIND
+
+   A Thai village is full of things the wind gets hold of: the flag
+   on its bamboo pole outside the temple, the yellow dharma-wheel
+   flag beside it, the long ธงตะขาบ — the centipede flags — hanging
+   off tall poles at the wat for a festival, and washing: a ผ้าขาวม้า,
+   a sarong and a shirt pegged on a line between two posts.
+
+   All of it is cloth: points joined by sticks, pinned where it is
+   tied, pulled down by its own weight and pushed by the wind where it
+   hangs — the same wind the grass and the trees lean in, gusts and
+   all — with a flutter on top that grows with the wind. Walk through
+   the washing and it swings out of your way.
+   ============================================================ */
+const CLOTH = { items:[], ready:false };
+function clothGrid(x0,y0,cols,rows,sx,sy,pinCol){
+  const P2=[];
+  for(let j=0;j<=rows;j++) for(let i=0;i<=cols;i++){
+    const x=x0+i*sx, y=y0+j*sy;
+    P2.push({x,y,px:x,py:y,pin:(pinCol!==undefined && i===pinCol)});
+  }
+  const S=[], id=(i,j)=>j*(cols+1)+i;
+  for(let j=0;j<=rows;j++) for(let i=0;i<=cols;i++){
+    if(i<cols) S.push([id(i,j),id(i+1,j),sx]);
+    if(j<rows) S.push([id(i,j),id(i,j+1),sy]);
+    if(i<cols && j<rows) S.push([id(i,j),id(i+1,j+1),Math.hypot(sx,sy)]);
+  }
+  return {pts:P2, sticks:S, cols, rows};
+}
+function clothChain(x0,y0,n,len){
+  const P2=[]; for(let i=0;i<=n;i++) P2.push({x:x0,y:y0+i*len,px:x0,py:y0+i*len,pin:i===0});
+  const S=[]; for(let i=0;i<n;i++) S.push([i,i+1,len]);
+  return {pts:P2, sticks:S, cols:0, rows:n};
+}
+function clothSetup(){
+  if(CLOTH.ready) return; CLOTH.ready=true;
+  const add=(o)=>CLOTH.items.push(o);
+  /* at the temple gate: the national flag and the dharma-wheel flag, each on a bamboo pole */
+  for(const [x,kind] of [[SALA_X-156,'thai'],[SALA_X-126,'dharma']]){
+    const gy=groundY(x), top=gy-70;
+    add({kind, x, gy, top, cloth:clothGrid(x+1,top+1,8,5,3,3,0)});
+  }
+  /* the centipede flags, hung for merit at the wat */
+  for(const x of [SALA_X+118, CHEDI_X+66]){
+    const gy=groundY(x), top=gy-84;
+    add({kind:'centipede', x, gy, top, cloth:clothChain(x+6,top+2,11,5)});
+  }
+  /* a flag outside the shop in town, and one at the crossroad shrine */
+  for(const x of [STORE_X-70, CROSS_X-40, HOUSE_XS[2]-34]){ const gy=groundY(x), top=gy-64;
+    add({kind:'thai', x, gy, top, cloth:clothGrid(x+1,top+1,8,5,3,3,0)}); }
+  /* washing lines between the houses */
+  for(const [x0,x1] of [[HOUSE_XS[0]+34, HOUSE_XS[0]+92],[HOUSE_XS[4]+36, HOUSE_XS[4]+90]]){
+    const gy=groundY(x0), ly=gy-46, hangs=[];
+    const cols=['khaoma','sarong','shirt','khaoma2'];
+    for(let k=0;k<4;k++){ const hx=x0+8+k*((x1-x0-16)/3.2);
+      const sag=Math.sin((hx-x0)/(x1-x0)*Math.PI)*3;
+      const c=clothGrid(hx,ly+sag,3,6,3,3); c.pts.forEach((p,i)=>{ if(i<=3) p.pin=true; });
+      hangs.push({c, kind:cols[k]}); }
+    add({kind:'line', x:x0, x1, gy, ly, hangs});
+  }
+}
+const CLOTH_G = 70;
+function clothStep(c, dt, windX, flutter, t, soft){
+  const pts=c.pts;
+  for(let i=0;i<pts.length;i++){ const p=pts[i]; if(p.pin) continue;
+    const vx=(p.x-p.px)*0.985, vy=(p.y-p.py)*0.985;
+    p.px=p.x; p.py=p.y;
+    const f=Math.sin(t*7.3+i*1.1+p.py*0.3)*flutter, f2=Math.cos(t*5.1+i*0.7)*flutter*0.6;
+    p.x += vx + (windX + f)*dt*dt;
+    p.y += vy + (CLOTH_G*(soft||1) + f2)*dt*dt;
+  }
+  for(let it=0; it<4; it++) for(const [a,b,L] of c.sticks){
+    const A=pts[a], B=pts[b], dx=B.x-A.x, dy=B.y-A.y, d=Math.hypot(dx,dy)||1, k=(d-L)/d*0.5;
+    if(!A.pin && !B.pin){ A.x+=dx*k; A.y+=dy*k; B.x-=dx*k; B.y-=dy*k; }
+    else if(!A.pin){ A.x+=dx*k*2; A.y+=dy*k*2; }
+    else if(!B.pin){ B.x-=dx*k*2; B.y-=dy*k*2; }
+  }
+}
+/* anybody walking through it pushes it aside */
+function clothPush(c, dt){
+  if(typeof P==='undefined' || GS.state!=='play') return;
+  for(const p of c.pts){ if(p.pin) continue;
+    if(p.y<P.y-66 || p.y>P.y) continue;
+    const dx=p.x-P.x; if(Math.abs(dx)>7) continue;
+    const s=dx===0? (P.vx>=0?1:-1) : Math.sign(dx);
+    p.x += s*(7-Math.abs(dx))*0.35 + P.vx*dt*0.6;
+  }
+}
+function stepClothes(dt){
+  if(!WORLD_READY) return;
+  clothSetup();
+  const t=GS.t||0, n=dt>1/50? Math.min(4,Math.ceil(dt*60)) : 1, h=dt/n;
+  for(const it of CLOTH.items){
+    if(Math.abs(it.x-GS.camX-W/2) > W) continue;               // only what is near enough to matter
+    const wv=(typeof windAt==='function'? windAt(it.x) : GS.wind||0);
+    for(let s=0;s<n;s++){
+      if(it.kind==='line'){ for(const hg of it.hangs){ clothStep(hg.c, h, wv*140, 40+Math.abs(wv)*160, t, 1); clothPush(hg.c,h); } }
+      else if(it.kind==='centipede'){ clothStep(it.cloth, h, wv*170+20, 30+Math.abs(wv)*120, t, 0.7); clothPush(it.cloth,h); }
+      else clothStep(it.cloth, h, wv*260+60, 60+Math.abs(wv)*260, t, 0.35);
+    }
+  }
+}
+
+/* ---------- drawing ---------- */
+const CL_INK='#1c1216';
+function clQuad(g,a,b,c,d,col){ pPoly(g,[a.x,a.y,b.x,b.y,c.x,c.y,d.x,d.y],col); }
+function clPole(g,x,gy,top,col){
+  pR(g,x-1,top-2,3,gy-top+2,CL_INK); pR(g,x,top-1,1,gy-top+1,col||'#c8b070');
+  for(let y=top+6;y<gy;y+=9) pR(g,x-1,y,3,1,'#8a7440');
+  pR(g,x-1,top-4,3,3,'#f2c94c'); pR(g,x,top-5,1,1,'#fff0a8');
+}
+/* a flag's stripe colour at a height down it, 0 at the top */
+function flagCol(kind, v){
+  if(kind==='thai') return v<1/6? '#d8283a' : v<2/6? '#f6f2ec' : v<4/6? '#2a3a8a' : v<5/6? '#f6f2ec' : '#d8283a';
+  return '#f2c230';
+}
+function drawGridFlag(g, it){
+  const c=it.cloth, C=c.cols, Rw=c.rows, P2=c.pts, id=(i,j)=>j*(C+1)+i;
+  /* the outline first, a pixel fatter all round */
+  for(let j=0;j<Rw;j++) for(let i=0;i<C;i++){
+    const a=P2[id(i,j)], b=P2[id(i+1,j)], cc=P2[id(i+1,j+1)], d=P2[id(i,j+1)];
+    pPoly(g,[a.x-1,a.y-1,b.x+1,b.y-1,cc.x+1,cc.y+1,d.x-1,d.y+1],CL_INK);
+  }
+  for(let j=0;j<Rw;j++) for(let i=0;i<C;i++){
+    const a=P2[id(i,j)], b=P2[id(i+1,j)], cc=P2[id(i+1,j+1)], d=P2[id(i,j+1)];
+    /* a cell turned edge-on to you is in shade: the folds */
+    const wdt=((b.x-a.x)+(cc.x-d.x))/2, lit=clamp(wdt/3,0.3,1.1);
+    const sub=it.kind==='thai'? 6 : 1;
+    for(let k=0;k<sub;k++){
+      const v0=k/sub, v1=(k+1)/sub;
+      const L=(p,q,u)=>({x:lerp(p.x,q.x,u), y:lerp(p.y,q.y,u)});
+      const A=L(a,d,v0), B=L(b,cc,v0), Cc=L(b,cc,v1), D=L(a,d,v1);
+      const vv=(j+(v0+v1)/2)/Rw;
+      let col=flagCol(it.kind, vv);
+      col = lit<0.95? shade(col,-(1-lit)*0.45) : lit>1.02? shade(col,0.12) : col;
+      clQuad(g,A,B,Cc,D,col);
+    }
+  }
+  if(it.kind==='dharma'){ const m=P2[id(3,2)]; pEll(g,m.x,m.y,2.4,2.4,'#b8281e'); pR(g,R(m.x),R(m.y),1,1,'#f2c230');
+    for(let k=0;k<8;k++){ const an=k/8*TAU; pR(g,R(m.x+Math.cos(an)*2.6),R(m.y+Math.sin(an)*2.6),1,1,'#b8281e'); } }
+}
+function drawCentipede(g, it){
+  const P2=it.cloth.pts;
+  /* the arm the flag hangs from */
+  pR(g,it.x-1,it.top-1,9,3,CL_INK); pR(g,it.x,it.top,7,1,'#c8b070');
+  for(let i=0;i+1<P2.length;i++){
+    const a=P2[i], b=P2[i+1], w=3.2;
+    const nx=-(b.y-a.y), ny=(b.x-a.x), n=Math.hypot(nx,ny)||1, ux=nx/n*w, uy=ny/n*w;
+    pPoly(g,[a.x-ux-1,a.y-uy,a.x+ux+1,a.y+uy,b.x+ux+1,b.y+uy,b.x-ux-1,b.y-uy],CL_INK);
+    const col = i%3===0? '#d8283a' : i%3===1? '#f6f2ec' : '#f2c230';
+    pPoly(g,[a.x-ux,a.y-uy,a.x+ux,a.y+uy,b.x+ux,b.y+uy,b.x-ux,b.y-uy],col);
+    /* the legs that give it its name */
+    pTaper(g,a.x+ux,a.y+uy,a.x+ux*2.2,a.y+uy*2.2+1,1,1,CL_INK);
+    pTaper(g,a.x-ux,a.y-uy,a.x-ux*2.2,a.y-uy*2.2+1,1,1,CL_INK);
+  }
+  const e=P2[P2.length-1]; pTaper(g,e.x,e.y,e.x+(e.x-P2[P2.length-2].x),e.y+4,2,1,'#d8283a');
+}
+const WASH = {
+  khaoma:  (u,v)=> ((R(u*6)+R(v*6))%2? '#c8403a' : '#f4e8d8'),
+  khaoma2: (u,v)=> ((R(u*6)+R(v*6))%2? '#3a6ab0' : '#f4e8d8'),
+  sarong:  (u,v)=> (R(v*8)%2? '#6a3a8a' : '#e8b040'),
+  shirt:   (u,v)=> '#f4f0e6',
+};
+function drawLine(g, it){
+  clPole(g,it.x,it.gy,it.ly-2,'#8a6a44'); clPole(g,it.x1,it.gy,it.ly-2,'#8a6a44');
+  for(let x=it.x; x<=it.x1; x++){ const u=(x-it.x)/(it.x1-it.x); pR(g,x,R(it.ly+Math.sin(u*Math.PI)*3),1,1,'#3a3032'); }
+  for(const hg of it.hangs){
+    const c=hg.c, C=c.cols, Rw=c.rows, P2=c.pts, id=(i,j)=>j*(C+1)+i, pat=WASH[hg.kind];
+    for(let j=0;j<Rw;j++) for(let i=0;i<C;i++){
+      const a=P2[id(i,j)], b=P2[id(i+1,j)], cc=P2[id(i+1,j+1)], d=P2[id(i,j+1)];
+      pPoly(g,[a.x-1,a.y,b.x+1,b.y,cc.x+1,cc.y+1,d.x-1,d.y+1],CL_INK); }
+    for(let j=0;j<Rw;j++) for(let i=0;i<C;i++){
+      const a=P2[id(i,j)], b=P2[id(i+1,j)], cc=P2[id(i+1,j+1)], d=P2[id(i,j+1)];
+      const wdt=((b.x-a.x)+(cc.x-d.x))/2, lit=clamp(wdt/3,0.4,1.1);
+      let col=pat(i/C, j/Rw); col = lit<0.95? shade(col,-(1-lit)*0.4) : col;
+      clQuad(g,a,b,cc,d,col); }
+    /* the pegs */
+    for(const i of [0,C]){ const p=P2[id(i,0)]; pR(g,R(p.x)-1,R(p.y)-2,2,3,'#c8a060'); }
+  }
+}
+function drawClothes(g){
+  if(!CLOTH.ready) return;
+  for(const it of CLOTH.items){
+    if(it.x-GS.camX<-120 || it.x-GS.camX>W+120) continue;
+    if(it.kind==='line') drawLine(g,it);
+    else if(it.kind==='centipede'){ clPole(g,it.x,it.gy,it.top); drawCentipede(g,it); }
+    else { clPole(g,it.x,it.gy,it.top); drawGridFlag(g,it); }
+  }
 }
 </script>
 </body>

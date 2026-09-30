@@ -4115,6 +4115,8 @@ function paintTerraces(g, sc, r, PA, PB){
 /* ---------- the play layer: ground, road, props ---------- */
 const PROPS = [];     // {img,x,y,w,h,depth} drawn from playCv, kept for reference
 function stamp(img,x,y,sc2=1){
+  /* fx/65-world.js shades it, or makes a live tree of it */
+  if(typeof artShadeStamp==='function' && artShadeStamp(img,x,y,sc2)) return;
   playG.drawImage(img, R(x-img.width*sc2/2), R(y-img.height*sc2), R(img.width*sc2), R(img.height*sc2));
 }
 function paintPlay(){
@@ -4750,7 +4752,8 @@ function iTaper(g,x1,y1,x2,y2,w1,w2,c,oc){ pTaper(g,x1,y1,x2,y2,w1+3,w2+3,oc); p
 function iBow(g,x1,y1,x2,y2,w1,w2,c,oc,bow){ pBow(g,x1,y1,x2,y2,w1+3,w2+3,oc,bow); pBow(g,x1,y1,x2,y2,w1,w2,c,bow); }
 function iEll(g,cx,cy,rx,ry,c,oc){ pEll(g,cx,cy,rx+2,ry+2,oc); pEll(g,cx,cy,rx,ry,c); }
 
-function drawPrete(g, p, o={}){
+/* drawn plain here; fx/45-people.js lays the grain over it */
+function drawPreteRaw(g, p, o={}){
   const face = p.face, gold = o.gold;
   const cos = o.cos || GS.cos;
   /* HOW HUMAN HE IS. Four times in a game the piggy bank fills and breaks,
@@ -4766,9 +4769,9 @@ function drawPrete(g, p, o={}){
      brown line round him rather than a black one, and a blush. Everything
      that used to make him read as a monster was a colour choice. */
   const BODY = gold?'#f0dfae':mix('#ded5c4', PAL.skin, hum*0.78);
-  const SHD  = gold?'#c9a45e':mix('#b6a894', PAL.skinD, hum*0.78);
+  const SHD  = gold?'#c9a45e':mix('#a89880', PAL.skinD, hum*0.78);
   const HI   = gold?'#fff6dc':mix('#f7f1e2', '#f2cda4', hum*0.72);
-  const OC   = gold?'#5c4418':mix('#5c4a3c','#4a3024',hum*0.55);   // a soft brown line, all the way round
+  const OC   = gold?'#2a1a0c':mix('#1c1418','#221410',hum*0.55);   // a black line, all the way round, like everybody else
   const BLUSH= gold?'#e0b070':mix('#d89a90','#d4737e',hum*0.6);
   const alpha = o.alpha!==undefined?o.alpha:(p.alpha||1);
   if(alpha<1){ g.save(); g.globalAlpha=alpha; }
@@ -10095,7 +10098,9 @@ function render(){
   coat(0.05);
 
   ctx.save(); ctx.translate(-cx,-cy);
+  if(typeof drawTreesDyn==='function') drawTreesDyn(ctx);      // the live trees, under the ground's edge
   ctx.drawImage(playCv, cx, 0, W, H, cx, 0, W, H);
+  if(typeof drawClothes==='function') drawClothes(ctx);        // flags and washing, in front of the houses
   drawWeatherMist(ctx);
   drawLanternString(ctx);
   if(typeof drawFestSky==='function') drawFestSky(ctx);   // โคมลอย, over the rooftops
@@ -14485,9 +14490,9 @@ function drawPreteLie(g, x, y, k, t, face){
   face = face||1;
   const hum  = clamp(typeof humanAmt==='function'? humanAmt():0, 0, 1);
   const BODY = mix('#ded5c4', PAL.skin, hum*0.78);
-  const SHD  = mix('#b6a894', PAL.skinD, hum*0.78);
+  const SHD  = mix('#a89880', PAL.skinD, hum*0.78);
   const HI   = mix('#f7f1e2', '#f2cda4', hum*0.72);
-  const OC   = mix('#5c4a3c', '#4a3024', hum*0.55);
+  const OC   = mix('#1c1418', '#221410', hum*0.55);
   const BLUSH= mix('#d89a90', '#d4737e', hum*0.6);
   const e  = clamp(k,0,1); const ee = e*e*(3-2*e);        // soft at both ends
   const br = Math.sin(t*1.25)*(0.4+1.0*ee);               // the breath, deeper once he is out
@@ -28741,6 +28746,8 @@ function update(dt){
       stepNew(dt);
       stepBuff(dt);
       if(typeof stepEle==='function') stepEle(dt);
+      if(typeof stepTreesDyn==='function') stepTreesDyn(dt);
+      if(typeof stepClothes==='function') stepClothes(dt);
       stepBuilds(dt);
       stepLife(dt);
       stepStory(dt);
