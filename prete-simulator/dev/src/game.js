@@ -949,14 +949,10 @@ function artFence(){ const c=mkCv(64,40),g=G2(c);
   pR(g,0,13,64,4,'#5d4735'); pR(g,0,13,64,1,'#7a5c44');
   pR(g,0,26,64,4,'#5d4735'); pR(g,0,26,64,1,'#7a5c44');
   return c; }
-function artDog(){ const c=mkCv(46,24),g=G2(c);
-  // a soi dog asleep in the road, as is his right
-  pEll(g,22,17,16,7,'#c9a06a'); pEll(g,22,15,14,5,'#dcb47e');
-  pEll(g,9,14,7,6,'#c9a06a'); pEll(g,8,13,6,5,'#dcb47e');
-  pTri(g,6,10,3,15,9,14,'#a87f4e'); pR(g,4,14,4,2,'#5a4028');
-  pEll(g,36,16,7,4,'#a87f4e');
-  pR(g,14,21,4,3,'#b8905a'); pR(g,24,21,4,3,'#b8905a');
-  pR(g,7,13,2,1,'#3a2c1e');
+function artDog(){ const c=mkCv(28,16),g=G2(c);
+  // a soi dog asleep in the road, as is his right: curled up the way the
+  // village's own dogs sleep now (fx/47-pets.js)
+  dogSleep(g, 13, 15, 1, 0, dogLook('tan'), {});
   return c; }
 /* ศาลเพียงตา — the one-post shrine that stands at the edge of a field.
    There are no scarecrows in a Thai rice field. There is this: a post about
@@ -3996,6 +3992,14 @@ function paintMid(){
   // low mist band
   for(let x=0;x<w;x+=3){ const a=0.05+0.04*Math.sin(x*0.01); g.fillStyle=`rgba(150,170,220,${a})`; g.fillRect(x,196+Math.sin(x*0.02)*3,3,7); }
 }
+const _bgHaze = new Map();
+function bgHaze(img, col, k){
+  const key=col+'|'+k.toFixed(2); let m=_bgHaze.get(img); if(!m){ m=new Map(); _bgHaze.set(img,m); }
+  let c=m.get(key); if(c) return c;
+  c=mkCv(img.width,img.height); const g=G2(c);
+  g.drawImage(img,0,0); g.globalCompositeOperation='source-atop'; g.globalAlpha=k; g.fillStyle=col; g.fillRect(0,0,c.width,c.height);
+  m.set(key,c); return c;
+}
 function paintBg(){
   const g=bgG, w=bgCv.width, r=mulberry(777);
   const sc = bgCv.width/WORLD_W;
@@ -4010,9 +4014,11 @@ function paintBg(){
     else if(z.id==='forest'||z.id==='deep'){ c2 = r()<0.5? apick(ART.bamboo,i) : apick(ART.tam,i); a=0.6; s2=0.7; }
     else if(z.id==='paddy'){ c2 = r()<0.62? apick(ART.palm,i) : apick(ART.banana,i); a=0.6; s2=0.62; }
     else if(r()<0.5){ c2=apick(ART.palm,i); a=0.68; s2=0.72; }
-    if(c2){ g.globalAlpha=a;
-      g.drawImage(c2, R(x-c2.width*s2/2), R(base-c2.height*s2), R(c2.width*s2), R(c2.height*s2));
-      g.globalAlpha=1; }
+    /* solid, and gone pale with distance — not see-through. A tree drawn at
+       half alpha shows the sky through its own trunk, and at night the wash
+       over this layer lit that into a pale column standing in the graveyard */
+    if(c2){ const img=bgHaze(c2, z.id==='charnel'? '#6a7488' : '#8ea4ae', (1-a)*0.95);
+      g.drawImage(img, R(x-c2.width*s2/2), R(base-c2.height*s2), R(c2.width*s2), R(c2.height*s2)); }
   }
   paintTerraces(g, sc, r, PADDY_A, PADDY_B);
   paintTerraces(g, sc, r, 9080, 10580);
@@ -5978,33 +5984,6 @@ function drawTaiHong(g,e){
 const GHOST_ART = { kongkoi:drawKongKoi, krahang:drawKrahang, phipop:drawPhiPop, krasue:drawKrasue, taihong:drawTaiHong };
 
 /* ---------- the cat, who is above all this ---------- */
-function drawCat(g,c){
-  const x=c.x,y=c.y,f=c.face||1,t=c.anim;
-  const O='#e8984a',OD='#b96f2e',WT='#f5ead8';
-  if(c.state==='sit'||c.state==='tree'){
-    pEll(g,x,y-1,7,2,'rgba(10,8,20,0.35)');
-    pEll(g,x-2*f,y-5,5,5,O); pEll(g,x-3.5*f,y-5,3,4,OD);
-    pEll(g,x+3*f,y-8,4,4,O); pEll(g,x+4.4*f,y-8,2,3,OD);
-    pTri(g,x+1.4*f,y-13,x+0.6*f,y-9,x+3.4*f,y-9.6,O);
-    pTri(g,x+5*f,y-13,x+4*f,y-9.6,x+6.4*f,y-9.4,O);
-    pR(g,x+2*f,y-8.6,1,1,'#243'); pR(g,x+4.6*f,y-8.6,1,1,'#243');
-    pR(g,x+3.4*f,y-6.6,1.4,1,WT);
-    const tw=Math.sin(t*2)*3;
-    pTaper(g,x-6*f,y-5,x-9*f,y-9+tw,3,2,OD);
-    pR(g,x-1*f,y-1,2,1,WT); pR(g,x+2*f,y-1,2,1,WT);
-  } else {
-    pEll(g,x,y-1,7,2,'rgba(10,8,20,0.3)');
-    const ph=c.phase||0;
-    pEll(g,x,y-6,7,3.6,O); pEll(g,x+2*f,y-6,4,3,OD);
-    pEll(g,x+7*f,y-8,3.6,3.4,O);
-    pTri(g,x+5.6*f,y-12,x+5*f,y-9,x+7.4*f,y-9.4,O);
-    pTri(g,x+8.6*f,y-12,x+8*f,y-9.4,x+9.8*f,y-9,O);
-    pR(g,x+6.4*f,y-8.6,1,1,'#243'); pR(g,x+8.6*f,y-8.6,1,1,'#243');
-    for(let i=0;i<4;i++){ const lx=x+(-3+i*2.6)*f, s2=Math.sin(ph+i*1.6)*1.6;
-      pLimb(g,lx,y-4,lx+s2,y-1,1.8, i%2?OD:O); }
-    pTaper(g,x-6*f,y-7,x-10*f,y-11+Math.sin(t*3)*2,3,2,OD);
-  }
-}
 /* ============================================================
    GAME STATE — a cozy ledger. Nothing here fights anything.
    ============================================================ */
@@ -17323,16 +17302,11 @@ function drawFloats(g){
 /* ============================================================
    THE MAP
 
-   It used to be one straight line across a sheet of paper with
-   every label dealt out onto four rows above it — a diagram of
-   a road, not a map of a country. Ten thousand six hundred
-   pixels will not fit on one line at a readable scale anyway.
-
-   So: two rows, west to east and then east again, each one a
-   strip of drawn country with the terrain of whatever zone it
-   is passing through, a road that wanders the way a road does,
-   and a small picture at every landmark. Where you have not
-   walked there is bare paper and a dotted line.
+   The map itself is painted in fx/60-map.js: the road through
+   Isan, snaking across the page, with every place a stop on it.
+   What lives here is what the rest of the game shares with it —
+   the compass letters, the little pictures on the stops, and the
+   list of every name the map last put down.
    ============================================================ */
 /* เหนือ, ตะวันตก, ตะวันออก — the short forms a Thai map uses */
 const COMPASS = { n:['N','น'], w:['W','ตก'], e:['E','ออก'] };
@@ -17399,300 +17373,6 @@ function mapIcon(g,kind,x,y,c,c2){
     default: pEll(g,x,y,2.4,2.4,I);
   }
 }
-/* what the ground looks like on paper, per zone */
-const MAP_TERRAIN = {
-  charnel:{c:'#c9c4b4', k:'stone'}, roadside:{c:'#d5cbaa', k:'grass'},
-  paddy:{c:'#b8d2cc', k:'paddy'},   villageW:{c:'#dcc9a4', k:'roofs'},
-  centre:{c:'#dcc9a4', k:'roofs'},  grove:{c:'#b9cfa6', k:'trees'},
-  wat:{c:'#e4d6b0', k:'chedi'},     forest:{c:'#a8c39a', k:'trees'},
-  deep:{c:'#9cba90', k:'trees'},    cross:{c:'#cfc7b4', k:'road'},
-  town:{c:'#cdc6bc', k:'blocks'},   far:{c:'#b8d2cc', k:'paddy'},
-  river:{c:'#b2cfd8', k:'river'},   bank:{c:'#cfdab0', k:'grass'},
-  lake:{c:'#bcd6c8', k:'lotus'},    hill:{c:'#d2cdbc', k:'karst'},
-  ruins:{c:'#d9cdb0', k:'ruins'},
-};
-/* the strip map this replaced; fx/60-map.js paints the one that is drawn */
-function drawMapStrips(g,x0,y0,w,h){
-  cloud(g,x0,y0,w,h,{seed:97,top:'#fdf6e2',body:'#f1e5c8',under:'#d9c9a2',edge:'#b09a72'});
-  /* the paper: fold lines and a wash of age */
-  g.globalAlpha=0.45;
-  pR(g,R(x0+w*0.34),R(y0+6),1,h-12,'#dfd0a8'); pR(g,R(x0+w*0.68),R(y0+6),1,h-12,'#dfd0a8');
-  g.globalAlpha=1;
-  /* the heading, and then whatever room is left over for the rest of it.
-     Thai sets wider than English and the line under it used to start at a
-     fixed x, which put the subtitle straight through the title. */
-  const ttl=L('THE ROAD');
-  pTxt(g,ttl,x0+12,y0+14,CL.ink,11);
-  const pc=Math.round(seenFrac()*100), tail=L('walked')+' '+pc+'%';
-  pTxt(g, tail, x0+w-12, y0+14, pc>70?'#6e8a4c':CL.ink3, 6, 'right');
-  const sub=L('west to east, and then east again');
-  const sa=x0+20+txtW(ttl,11), sb=x0+w-20-txtW(tail,6);
-  if(sb-sa > txtW(sub,6)) pTxt(g,sub,sa,y0+14,CL.ink3,6);
-
-  MAP_LABELS.length=0;
-  const mx=x0+16, mw=w-32;
-  const rowH=Math.floor((h-46)/MAP_ROWS);
-  const seg=WORLD_W/MAP_ROWS;
-  const rowRy=[];
-
-  for(let row=0;row<MAP_ROWS;row++){
-    const wa=row*seg, wb=(row+1)*seg;
-    const th=rowH-22;                          // the drawn strip; the rest is margin for labels
-    const ty=y0+26+row*rowH+11;
-    const ry=ty+th*0.5;                        // the road runs down the middle of the strip
-    const X=wx => mx + mw*((wx-wa)/seg);
-    const bend = wx => Math.sin(wx*0.0016)*2.6 + Math.sin(wx*0.00052+1.1)*1.7;
-    rowRy.push(ry);
-    const zoneNames=[];
-    /* ---------------------------------------------------------------
-       THE SLAB
-
-       The map was flat: coloured bands on paper, which is a diagram.
-       Each row of country is a SLAB now — a top face you look down on
-       at a shallow angle, a cliff of earth under its front edge, and a
-       shadow on the paper underneath that. Everything that stands on
-       the land gets drawn with a one-pixel shadow to the right, which
-       is the whole of the trick: at this size, consistent contact
-       shadows are the difference between a picture of a country and a
-       picture of a coloured rectangle.
-       --------------------------------------------------------------- */
-    const LIFT=4;                    // how thick the slab is
-    /* the shadow it throws onto the paper */
-    g.globalAlpha=0.16;
-    pR(g,mx+1,ty+th+LIFT,mw+3,3,'#8a7450');
-    pR(g,mx+3,ty+th+LIFT+3,mw-1,1,'#8a7450');
-    g.globalAlpha=1;
-    /* the cliff: darker at the bottom, with a lip of light along the top */
-    pR(g,mx-2,ty+th,mw+4,LIFT,'#b9a479');
-    pR(g,mx-2,ty+th+LIFT-1,mw+4,1,'#9c8760');
-    /* the top face */
-    pR(g,mx-2,ty-2,mw+4,th+2,'#e7dab6');
-    pR(g,mx-2,ty-2,mw+4,1,'#f6eed4');
-    pR(g,mx-2,ty-1,mw+4,1,'#fbf5e2');
-    pR(g,mx-2,ty+th-1,mw+4,1,'#d3c096');
-    /* the country, zone by zone, and only where you have been */
-    ZONES.forEach(z=>{
-      const a=Math.max(z.a,wa), b=Math.min(z.b,wb);
-      if(b<=a) return;
-      const xa=R(X(a)), xb=R(X(b)), ww=Math.max(1,xb-xa);
-      const t=MAP_TERRAIN[z.id]||{c:'#d8cdb0',k:'grass'};
-      const known=seenSpan(a,b);
-      if(!known){
-        /* unwalked: cloud lying on it. You can see that there is country
-           under there and nothing about what it is. */
-        pR(g,xa,ty,ww,th,'#d8ccae');
-        const fs=mulberry(R(z.a)+7);
-        for(let i=0;i<ww;i+=5){
-          const fy=ty+2+fs()*(th-8);
-          g.globalAlpha=0.5; pEll(g,xa+i,fy,5+fs()*4,2.4,'#efe6cf');
-          g.globalAlpha=0.35; pEll(g,xa+i+2,fy-1.4,3.4,1.6,'#fbf5e6');
-          g.globalAlpha=1;
-        }
-        for(let i=0;i<ww;i+=6) for(let j=0;j<th;j+=6)
-          pR(g,xa+i+((j/6)%2)*3, ty+j, 1,1,'rgba(176,154,114,0.20)');
-      } else {
-        pR(g,xa,ty,ww,th,t.c);
-        const seed=mulberry(R(z.a));
-        if(t.k==='paddy'){
-          /* the dikes stand a pixel proud of the water, so the field reads
-             as terraced rather than as graph paper */
-          for(let i=0;i<ww;i+=7){ pR(g,xa+i,ty+2,1,th-4,'rgba(120,160,160,0.55)');
-                                  pR(g,xa+i+1,ty+2,1,th-4,'rgba(60,84,84,0.18)'); }
-          for(let j=3;j<th-1;j+=5){ pR(g,xa+1,ty+j,ww-2,1,'rgba(255,255,255,0.46)');
-                                    pR(g,xa+1,ty+j+1,ww-2,1,'rgba(80,110,110,0.16)'); }
-          for(let i=2;i<ww;i+=12) mapIcon(g,'rice',xa+i,ty+th*0.30,'rgba(70,120,92,0.50)');
-        } else if(t.k==='trees'){
-          for(let i=0;i<ww;i+=6){ const jy=ty+3+(seed()*(th-9));
-            /* the shadow first, one pixel down and to the right, then the
-               tree standing on it */
-            pEll(g,xa+i+3.4,jy+2.4,2.8,1.5,'rgba(90,74,48,0.28)');
-            pR(g,R(xa+i+2),R(jy+1),1,3,'rgba(92,74,52,0.62)');
-            pEll(g,xa+i+2,jy,2.6,2.2,'rgba(74,118,72,0.62)');
-            pEll(g,xa+i+1.2,jy-0.8,1.4,1.1,'rgba(128,176,110,0.55)'); }
-        } else if(t.k==='roofs'){
-          for(let i=0;i<ww-6;i+=10){ const jy=ty+3+(seed()*(th-12));
-            pR(g,R(xa+i+2),R(jy+6),8,2,'rgba(90,74,48,0.24)');        // shadow
-            pR(g,R(xa+i+1),R(jy+3),7,3,'rgba(196,168,122,0.72)');     // the wall
-            pR(g,R(xa+i+1),R(jy+3),7,1,'rgba(232,212,168,0.8)');
-            pTri(g,xa+i+4,jy,xa+i,jy+3,xa+i+8,jy+3,'rgba(150,86,60,0.78)');
-            pTri(g,xa+i+4,jy+0.8,xa+i+1.4,jy+3,xa+i+4,jy+3,'rgba(186,116,84,0.7)'); }
-        } else if(t.k==='blocks'){
-          for(let i=0;i<ww-5;i+=8){ const hh=4+R(seed()*5);
-            pR(g,xa+i+2,ty+th-3,7,2,'rgba(90,74,48,0.22)');           // shadow
-            pR(g,xa+i+1,ty+th-3-hh,6,hh,'rgba(130,126,120,0.68)');
-            pR(g,xa+i+5,ty+th-3-hh,2,hh,'rgba(96,92,88,0.6)');        // the shaded side
-            pR(g,xa+i+1,ty+th-3-hh,6,1,'rgba(230,226,216,0.7)'); }
-        } else if(t.k==='stone'){
-          for(let i=0;i<ww-3;i+=10) mapIcon(g,'chedi',xa+i+4,ty+th*0.36,'rgba(120,114,104,0.5)');
-        } else if(t.k==='chedi'){
-          pEll(g,xa+ww*0.5+2,ty+th*0.34+7,5,2,'rgba(90,74,48,0.26)');
-          mapIcon(g,'chedi',xa+ww*0.5,ty+th*0.34,'rgba(176,140,52,0.85)');
-        } else if(t.k==='river'){
-          /* the water, and the long bridge across the whole of it */
-          for(let j=2;j<th-2;j+=4) for(let i=(j%8?3:0);i<ww-4;i+=9) pR(g,xa+i,ty+j,4,1,'rgba(255,255,255,0.5)');
-          pR(g,xa,R(ry)-1,ww,2,'rgba(120,84,52,0.7)');
-          for(let i=2;i<ww;i+=5) pR(g,xa+i,R(ry)+1,1,3,'rgba(90,64,40,0.55)');
-        } else if(t.k==='lotus'){
-          for(let i=0;i<ww;i+=4){ const jy=ty+2+(seed()*(th-5));
-            pEll(g,xa+i+1,jy,1.8,1,'rgba(70,130,80,0.6)');
-            if(seed()<0.4) pR(g,R(xa+i+1),R(jy)-2,1,1,'rgba(226,110,150,0.9)'); }
-        } else if(t.k==='karst'){
-          for(let i=2;i<ww-4;i+=9){ const hh=6+R(seed()*8);
-            pEll(g,xa+i+4,ty+th-2,4,1.2,'rgba(90,74,48,0.22)');
-            pR(g,xa+i,ty+th-3-hh,6,hh,'rgba(168,162,146,0.8)'); pR(g,xa+i+4,ty+th-3-hh,2,hh,'rgba(128,122,110,0.7)');
-            pEll(g,xa+i+3,ty+th-3-hh,3,1.4,'rgba(96,140,86,0.7)'); }
-        } else if(t.k==='ruins'){
-          for(let i=4;i<ww-6;i+=13){ mapIcon(g,'prang',xa+i+3,ty+th*0.62,'rgba(160,90,60,0.75)','rgba(196,130,92,0.7)'); }
-          for(let i=0;i<ww;i+=5){ const jy=ty+3+(seed()*(th-6)); pR(g,R(xa+i),R(jy),2,1,'rgba(130,150,96,0.5)'); }
-          /* where the land stops, and the valley under it */
-          if(b>EAST.edge){ const ex=R(X(EAST.edge));
-            pR(g,ex,ty,xb-ex,th,'#cfe0c8');
-            for(let j=2;j<th;j+=3) pR(g,ex+1,ty+j,xb-ex-1,1,j%6?'rgba(150,176,110,0.45)':'rgba(190,200,130,0.45)');
-            pR(g,ex,ty,1,th,'rgba(96,76,54,0.7)'); }
-        } else if(t.k==='road'){
-          for(let i=0;i<ww;i+=5) pR(g,xa+i,ty+2,2,1,'rgba(150,130,95,0.5)');
-        } else {
-          for(let i=0;i<ww;i+=5){ const jy=ty+3+(seed()*(th-6));
-            pR(g,R(xa+i),R(jy),2,1,'rgba(130,150,96,0.5)'); }
-        }
-      }
-      /* the zone's name goes in the margin under the strip, not on top of the
-         country — a name printed over a paddy is a name you cannot read and a
-         paddy you cannot see. And only where you have been: the names of
-         places you have never walked to are not yours to know yet. */
-      if(!known) return;
-      const zn=L(z.s||z.name);
-      if(txtW(zn,6) < ww-8) zoneNames.push({zn, xa, xb, w:txtW(zn,6)});
-      if(ww>10) pR(g,xa,ty,1,th,'rgba(150,130,95,0.35)');
-    });
-    /* the road: it wanders, and it is only inked where you have walked */
-    let prev=null;
-    for(let wx=wa; wx<=wb; wx+=seg/mw){
-      const px=X(wx), py=ry+bend(wx);
-      if(prev){
-        const ww2=Math.max(1,R(px)-R(prev[0])+1);
-        if(seenAt(wx)){
-          pR(g,R(prev[0]),R(prev[1])-1,ww2,4,'#c2a97e');
-          pR(g,R(prev[0]),R(prev[1])-1,ww2,1,'#dcc79a');
-        } else if((R(px)%5)<2){
-          pR(g,R(px),R(py),2,1,'rgba(176,154,114,0.55)');
-        }
-      }
-      prev=[px,py];
-    }
-    for(let wx=wa; wx<wb; wx+=seg/mw*6){
-      if(!seenAt(wx)) continue;
-      pR(g,R(X(wx)),R(ry+bend(wx)+1),3,1,'#a88b5e');
-    }
-    /* ---- the landmarks ----
-       A picture on a post above or below the road, and the name beside it.
-       Two landmarks a hundred pixels apart is easy; six of them inside forty
-       is the whole problem. So each side of the road keeps a running edge,
-       and a name that will not fit where its post is slides along until it
-       does, with a hairline back to say which post it belongs to. */
-    const pins=MAP_PINS.filter(pn=>{ const wx=pn.x(); return wx>=wa && wx<wb && seenAt(wx); })
-                       .map(pn=>({pn, px:X(pn.x()), py:ry+bend(pn.x())}))
-                       .sort((a,b)=>a.px-b.px);
-    const edge=[-1e9,-1e9];                    // right edge of the last name on each side
-    pins.forEach((it,i)=>{
-      const nm=L(it.pn.n);
-      const lw=Math.max(txtW(nm,6),16)+5;
-      const want=it.px-lw/2;
-      const push=s=>Math.max(0,(edge[s]+3)-want);
-      let s = push(0)<=push(1) ? 0 : 1;
-      if(push(0)<=0 && push(1)<=0) s=i%2;       // both clear: alternate, so the map breathes
-      let la=Math.max(want, edge[s]+3);
-      la=clamp(la, mx-4, x0+w-8-lw);
-      edge[s]=la+lw;
-      const lx=la+lw/2, up = s===0;
-      /* three strips to a page leaves less room between them than two did,
-         so the pictures sit closer to the road */
-      const iy = it.py + (up? -10 : 10);
-      const tb = iy + (up? -9 : 14);            // the name's baseline
-      const done=it.pn.done&&it.pn.done();
-      /* the post down to the road */
-      const pa=Math.min(iy,it.py), pb2=Math.max(iy,it.py);
-      pR(g,R(it.px),R(pa)+6,1,Math.max(1,pb2-pa-6),'rgba(120,98,66,0.55)');
-      /* and the hairline over to the name, when the name had to move */
-      if(Math.abs(lx-it.px)>6){
-        const a2=Math.min(lx,it.px), b3=Math.max(lx,it.px);
-        pR(g,R(a2),R(up?tb-3:tb-2),R(b3-a2),1,'rgba(140,118,82,0.45)');
-      }
-      pEll(g,it.px,iy,7.4,7.4,'#f6efd8');
-      pEll(g,it.px,iy,6.6,6.6, done?'#e2eed2':'#f1e5c8');
-      mapIcon(g,it.pn.ic,it.px,iy+1, done?'#6e8a4c':'#5a4632', done?'#9fc07c':'#9c8460');
-      /* the name on its own scrap of paper, so nothing under it muddies it */
-      g.globalAlpha=0.86; pR(g,R(la),R(tb)-6,R(lw),8,'#f6efd8'); g.globalAlpha=1;
-      pTxt(g,nm, lx, tb, done?'#5b7a3c':CL.ink2, 6,'center');
-      MAP_LABELS.push({n:nm, row:row, side:s, a:la, b:la+lw, y:tb});
-    });
-    /* the zones' own names share the line under the strip with the names of
-       the landmarks, so they go down last, into whatever gaps are left in
-       their own stretch of country; one that cannot fit is left off */
-    const below=MAP_LABELS.filter(l=>l.row===row && l.side===1);
-    for(const zn of zoneNames){
-      const lo=zn.xa+2, hi=zn.xb-2-zn.w;
-      let best=null;
-      for(let a=clamp((zn.xa+zn.xb-zn.w)/2, lo, hi), step=0; step<80; step++){
-        const cand=[(zn.xa+zn.xb-zn.w)/2 + step*2, (zn.xa+zn.xb-zn.w)/2 - step*2];
-        for(const c of cand){ if(c<lo || c>hi) continue;
-          if(!below.some(l=>c < l.b+2 && l.a-2 < c+zn.w)){ best=c; break; } }
-        if(best!==null) break;
-      }
-      if(best===null) continue;
-      pTxt(g, zn.zn, best+zn.w/2, ty+th+9, 'rgba(96,76,54,0.8)', 6, 'center');
-      const lab={n:zn.zn, row:row, side:1, a:best, b:best+zn.w, y:ty+th+9, zone:true};
-      MAP_LABELS.push(lab); below.push(lab);
-    }
-    /* the ghosts you have met, as small dots on the road itself */
-    SPIRITS.forEach(sp=>{
-      if(sp.x<wa||sp.x>=wb || !seenAt(sp.x)) return;
-      const px=X(sp.x), py=ry+bend(sp.x)+5;
-      pEll(g,px,py,4.2,4.2, sp.friend?'rgba(232,130,158,0.35)':'rgba(184,174,200,0.35)');
-      pEll(g,px,py,2.6,2.6, sp.friend?'#e8829e':'#b8aec8');
-      if(sp.friend) icoHeart(g,px,py,0.55,'#6e2038');
-    });
-    /* and you */
-    if(P.x>=wa && P.x<wb){
-      const px=X(P.x), py=ry+bend(P.x);
-      const bob=Math.sin(GS.t*3)*1.4;
-      pTaper(g,px,py+5+bob,px,py-4+bob,5,2,'#c0392f');
-      pEll(g,px,py-5+bob,3.4,3.4,'#e05a48'); pEll(g,px-1,py-6+bob,1.4,1.4,'#ffb0a0');
-    }
-  }
-  /* the road runs off the right of one strip and comes back at the left of
-     the next, the way a strip map folds a long road onto a short page */
-  for(let row=0;row+1<MAP_ROWS;row++){
-    const yA=rowRy[row], yB=rowRy[row+1];
-    pR(g,R(mx+mw+1),R(yA),5,1,'rgba(150,128,92,0.7)');
-    pTri(g,mx+mw+9,yA+0.5, mx+mw+5,yA-2.5, mx+mw+5,yA+3.5,'rgba(140,118,82,0.8)');
-    pR(g,R(mx-7),R(yB),5,1,'rgba(150,128,92,0.7)');
-    pTri(g,mx-1,yB+0.5, mx-5,yB-2.5, mx-5,yB+3.5,'rgba(140,118,82,0.8)');
-  }
-  /* west at the head of the road, east at its end.
-     These cannot go through the dictionary: a bare 'E' is also the letter on
-     the key you press to do things, and translating that to ออก would put
-     "exit" on the button that means "use". So the compass picks its own. */
-  pTxt(g, compass('w'), mx-8, rowRy[0]-6, 'rgba(120,98,66,0.85)', 6,'center');
-  pTxt(g, compass('e'), mx+mw+8, rowRy[MAP_ROWS-1]-6, 'rgba(120,98,66,0.85)', 6,'center');
-  /* a compass rose and a scale bar, because it is a map */
-  {
-    const cx2=x0+w-26, cy2=y0+h-15;
-    for(let i=0;i<4;i++){ const a=i*Math.PI/2-Math.PI/2;
-      pTaper(g,cx2,cy2,cx2+Math.cos(a)*7,cy2+Math.sin(a)*7, i?1.6:2.4, 1, i?'#a88b5e':'#8f2a20'); }
-    pEll(g,cx2,cy2,1.6,1.6,'#5a4632');
-    pTxt(g, compass('n'), cx2, cy2-13, '#8f2a20', 6,'center');
-  }
-  {
-    const sx=x0+14, sy=y0+h-11, sw=40;
-    pR(g,sx,sy,sw,2,'#8f7a54'); pR(g,sx,sy-3,1,8,'#8f7a54'); pR(g,sx+sw-1,sy-3,1,8,'#8f7a54');
-    pR(g,R(sx+sw/2),sy-2,1,6,'#8f7a54');
-    pTxt(g,L("half an hour's walk"),sx+sw+6,sy+1,CL.ink3,6);
-  }
-  icoHeart(g,x0+w-116,y0+h-10,0.7,CL.ink3);
-  pTxt(g,SPIRITS.filter(s=>s.friend).length+'/'+SPIRITS.length,x0+w-108,y0+h-8,CL.ink3,6);
-}
-
 /* the signposts are gone, so nothing draws them */
 function drawSigns(g){}
 
@@ -18929,16 +18609,17 @@ function drawPets(g){
   for(const p of PETS){
     if(p.x-GS.camX<-40 || p.x-GS.camX>W+40) continue;
     const lift = p.pop>0? p.pop*2 : 0;
+    const look = typeof PET_LOOK!=='undefined'? PET_LOOK[p.name] : null, mine = GS.pet===p.id;
     if(p.kind==='cat'){
       drawCat(g,{x:p.x, y:p.y-lift, face:p.face, anim:p.anim, phase:p.phase,
-                 state: p.st==='walk'? 'walk':'sit', walking:p.st==='walk'});
+                 state: p.st==='walk'? 'walk' : p.st==='sleep'? 'sleep' : 'sit', walking:p.st==='walk', coat:look, collar:mine});
     } else if(p.coat==='fluffy'){
-      drawFluffyDog(g,{x:p.x, y:p.y-lift, face:p.face, t:p.anim,
+      drawFluffyDog(g,{x:p.x, y:p.y-lift, face:p.face, t:p.anim, collar:mine,
                        st: p.st==='sleep'? 'sleep' : p.st==='walk'? 'walk':'sit'});
     } else {
-      drawRoadDog(g,{x:p.x, face:p.face, st: (p.st==='sit'||p.st==='sleep')? 'sleep':'up',
+      drawRoadDog(g,{x:p.x, y:p.y-lift, face:p.face, st: (p.st==='sit'||p.st==='sleep')? 'sleep':'up',
                      t:p.anim, step:Math.sin(p.phase)*3, sp:p.st==='walk',
-                     bark: p.st==='bark'? p.bark : 0, coat:p.dogCoat});
+                     bark: p.st==='bark'? p.bark : 0, look, collar:mine});
     }
     /* what it looks like when something shouts at you that nobody else hears */
     if(p.st==='bark' && p.bark>0) barkMarks(g, p.x, p.y, p.face, p.bark);
@@ -18957,91 +18638,7 @@ function drawPets(g){
     }
   }
 }
-/* ---------- Gohan ----------
-   The soi dogs are short-haired, lean and the colour of the road. He is
-   none of that: a thick white coat that moves a beat behind him, a ruff
-   round the neck, and a plumed tail carried up over his back. He is
-   somebody's dog who stopped having a somebody, and he still sits when a
-   person walks past out of a habit nobody rewards any more. */
-function drawFluffyDog(g,d){
-  const x=d.x, gy=d.y!==undefined? d.y : groundY(x), f=d.face, t=d.t;
-  const W1='#f4efe4', W2='#ded5c4', W3='#bdb3a0', INK='#6b6153';
-  const sleep = d.st==='sleep', walk = d.st==='walk';
-  const step = walk? Math.sin(t*7)*2.4 : 0;
-  const puff = (cx,cy,rx,ry,c)=>pEll(g,cx,cy,rx,ry,c);
-  pEll(g,x,gy-1, sleep?17:12, sleep?4:3.2,'rgba(10,8,20,0.28)');
-  if(sleep){
-    /* the same two breaths as the soi dogs, and the coat moves a beat behind
-       him the way it does when he walks */
-    const tt  = t||0;
-    const br  = Math.sin(tt*1.15)*0.42 + Math.sin(tt*0.33)*0.55;
-    const tw  = Math.max(0, Math.sin(tt*0.49)-0.94)*11;
-    const ef  = Math.max(0, Math.sin(tt*0.37+0.9)-0.95)*20;
-    /* the legs, right out past the coat — his fore pair reaches past the
-       muzzle, which is how a big dog sprawls when it gives up on the day */
-    pLimb(g, x-6*f, gy-4.6, x-19*f+tw*0.3*f, gy-1.5, 2.6, W3);
-    puff(x-20.4*f+tw*0.3*f, gy-1.5, 2.8, 1.8, W2);
-    pLimb(g, x+4*f, gy-4.4, x+15*f, gy-1.5, 2.6, W3);
-    puff(x+16.4*f, gy-1.5, 2.8, 1.8, W2);
-    puff(x,gy-5,12,5+br*0.5,W2); puff(x,gy-6.6,10,3.6+br*0.4,W1);
-    for(let i=0;i<5;i++) puff(x-9+i*4.6, gy-8.4+Math.sin(i*1.7)*0.8+br*0.45, 3.0,2.0, i%2?W1:W2);
-    /* the head is out on the ground in front of him, chin down, which is
-       the shape that says asleep rather than a bread roll */
-    /* white on white is nothing, so the head is cut out of the coat with a
-       crease behind it and the ear is the darkest thing on him */
-    puff(x-9.6*f,gy-5.6,3.6,4.2,W3);                                // the crease at the ruff
-    puff(x-12.5*f,gy-5.4,5.0,4.0,W2); puff(x-13.5*f,gy-6.4,4.0,3.0,W1);
-    pTri(g,x-15*f,gy-10.8-ef*0.16,x-17.4*f,gy-5.2,x-11.6*f,gy-6.4,W3);  // ear, flicking
-    pTri(g,x-14.8*f,gy-9.8-ef*0.14,x-16.4*f,gy-5.8,x-12.4*f,gy-6.6,W2);
-    puff(x-16.4*f,gy-4.2,2.8,2.0,W1);                               // muzzle on the dirt
-    pR(g,R(x-18.2*f),R(gy-4.4),2,1,'#c2857f');
-    pR(g,R(x-16.6*f),R(gy-2.8),4,1,W3);                             // the line of the jaw
-    /* the shut eye is a curve, not a dash — a dash is a dead dog */
-    for(let i=-2;i<=2;i++){ const u=i/2;
-      pR(g, R(x-14.2*f+u*1.8), R(gy-6.4-(1-u*u)*0.9), 1,1, INK); }
-    /* the near foreleg over the far one, and the plume of tail across him */
-    pLimb(g, x-5*f, gy-6.0, x-18*f+tw*0.45*f, gy-2.3, 2.8, W1);
-    puff(x-19.4*f+tw*0.45*f, gy-2.3, 2.9, 1.9, W1);
-    puff(x+11*f,gy-6+br*0.3,5.4,3.4,W1); puff(x+13*f,gy-7+br*0.3,3.6,2.6,W2);
-    { const cyc=(tt*0.28)%1;
-      if(cyc<0.55){
-        const u=cyc/0.55, a=(u<0.15?u/0.15:1)*(1-u)*0.8, s2=0.62+u*0.5;
-        const zx=x-19*f-u*7*f, zy=gy-11-u*12;
-        g.globalAlpha=a;
-        pR(g, zx-2.4*s2, zy-2.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
-        pR(g, zx-2.4*s2, zy+1.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
-        pTaper(g, zx+2.0*s2, zy-1.4*s2, zx-2.0*s2, zy+1.9*s2, 1.2*s2, 1.2*s2, '#efe6cf');
-        g.globalAlpha=1;
-      } }
-    return;
-  }
-  const bob = walk? Math.abs(Math.sin(t*7))*1.0 : 0;
-  const by = gy-9-bob;
-  /* the coat: a body, then a row of overlapping puffs along the back */
-  puff(x,by,9.4,5.0,W2); puff(x,by-1.4,8.0,3.8,W1);
-  for(let i=0;i<6;i++) puff(x-8+i*3.4, by-4.2+Math.sin(t*2+i)*0.5, 3.0,2.2, i%2?W1:W2);
-  puff(x-2*f,by+2.4,7.0,3.0,W3);                                    // the chest shadow
-  /* the ruff, then the head sitting in it */
-  puff(x+6.6*f,by-2.2,5.4,5.2,W2); puff(x+6.2*f,by-2.6,4.4,4.2,W1);
-  const hx2=x+9.4*f, hy2=by-5.4;
-  puff(hx2,hy2,4.6,4.0,W1); puff(hx2+1*f,hy2+0.6,3.6,3.0,W2);
-  pTri(g,hx2+0.6*f,hy2-7,hx2-1.6*f,hy2-2.4,hx2+3.2*f,hy2-2.8,W2);   // ears, pricked
-  pTri(g,hx2+1.2*f,hy2-6,hx2-0.4*f,hy2-2.8,hx2+2.6*f,hy2-3.2,W1);
-  pTri(g,hx2+4.6*f,hy2-6.4,hx2+2.8*f,hy2-2.6,hx2+6.6*f,hy2-3.0,W2);
-  pR(g,R(hx2+1.4*f),R(hy2-1),1,1,INK);                              // eye
-  puff(hx2+4.2*f,hy2+1.4,2.6,2.0,W1);                               // muzzle
-  pR(g,R(hx2+5.6*f),R(hy2+0.6),2,1,'#c2857f');                      // and a pink nose
-  /* the plume, carried up and over */
-  for(let i=0;i<5;i++){
-    const a=-0.55-i*0.34 + Math.sin(t*3)*0.10;
-    puff(x-8*f+Math.cos(a)*i*2.4*-f, by-1+Math.sin(a)*i*2.2, 3.4-i*0.28, 2.8-i*0.22, i%2?W1:W2);
-  }
-  for(let i=0;i<2;i++){
-    const sx2=x+(i?4:-4)*f;
-    pLimb(g,sx2,by+3.6,sx2+(i?step:-step),gy-1,2.6,i?W2:W3);
-    puff(sx2+(i?step:-step),gy-1.6,2.2,1.6,W1);                     // feathered feet
-  }
-}
+/* Gohan, the cats and the soi dogs are drawn in fx/47-pets.js */
 /* ---------- what an animal is thinking, as a picture ---------- */
 function petMoodIcon(g,p){
   const a=clamp(p.moodT/PET_MOOD_T,0,1);
@@ -26496,12 +26093,6 @@ function paintEast(){
 const TRAFFIC=[], ROAD_DOGS=[], PARKED=[];
 /* หมาวัด, หมาหน้าร้าน: the ones that live off the shop step, where the
    concrete is warm and somebody always drops something */
-const DOG_COATS = [
-  {b:'#c9a06a', l:'#dcb47e', d:'#a87f4e'},          // the usual tan one
-  {b:'#4a4038', l:'#6a5c50', d:'#332c26'},          // the black one with the white socks
-  {b:'#d8cec0', l:'#eee6da', d:'#b0a493'},          // the dusty white one
-  {b:'#a8622e', l:'#c47f44', d:'#7e4620'},          // and the ginger
-];
 
 /* Almost everything on a Thai road is a motorbike, so almost everything here
    is one. The rest is what a motorbike cannot carry. */
@@ -26943,112 +26534,6 @@ function drawVehicle(g,v){
     pR(g,R(x-22*f),R(by+3),2.4,2,'#b8342c');
     blinker(g,x+22*f,by+4,v.blink); blinker(g,x-22*f,by+5,v.blink);
     if(v.horn>0) horn(g, x+26*f, by-2, f);
-  }
-}
-function drawRoadDog(g,d){
-  const x=d.x, gy=groundY(x), f=d.face;
-  const co=DOG_COATS[(d.coat||0)%DOG_COATS.length];
-  if(d.bark>0){
-    /* up on its front legs, head back, and the whole body going with it */
-    const beat=(d.bark*3.4)%1, open=Math.max(0,Math.sin(beat*Math.PI));
-    const rock=open*2.2;
-    pEll(g,x,gy-1,11,3,'rgba(10,8,20,0.28)');
-    pLimb(g,x-5*f,gy-9,x-6*f,gy-1,2.2,co.d);                 // back legs, planted
-    pLimb(g,x-3*f,gy-9,x-2*f,gy-1,2.2,co.b);
-    pEll(g,x,gy-10,9,4.4,co.b); pEll(g,x,gy-11.6,7.6,3.2,co.l);
-    pLimb(g,x+5*f,gy-11,x+6*f,gy-1,2.2,co.d);                // front legs, braced
-    pLimb(g,x+7*f,gy-11,x+8*f,gy-1,2.2,co.b);
-    const hx=x+9*f, hy=gy-15-rock;
-    pEll(g,hx,hy,4.6,4.2,co.b); pEll(g,hx+1*f,hy-1,3.6,3.0,co.l);
-    pTri(g,hx-1*f,hy-6, hx-4*f,hy-1, hx+1*f,hy-1, co.d);     // ear, back
-    pTri(g,hx+3*f,hy-5, hx+1*f,hy-1, hx+5*f,hy-1, co.d);     // ear, forward
-    /* the muzzle, open on the beat */
-    pTaper(g,hx+2*f,hy+1, hx+7*f,hy+1+open*1.4, 2.6,1.8, co.l);
-    if(open>0.25){
-      pTri(g,hx+3*f,hy+0.4, hx+8*f,hy+0.6+open*2.6, hx+3*f,hy+2.2+open*2.2,'#4a2020');
-      pR(g,R(hx+4*f),R(hy+1.4+open*1.2),2,1,'#d0707a');      // a bit of tongue
-    }
-    pR(g,R(hx+7*f),R(hy+0.6),1,1,'#2a1c14');                 // the nose
-    pR(g,R(hx+2*f),R(hy-1),1,1,'#241a12');                   // and one hard eye
-    pTaper(g,x-8*f,gy-11, x-13*f,gy-16-Math.sin(d.t*9)*3, 2.6,1,co.d);   // tail, up
-    return;
-  }
-  if(d.st==='sleep'){
-    /* Flat out on its side in the dust with all four legs pushed away from it,
-       the muzzle down on the ground and the tail curled round to the belly.
-       It used to be a loaf with an ear on it.
-
-       Two breaths at once, a slow one under a much slower one, because one
-       sine wave reads as a machine; and every few seconds a paw goes and an
-       ear flicks, which is the whole of what makes it look alive. */
-    const t   = d.t||0;
-    const br  = Math.sin(t*1.25)*0.40 + Math.sin(t*0.37)*0.50;
-    const tw  = Math.max(0, Math.sin(t*0.53)-0.93)*12;      // a paw, now and then
-    const ef  = Math.max(0, Math.sin(t*0.41+1.7)-0.95)*22;  // and an ear
-    const hx  = x + 13*f, hy = gy - 5.0;
-    pEll(g,x,gy-0.5,17,3.6,'rgba(10,8,20,0.28)');
-    /* the far pair first, darker, and pushed right out past the body — a leg
-       that stops inside the barrel is a leg nobody can see */
-    pLimb(g, x-5*f,  gy-6.0, x-10.5*f, gy-3.4, 2.5, co.d);      // hock
-    pLimb(g, x-10.5*f, gy-3.4, x-15*f, gy-1.5, 2.3, co.d);
-    pEll(g,  x-16.4*f, gy-1.5, 2.6, 1.5, co.d);
-    pLimb(g, x+6*f,  gy-5.4, x+12.5*f, gy-3.2, 2.5, co.d);      // elbow
-    pLimb(g, x+12.5*f, gy-3.2, x+19*f, gy-1.4, 2.3, co.d);
-    pEll(g,  x+20.4*f, gy-1.4, 2.6, 1.5, co.d);
-    /* the tail, lying along the ground and hooking back under */
-    { const tp=[[-9,-4.6],[-13.6,-3.4],[-17.2,-1.8],[-15.4,-0.7],[-12.2,-0.7]];
-      for(let i=0;i<tp.length;i++){ const u=i/(tp.length-1);
-        pEll(g, x+tp[i][0]*f, gy+tp[i][1]+Math.sin(t*0.8+i*0.7)*0.22,
-                lerp(2.6,1.5,u), lerp(2.2,1.2,u), i<2?co.b:co.d); } }
-    /* the barrel of it, going up and down */
-    pEll(g, x,       gy-5.8, 9.2, 5.2+br*0.55, co.b);
-    pEll(g, x-1.4*f, gy-7.4, 7.4, 3.4+br*0.42, co.l);
-    pEll(g, x+1.6*f, gy-3.6, 6.4, 2.2+br*0.22, co.d);        // the underside, in shade
-    /* the neck reaching out, and the head down on the dirt */
-    pTaper(g, x+6.4*f, gy-6.0, hx, hy, 5.6, 4.2, co.b);
-    pEll(g, hx, hy, 4.8, 4.0, co.b);
-    pEll(g, hx-0.8*f, hy-1.2, 3.8, 2.6, co.l);
-    pTaper(g, hx+2.4*f, hy+0.4, hx+7.4*f, hy+1.8, 3.2, 2.0, co.l);   // the muzzle, flat
-    pEll(g, hx+7.8*f, hy+1.9, 1.5, 1.2, '#2a1c14');                  // the nose
-    pR(g, R(hx+5.0*f), R(hy+2.8), 2, 1, '#8a5560');                  // a slack lip
-    /* the ear, flopped over the side of its face and flicking */
-    pTri(g, hx-1.2*f, hy-5.0-ef*0.18, hx-6.0*f, hy+1.2, hx+0.6*f, hy+1.6, co.d);
-    pTri(g, hx-1.4*f, hy-4.0-ef*0.16, hx-4.6*f, hy+0.6, hx+0.0*f, hy+1.0, co.b);
-    /* the eye, shut: one curve with a lash off the outer corner */
-    for(let i=-2;i<=2;i++){ const u=i/2;
-      pR(g, R(hx+1.2*f+u*2.0), R(hy-1.4-(1-u*u)*0.9), 1,1, '#3a2a1c'); }
-    pR(g, R(hx+3.6*f), R(hy-1.6), 1,1, '#4a3826');
-    /* and the near pair on top of everything, twitching. The front one
-       stretches out past the nose, which is how a dog actually sprawls. */
-    pLimb(g, x-4*f, gy-7.0, x-9.5*f, gy-4.0, 2.8, co.b);
-    pLimb(g, x-9.5*f, gy-4.0, x-14*f+tw*0.35*f, gy-2.2, 2.5, co.b);
-    pEll(g,  x-15.4*f+tw*0.35*f, gy-2.2, 2.8, 1.8, co.l);
-    pLimb(g, x+6*f, gy-6.2, x+12*f, gy-3.8, 2.8, co.b);
-    pLimb(g, x+12*f, gy-3.8, x+18*f+tw*0.5*f, gy-2.1, 2.5, co.b);
-    pEll(g,  x+19.6*f+tw*0.5*f, gy-2.1, 2.8, 1.8, co.l);
-    /* a z, now and then */
-    { const cyc=(t*0.30)%1;
-      if(cyc<0.55){
-        const u=cyc/0.55, a=(u<0.15?u/0.15:1)*(1-u)*0.8, s2=0.62+u*0.5;
-        const zx=hx+5*f+u*7*f, zy=hy-8-u*12;
-        g.globalAlpha=a;
-        pR(g, zx-2.4*s2, zy-2.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
-        pR(g, zx-2.4*s2, zy+1.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
-        pTaper(g, zx+2.0*s2, zy-1.4*s2, zx-2.0*s2, zy+1.9*s2, 1.2*s2, 1.2*s2, '#efe6cf');
-        g.globalAlpha=1;
-      } }
-  } else {
-    const ph=d.t*7, step=d.sp? Math.sin(ph)*2.4 : 0;
-    pEll(g,x,gy-1,11,3,'rgba(10,8,20,0.28)');
-    pEll(g,x,gy-8,9,4.2,co.b); pEll(g,x,gy-9.4,7.6,3,co.l);
-    pEll(g,x+8*f,gy-12,4.4,4,co.b); pEll(g,x+9*f,gy-13,3.4,3,co.l);
-    pTri(g,x+7*f,gy-16,x+5*f,gy-12,x+10*f,gy-13,co.d);
-    pR(g,R(x+9*f),R(gy-12),1,1,'#3a2c1e');
-    pR(g,R(x+11*f),R(gy-11),2,1,'#5a4028');
-    pTaper(g,x-8*f,gy-9,x-13*f,gy-14+Math.sin(d.t*4)*2,3,1,co.d);
-    for(let i=0;i<2;i++){
-      pLimb(g,x+(i?5:-5)*f,gy-6,x+(i?5:-5)*f+(i?step:-step),gy-1,2.2,i?co.l:co.d);
-    }
   }
 }
 function drawTraffic(g){

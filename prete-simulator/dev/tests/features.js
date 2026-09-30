@@ -117,8 +117,8 @@ const SW = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-
   chk('the map is one road that turns at the ends, and nothing on it is cut off by the frame', await get(() => {
     GS.seenX = {}; for (let x = 0; x < WORLD_W; x += 90) markSeen(x);
     GS.state = 'tree'; TREE.tab = 3; render(); GS.state = 'play';
-    const G = pmGeo(6, 51, W - 12, H - 57), s1 = G.seg;
-    const snake = G.X(s1 * 1.1) > G.X(s1 * 1.9) && G.X(s1 * 0.1) < G.X(s1 * 0.9) && G.X(s1 * 2.1) < G.X(s1 * 2.9);
+    const G = pmGeo(6, 51, W - 12, H - 57), b = G.b, at = (r, u) => b[r] + (b[r + 1] - b[r]) * u;
+    const snake = G.X(at(0, 0.1)) < G.X(at(0, 0.9)) && G.X(at(1, 0.1)) > G.X(at(1, 0.9)) && G.X(at(2, 0.1)) < G.X(at(2, 0.9));
     const out = MAP_LABELS.filter(l => l.a < 6 || l.b > W - 6);
     window.__m = MAP_LABELS.length + ' names, ' + out.length + ' off the page' + (snake ? '' : ', not a snake');
     return snake && out.length === 0 && MAP_LABELS.length >= 20; }), await get(() => window.__m));
@@ -140,10 +140,14 @@ const SW = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-
   chk('the washing hangs, blows, and swings out of the way of anybody walking through it', await get(() => {
     const L = CLOTH.items.find(i => i.kind === 'line'); if (!L) return false;
     const hg = L.hangs[1].c, low = () => hg.pts[hg.pts.length - 1];
-    P.x = L.x + 200; P.y = groundY(P.x); GS.camX = clamp(L.x - 200, 0, WORLD_W - 480);
+    P.x = L.x + 200; P.y = groundY(P.x); GS.camX = clamp(L.x - 200, 0, WORLD_W - 480); GS.state = 'play';
     for (let i = 0; i < 120; i++) { GS.wind = 0; GUSTS.length = 0; update(1 / 60); }
+    /* then a still day, so what moves it next is the walk and not a gust */
+    const wa = window.windAt; window.windAt = () => 0;
+    for (let i = 0; i < 240; i++) stepClothes(1 / 60);
     const hang = low().y - hg.pts[0].y, x0 = low().x;
     P.x = x0 - 3; P.vx = 30; for (let i = 0; i < 20; i++) { P.x = x0 - 3; P.vx = 30; stepClothes(1 / 60); }
+    window.windAt = wa;
     const pushed = Math.abs(low().x - x0);
     window.__c = 'hangs ' + hang.toFixed(0) + 'px, pushed ' + pushed.toFixed(1) + 'px';
     return hang > 10 && pushed > 1.5; }), await get(() => window.__c));
@@ -154,10 +158,41 @@ const SW = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-
     for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] < 45 && d[i + 1] < 35 && d[i + 2] < 40) ink++;
     window.__p = ink + ' black pixels'; return ink > 120; }), await get(() => window.__p));
 
+  /* ---- the start, the new map, the cats and dogs, Isan ---- */
+  chk('a new game opens at night and is graded as night, not as dawn', await get(() => {
+    newGame(); const g = fxGrade(), v = TOD.v;
+    window.__g = 'TOD ' + v.toFixed(2) + ', sat ' + g.sat.toFixed(2) + ', black ' + g.black.toFixed(3) + ', rays ' + g.rays;
+    chGo('free'); GS.state = 'play'; GS.tut = 99; DLG = null; VIG = null;
+    return v < 0.1 && g.sat < 1 && g.black < 0.03 && g.rays === 0; }), await get(() => window.__g));
+  chk('the old strip map is gone, and the new one is drawn from inked Isan sprites', await get(() => {
+    const names = ['palmyra', 'stilt', 'granary', 'sim', 'that', 'buffalo', 'termite', 'prasat', 'morlam', 'mesa'];
+    const miss = names.filter(n => !mapArt(n, 0));
+    const c = mapArt('stilt', 1), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    let ink = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] < 50 && d[i + 1] < 40 && d[i + 2] < 45) ink++;
+    GS.seenX = {}; for (let x = 0; x < WORLD_W; x += 90) markSeen(x); PMAP.key = ''; GS.state = 'tree'; TREE.tab = 3; render(); GS.state = 'play';
+    window.__mp = (miss.join(' ') || 'all sprites') + ', ' + ink + ' ink pixels on a house, ' + PMAP.placed + ' things on the map';
+    return typeof drawMapStrips === 'undefined' && typeof MAP_TERRAIN === 'undefined' && !miss.length && ink > 30 && PMAP.placed > 150; }),
+    await get(() => window.__mp));
+  chk('every cat and every dog is somebody: its own coat, and a line round it', await get(() => {
+    const shot = (fn) => { const c = mkCv(40, 30), g = c.getContext('2d'); fn(g); return g.getImageData(0, 0, 40, 30).data; };
+    const cats = Object.keys(CAT_COATS).map(k => shot(g => drawCat(g, { x: 20, y: 26, face: 1, anim: 0.3, state: 'sit', coat: k })));
+    const dogs = Object.keys(DOG_LOOKS).map(k => shot(g => drawRoadDog(g, { x: 20, y: 26, face: 1, st: 'up', t: 0.3, look: k })));
+    const sig = d => { let r = 0, g2 = 0, b = 0, n = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200) { r += d[i]; g2 += d[i + 1]; b += d[i + 2]; n++; } return [r / n | 0, g2 / n | 0, b / n | 0].join(','); };
+    const inked = d => { let k = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] < 40 && d[i + 1] < 30 && d[i + 2] < 40) k++; return k; };
+    const cs = new Set(cats.map(sig)), ds = new Set(dogs.map(sig)), ink = Math.min(...cats.map(inked), ...dogs.map(inked));
+    const named = PETS.filter(p => p.coat !== 'fluffy' && !PET_LOOK[p.name]).map(p => p.name);
+    window.__pt = cs.size + ' cat coats, ' + ds.size + ' dog coats, at least ' + ink + ' ink pixels each' + (named.length ? ', no look for ' + named.join(' ') : '');
+    return cs.size === cats.length && ds.size === dogs.length && ink > 25 && !named.length; }), await get(() => window.__pt));
+  chk('sugar palms stand over the paddies, and the ones by the road move in the wind', await get(() => {
+    const live = SHADE.trees.filter(t => ISAN.palms.some(x => Math.abs(t.bx - x) < 2));
+    window.__sp = ISAN.palms.length + ' by the road, ' + live.length + ' of them live';
+    return ISAN.palms.length >= 3 && live.length === ISAN.palms.length; }), await get(() => window.__sp));
+
   /* ---- Thai ---- */
   chk('every new line has its Thai', await get(() => {
     const need = ['give Boonmee a banana', "stroke Boonmee's trunk", 'talk to Lung Kham', 'ask Boonmee for a shower',
-      'add a handful of sand', 'splash', 'Lung Kham', 'Happy Songkran!', ...KHAM_LINES, 'the water'];
+      'add a handful of sand', 'splash', 'Lung Kham', 'Happy Songkran!', ...KHAM_LINES, 'the water',
+      'drawing the map', 'sugar palms on the bunds'];
     const miss = need.filter(s => !TH[s]); window.__th = miss.join(' | '); return miss.length === 0; }), await get(() => window.__th));
 
   /* ---- and without WebGL at all, the old drawing stands ---- */

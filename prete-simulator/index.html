@@ -970,14 +970,10 @@ function artFence(){ const c=mkCv(64,40),g=G2(c);
   pR(g,0,13,64,4,'#5d4735'); pR(g,0,13,64,1,'#7a5c44');
   pR(g,0,26,64,4,'#5d4735'); pR(g,0,26,64,1,'#7a5c44');
   return c; }
-function artDog(){ const c=mkCv(46,24),g=G2(c);
-  // a soi dog asleep in the road, as is his right
-  pEll(g,22,17,16,7,'#c9a06a'); pEll(g,22,15,14,5,'#dcb47e');
-  pEll(g,9,14,7,6,'#c9a06a'); pEll(g,8,13,6,5,'#dcb47e');
-  pTri(g,6,10,3,15,9,14,'#a87f4e'); pR(g,4,14,4,2,'#5a4028');
-  pEll(g,36,16,7,4,'#a87f4e');
-  pR(g,14,21,4,3,'#b8905a'); pR(g,24,21,4,3,'#b8905a');
-  pR(g,7,13,2,1,'#3a2c1e');
+function artDog(){ const c=mkCv(28,16),g=G2(c);
+  // a soi dog asleep in the road, as is his right: curled up the way the
+  // village's own dogs sleep now (fx/47-pets.js)
+  dogSleep(g, 13, 15, 1, 0, dogLook('tan'), {});
   return c; }
 /* ศาลเพียงตา — the one-post shrine that stands at the edge of a field.
    There are no scarecrows in a Thai rice field. There is this: a post about
@@ -4017,6 +4013,14 @@ function paintMid(){
   // low mist band
   for(let x=0;x<w;x+=3){ const a=0.05+0.04*Math.sin(x*0.01); g.fillStyle=`rgba(150,170,220,${a})`; g.fillRect(x,196+Math.sin(x*0.02)*3,3,7); }
 }
+const _bgHaze = new Map();
+function bgHaze(img, col, k){
+  const key=col+'|'+k.toFixed(2); let m=_bgHaze.get(img); if(!m){ m=new Map(); _bgHaze.set(img,m); }
+  let c=m.get(key); if(c) return c;
+  c=mkCv(img.width,img.height); const g=G2(c);
+  g.drawImage(img,0,0); g.globalCompositeOperation='source-atop'; g.globalAlpha=k; g.fillStyle=col; g.fillRect(0,0,c.width,c.height);
+  m.set(key,c); return c;
+}
 function paintBg(){
   const g=bgG, w=bgCv.width, r=mulberry(777);
   const sc = bgCv.width/WORLD_W;
@@ -4031,9 +4035,11 @@ function paintBg(){
     else if(z.id==='forest'||z.id==='deep'){ c2 = r()<0.5? apick(ART.bamboo,i) : apick(ART.tam,i); a=0.6; s2=0.7; }
     else if(z.id==='paddy'){ c2 = r()<0.62? apick(ART.palm,i) : apick(ART.banana,i); a=0.6; s2=0.62; }
     else if(r()<0.5){ c2=apick(ART.palm,i); a=0.68; s2=0.72; }
-    if(c2){ g.globalAlpha=a;
-      g.drawImage(c2, R(x-c2.width*s2/2), R(base-c2.height*s2), R(c2.width*s2), R(c2.height*s2));
-      g.globalAlpha=1; }
+    /* solid, and gone pale with distance — not see-through. A tree drawn at
+       half alpha shows the sky through its own trunk, and at night the wash
+       over this layer lit that into a pale column standing in the graveyard */
+    if(c2){ const img=bgHaze(c2, z.id==='charnel'? '#6a7488' : '#8ea4ae', (1-a)*0.95);
+      g.drawImage(img, R(x-c2.width*s2/2), R(base-c2.height*s2), R(c2.width*s2), R(c2.height*s2)); }
   }
   paintTerraces(g, sc, r, PADDY_A, PADDY_B);
   paintTerraces(g, sc, r, 9080, 10580);
@@ -5999,33 +6005,6 @@ function drawTaiHong(g,e){
 const GHOST_ART = { kongkoi:drawKongKoi, krahang:drawKrahang, phipop:drawPhiPop, krasue:drawKrasue, taihong:drawTaiHong };
 
 /* ---------- the cat, who is above all this ---------- */
-function drawCat(g,c){
-  const x=c.x,y=c.y,f=c.face||1,t=c.anim;
-  const O='#e8984a',OD='#b96f2e',WT='#f5ead8';
-  if(c.state==='sit'||c.state==='tree'){
-    pEll(g,x,y-1,7,2,'rgba(10,8,20,0.35)');
-    pEll(g,x-2*f,y-5,5,5,O); pEll(g,x-3.5*f,y-5,3,4,OD);
-    pEll(g,x+3*f,y-8,4,4,O); pEll(g,x+4.4*f,y-8,2,3,OD);
-    pTri(g,x+1.4*f,y-13,x+0.6*f,y-9,x+3.4*f,y-9.6,O);
-    pTri(g,x+5*f,y-13,x+4*f,y-9.6,x+6.4*f,y-9.4,O);
-    pR(g,x+2*f,y-8.6,1,1,'#243'); pR(g,x+4.6*f,y-8.6,1,1,'#243');
-    pR(g,x+3.4*f,y-6.6,1.4,1,WT);
-    const tw=Math.sin(t*2)*3;
-    pTaper(g,x-6*f,y-5,x-9*f,y-9+tw,3,2,OD);
-    pR(g,x-1*f,y-1,2,1,WT); pR(g,x+2*f,y-1,2,1,WT);
-  } else {
-    pEll(g,x,y-1,7,2,'rgba(10,8,20,0.3)');
-    const ph=c.phase||0;
-    pEll(g,x,y-6,7,3.6,O); pEll(g,x+2*f,y-6,4,3,OD);
-    pEll(g,x+7*f,y-8,3.6,3.4,O);
-    pTri(g,x+5.6*f,y-12,x+5*f,y-9,x+7.4*f,y-9.4,O);
-    pTri(g,x+8.6*f,y-12,x+8*f,y-9.4,x+9.8*f,y-9,O);
-    pR(g,x+6.4*f,y-8.6,1,1,'#243'); pR(g,x+8.6*f,y-8.6,1,1,'#243');
-    for(let i=0;i<4;i++){ const lx=x+(-3+i*2.6)*f, s2=Math.sin(ph+i*1.6)*1.6;
-      pLimb(g,lx,y-4,lx+s2,y-1,1.8, i%2?OD:O); }
-    pTaper(g,x-6*f,y-7,x-10*f,y-11+Math.sin(t*3)*2,3,2,OD);
-  }
-}
 /* ============================================================
    GAME STATE — a cozy ledger. Nothing here fights anything.
    ============================================================ */
@@ -17344,16 +17323,11 @@ function drawFloats(g){
 /* ============================================================
    THE MAP
 
-   It used to be one straight line across a sheet of paper with
-   every label dealt out onto four rows above it — a diagram of
-   a road, not a map of a country. Ten thousand six hundred
-   pixels will not fit on one line at a readable scale anyway.
-
-   So: two rows, west to east and then east again, each one a
-   strip of drawn country with the terrain of whatever zone it
-   is passing through, a road that wanders the way a road does,
-   and a small picture at every landmark. Where you have not
-   walked there is bare paper and a dotted line.
+   The map itself is painted in fx/60-map.js: the road through
+   Isan, snaking across the page, with every place a stop on it.
+   What lives here is what the rest of the game shares with it —
+   the compass letters, the little pictures on the stops, and the
+   list of every name the map last put down.
    ============================================================ */
 /* เหนือ, ตะวันตก, ตะวันออก — the short forms a Thai map uses */
 const COMPASS = { n:['N','น'], w:['W','ตก'], e:['E','ออก'] };
@@ -17420,300 +17394,6 @@ function mapIcon(g,kind,x,y,c,c2){
     default: pEll(g,x,y,2.4,2.4,I);
   }
 }
-/* what the ground looks like on paper, per zone */
-const MAP_TERRAIN = {
-  charnel:{c:'#c9c4b4', k:'stone'}, roadside:{c:'#d5cbaa', k:'grass'},
-  paddy:{c:'#b8d2cc', k:'paddy'},   villageW:{c:'#dcc9a4', k:'roofs'},
-  centre:{c:'#dcc9a4', k:'roofs'},  grove:{c:'#b9cfa6', k:'trees'},
-  wat:{c:'#e4d6b0', k:'chedi'},     forest:{c:'#a8c39a', k:'trees'},
-  deep:{c:'#9cba90', k:'trees'},    cross:{c:'#cfc7b4', k:'road'},
-  town:{c:'#cdc6bc', k:'blocks'},   far:{c:'#b8d2cc', k:'paddy'},
-  river:{c:'#b2cfd8', k:'river'},   bank:{c:'#cfdab0', k:'grass'},
-  lake:{c:'#bcd6c8', k:'lotus'},    hill:{c:'#d2cdbc', k:'karst'},
-  ruins:{c:'#d9cdb0', k:'ruins'},
-};
-/* the strip map this replaced; fx/60-map.js paints the one that is drawn */
-function drawMapStrips(g,x0,y0,w,h){
-  cloud(g,x0,y0,w,h,{seed:97,top:'#fdf6e2',body:'#f1e5c8',under:'#d9c9a2',edge:'#b09a72'});
-  /* the paper: fold lines and a wash of age */
-  g.globalAlpha=0.45;
-  pR(g,R(x0+w*0.34),R(y0+6),1,h-12,'#dfd0a8'); pR(g,R(x0+w*0.68),R(y0+6),1,h-12,'#dfd0a8');
-  g.globalAlpha=1;
-  /* the heading, and then whatever room is left over for the rest of it.
-     Thai sets wider than English and the line under it used to start at a
-     fixed x, which put the subtitle straight through the title. */
-  const ttl=L('THE ROAD');
-  pTxt(g,ttl,x0+12,y0+14,CL.ink,11);
-  const pc=Math.round(seenFrac()*100), tail=L('walked')+' '+pc+'%';
-  pTxt(g, tail, x0+w-12, y0+14, pc>70?'#6e8a4c':CL.ink3, 6, 'right');
-  const sub=L('west to east, and then east again');
-  const sa=x0+20+txtW(ttl,11), sb=x0+w-20-txtW(tail,6);
-  if(sb-sa > txtW(sub,6)) pTxt(g,sub,sa,y0+14,CL.ink3,6);
-
-  MAP_LABELS.length=0;
-  const mx=x0+16, mw=w-32;
-  const rowH=Math.floor((h-46)/MAP_ROWS);
-  const seg=WORLD_W/MAP_ROWS;
-  const rowRy=[];
-
-  for(let row=0;row<MAP_ROWS;row++){
-    const wa=row*seg, wb=(row+1)*seg;
-    const th=rowH-22;                          // the drawn strip; the rest is margin for labels
-    const ty=y0+26+row*rowH+11;
-    const ry=ty+th*0.5;                        // the road runs down the middle of the strip
-    const X=wx => mx + mw*((wx-wa)/seg);
-    const bend = wx => Math.sin(wx*0.0016)*2.6 + Math.sin(wx*0.00052+1.1)*1.7;
-    rowRy.push(ry);
-    const zoneNames=[];
-    /* ---------------------------------------------------------------
-       THE SLAB
-
-       The map was flat: coloured bands on paper, which is a diagram.
-       Each row of country is a SLAB now — a top face you look down on
-       at a shallow angle, a cliff of earth under its front edge, and a
-       shadow on the paper underneath that. Everything that stands on
-       the land gets drawn with a one-pixel shadow to the right, which
-       is the whole of the trick: at this size, consistent contact
-       shadows are the difference between a picture of a country and a
-       picture of a coloured rectangle.
-       --------------------------------------------------------------- */
-    const LIFT=4;                    // how thick the slab is
-    /* the shadow it throws onto the paper */
-    g.globalAlpha=0.16;
-    pR(g,mx+1,ty+th+LIFT,mw+3,3,'#8a7450');
-    pR(g,mx+3,ty+th+LIFT+3,mw-1,1,'#8a7450');
-    g.globalAlpha=1;
-    /* the cliff: darker at the bottom, with a lip of light along the top */
-    pR(g,mx-2,ty+th,mw+4,LIFT,'#b9a479');
-    pR(g,mx-2,ty+th+LIFT-1,mw+4,1,'#9c8760');
-    /* the top face */
-    pR(g,mx-2,ty-2,mw+4,th+2,'#e7dab6');
-    pR(g,mx-2,ty-2,mw+4,1,'#f6eed4');
-    pR(g,mx-2,ty-1,mw+4,1,'#fbf5e2');
-    pR(g,mx-2,ty+th-1,mw+4,1,'#d3c096');
-    /* the country, zone by zone, and only where you have been */
-    ZONES.forEach(z=>{
-      const a=Math.max(z.a,wa), b=Math.min(z.b,wb);
-      if(b<=a) return;
-      const xa=R(X(a)), xb=R(X(b)), ww=Math.max(1,xb-xa);
-      const t=MAP_TERRAIN[z.id]||{c:'#d8cdb0',k:'grass'};
-      const known=seenSpan(a,b);
-      if(!known){
-        /* unwalked: cloud lying on it. You can see that there is country
-           under there and nothing about what it is. */
-        pR(g,xa,ty,ww,th,'#d8ccae');
-        const fs=mulberry(R(z.a)+7);
-        for(let i=0;i<ww;i+=5){
-          const fy=ty+2+fs()*(th-8);
-          g.globalAlpha=0.5; pEll(g,xa+i,fy,5+fs()*4,2.4,'#efe6cf');
-          g.globalAlpha=0.35; pEll(g,xa+i+2,fy-1.4,3.4,1.6,'#fbf5e6');
-          g.globalAlpha=1;
-        }
-        for(let i=0;i<ww;i+=6) for(let j=0;j<th;j+=6)
-          pR(g,xa+i+((j/6)%2)*3, ty+j, 1,1,'rgba(176,154,114,0.20)');
-      } else {
-        pR(g,xa,ty,ww,th,t.c);
-        const seed=mulberry(R(z.a));
-        if(t.k==='paddy'){
-          /* the dikes stand a pixel proud of the water, so the field reads
-             as terraced rather than as graph paper */
-          for(let i=0;i<ww;i+=7){ pR(g,xa+i,ty+2,1,th-4,'rgba(120,160,160,0.55)');
-                                  pR(g,xa+i+1,ty+2,1,th-4,'rgba(60,84,84,0.18)'); }
-          for(let j=3;j<th-1;j+=5){ pR(g,xa+1,ty+j,ww-2,1,'rgba(255,255,255,0.46)');
-                                    pR(g,xa+1,ty+j+1,ww-2,1,'rgba(80,110,110,0.16)'); }
-          for(let i=2;i<ww;i+=12) mapIcon(g,'rice',xa+i,ty+th*0.30,'rgba(70,120,92,0.50)');
-        } else if(t.k==='trees'){
-          for(let i=0;i<ww;i+=6){ const jy=ty+3+(seed()*(th-9));
-            /* the shadow first, one pixel down and to the right, then the
-               tree standing on it */
-            pEll(g,xa+i+3.4,jy+2.4,2.8,1.5,'rgba(90,74,48,0.28)');
-            pR(g,R(xa+i+2),R(jy+1),1,3,'rgba(92,74,52,0.62)');
-            pEll(g,xa+i+2,jy,2.6,2.2,'rgba(74,118,72,0.62)');
-            pEll(g,xa+i+1.2,jy-0.8,1.4,1.1,'rgba(128,176,110,0.55)'); }
-        } else if(t.k==='roofs'){
-          for(let i=0;i<ww-6;i+=10){ const jy=ty+3+(seed()*(th-12));
-            pR(g,R(xa+i+2),R(jy+6),8,2,'rgba(90,74,48,0.24)');        // shadow
-            pR(g,R(xa+i+1),R(jy+3),7,3,'rgba(196,168,122,0.72)');     // the wall
-            pR(g,R(xa+i+1),R(jy+3),7,1,'rgba(232,212,168,0.8)');
-            pTri(g,xa+i+4,jy,xa+i,jy+3,xa+i+8,jy+3,'rgba(150,86,60,0.78)');
-            pTri(g,xa+i+4,jy+0.8,xa+i+1.4,jy+3,xa+i+4,jy+3,'rgba(186,116,84,0.7)'); }
-        } else if(t.k==='blocks'){
-          for(let i=0;i<ww-5;i+=8){ const hh=4+R(seed()*5);
-            pR(g,xa+i+2,ty+th-3,7,2,'rgba(90,74,48,0.22)');           // shadow
-            pR(g,xa+i+1,ty+th-3-hh,6,hh,'rgba(130,126,120,0.68)');
-            pR(g,xa+i+5,ty+th-3-hh,2,hh,'rgba(96,92,88,0.6)');        // the shaded side
-            pR(g,xa+i+1,ty+th-3-hh,6,1,'rgba(230,226,216,0.7)'); }
-        } else if(t.k==='stone'){
-          for(let i=0;i<ww-3;i+=10) mapIcon(g,'chedi',xa+i+4,ty+th*0.36,'rgba(120,114,104,0.5)');
-        } else if(t.k==='chedi'){
-          pEll(g,xa+ww*0.5+2,ty+th*0.34+7,5,2,'rgba(90,74,48,0.26)');
-          mapIcon(g,'chedi',xa+ww*0.5,ty+th*0.34,'rgba(176,140,52,0.85)');
-        } else if(t.k==='river'){
-          /* the water, and the long bridge across the whole of it */
-          for(let j=2;j<th-2;j+=4) for(let i=(j%8?3:0);i<ww-4;i+=9) pR(g,xa+i,ty+j,4,1,'rgba(255,255,255,0.5)');
-          pR(g,xa,R(ry)-1,ww,2,'rgba(120,84,52,0.7)');
-          for(let i=2;i<ww;i+=5) pR(g,xa+i,R(ry)+1,1,3,'rgba(90,64,40,0.55)');
-        } else if(t.k==='lotus'){
-          for(let i=0;i<ww;i+=4){ const jy=ty+2+(seed()*(th-5));
-            pEll(g,xa+i+1,jy,1.8,1,'rgba(70,130,80,0.6)');
-            if(seed()<0.4) pR(g,R(xa+i+1),R(jy)-2,1,1,'rgba(226,110,150,0.9)'); }
-        } else if(t.k==='karst'){
-          for(let i=2;i<ww-4;i+=9){ const hh=6+R(seed()*8);
-            pEll(g,xa+i+4,ty+th-2,4,1.2,'rgba(90,74,48,0.22)');
-            pR(g,xa+i,ty+th-3-hh,6,hh,'rgba(168,162,146,0.8)'); pR(g,xa+i+4,ty+th-3-hh,2,hh,'rgba(128,122,110,0.7)');
-            pEll(g,xa+i+3,ty+th-3-hh,3,1.4,'rgba(96,140,86,0.7)'); }
-        } else if(t.k==='ruins'){
-          for(let i=4;i<ww-6;i+=13){ mapIcon(g,'prang',xa+i+3,ty+th*0.62,'rgba(160,90,60,0.75)','rgba(196,130,92,0.7)'); }
-          for(let i=0;i<ww;i+=5){ const jy=ty+3+(seed()*(th-6)); pR(g,R(xa+i),R(jy),2,1,'rgba(130,150,96,0.5)'); }
-          /* where the land stops, and the valley under it */
-          if(b>EAST.edge){ const ex=R(X(EAST.edge));
-            pR(g,ex,ty,xb-ex,th,'#cfe0c8');
-            for(let j=2;j<th;j+=3) pR(g,ex+1,ty+j,xb-ex-1,1,j%6?'rgba(150,176,110,0.45)':'rgba(190,200,130,0.45)');
-            pR(g,ex,ty,1,th,'rgba(96,76,54,0.7)'); }
-        } else if(t.k==='road'){
-          for(let i=0;i<ww;i+=5) pR(g,xa+i,ty+2,2,1,'rgba(150,130,95,0.5)');
-        } else {
-          for(let i=0;i<ww;i+=5){ const jy=ty+3+(seed()*(th-6));
-            pR(g,R(xa+i),R(jy),2,1,'rgba(130,150,96,0.5)'); }
-        }
-      }
-      /* the zone's name goes in the margin under the strip, not on top of the
-         country — a name printed over a paddy is a name you cannot read and a
-         paddy you cannot see. And only where you have been: the names of
-         places you have never walked to are not yours to know yet. */
-      if(!known) return;
-      const zn=L(z.s||z.name);
-      if(txtW(zn,6) < ww-8) zoneNames.push({zn, xa, xb, w:txtW(zn,6)});
-      if(ww>10) pR(g,xa,ty,1,th,'rgba(150,130,95,0.35)');
-    });
-    /* the road: it wanders, and it is only inked where you have walked */
-    let prev=null;
-    for(let wx=wa; wx<=wb; wx+=seg/mw){
-      const px=X(wx), py=ry+bend(wx);
-      if(prev){
-        const ww2=Math.max(1,R(px)-R(prev[0])+1);
-        if(seenAt(wx)){
-          pR(g,R(prev[0]),R(prev[1])-1,ww2,4,'#c2a97e');
-          pR(g,R(prev[0]),R(prev[1])-1,ww2,1,'#dcc79a');
-        } else if((R(px)%5)<2){
-          pR(g,R(px),R(py),2,1,'rgba(176,154,114,0.55)');
-        }
-      }
-      prev=[px,py];
-    }
-    for(let wx=wa; wx<wb; wx+=seg/mw*6){
-      if(!seenAt(wx)) continue;
-      pR(g,R(X(wx)),R(ry+bend(wx)+1),3,1,'#a88b5e');
-    }
-    /* ---- the landmarks ----
-       A picture on a post above or below the road, and the name beside it.
-       Two landmarks a hundred pixels apart is easy; six of them inside forty
-       is the whole problem. So each side of the road keeps a running edge,
-       and a name that will not fit where its post is slides along until it
-       does, with a hairline back to say which post it belongs to. */
-    const pins=MAP_PINS.filter(pn=>{ const wx=pn.x(); return wx>=wa && wx<wb && seenAt(wx); })
-                       .map(pn=>({pn, px:X(pn.x()), py:ry+bend(pn.x())}))
-                       .sort((a,b)=>a.px-b.px);
-    const edge=[-1e9,-1e9];                    // right edge of the last name on each side
-    pins.forEach((it,i)=>{
-      const nm=L(it.pn.n);
-      const lw=Math.max(txtW(nm,6),16)+5;
-      const want=it.px-lw/2;
-      const push=s=>Math.max(0,(edge[s]+3)-want);
-      let s = push(0)<=push(1) ? 0 : 1;
-      if(push(0)<=0 && push(1)<=0) s=i%2;       // both clear: alternate, so the map breathes
-      let la=Math.max(want, edge[s]+3);
-      la=clamp(la, mx-4, x0+w-8-lw);
-      edge[s]=la+lw;
-      const lx=la+lw/2, up = s===0;
-      /* three strips to a page leaves less room between them than two did,
-         so the pictures sit closer to the road */
-      const iy = it.py + (up? -10 : 10);
-      const tb = iy + (up? -9 : 14);            // the name's baseline
-      const done=it.pn.done&&it.pn.done();
-      /* the post down to the road */
-      const pa=Math.min(iy,it.py), pb2=Math.max(iy,it.py);
-      pR(g,R(it.px),R(pa)+6,1,Math.max(1,pb2-pa-6),'rgba(120,98,66,0.55)');
-      /* and the hairline over to the name, when the name had to move */
-      if(Math.abs(lx-it.px)>6){
-        const a2=Math.min(lx,it.px), b3=Math.max(lx,it.px);
-        pR(g,R(a2),R(up?tb-3:tb-2),R(b3-a2),1,'rgba(140,118,82,0.45)');
-      }
-      pEll(g,it.px,iy,7.4,7.4,'#f6efd8');
-      pEll(g,it.px,iy,6.6,6.6, done?'#e2eed2':'#f1e5c8');
-      mapIcon(g,it.pn.ic,it.px,iy+1, done?'#6e8a4c':'#5a4632', done?'#9fc07c':'#9c8460');
-      /* the name on its own scrap of paper, so nothing under it muddies it */
-      g.globalAlpha=0.86; pR(g,R(la),R(tb)-6,R(lw),8,'#f6efd8'); g.globalAlpha=1;
-      pTxt(g,nm, lx, tb, done?'#5b7a3c':CL.ink2, 6,'center');
-      MAP_LABELS.push({n:nm, row:row, side:s, a:la, b:la+lw, y:tb});
-    });
-    /* the zones' own names share the line under the strip with the names of
-       the landmarks, so they go down last, into whatever gaps are left in
-       their own stretch of country; one that cannot fit is left off */
-    const below=MAP_LABELS.filter(l=>l.row===row && l.side===1);
-    for(const zn of zoneNames){
-      const lo=zn.xa+2, hi=zn.xb-2-zn.w;
-      let best=null;
-      for(let a=clamp((zn.xa+zn.xb-zn.w)/2, lo, hi), step=0; step<80; step++){
-        const cand=[(zn.xa+zn.xb-zn.w)/2 + step*2, (zn.xa+zn.xb-zn.w)/2 - step*2];
-        for(const c of cand){ if(c<lo || c>hi) continue;
-          if(!below.some(l=>c < l.b+2 && l.a-2 < c+zn.w)){ best=c; break; } }
-        if(best!==null) break;
-      }
-      if(best===null) continue;
-      pTxt(g, zn.zn, best+zn.w/2, ty+th+9, 'rgba(96,76,54,0.8)', 6, 'center');
-      const lab={n:zn.zn, row:row, side:1, a:best, b:best+zn.w, y:ty+th+9, zone:true};
-      MAP_LABELS.push(lab); below.push(lab);
-    }
-    /* the ghosts you have met, as small dots on the road itself */
-    SPIRITS.forEach(sp=>{
-      if(sp.x<wa||sp.x>=wb || !seenAt(sp.x)) return;
-      const px=X(sp.x), py=ry+bend(sp.x)+5;
-      pEll(g,px,py,4.2,4.2, sp.friend?'rgba(232,130,158,0.35)':'rgba(184,174,200,0.35)');
-      pEll(g,px,py,2.6,2.6, sp.friend?'#e8829e':'#b8aec8');
-      if(sp.friend) icoHeart(g,px,py,0.55,'#6e2038');
-    });
-    /* and you */
-    if(P.x>=wa && P.x<wb){
-      const px=X(P.x), py=ry+bend(P.x);
-      const bob=Math.sin(GS.t*3)*1.4;
-      pTaper(g,px,py+5+bob,px,py-4+bob,5,2,'#c0392f');
-      pEll(g,px,py-5+bob,3.4,3.4,'#e05a48'); pEll(g,px-1,py-6+bob,1.4,1.4,'#ffb0a0');
-    }
-  }
-  /* the road runs off the right of one strip and comes back at the left of
-     the next, the way a strip map folds a long road onto a short page */
-  for(let row=0;row+1<MAP_ROWS;row++){
-    const yA=rowRy[row], yB=rowRy[row+1];
-    pR(g,R(mx+mw+1),R(yA),5,1,'rgba(150,128,92,0.7)');
-    pTri(g,mx+mw+9,yA+0.5, mx+mw+5,yA-2.5, mx+mw+5,yA+3.5,'rgba(140,118,82,0.8)');
-    pR(g,R(mx-7),R(yB),5,1,'rgba(150,128,92,0.7)');
-    pTri(g,mx-1,yB+0.5, mx-5,yB-2.5, mx-5,yB+3.5,'rgba(140,118,82,0.8)');
-  }
-  /* west at the head of the road, east at its end.
-     These cannot go through the dictionary: a bare 'E' is also the letter on
-     the key you press to do things, and translating that to ออก would put
-     "exit" on the button that means "use". So the compass picks its own. */
-  pTxt(g, compass('w'), mx-8, rowRy[0]-6, 'rgba(120,98,66,0.85)', 6,'center');
-  pTxt(g, compass('e'), mx+mw+8, rowRy[MAP_ROWS-1]-6, 'rgba(120,98,66,0.85)', 6,'center');
-  /* a compass rose and a scale bar, because it is a map */
-  {
-    const cx2=x0+w-26, cy2=y0+h-15;
-    for(let i=0;i<4;i++){ const a=i*Math.PI/2-Math.PI/2;
-      pTaper(g,cx2,cy2,cx2+Math.cos(a)*7,cy2+Math.sin(a)*7, i?1.6:2.4, 1, i?'#a88b5e':'#8f2a20'); }
-    pEll(g,cx2,cy2,1.6,1.6,'#5a4632');
-    pTxt(g, compass('n'), cx2, cy2-13, '#8f2a20', 6,'center');
-  }
-  {
-    const sx=x0+14, sy=y0+h-11, sw=40;
-    pR(g,sx,sy,sw,2,'#8f7a54'); pR(g,sx,sy-3,1,8,'#8f7a54'); pR(g,sx+sw-1,sy-3,1,8,'#8f7a54');
-    pR(g,R(sx+sw/2),sy-2,1,6,'#8f7a54');
-    pTxt(g,L("half an hour's walk"),sx+sw+6,sy+1,CL.ink3,6);
-  }
-  icoHeart(g,x0+w-116,y0+h-10,0.7,CL.ink3);
-  pTxt(g,SPIRITS.filter(s=>s.friend).length+'/'+SPIRITS.length,x0+w-108,y0+h-8,CL.ink3,6);
-}
-
 /* the signposts are gone, so nothing draws them */
 function drawSigns(g){}
 
@@ -18950,16 +18630,17 @@ function drawPets(g){
   for(const p of PETS){
     if(p.x-GS.camX<-40 || p.x-GS.camX>W+40) continue;
     const lift = p.pop>0? p.pop*2 : 0;
+    const look = typeof PET_LOOK!=='undefined'? PET_LOOK[p.name] : null, mine = GS.pet===p.id;
     if(p.kind==='cat'){
       drawCat(g,{x:p.x, y:p.y-lift, face:p.face, anim:p.anim, phase:p.phase,
-                 state: p.st==='walk'? 'walk':'sit', walking:p.st==='walk'});
+                 state: p.st==='walk'? 'walk' : p.st==='sleep'? 'sleep' : 'sit', walking:p.st==='walk', coat:look, collar:mine});
     } else if(p.coat==='fluffy'){
-      drawFluffyDog(g,{x:p.x, y:p.y-lift, face:p.face, t:p.anim,
+      drawFluffyDog(g,{x:p.x, y:p.y-lift, face:p.face, t:p.anim, collar:mine,
                        st: p.st==='sleep'? 'sleep' : p.st==='walk'? 'walk':'sit'});
     } else {
-      drawRoadDog(g,{x:p.x, face:p.face, st: (p.st==='sit'||p.st==='sleep')? 'sleep':'up',
+      drawRoadDog(g,{x:p.x, y:p.y-lift, face:p.face, st: (p.st==='sit'||p.st==='sleep')? 'sleep':'up',
                      t:p.anim, step:Math.sin(p.phase)*3, sp:p.st==='walk',
-                     bark: p.st==='bark'? p.bark : 0, coat:p.dogCoat});
+                     bark: p.st==='bark'? p.bark : 0, look, collar:mine});
     }
     /* what it looks like when something shouts at you that nobody else hears */
     if(p.st==='bark' && p.bark>0) barkMarks(g, p.x, p.y, p.face, p.bark);
@@ -18978,91 +18659,7 @@ function drawPets(g){
     }
   }
 }
-/* ---------- Gohan ----------
-   The soi dogs are short-haired, lean and the colour of the road. He is
-   none of that: a thick white coat that moves a beat behind him, a ruff
-   round the neck, and a plumed tail carried up over his back. He is
-   somebody's dog who stopped having a somebody, and he still sits when a
-   person walks past out of a habit nobody rewards any more. */
-function drawFluffyDog(g,d){
-  const x=d.x, gy=d.y!==undefined? d.y : groundY(x), f=d.face, t=d.t;
-  const W1='#f4efe4', W2='#ded5c4', W3='#bdb3a0', INK='#6b6153';
-  const sleep = d.st==='sleep', walk = d.st==='walk';
-  const step = walk? Math.sin(t*7)*2.4 : 0;
-  const puff = (cx,cy,rx,ry,c)=>pEll(g,cx,cy,rx,ry,c);
-  pEll(g,x,gy-1, sleep?17:12, sleep?4:3.2,'rgba(10,8,20,0.28)');
-  if(sleep){
-    /* the same two breaths as the soi dogs, and the coat moves a beat behind
-       him the way it does when he walks */
-    const tt  = t||0;
-    const br  = Math.sin(tt*1.15)*0.42 + Math.sin(tt*0.33)*0.55;
-    const tw  = Math.max(0, Math.sin(tt*0.49)-0.94)*11;
-    const ef  = Math.max(0, Math.sin(tt*0.37+0.9)-0.95)*20;
-    /* the legs, right out past the coat — his fore pair reaches past the
-       muzzle, which is how a big dog sprawls when it gives up on the day */
-    pLimb(g, x-6*f, gy-4.6, x-19*f+tw*0.3*f, gy-1.5, 2.6, W3);
-    puff(x-20.4*f+tw*0.3*f, gy-1.5, 2.8, 1.8, W2);
-    pLimb(g, x+4*f, gy-4.4, x+15*f, gy-1.5, 2.6, W3);
-    puff(x+16.4*f, gy-1.5, 2.8, 1.8, W2);
-    puff(x,gy-5,12,5+br*0.5,W2); puff(x,gy-6.6,10,3.6+br*0.4,W1);
-    for(let i=0;i<5;i++) puff(x-9+i*4.6, gy-8.4+Math.sin(i*1.7)*0.8+br*0.45, 3.0,2.0, i%2?W1:W2);
-    /* the head is out on the ground in front of him, chin down, which is
-       the shape that says asleep rather than a bread roll */
-    /* white on white is nothing, so the head is cut out of the coat with a
-       crease behind it and the ear is the darkest thing on him */
-    puff(x-9.6*f,gy-5.6,3.6,4.2,W3);                                // the crease at the ruff
-    puff(x-12.5*f,gy-5.4,5.0,4.0,W2); puff(x-13.5*f,gy-6.4,4.0,3.0,W1);
-    pTri(g,x-15*f,gy-10.8-ef*0.16,x-17.4*f,gy-5.2,x-11.6*f,gy-6.4,W3);  // ear, flicking
-    pTri(g,x-14.8*f,gy-9.8-ef*0.14,x-16.4*f,gy-5.8,x-12.4*f,gy-6.6,W2);
-    puff(x-16.4*f,gy-4.2,2.8,2.0,W1);                               // muzzle on the dirt
-    pR(g,R(x-18.2*f),R(gy-4.4),2,1,'#c2857f');
-    pR(g,R(x-16.6*f),R(gy-2.8),4,1,W3);                             // the line of the jaw
-    /* the shut eye is a curve, not a dash — a dash is a dead dog */
-    for(let i=-2;i<=2;i++){ const u=i/2;
-      pR(g, R(x-14.2*f+u*1.8), R(gy-6.4-(1-u*u)*0.9), 1,1, INK); }
-    /* the near foreleg over the far one, and the plume of tail across him */
-    pLimb(g, x-5*f, gy-6.0, x-18*f+tw*0.45*f, gy-2.3, 2.8, W1);
-    puff(x-19.4*f+tw*0.45*f, gy-2.3, 2.9, 1.9, W1);
-    puff(x+11*f,gy-6+br*0.3,5.4,3.4,W1); puff(x+13*f,gy-7+br*0.3,3.6,2.6,W2);
-    { const cyc=(tt*0.28)%1;
-      if(cyc<0.55){
-        const u=cyc/0.55, a=(u<0.15?u/0.15:1)*(1-u)*0.8, s2=0.62+u*0.5;
-        const zx=x-19*f-u*7*f, zy=gy-11-u*12;
-        g.globalAlpha=a;
-        pR(g, zx-2.4*s2, zy-2.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
-        pR(g, zx-2.4*s2, zy+1.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
-        pTaper(g, zx+2.0*s2, zy-1.4*s2, zx-2.0*s2, zy+1.9*s2, 1.2*s2, 1.2*s2, '#efe6cf');
-        g.globalAlpha=1;
-      } }
-    return;
-  }
-  const bob = walk? Math.abs(Math.sin(t*7))*1.0 : 0;
-  const by = gy-9-bob;
-  /* the coat: a body, then a row of overlapping puffs along the back */
-  puff(x,by,9.4,5.0,W2); puff(x,by-1.4,8.0,3.8,W1);
-  for(let i=0;i<6;i++) puff(x-8+i*3.4, by-4.2+Math.sin(t*2+i)*0.5, 3.0,2.2, i%2?W1:W2);
-  puff(x-2*f,by+2.4,7.0,3.0,W3);                                    // the chest shadow
-  /* the ruff, then the head sitting in it */
-  puff(x+6.6*f,by-2.2,5.4,5.2,W2); puff(x+6.2*f,by-2.6,4.4,4.2,W1);
-  const hx2=x+9.4*f, hy2=by-5.4;
-  puff(hx2,hy2,4.6,4.0,W1); puff(hx2+1*f,hy2+0.6,3.6,3.0,W2);
-  pTri(g,hx2+0.6*f,hy2-7,hx2-1.6*f,hy2-2.4,hx2+3.2*f,hy2-2.8,W2);   // ears, pricked
-  pTri(g,hx2+1.2*f,hy2-6,hx2-0.4*f,hy2-2.8,hx2+2.6*f,hy2-3.2,W1);
-  pTri(g,hx2+4.6*f,hy2-6.4,hx2+2.8*f,hy2-2.6,hx2+6.6*f,hy2-3.0,W2);
-  pR(g,R(hx2+1.4*f),R(hy2-1),1,1,INK);                              // eye
-  puff(hx2+4.2*f,hy2+1.4,2.6,2.0,W1);                               // muzzle
-  pR(g,R(hx2+5.6*f),R(hy2+0.6),2,1,'#c2857f');                      // and a pink nose
-  /* the plume, carried up and over */
-  for(let i=0;i<5;i++){
-    const a=-0.55-i*0.34 + Math.sin(t*3)*0.10;
-    puff(x-8*f+Math.cos(a)*i*2.4*-f, by-1+Math.sin(a)*i*2.2, 3.4-i*0.28, 2.8-i*0.22, i%2?W1:W2);
-  }
-  for(let i=0;i<2;i++){
-    const sx2=x+(i?4:-4)*f;
-    pLimb(g,sx2,by+3.6,sx2+(i?step:-step),gy-1,2.6,i?W2:W3);
-    puff(sx2+(i?step:-step),gy-1.6,2.2,1.6,W1);                     // feathered feet
-  }
-}
+/* Gohan, the cats and the soi dogs are drawn in fx/47-pets.js */
 /* ---------- what an animal is thinking, as a picture ---------- */
 function petMoodIcon(g,p){
   const a=clamp(p.moodT/PET_MOOD_T,0,1);
@@ -26517,12 +26114,6 @@ function paintEast(){
 const TRAFFIC=[], ROAD_DOGS=[], PARKED=[];
 /* หมาวัด, หมาหน้าร้าน: the ones that live off the shop step, where the
    concrete is warm and somebody always drops something */
-const DOG_COATS = [
-  {b:'#c9a06a', l:'#dcb47e', d:'#a87f4e'},          // the usual tan one
-  {b:'#4a4038', l:'#6a5c50', d:'#332c26'},          // the black one with the white socks
-  {b:'#d8cec0', l:'#eee6da', d:'#b0a493'},          // the dusty white one
-  {b:'#a8622e', l:'#c47f44', d:'#7e4620'},          // and the ginger
-];
 
 /* Almost everything on a Thai road is a motorbike, so almost everything here
    is one. The rest is what a motorbike cannot carry. */
@@ -26964,112 +26555,6 @@ function drawVehicle(g,v){
     pR(g,R(x-22*f),R(by+3),2.4,2,'#b8342c');
     blinker(g,x+22*f,by+4,v.blink); blinker(g,x-22*f,by+5,v.blink);
     if(v.horn>0) horn(g, x+26*f, by-2, f);
-  }
-}
-function drawRoadDog(g,d){
-  const x=d.x, gy=groundY(x), f=d.face;
-  const co=DOG_COATS[(d.coat||0)%DOG_COATS.length];
-  if(d.bark>0){
-    /* up on its front legs, head back, and the whole body going with it */
-    const beat=(d.bark*3.4)%1, open=Math.max(0,Math.sin(beat*Math.PI));
-    const rock=open*2.2;
-    pEll(g,x,gy-1,11,3,'rgba(10,8,20,0.28)');
-    pLimb(g,x-5*f,gy-9,x-6*f,gy-1,2.2,co.d);                 // back legs, planted
-    pLimb(g,x-3*f,gy-9,x-2*f,gy-1,2.2,co.b);
-    pEll(g,x,gy-10,9,4.4,co.b); pEll(g,x,gy-11.6,7.6,3.2,co.l);
-    pLimb(g,x+5*f,gy-11,x+6*f,gy-1,2.2,co.d);                // front legs, braced
-    pLimb(g,x+7*f,gy-11,x+8*f,gy-1,2.2,co.b);
-    const hx=x+9*f, hy=gy-15-rock;
-    pEll(g,hx,hy,4.6,4.2,co.b); pEll(g,hx+1*f,hy-1,3.6,3.0,co.l);
-    pTri(g,hx-1*f,hy-6, hx-4*f,hy-1, hx+1*f,hy-1, co.d);     // ear, back
-    pTri(g,hx+3*f,hy-5, hx+1*f,hy-1, hx+5*f,hy-1, co.d);     // ear, forward
-    /* the muzzle, open on the beat */
-    pTaper(g,hx+2*f,hy+1, hx+7*f,hy+1+open*1.4, 2.6,1.8, co.l);
-    if(open>0.25){
-      pTri(g,hx+3*f,hy+0.4, hx+8*f,hy+0.6+open*2.6, hx+3*f,hy+2.2+open*2.2,'#4a2020');
-      pR(g,R(hx+4*f),R(hy+1.4+open*1.2),2,1,'#d0707a');      // a bit of tongue
-    }
-    pR(g,R(hx+7*f),R(hy+0.6),1,1,'#2a1c14');                 // the nose
-    pR(g,R(hx+2*f),R(hy-1),1,1,'#241a12');                   // and one hard eye
-    pTaper(g,x-8*f,gy-11, x-13*f,gy-16-Math.sin(d.t*9)*3, 2.6,1,co.d);   // tail, up
-    return;
-  }
-  if(d.st==='sleep'){
-    /* Flat out on its side in the dust with all four legs pushed away from it,
-       the muzzle down on the ground and the tail curled round to the belly.
-       It used to be a loaf with an ear on it.
-
-       Two breaths at once, a slow one under a much slower one, because one
-       sine wave reads as a machine; and every few seconds a paw goes and an
-       ear flicks, which is the whole of what makes it look alive. */
-    const t   = d.t||0;
-    const br  = Math.sin(t*1.25)*0.40 + Math.sin(t*0.37)*0.50;
-    const tw  = Math.max(0, Math.sin(t*0.53)-0.93)*12;      // a paw, now and then
-    const ef  = Math.max(0, Math.sin(t*0.41+1.7)-0.95)*22;  // and an ear
-    const hx  = x + 13*f, hy = gy - 5.0;
-    pEll(g,x,gy-0.5,17,3.6,'rgba(10,8,20,0.28)');
-    /* the far pair first, darker, and pushed right out past the body — a leg
-       that stops inside the barrel is a leg nobody can see */
-    pLimb(g, x-5*f,  gy-6.0, x-10.5*f, gy-3.4, 2.5, co.d);      // hock
-    pLimb(g, x-10.5*f, gy-3.4, x-15*f, gy-1.5, 2.3, co.d);
-    pEll(g,  x-16.4*f, gy-1.5, 2.6, 1.5, co.d);
-    pLimb(g, x+6*f,  gy-5.4, x+12.5*f, gy-3.2, 2.5, co.d);      // elbow
-    pLimb(g, x+12.5*f, gy-3.2, x+19*f, gy-1.4, 2.3, co.d);
-    pEll(g,  x+20.4*f, gy-1.4, 2.6, 1.5, co.d);
-    /* the tail, lying along the ground and hooking back under */
-    { const tp=[[-9,-4.6],[-13.6,-3.4],[-17.2,-1.8],[-15.4,-0.7],[-12.2,-0.7]];
-      for(let i=0;i<tp.length;i++){ const u=i/(tp.length-1);
-        pEll(g, x+tp[i][0]*f, gy+tp[i][1]+Math.sin(t*0.8+i*0.7)*0.22,
-                lerp(2.6,1.5,u), lerp(2.2,1.2,u), i<2?co.b:co.d); } }
-    /* the barrel of it, going up and down */
-    pEll(g, x,       gy-5.8, 9.2, 5.2+br*0.55, co.b);
-    pEll(g, x-1.4*f, gy-7.4, 7.4, 3.4+br*0.42, co.l);
-    pEll(g, x+1.6*f, gy-3.6, 6.4, 2.2+br*0.22, co.d);        // the underside, in shade
-    /* the neck reaching out, and the head down on the dirt */
-    pTaper(g, x+6.4*f, gy-6.0, hx, hy, 5.6, 4.2, co.b);
-    pEll(g, hx, hy, 4.8, 4.0, co.b);
-    pEll(g, hx-0.8*f, hy-1.2, 3.8, 2.6, co.l);
-    pTaper(g, hx+2.4*f, hy+0.4, hx+7.4*f, hy+1.8, 3.2, 2.0, co.l);   // the muzzle, flat
-    pEll(g, hx+7.8*f, hy+1.9, 1.5, 1.2, '#2a1c14');                  // the nose
-    pR(g, R(hx+5.0*f), R(hy+2.8), 2, 1, '#8a5560');                  // a slack lip
-    /* the ear, flopped over the side of its face and flicking */
-    pTri(g, hx-1.2*f, hy-5.0-ef*0.18, hx-6.0*f, hy+1.2, hx+0.6*f, hy+1.6, co.d);
-    pTri(g, hx-1.4*f, hy-4.0-ef*0.16, hx-4.6*f, hy+0.6, hx+0.0*f, hy+1.0, co.b);
-    /* the eye, shut: one curve with a lash off the outer corner */
-    for(let i=-2;i<=2;i++){ const u=i/2;
-      pR(g, R(hx+1.2*f+u*2.0), R(hy-1.4-(1-u*u)*0.9), 1,1, '#3a2a1c'); }
-    pR(g, R(hx+3.6*f), R(hy-1.6), 1,1, '#4a3826');
-    /* and the near pair on top of everything, twitching. The front one
-       stretches out past the nose, which is how a dog actually sprawls. */
-    pLimb(g, x-4*f, gy-7.0, x-9.5*f, gy-4.0, 2.8, co.b);
-    pLimb(g, x-9.5*f, gy-4.0, x-14*f+tw*0.35*f, gy-2.2, 2.5, co.b);
-    pEll(g,  x-15.4*f+tw*0.35*f, gy-2.2, 2.8, 1.8, co.l);
-    pLimb(g, x+6*f, gy-6.2, x+12*f, gy-3.8, 2.8, co.b);
-    pLimb(g, x+12*f, gy-3.8, x+18*f+tw*0.5*f, gy-2.1, 2.5, co.b);
-    pEll(g,  x+19.6*f+tw*0.5*f, gy-2.1, 2.8, 1.8, co.l);
-    /* a z, now and then */
-    { const cyc=(t*0.30)%1;
-      if(cyc<0.55){
-        const u=cyc/0.55, a=(u<0.15?u/0.15:1)*(1-u)*0.8, s2=0.62+u*0.5;
-        const zx=hx+5*f+u*7*f, zy=hy-8-u*12;
-        g.globalAlpha=a;
-        pR(g, zx-2.4*s2, zy-2.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
-        pR(g, zx-2.4*s2, zy+1.4*s2, 4.8*s2, 1.2*s2, '#efe6cf');
-        pTaper(g, zx+2.0*s2, zy-1.4*s2, zx-2.0*s2, zy+1.9*s2, 1.2*s2, 1.2*s2, '#efe6cf');
-        g.globalAlpha=1;
-      } }
-  } else {
-    const ph=d.t*7, step=d.sp? Math.sin(ph)*2.4 : 0;
-    pEll(g,x,gy-1,11,3,'rgba(10,8,20,0.28)');
-    pEll(g,x,gy-8,9,4.2,co.b); pEll(g,x,gy-9.4,7.6,3,co.l);
-    pEll(g,x+8*f,gy-12,4.4,4,co.b); pEll(g,x+9*f,gy-13,3.4,3,co.l);
-    pTri(g,x+7*f,gy-16,x+5*f,gy-12,x+10*f,gy-13,co.d);
-    pR(g,R(x+9*f),R(gy-12),1,1,'#3a2c1e');
-    pR(g,R(x+11*f),R(gy-11),2,1,'#5a4028');
-    pTaper(g,x-8*f,gy-9,x-13*f,gy-14+Math.sin(d.t*4)*2,3,1,co.d);
-    for(let i=0;i<2;i++){
-      pLimb(g,x+(i?5:-5)*f,gy-6,x+(i?5:-5)*f+(i?step:-step),gy-1,2.2,i?co.l:co.d);
-    }
   }
 }
 function drawTraffic(g){
@@ -29201,9 +28686,10 @@ function drawCloudsFx(g){
                through the palms, not across them.
      bloom     anything bright bleeds a little light into what is
                round it, more at night than by day.
-     grade     a colour grade for the hour: cool shadows and a warm
-               top at dawn, a clean bright noon, orange and magenta at
-               dusk, and blue at night.
+     grade     a light colour grade for the hour, read off the sky as
+               it is drawn: cool shadows and a warm top in the golden
+               hours, a clean noon, and a little blue in the dark. It
+               lifts the painting; it does not repaint it.
 
    With no WebGL, or on a device too slow for it, none of this runs
    and the game draws exactly as it did.
@@ -29473,25 +28959,36 @@ function fxLights(realm, cx, cy, night){
 
 /* ---------- the grade for the hour ---------- */
 function fxGrade(){
-  const h=(DAY.min||0)/60, v=TOD.v, night=1-v;
-  const morning = h<12;
-  /* how much of dawn, or of dusk, it is right now */
-  const dawn = morning? clamp(1-Math.abs(h-6.25)/1.35,0,1) : 0;
-  const dusk = !morning? clamp(1-Math.abs(h-18.3)/1.5,0,1) : 0;
-  const g={ black: lerp(0.10, 0.03, night), sat:1.08, con:1.10, exp:1.04, vig:0.22, shadow:[0.10,0.12,0.30], high:[0.25,0.18,0.05], bloom:0.35, rays:0, sun:0, sunCol:[1,0.8,0.55] };
-  /* night: blue, a little less colour, more bloom round the lamps */
-  g.sat = lerp(g.sat, 0.86, night); g.con = lerp(g.con, 1.08, night);
-  g.shadow = [lerp(0.10,0.05,night), lerp(0.12,0.08,night), lerp(0.30,0.42,night)];
-  g.high = [lerp(0.25,0.30,night), lerp(0.18,0.22,night), lerp(0.05,0.10,night)];
-  g.bloom = lerp(0.32, 0.9, night); g.vig = lerp(0.20, 0.34, night);
-  /* dawn: cold shadows, a hot top, and the rays */
-  if(dawn>0){ g.shadow=[lerp(g.shadow[0],0.22,dawn),lerp(g.shadow[1],0.10,dawn),lerp(g.shadow[2],0.42,dawn)];
-    g.high=[lerp(g.high[0],0.55,dawn),lerp(g.high[1],0.30,dawn),lerp(g.high[2],0.08,dawn)];
-    g.sat=lerp(g.sat,1.20,dawn); g.con=lerp(g.con,1.24,dawn); g.black=lerp(g.black,0.12,dawn);
-    g.bloom=lerp(g.bloom,0.46,dawn); g.rays=dawn; g.sunCol=[1.0,0.72,0.42]; }
-  if(dusk>0){ g.shadow=[lerp(g.shadow[0],0.30,dusk),lerp(g.shadow[1],0.08,dusk),lerp(g.shadow[2],0.36,dusk)];
-    g.high=[lerp(g.high[0],0.60,dusk),lerp(g.high[1],0.24,dusk),lerp(g.high[2],0.04,dusk)];
-    g.sat=lerp(g.sat,1.14,dusk); g.con=lerp(g.con,1.18,dusk); g.bloom=lerp(g.bloom,0.46,dusk); g.rays=dusk*0.8; g.sunCol=[1.0,0.58,0.32]; }
+  const v=TOD.v, night=1-v;
+  /* How much of a golden hour it is comes off the sky as it is drawn, not
+     off the clock. The two usually agree, but not always: the first night
+     of a new game is pinned dark while the clock already reads 6:36, and
+     reading the clock laid the whole dawn grade — a hard black point, a
+     fifth more colour, a quarter more contrast — over a night picture,
+     which crushed it into one saturated navy. The sky is the picture, so
+     the grade follows the sky: warm light from where the sun is low
+     (TOD .45–.85), and no dawn at all while it is still dark. */
+  const gold = clamp(1-Math.abs(v-0.64)/0.24, 0, 1);
+  const eve  = (DAY.min||0) >= 12*60 && Math.abs(todFromClock(DAY.min||0)-v) < 0.25;
+  const dawn = eve? 0 : gold, dusk = eve? gold : 0;
+  /* the base is nearly neutral: the pass lights the picture, it does not
+     recolour it. The painting already carries its own palette for the hour */
+  const g={ black: lerp(0.02, 0.01, night), sat:1.0, con:1.04, exp:1.02, vig:0.16,
+            shadow:[0.08,0.09,0.18], high:[0.16,0.12,0.04], bloom:0.30, rays:0, sun:0, sunCol:[1,0.8,0.55] };
+  /* night: a little less colour and a touch of blue in the darks, and more
+     bloom round the lamps, which is where the night's colour belongs */
+  g.sat = lerp(g.sat, 0.90, night); g.con = lerp(g.con, 1.02, night);
+  g.shadow = [lerp(0.08,0.02,night), lerp(0.09,0.03,night), lerp(0.18,0.10,night)];
+  g.high = [lerp(0.16,0.14,night), lerp(0.12,0.11,night), lerp(0.04,0.06,night)];
+  g.bloom = lerp(0.28, 0.80, night); g.vig = lerp(0.16, 0.26, night);
+  /* the golden hours: cool shadows, a warm top and the rays, gently */
+  if(dawn>0){ g.shadow=[lerp(g.shadow[0],0.12,dawn),lerp(g.shadow[1],0.08,dawn),lerp(g.shadow[2],0.24,dawn)];
+    g.high=[lerp(g.high[0],0.30,dawn),lerp(g.high[1],0.18,dawn),lerp(g.high[2],0.05,dawn)];
+    g.sat=lerp(g.sat,1.0,dawn); g.con=lerp(g.con,1.06,dawn); g.black=lerp(g.black,0.025,dawn);
+    g.bloom=lerp(g.bloom,0.38,dawn); g.rays=dawn; g.sunCol=[1.0,0.76,0.50]; }
+  if(dusk>0){ g.shadow=[lerp(g.shadow[0],0.16,dusk),lerp(g.shadow[1],0.06,dusk),lerp(g.shadow[2],0.22,dusk)];
+    g.high=[lerp(g.high[0],0.32,dusk),lerp(g.high[1],0.15,dusk),lerp(g.high[2],0.03,dusk)];
+    g.sat=lerp(g.sat,1.0,dusk); g.con=lerp(g.con,1.06,dusk); g.bloom=lerp(g.bloom,0.38,dusk); g.rays=dusk*0.8; g.sunCol=[1.0,0.62,0.38]; }
   return g;
 }
 
@@ -29505,7 +29002,7 @@ FX.capture = function(realm){
   /* heaven is white cloud and gold, so it wants very little bloom and a
      black point, or the whole of it glows into one pale sheet */
   const G = inHeaven? {black:0.08,sat:1.08,con:1.14,exp:0.96,vig:0.20,shadow:[0.20,0.12,0.40],high:[0.30,0.22,0.06],bloom:0.16,rays:0.55,sun:1,sunCol:[1,0.86,0.6]}
-                    : (realm==='title'? Object.assign(fxGrade(),{rays:0.5,bloom:0.22,black:0.05}) : fxGrade());
+                    : (realm==='title'? Object.assign(fxGrade(),{rays:0.4,bloom:0.16,black:0.015,sat:0.97}) : fxGrade());
   /* the light map */
   fxLights(inHeaven? 'heaven' : (realm==='title'? 'title' : 'village'), cx, cy, night);
   /* the water mask, in screen space */
@@ -30675,6 +30172,341 @@ function drawPrete(g, p, o){
   return res;
 }
 /* ============================================================
+   THE CATS AND THE DOGS, DRAWN AGAIN
+
+   Every cat in the village was the same orange cat, and every
+   dog you could befriend was the same tan dog. They were drawn
+   out of a few ellipses with no line round them, and against a
+   busy lane they melted into it.
+
+   Now each one is somebody. The cats are the cats of Thailand:
+   a Siamese, วิเชียรมาศ, cream with her points gone dark; a
+   silver-blue Korat, สีสวาด, the luck-cat; a white Khao Manee
+   with one blue eye and one gold; a tuxedo in white socks; a
+   calico who owns the shop; a grey tabby too fat to jump; and
+   the ginger who gets stuck in the tamarind. The dogs are soi
+   dogs — lean, short-haired, ears up, tails curled over their
+   backs — each in its own coat, and Gohan, who is a Bangkaew,
+   the white Thai spitz with the ruff and the plume.
+
+   Big heads, eyes with a light in them, and a black line round
+   every one of them, like everybody else in the village now.
+   Each is painted into a scratch canvas in the pose it is in
+   this frame, and stamped with a one-pixel ring of ink.
+   ============================================================ */
+const PET_INK = '#1a1216';
+const PETK = { c:null, g:null, t:null, tg:null };
+const PK_W = 64, PK_H = 40, PK_OX = 32, PK_OY = 34;
+/* paint(a) draws in world space; it comes out with a line round it */
+function petInked(g, x, y, paint){
+  if(!PETK.c){ PETK.c=mkCv(PK_W,PK_H); PETK.g=G2(PETK.c); PETK.t=mkCv(PK_W,PK_H); PETK.tg=G2(PETK.t); }
+  const bx=R(x), by=R(y), a=PETK.g, t=PETK.tg;
+  a.setTransform(1,0,0,1,0,0); a.globalAlpha=1; a.globalCompositeOperation='source-over';
+  a.clearRect(0,0,PK_W,PK_H);
+  a.setTransform(1,0,0,1,PK_OX-bx,PK_OY-by); a.imageSmoothingEnabled=false;
+  paint(a);
+  a.setTransform(1,0,0,1,0,0);
+  t.setTransform(1,0,0,1,0,0); t.globalCompositeOperation='source-over';
+  t.clearRect(0,0,PK_W,PK_H); t.drawImage(PETK.c,0,0);
+  t.globalCompositeOperation='source-in'; t.fillStyle=PET_INK; t.fillRect(0,0,PK_W,PK_H);
+  t.globalCompositeOperation='source-over';
+  const X=bx-PK_OX, Y=by-PK_OY;
+  g.drawImage(PETK.t,X-1,Y); g.drawImage(PETK.t,X+1,Y); g.drawImage(PETK.t,X,Y-1); g.drawImage(PETK.t,X,Y+1);
+  g.drawImage(PETK.c,X,Y);
+}
+/* an eye with a light in it: two by two, the light in the top corner nearest
+   the sky. Shut, it is a short curve. */
+function petEye(a, x, y, iris, shut){
+  x=R(x); y=R(y);
+  if(shut){ pR(a,x-1,y,1,1,PET_INK); pR(a,x,y+1,2,1,PET_INK); pR(a,x+2,y,1,1,PET_INK); return; }
+  pR(a,x,y,2,2,PET_INK); if(iris) pR(a,x+1,y+1,1,1,iris); pR(a,x,y,1,1,'#fffdf4');
+}
+
+/* ---------------- the coats ---------------- */
+/* b base, l lit, d shade, w the pale parts, and what marks it */
+const CAT_COATS = {
+  ginger:  {b:'#e8983c', l:'#f6b862', d:'#b86a26', w:'#fbeedc', eye:'#7aa83a', stripes:'#b0601e'},
+  siamese: {b:'#efe2c6', l:'#faf2e0', d:'#cdbb98', w:'#fbf4e6', eye:'#4a9ae0', points:'#5a3e30'},
+  greytab: {b:'#9a9a9e', l:'#b8b8bc', d:'#707076', w:'#e8e6e2', eye:'#c8a830', stripes:'#56565e', fat:1},
+  biscuit: {b:'#dcb880', l:'#ecd0a0', d:'#b8925a', w:'#fbf2e2', eye:'#9a7a2a', socks:1},
+  manee:   {b:'#f6f2ea', l:'#ffffff', d:'#d8d0c2', w:'#ffffff', eye:'#4a9ae0', eye2:'#e0a820'},
+  tux:     {b:'#2e2a32', l:'#4a4450', d:'#1e1a22', w:'#f4f0e8', eye:'#c8c030', socks:1, bib:1},
+  korat:   {b:'#8a98a8', l:'#a8b6c4', d:'#66727e', w:'#b8c4d0', eye:'#7ac04a'},
+  calico:  {b:'#f6f0e4', l:'#ffffff', d:'#d8ccb8', w:'#ffffff', eye:'#c8a030', patches:[['#e8983c',-2,-6,2.4,1.8],['#2e2a32',1,-4,1.8,1.5],['#e8983c',2.4,-11,1.6,1.2],['#2e2a32',0,-12,1.4,1]]},
+};
+/* who is who */
+const PET_LOOK = {
+  'Meow-Meow':'siamese', 'Fat Somchai':'greytab', 'Biscuit':'biscuit', "The Monk's":'manee',
+  'Two-Socks':'tux', 'Noodle':'korat', 'Shop Cat':'calico',
+  'Daeng':'red', 'Tao':'blacktan', 'Moo':'patch', 'Lucky':'tan', 'Boss':'black', 'Crossroad':'dusty', 'Nine':'brindle',
+};
+const DOG_LOOKS = {
+  tan:     {b:'#c9a06a', l:'#dcb880', d:'#a07a4a', w:'#ecd8b4', muzzle:'#5a4030'},
+  black:   {b:'#3a3438', l:'#56505a', d:'#262226', w:'#f0ebe2', socks:1, bib:1},
+  dusty:   {b:'#e0d6c6', l:'#f0e8dc', d:'#bcae9a', w:'#f6f0e6', ear:'#c9a06a'},
+  red:     {b:'#b86a34', l:'#d0864c', d:'#8a4a22', w:'#e8c8a0'},
+  blacktan:{b:'#3a3032', l:'#54484a', d:'#262022', w:'#c8904e', brows:1, socks:'#c8904e'},
+  patch:   {b:'#f0e4dc', l:'#fbf4ee', d:'#d0bfb4', w:'#fbf4ee', patch:'#3a3032', pink:1},
+  brindle: {b:'#8a6a44', l:'#a8845a', d:'#644a2e', w:'#d8c4a0', stripes:'#4a3622'},
+};
+/* the road dogs by the shop keep the four coats they always had */
+const ROAD_DOG_LOOK = ['tan','black','dusty','red'];
+function catCoat(o){ return CAT_COATS[(o && o.coat) || 'ginger'] || CAT_COATS.ginger; }
+function dogLook(k){ return DOG_LOOKS[k] || DOG_LOOKS.tan; }
+
+/* ---------------- a cat ----------------
+   c: {x, y, face, anim, phase, state:'sit'|'walk'|'tree', coat, collar} */
+function drawCat(g, c){
+  const x=c.x, y=c.y, f=c.face||1, t=c.anim||0, C=catCoat(c);
+  const walk = c.state==='walk', sleep = c.state==='sleep', fat = C.fat? 1.2 : 1;
+  pEll(g, x, y-0.5, walk? 7 : 6*fat, 1.8, 'rgba(10,8,20,0.32)');
+  petInked(g, x, y, a => walk? catWalk(a,x,y,f,t,c.phase||0,C,fat,c) : sleep? catSleep(a,x,y,f,t,C,fat,c) : catSit(a,x,y,f,t,C,fat,c.state==='tree',c));
+  if(sleep) petZ(g, x+4*f, y-9, t+1.7);
+}
+function catMarks(a, C, X, y, f, head){
+  if(C.stripes){ for(const [dx,dy] of head? [[1.2,-12.2],[2.2,-12.6],[3.2,-12.2]] : [[-2.6,-7.4],[-1.2,-8],[0.2,-8.2]]) pR(a,R(X(dx)),R(y+dy),1,head?1:2,C.stripes); }
+  if(C.patches && !head) for(const [col,dx,dy,rx,ry] of C.patches) pEll(a,X(dx),y+dy,rx,ry,col);
+}
+function catSit(a, x, y, f, t, C, fat, tree, o){
+  const X=dx=>x+dx*f, sw=Math.sin(t*2.1);
+  const pt=C.points, tailC=pt||C.d;
+  /* the tail: round the front paws on the ground, or down off the branch */
+  if(tree){ pTaper(a,X(-3),y-2,X(-3.6)+sw,y+5,2.4,1.6,tailC); pTaper(a,X(-3.6)+sw,y+5,X(-2.8)+sw*1.4,y+9,1.6,1.2,tailC); }
+  else { for(const [dx,dy,wd] of [[-3.4,-2.4,2.4],[-5,-1.2,2.2],[-4.4,-0.2,2],[-2,0,1.8],[0.6,-0.2,1.6]]) pEll(a,X(dx),y+dy,wd*0.6,1.1,tailC);
+    pR(a,R(X(1.2+sw*0.4)),R(y-1),1,1,tailC); }
+  /* the haunch, the body, the chest */
+  pEll(a,X(-1.8),y-3.2,3.4*fat,3.1,C.d);
+  pEll(a,X(-0.6),y-4.9,3.9*fat,4.3,C.b);
+  pEll(a,x-1.2,y-5.9,2.5*fat,2.6,C.l);
+  if(C.bib||C.w) pEll(a,X(1.7),y-4.6,1.7,2.8,C.w);
+  catMarks(a,C,X,y,f,false);
+  /* the front legs and paws */
+  const legC = pt||C.b, pawC = C.socks||pt? (pt||C.w) : C.b;
+  pR(a,R(X(0.6)),R(y-3.2),1,2,legC); pR(a,R(X(2.6)),R(y-3.2),1,2,legC);
+  pR(a,R(Math.min(X(0),X(1.4))),R(y-1.2),2,1,C.socks? C.w : pawC); pR(a,R(Math.min(X(2),X(3.4))),R(y-1.2),2,1,C.socks? C.w : pawC);
+  /* the head: big, and a little tipped toward whatever it is looking at */
+  const hx=X(2.1), hy=y-10+(o&&o.look? 0.6:0);
+  /* ears first, so the head sits in front of their roots */
+  const earC = pt||C.d, earF = pt||C.b;
+  pTri(a,X(-0.8),hy-2,X(-0.6),hy-6.2,X(1.6),hy-3,earC);
+  pTri(a,X(2.8),hy-3.2,X(4.6),hy-6.2,X(5.8),hy-2.2,earF);
+  pR(a,R(X(4.4)),R(hy-4.2),1,1,'#f0a0b0');
+  pEll(a,hx,hy,4.0*(fat>1?1.06:1),3.5,C.b);
+  pEll(a,hx-0.9,hy-0.8,2.7,2.2,C.l);
+  if(pt) pEll(a,X(3.4),hy+0.9,2.2,1.9,pt);                                        // the Siamese mask
+  else if(C.bib) pEll(a,X(3.4),hy+1.3,1.9,1.4,C.w);
+  else pEll(a,X(3.4),hy+1.2,1.8,1.3,C.w);
+  catMarks(a,C,X,y,f,true);
+  /* the eyes, and a blink now and then */
+  const shut = (t*0.7)%4.3 < 0.14;
+  petEye(a, f>0? hx-1.6 : hx-0.4, hy-0.8, C.eye, shut);
+  petEye(a, f>0? hx+1.4 : hx-3.4, hy-0.8, C.eye2||C.eye, shut);
+  pR(a,R(X(4.4)),R(hy+1.2),1,1,'#e87a90');                                        // the nose
+  pR(a,R(X(3.6)),R(hy+2.2),1,1,pt? '#2a2028' : shade(C.w,-0.3));
+  if(o && o.collar){ pR(a,R(Math.min(X(0.4),X(3.4))),R(hy+3.2),4,1,'#d8303a'); pR(a,R(X(2)),R(hy+4),1,1,'#f0c040'); }
+}
+/* asleep: a loaf, paws tucked, the tail round over the nose */
+function catSleep(a, x, y, f, t, C, fat, o){
+  const X=dx=>x+dx*f, pt=C.points, br=Math.sin(t*1.3)*0.3+Math.sin(t*0.41)*0.3;
+  pEll(a,X(-0.6),y-3.4,5.2*fat,3.4+br*0.3,C.b);
+  pEll(a,x-1.4,y-4.6-br*0.3,3.6*fat,1.8,C.l);
+  catMarks(a,C,X,y+3.4,f,false);
+  const hx=X(3.2), hy=y-4.6;
+  pTri(a,X(1.6),hy-2,X(1.6),hy-5,X(3.4),hy-2.6,pt||C.d);
+  pTri(a,X(3.6),hy-2.6,X(5),hy-5,X(5.6),hy-1.8,pt||C.b);
+  pEll(a,hx,hy,3,2.6,C.b); pEll(a,hx-0.6,hy-0.8,1.9,1.4,C.l);
+  if(pt) pEll(a,X(4),hy+0.6,1.8,1.4,pt); else pEll(a,X(4),hy+0.8,1.5,1.1,C.w);
+  petEye(a, f>0? hx-0.8 : hx-1.2, hy-0.4, null, true);
+  /* the tail wrapped round the front, over the paws */
+  for(const [dx,dy,r0] of [[-5,-1.4,1.4],[-2.4,-0.6,1.3],[0.4,-0.5,1.2],[3,-0.8,1.1],[5,-1.6,1]]) pEll(a,X(dx),y+dy,r0,1,pt||C.d);
+  if(o && o.collar) pR(a,R(Math.min(X(1.6),X(3))),R(hy+2.2),2,1,'#d8303a');
+}
+function catWalk(a, x, y, f, t, ph, C, fat, o){
+  const X=dx=>x+dx*f, pt=C.points, legC=pt||C.b, bob=Math.abs(Math.sin(ph))*0.5;
+  const step=i=>Math.sin(ph+i*Math.PI*0.5+(i>1?Math.PI:0))*1.6;
+  /* the far legs, in shade */
+  pLimb(a,X(-2.6),y-4,X(-2.6)+step(1)*f,y-0.6,1.6,shade(legC,-0.18));
+  pLimb(a,X(3.6),y-4,X(3.6)+step(3)*f,y-0.6,1.6,shade(legC,-0.18));
+  /* the tail up, with a question mark in the end of it */
+  const tw=Math.sin(t*2.6)*0.8;
+  pTaper(a,X(-5),y-6,X(-7)+tw,y-10,2,1.6,pt||C.d); pTaper(a,X(-7)+tw,y-10,X(-5.6)+tw,y-12.4,1.6,1.3,pt||C.d);
+  /* the body */
+  pEll(a,x,y-5.4-bob,5.4*fat,2.8,C.b);
+  pEll(a,x-0.8,y-6.4-bob,4.0*fat,1.6,C.l);
+  pR(a,R(Math.min(X(-2),X(3))),R(y-3.4-bob),5,1,C.w);
+  catMarks(a,C,X,y-bob,f,false);
+  /* the near legs */
+  pLimb(a,X(-3.8),y-4,X(-3.8)+step(0)*f,y-0.6,1.8,legC);
+  pLimb(a,X(2.4),y-4,X(2.4)+step(2)*f,y-0.6,1.8,legC);
+  if(C.socks){ pR(a,R(X(-3.8)+step(0)*f),R(y-1),1,1,C.w); pR(a,R(X(2.4)+step(2)*f),R(y-1),1,1,C.w); }
+  /* the head, up and forward */
+  const hx=X(6), hy=y-8.4-bob;
+  pTri(a,X(4.2),hy-2,X(4.4),hy-5.6,X(6.2),hy-2.8,pt||C.d);
+  pTri(a,X(6.6),hy-2.8,X(8.2),hy-5.6,X(8.8),hy-1.8,pt||C.b);
+  pEll(a,hx,hy,3.4,3.1,C.b); pEll(a,hx-0.7,hy-0.8,2.2,1.8,C.l);
+  pEll(a,X(7.6),hy+1,1.6,1.2,pt||C.w);
+  catMarks(a,C,dx=>hx+(dx-2.1)*f,y+1.6-bob,f,true);
+  petEye(a, f>0? hx+0.6 : hx-2.6, hy-0.8, C.eye, (t*0.7)%4.3<0.14);
+  pR(a,R(X(9.2)),R(hy+0.6),1,1,'#e87a90');
+  if(o && o.collar){ pR(a,R(Math.min(X(4.2),X(6.2))),R(hy+2.4),3,1,'#d8303a'); }
+}
+
+/* ---------------- a soi dog ----------------
+   d: {x, face, st:'sleep'|'up', t, sp, bark, coat, look, collar} */
+function drawRoadDog(g, d){
+  const x=d.x, gy=d.y!==undefined? d.y : groundY(x), f=d.face||1, t=d.t||0;
+  const C = dogLook(d.look || ROAD_DOG_LOOK[(d.coat||0)%ROAD_DOG_LOOK.length]);
+  const sleep = d.st==='sleep' && !(d.bark>0);
+  pEll(g, x, gy-0.5, sleep? 10 : 9, 2.2, 'rgba(10,8,20,0.30)');
+  petInked(g, x, gy, a => sleep? dogSleep(a,x,gy,f,t,C,d) : dogUp(a,x,gy,f,t,C,d));
+  if(sleep) petZ(g, x+6*f, gy-9, t);
+}
+function dogCoatMarks(a, C, X, y, bob){
+  if(C.stripes) for(let i=0;i<4;i++) pR(a,R(X(-4+i*2.4)),R(y-11-bob),1,3,C.stripes);
+  if(C.bib) pEll(a,X(4.6),y-9-bob,1.8,2.6,C.w);
+}
+function dogUp(a, x, y, f, t, C, d){
+  const X=dx=>x+dx*f;
+  const barking = d.bark>0, beat = barking? (d.bark*3.4)%1 : 0, open = barking? Math.max(0,Math.sin(beat*Math.PI)) : 0;
+  const walk = !!d.sp && !barking, ph=t*8.5, bob = walk? Math.abs(Math.sin(ph))*0.6 : 0;
+  const step = i => walk? Math.sin(ph+(i%2?Math.PI:0)+(i>1?Math.PI*0.5:0))*2.2 : 0;
+  const legD = shade(C.b,-0.2), sockC = C.socks===1? C.w : (C.socks||null);
+  /* far legs */
+  pLimb(a,X(-4.4),y-8,X(-4.8)+step(1)*f,y-0.6,1.8,legD);
+  pLimb(a,X(4.6),y-8,X(5)+step(3)*f,y-0.6,1.8,legD);
+  /* the tail, curled up over the back — wagging if it is pleased, stiff if it is barking */
+  const wag = barking? Math.sin(t*14)*1.4 : Math.sin(t*5)*0.8;
+  pTaper(a,X(-6.4),y-10.4-bob,X(-8.2)+wag*f,y-14.6,2.4,2,C.d);
+  pTaper(a,X(-8.2)+wag*f,y-14.6,X(-5.8)+wag*f,y-16.4,2,1.4,C.d);
+  pR(a,R(X(-5.8)+wag*f),R(y-16.8),1,1,C.l);
+  /* the body: a deep chest, a waist tucked up under it */
+  pEll(a,x,y-9.4-bob,7.2,3.3,C.b);
+  pEll(a,X(4),y-9.2-bob,3.3,3.9,C.b);
+  pEll(a,x-1.2,y-10.8-bob,5.2,1.7,C.l);
+  pR(a,R(Math.min(X(-2.6),X(3.4))),R(y-6.6-bob),6,1,C.w);
+  dogCoatMarks(a,C,X,y,bob);
+  /* near legs, with socks if it has them */
+  const L1=X(-3.2), L2=X(5.6);
+  pLimb(a,L1,y-8,L1+step(0)*f,y-0.6,2,C.b); pLimb(a,L2,y-8,L2+step(2)*f,y-0.6,2,C.b);
+  if(sockC){ pR(a,R(L1+step(0)*f-1),R(y-2),2,2,sockC); pR(a,R(L2+step(2)*f-1),R(y-2),2,2,sockC); }
+  /* neck and head; up and back when it barks */
+  const lift = barking? 2.2+open*1.2 : 0;
+  const hx=X(8.8), hy=y-14.2-lift-bob;
+  pTaper(a,X(5),y-10.6-bob,hx-1.6*f,hy+1,4.2,3.4,C.b);
+  if(d.collar){ pTaper(a,X(5.8),y-11.4-bob,X(6.8),y-13.4-bob-lift*0.6,1.8,1.8,'#d8303a'); pR(a,R(X(6.8)),R(y-11.2-bob),1,1,'#f0c040'); }
+  /* the ears: up, both of them, the way a Thai dog's are */
+  const earC=C.ear||C.d, flick=Math.max(0,Math.sin(t*0.9)-0.96)*14;
+  pTri(a,hx-1.8*f,hy-1.6,hx-2.2*f,hy-5.4-flick*0.1,hx-0.2*f,hy-2.4,shade(earC,-0.1));
+  pTri(a,hx-0.2*f,hy-2.4,hx+0.8*f,hy-6,hx+2*f,hy-1.8,earC);
+  pR(a,R(hx+0.8*f),R(hy-3.4),1,1,'#e8a0a8');
+  pEll(a,hx,hy,3.4,3.0,C.b);
+  pEll(a,hx-0.8,hy-0.8,2.2,1.7,C.l);
+  if(C.brows){ pR(a,R(hx+0.4*f),R(hy-2),1,1,C.w); pR(a,R(hx+2*f),R(hy-1.6),1,1,C.w); }
+  /* the muzzle — open on the beat when it barks */
+  const mc = C.muzzle||C.l;
+  pTaper(a,hx+1.6*f,hy+0.8,hx+4.6*f,hy+1.4-open*1.2,2.8,2.2,mc);
+  if(open>0.25){ pTri(a,hx+2*f,hy+1.4,hx+5*f,hy+1.6+open*2.4,hx+2*f,hy+2.6+open*1.8,'#4a2020'); pR(a,R(hx+3*f),R(hy+2+open*1.2),2,1,'#e87a8a'); }
+  pR(a,R(hx+4.8*f),R(hy+0.4-open*1.2),1,1,C.pink? '#d87888' : '#1a1216');          // the nose
+  if(C.patch){ pR(a,R(hx-0.4),R(hy-2),4,3,C.patch); pR(a,R(hx+(f>0?3:-1)),R(hy-1),1,1,C.patch); }
+  petEye(a, f>0? hx+0.4 : hx-2.4, hy-0.9, barking? null : '#5a3a20', !barking && (t*0.6)%5.1<0.12);
+}
+function dogSleep(a, x, y, f, t, C, d){
+  const X=dx=>x+dx*f, br=Math.sin(t*1.25)*0.35+Math.sin(t*0.37)*0.4;
+  const tw = Math.max(0, Math.sin(t*0.53)-0.93)*8, ef = Math.max(0, Math.sin(t*0.41+1.7)-0.95)*16;
+  /* curled up in a ring, nose to tail: the round of the back, the haunch,
+     the tail brought round the front, the head down on the paws inside it */
+  pEll(a,X(-1),y-4.6,6.6,4.4+br*0.35,C.b);
+  pEll(a,X(-3),y-3.6,3.4,3,C.d);
+  pEll(a,x-2.2,y-6.2-br*0.3,4.4,2,C.l);
+  if(C.stripes) for(let i=0;i<3;i++) pR(a,R(X(-4+i*2.6)),R(y-7.6-br*0.3),1,2,C.stripes);
+  if(C.patch) pEll(a,X(-2.6),y-6,2.2,1.4,C.patch);
+  /* the tail, round the front along the ground */
+  for(const [dx,dy,r0] of [[-6.4,-1.8,1.5],[-4,-0.8,1.4],[-1,-0.6,1.3],[2,-0.8,1.2]]) pEll(a,X(dx),y+dy,r0,1.1,C.d);
+  pR(a,R(X(3.2)),R(y-1),1,1,C.l);
+  /* the paws, and the head down on them */
+  pR(a,R(Math.min(X(3.6),X(6)))+(f>0?R(tw*0.3):-R(tw*0.3)),R(y-1.4),3,1,C.socks===1? C.w : (C.socks||C.l));
+  const hx=X(3.6), hy=y-4.2;
+  pEll(a,hx,hy,3.3,2.8,C.b); pEll(a,hx-0.6,hy-0.9,2.1,1.5,C.l);
+  if(C.patch) pR(a,R(hx-0.4),R(hy-1.6),3,2,C.patch);
+  pTaper(a,hx+1.8*f,hy+0.8,hx+4.2*f,hy+1.6,2.4,1.8,C.muzzle||C.l);
+  pR(a,R(hx+4.4*f),R(hy+1.2),1,1,C.pink? '#d87888' : '#1a1216');
+  /* one ear laid back, flicking now and then */
+  pTri(a,hx-0.8*f,hy-2.2-ef*0.1,hx-3.8*f,hy-1.4,hx-0.2*f,hy+0.2,C.ear||C.d);
+  petEye(a, f>0? hx+0.2 : hx-2.2, hy-0.8, null, true);
+  if(d.collar) pR(a,R(Math.min(X(1.2),X(2.6))),R(y-3.4),2,2,'#d8303a');
+}
+/* a z going up off a sleeping animal now and then */
+function petZ(g, x, y, t){
+  const cyc=(t*0.30)%1; if(cyc>0.55) return;
+  const u=cyc/0.55, al=(u<0.15?u/0.15:1)*(1-u)*0.9, zx=R(x+u*6), zy=R(y-u*11);
+  g.globalAlpha=al;
+  pR(g,zx,zy,3,1,'#f4ecd8'); pR(g,zx+1,zy+1,1,1,'#f4ecd8'); pR(g,zx,zy+2,3,1,'#f4ecd8');
+  g.globalAlpha=1;
+}
+
+/* ---------------- Gohan, the Bangkaew ----------------
+   d: {x, y, face, t, st:'sleep'|'walk'|'sit', collar} */
+function drawFluffyDog(g, d){
+  const x=d.x, gy=d.y!==undefined? d.y : groundY(x), f=d.face||1, t=d.t||0, st=d.st;
+  pEll(g, x, gy-0.5, st==='sleep'? 11 : 10, 2.4, 'rgba(10,8,20,0.30)');
+  petInked(g, x, gy, a => st==='sleep'? gohanSleep(a,x,gy,f,t,d) : gohanUp(a,x,gy,f,t,st==='walk',d));
+  if(st==='sleep') petZ(g, x+7*f, gy-10, t);
+}
+const GOHAN = {b:'#f4efe6', l:'#ffffff', d:'#d8cfc0', w:'#fffdf6', cream:'#ecd8b8'};
+function fluff(a, x, y, rx, ry, col, n, seed){
+  pEll(a,x,y,rx,ry,col);
+  for(let i=0;i<n;i++){ const an=seed+i*2.4; pEll(a,x+Math.cos(an)*rx*0.9,y+Math.sin(an)*ry*0.9,1.4,1.2,col); }
+}
+function gohanUp(a, x, y, f, t, walk, d){
+  const X=dx=>x+dx*f, C=GOHAN, ph=t*7, bob= walk? Math.abs(Math.sin(ph))*0.6 : 0;
+  const step = i => walk? Math.sin(ph+(i%2?Math.PI:0)+(i>1?Math.PI*0.5:0))*2 : 0;
+  const sit = !walk;
+  /* far legs */
+  if(!sit) { pLimb(a,X(-4.2),y-8,X(-4.6)+step(1)*f,y-0.6,2,C.d); }
+  pLimb(a,X(4.6),y-8,X(5)+step(3)*f,y-0.6,2,C.d);
+  /* the plume over the back, the best thing about him */
+  const wag=Math.sin(t*4)*0.8;
+  fluff(a,X(-6.4)+wag*f,y-14.4,3.4,2.8,C.d,5,1.1);
+  fluff(a,X(-5.4)+wag*f,y-15.4,2.8,2.2,C.b,4,0.3);
+  pEll(a,X(-4.4)+wag*f,y-16.2,1.8,1.2,C.l);
+  /* the body, sitting or standing, all coat */
+  if(sit){ fluff(a,X(-1.8),y-5.2,4.6,4.4,C.d,5,0.7); fluff(a,X(0),y-7.4,4.4,5,C.b,6,0.2); pEll(a,x-1.2,y-8.6,2.8,2.8,C.l); }
+  else { fluff(a,x,y-9.6-bob,7.6,3.8,C.b,7,0.5); pEll(a,x-1.2,y-11-bob,5.4,1.8,C.l); }
+  /* near legs */
+  if(!sit) pLimb(a,X(-3),y-8,X(-3)+step(0)*f,y-0.6,2.2,C.b);
+  pLimb(a,X(5.8),y-8,X(6)+step(2)*f,y-0.6,2.2,C.b);
+  if(sit){ pLimb(a,X(3.6),y-7,X(3.8),y-0.6,2.2,C.b); pEll(a,X(-2.4),y-1.4,3,1.4,C.d); }
+  /* the ruff: a collar of coat round the neck */
+  const hy0 = sit? y-14.6 : y-14.2-bob, hx=X(sit? 3.8 : 8.6), hy=hy0;
+  fluff(a,hx-1.2*f,hy+3.4,4,3.2,C.cream,6,0.9);
+  fluff(a,hx-1*f,hy+2.6,3.2,2.4,C.w,5,0.2);
+  if(d.collar) pR(a,R(Math.min(hx-3*f,hx+1*f)),R(hy+4.6),4,1,'#d8303a');
+  /* the fox's face and the two sharp ears */
+  pTri(a,hx-1.8*f,hy-1.8,hx-2*f,hy-6,hx+0*f,hy-2.6,C.d);
+  pTri(a,hx+0*f,hy-2.6,hx+1.2*f,hy-6.4,hx+2.4*f,hy-2,C.b);
+  pR(a,R(hx+1*f),R(hy-3.8),1,1,'#f0b0b8');
+  pEll(a,hx,hy,3.4,3.0,C.b); pEll(a,hx-0.8,hy-0.8,2.2,1.7,C.l);
+  pTaper(a,hx+1.6*f,hy+0.8,hx+4.4*f,hy+1.2,2.6,1.8,C.w);
+  pR(a,R(hx+4.6*f),R(hy+0.6),1,1,'#1a1216');
+  petEye(a, f>0? hx+0.3 : hx-2.3, hy-0.9, '#4a3020', (t*0.6)%5.3<0.12);
+}
+function gohanSleep(a, x, y, f, t, d){
+  const X=dx=>x+dx*f, C=GOHAN, br=Math.sin(t*1.15)*0.4+Math.sin(t*0.33)*0.4;
+  fluff(a,X(-4),y-3.6,3.6,3,C.d,4,0.4);
+  fluff(a,X(-1),y-4.8,7,4.4+br*0.35,C.b,8,0.2);
+  pEll(a,x-1.6,y-6.4-br*0.3,6,2,C.l);
+  /* the plume laid over his nose like a blanket */
+  fluff(a,X(2),y-2.4,4.4,2,C.d,5,1.3);
+  fluff(a,X(2.6),y-3,3.4,1.5,C.b,4,0.6);
+  const hx=X(4.6), hy=y-4.6;
+  pEll(a,hx,hy,3.2,2.6,C.b); pEll(a,hx-0.6,hy-0.9,2,1.4,C.l);
+  pTri(a,hx-1*f,hy-2.2,hx-2.4*f,hy-5.4,hx+0.6*f,hy-2.2,C.d);
+  pTri(a,hx+0.6*f,hy-2.2,hx+1.6*f,hy-5.2,hx+2.6*f,hy-1.8,C.b);
+  pR(a,R(hx+3.8*f),R(hy+0.8),1,1,'#1a1216');
+  petEye(a, f>0? hx+0.2 : hx-2.2, hy-0.8, null, true);
+  if(d.collar) pR(a,R(Math.min(X(4),X(5.4))),R(y-2.6),2,2,'#d8303a');
+}
+/* ============================================================
    THE ICONS, REDRAWN
 
    Every item used to be drawn out of four or five ellipses at
@@ -31450,65 +31282,686 @@ function uiTab(g, x, y, w, h, on){
   g.drawImage(c, R(x)-2, R(y)-2);
 }
 /* ============================================================
-   THE MAP, PAINTED
+   THE MAP'S LITTLE PICTURES — ISAN
 
-   The map was three strips of coloured country cut off square at
-   both ends, with the road running off the right of one and back
-   on at the left of the next — a diagram, and a cropped one.
+   Everything that stands on the new map is a small sprite painted
+   a pixel at a time the way the item icons are: light from the top
+   left, three or four tones down each form, and one black line
+   round the outside. They are the things you would see from a hill
+   over a village in the northeast: sugar palms standing alone in
+   the paddies, houses up on their posts with the jars and the loom
+   underneath, the little rice barns, field huts, the sim and the
+   lotus-bud that of an Isan wat, buffalo with an egret riding,
+   laterite forest and its termite mounds, the Mekong with the
+   fishing boats on it, the red lotus sea, flat-topped sandstone
+   hills, a Khmer prasat, a morlam stage, a bang fai tower, and a
+   kid with a humming kite.
 
-   It is one picture now. The road snakes: west to east along the
-   top, round a bend at the right-hand edge, back east to west
-   across the middle, round again at the left, and east to the end
-   of the world along the bottom. The land it runs through is
-   painted the whole height of the page, one country flowing into
-   the next with no seams in it — paddies laid out in their dikes,
-   stilt houses under palms, the wat with its chedi, the forest
-   thickening into the deep country, the shophouses of the town,
-   the river with the long bridge over it, the lotus lake, the
-   limestone hills and the red prangs of the ruins — and where you
-   have never walked, mist lying on it.
-
-   The painting is kept and done again only when there is more of
-   the road you have seen. The pins, the names and you are drawn
-   over it every frame.
+   Each is painted once and kept. map(name, variant) returns it.
    ============================================================ */
-const PMAP = { key:'', cv:null, geo:null };
-const PM_INK = '#4a3424';
-/* what each zone is painted with: ground, a second ground to mottle it with */
-const PM_ZONE = {
-  charnel:{g:'#b8b4a0', g2:'#a6a290', k:'grave'},
-  roadside:{g:'#b8c888', g2:'#a4b87a', k:'meadow'},
-  paddy:{g:'#9cc48a', g2:'#86b47c', k:'paddy'},
-  villageW:{g:'#c8c090', g2:'#b4b07e', k:'village'},
-  centre:{g:'#c8c090', g2:'#b4b07e', k:'village'},
-  grove:{g:'#a8c47e', g2:'#94b470', k:'grove'},
-  wat:{g:'#d0c498', g2:'#bcb286', k:'wat'},
-  forest:{g:'#8cb07a', g2:'#7aa06c', k:'forest'},
-  deep:{g:'#78a06c', g2:'#66905e', k:'deep'},
-  cross:{g:'#c4bc98', g2:'#b0aa88', k:'cross'},
-  town:{g:'#c8c0b0', g2:'#b6aea0', k:'town'},
-  far:{g:'#a0c890', g2:'#8cb880', k:'paddy'},
-  river:{g:'#8cbcd0', g2:'#7aaec4', k:'river'},
-  bank:{g:'#b4c888', g2:'#a0b87a', k:'bank'},
-  lake:{g:'#9cc8bc', g2:'#88b8ac', k:'lake'},
-  hill:{g:'#b8b89a', g2:'#a4a488', k:'karst'},
-  ruins:{g:'#ccbc94', g2:'#baaa84', k:'ruins'},
+var MAP_INK = '#1a1216';
+const MSPR = new Map();
+/* the palettes: a five-step ramp each, lit to dark */
+const MA = {
+  leaf: ramp('#5a9a44'), leafD: ramp('#3a7440'), olive: ramp('#8c9c46'), palm: ramp('#4a8a3c'),
+  young: ramp('#86c052'), bark: ramp('#6e4e34'), trunkG: ramp('#7a7266'), wood: ramp('#a8744a'),
+  woodD: ramp('#7a5236'), thatch: ramp('#c9a45e'), zinc: ramp('#98a6b0'), tile: ramp('#b4523a'),
+  white: ramp('#ece4d2'), gold: ramp('#e8b438'), brick: ramp('#b0603e'), laterite: ramp('#b86a40'),
+  sand: ramp('#d8b884'), stone: ramp('#a49c8a'), sandst: ramp('#c8a47a'), water: ramp('#5e9cb6'),
+  pink: ramp('#ec6c9c'), buff: ramp('#5a5862'), albino: ramp('#e0a89a'), straw: ramp('#e0c066'),
+  red: ramp('#d8443a'), blue: ramp('#4a78c0'), sky: ramp('#7ab4d8'), clay: ramp('#b8683c'),
+  skin: ramp('#d8a070'), ghost: ramp('#e6ecef'), ele: ramp('#8c8a92'), purple: ramp('#9a4ab0'),
+  orange: ramp('#e88a30'), cream: ramp('#f0e2c0'), mint: ramp('#a8d0b4'), black: ramp('#3a3440'),
 };
+/* name: [w, h, paint(p, variant, rnd)] — w and h leave out the pixel of line round it */
+const MSD = {};
+function mapArt(name, v){
+  v = v||0;
+  const key = name+'|'+v;
+  let c = MSPR.get(key); if(c) return c;
+  const d = MSD[name]; if(!d) return null;
+  const w = typeof d[0]==='function'? d[0](v) : d[0], h = typeof d[1]==='function'? d[1](v) : d[1];
+  c = mkCv(w+2, h+2);
+  const g = c.getContext('2d',{willReadFrequently:true}); g.imageSmoothingEnabled=false;
+  d[2](icoPainter(g), v, mulberry(7001 + v*131 + name.length*17), w, h);
+  icoOutline(c, MAP_INK);
+  MSPR.set(key, c); return c;
+}
+/* a sprite by its foot: x the middle, y the ground it stands on */
+function mapPut(g, name, v, x, y, flip){
+  const c = mapArt(name, v); if(!c) return null;
+  const X = R(x - c.width/2), Y = R(y - c.height + 1);
+  if(flip){ g.save(); g.translate(X + c.width, Y); g.scale(-1,1); g.drawImage(c,0,0); g.restore(); }
+  else g.drawImage(c, X, Y);
+  return c;
+}
+/* a small shadow thrown down and to the right, the light being top left */
+function mapShadow(g, x, y, rx){
+  g.fillStyle='rgba(52,36,24,0.26)';
+  const r2=Math.max(1,R(rx));
+  for(let i=-r2;i<=r2;i++){ const t=1-(i*i)/(r2*r2+0.01); if(t<=0) continue;
+    const hw=Math.max(0,R(Math.sqrt(t)*1.2)); g.fillRect(R(x+1+i), R(y)-hw+1, 1, hw*2+1); }
+}
+
+/* ---------------- trees and palms ---------------- */
+/* the sugar palm: the one shape that says Isan from any distance — a bare
+   straight trunk standing alone on a paddy bund with a round fan of a crown */
+MSD.palmyra = [11, v=>12+(v%3), (p,v,r,w,h)=>{
+  const top=4;
+  for(let y=top+3;y<h;y++){ p.px(5,y,MA.trunkG[y%4===0?1:2]); p.px(6,y,MA.trunkG[3]); }
+  p.px(4,h-1,MA.trunkG[3]); p.px(7,h-1,MA.trunkG[4]);
+  /* last year's fronds, hanging dead under the crown */
+  p.line(3,top+3,2,top+6,'#8a6a40'); p.line(8,top+3,9,top+7,'#7a5a36'); p.line(6,top+4,7,top+7,'#8a6a40');
+  p.ball(5.5,top+1,4.6,3.4,MA.palm,{spec:false,dither:0.18});
+  for(const [x,y,t] of [[0,top+1,3],[1,top-2,2],[3,top-3,1],[6,top-4,1],[9,top-2,2],[10,top+1,3],[1,top+4,3],[9,top+4,4]]) p.px(x,y,MA.palm[t]);
+  p.px(3,top-1,MA.palm[0]); p.px(4,top-2,MA.palm[0]);
+  p.line(5,top+1,2,top-1,MA.palm[1]); p.line(6,top+1,8,top-2,MA.palm[2]); p.line(5,top+2,1,top+2,MA.palm[2]); p.line(6,top+2,10,top+2,MA.palm[3]);
+}];
+MSD.coco = [13, 13, (p,v)=>{
+  const s=v%2? 1 : -1, tx=6+s*2, ty=4;
+  p.tube([[6,12],[6+s*0.4,9],[6+s*1.2,6],[tx,ty]],2,MA.bark);
+  for(const [dx,dy,t] of [[-6,5,2],[6,5,2],[-6,1,1],[6,1,1],[-3,-3,1],[3,-3,0]]){
+    const mx=tx+dx*0.5, my=ty+Math.min(dy,0)*0.6-1.6;
+    p.line(tx,ty,mx,my,MA.palm[t]); p.line(mx,my,tx+dx,ty+dy,MA.palm[t]);
+    p.line(tx,ty+1,mx,my+1,MA.palm[t+2]); p.line(mx,my+1,tx+dx,ty+dy+1,MA.palm[t+2]); }
+  p.px(tx-1,ty+1,'#6a4a22'); p.px(tx+1,ty+1,'#7a5a2a'); p.px(tx,ty+2,'#5a3e1c');
+}];
+/* a round tree in three sizes: mango, tamarind, the trees round a house */
+function mapTree(size){ return [[9,12,15][size], [9,12,15][size], (p,v,r,w,h)=>{
+  const pal = [MA.leafD, MA.leaf, MA.olive][v%3], cx=w/2, R0=w*0.44;
+  p.rect(cx-1,h-4,2,4,MA.bark[2]); p.px(cx,h-4,MA.bark[3]); p.px(cx,h-1,MA.bark[3]);
+  if(size>0) p.px(cx-2,h-3,MA.bark[3]);
+  p.ball(cx-R0*0.42,h*0.54,R0*0.62,R0*0.56,pal,{spec:false,dither:0.22});
+  p.ball(cx+R0*0.44,h*0.56,R0*0.6,R0*0.54,pal,{spec:false,dither:0.22});
+  p.ball(cx,h*0.40,R0*0.8,R0*0.64,pal,{spec:false,dither:0.22});
+  /* a few clumps of leaf catching the light */
+  for(let i=0;i<size+2;i++){ const a=r()*TAU, d=r()*R0*0.5; p.px(cx-1+Math.cos(a)*d, h*0.36+Math.sin(a)*d*0.6, pal[0]); }
+  if(v%5===1) for(let i=0;i<3;i++) p.px(cx-R0*0.6+r()*R0*1.2, h*0.46+r()*R0*0.5, v%2? '#f0c040' : '#e8603a');   // fruit
+}]; }
+MSD.tree0 = mapTree(0); MSD.tree1 = mapTree(1); MSD.tree2 = mapTree(2);
+/* the dry dipterocarp forest of the Khorat plateau: tall, thin, crooked,
+   light-crowned, with the red earth showing between them */
+MSD.dipt = [10, 13, (p,v,r,w,h)=>{
+  const lean=(v%3)-1;
+  p.line(5,h-1,5+lean,h-5,MA.bark[2],2); p.line(5+lean,h-5,5+lean*0.5,h-8,MA.bark[2]);
+  p.line(5+lean,h-5,5+lean+2.4,h-7,MA.bark[3]);
+  p.ball(4+lean,4.4,3.4,2.4,MA.olive,{spec:false,dither:0.25});
+  p.ball(7+lean,5.4,2.6,1.9,MA.olive,{spec:false,dither:0.25});
+  p.ball(5.2+lean,2.4,2.4,2,MA.olive,{spec:false,dither:0.25});
+  p.px(3+lean,1,MA.olive[0]); p.px(4+lean,1,MA.olive[1]);
+}];
+MSD.banana = [11, 11, (p,v,r,w,h)=>{
+  const L=ramp('#7cbc4c');
+  p.rect(4,h-5,2,5,ramp('#9ab458')[2]); p.px(5,h-5,ramp('#9ab458')[3]);
+  icoLeaf(p,5,h-5,0,h-8,1.6,L,false); icoLeaf(p,5,h-5,10,h-7,1.6,L,false);
+  icoLeaf(p,5,h-6,1,1,1.5,L,false);   icoLeaf(p,5,h-6,9,0,1.5,L,false);
+  icoLeaf(p,5,h-6,5,0,1.3,L,false);
+  if(v%2) { p.px(7,h-4,'#c8b040'); p.px(7,h-3,'#b89a30'); p.px(8,h-3,'#7a2a3a'); }   // a bunch, and its flower
+}];
+MSD.bamboo = [11, 14, (p,v,r,w,h)=>{
+  const C=ramp('#9ab84a');
+  for(const [x1,y1] of [[1,3],[3,1],[5,0],[8,1],[10,3]]){ p.line(5,h-1,x1,y1,C[x1<5?1:2]); }
+  for(const [x,y] of [[2,4],[4,2],[6,1],[8,3],[1,6],[9,6],[3,5],[7,5]]){ p.px(x,y,MA.leaf[1]); p.px(x+1,y,MA.leaf[2]); }
+  p.px(4,h-4,C[3]); p.px(6,h-5,C[3]);
+}];
+MSD.bush = [7, 5, (p,v)=>{ p.ball(3.5,3,3.2,2.2,[MA.leaf,MA.leafD,MA.olive][v%3],{spec:false,dither:0.2});
+  if(v%4===1){ p.px(2,2,'#f07aa0'); p.px(5,3,'#f0c040'); } }];
+MSD.deadtree = [12, 13, (p,v)=>{
+  const C=MA.trunkG;
+  p.line(6,12,6,5,C[2],2); p.line(6,6,2,2,C[2]); p.line(6,6,10,1,C[3]); p.line(6,8,10,6,C[3]);
+  p.line(3,3,1,3,C[3]); p.line(9,2,11,3,C[3]);
+  /* two crows on it */
+  p.rect(1,1,2,1,'#2a2430'); p.px(1,0,'#2a2430'); p.px(0,1,'#e0a040');
+  p.rect(9,0,2,1,'#2a2430'); p.px(10,0,'#2a2430');
+}];
+MSD.bodhi = [19, 17, (p,v,r,w,h)=>{
+  p.rect(8,h-7,3,7,MA.bark[2]); p.px(10,h-7,MA.bark[3]); p.px(10,h-5,MA.bark[3]);
+  /* the props people lean against an old bo tree, and the cloth round it */
+  p.line(4,h-1,8,h-6,MA.wood[1]); p.line(15,h-1,11,h-6,MA.wood[2]);
+  p.rect(8,h-5,3,1,'#e8403a'); p.rect(8,h-4,3,1,'#f0c040'); p.rect(8,h-3,3,1,'#4aa86a');
+  p.ball(5,6.6,4.6,3.6,MA.leafD,{spec:false,dither:0.2}); p.ball(14,6.8,4.4,3.6,MA.leafD,{spec:false,dither:0.2});
+  p.ball(9.5,4.6,6.4,4.2,MA.leaf,{spec:false,dither:0.2});
+  p.px(7,2,MA.leaf[0]); p.px(8,2,MA.leaf[0]); p.px(12,3,MA.leaf[1]);
+}];
+
+/* ---------------- houses and the things round them ---------------- */
+/* the Isan house: up on posts, the floor a man's height off the ground,
+   and underneath it the loom, the jars, and the hammock in the shade */
+MSD.stilt = [18, 13, (p,v)=>{
+  const roof = [MA.zinc, MA.tile, MA.thatch][v%3], W0=MA.wood;
+  /* the posts and the dark under the house */
+  p.rect(2,8,10,5,'#5a4436');
+  for(const x of [2,6,11]) p.rect(x,8,1,5,MA.woodD[2]);
+  if(v%2){ p.line(3,10,6,11,'#d86a4a'); p.line(6,11,10,10,'#d86a4a'); }      // the hammock
+  else { p.ball(8.5,11.4,1.4,1.4,MA.clay,{spec:false}); p.ball(4,11.6,1.2,1.2,MA.clay,{spec:false}); }
+  /* the floor and the walls, plank by plank */
+  p.rect(1,7,13,1,MA.woodD[3]);
+  p.rect(2,4,11,3,W0[2]); for(let x=3;x<13;x+=2) p.rect(x,4,1,3,W0[1]);
+  p.rect(12,4,1,3,W0[3]);
+  p.rect(6,4,2,3,'#3a2a22');                                                   // the door
+  p.rect(9,5,2,1,'#2e2a32'); p.px(9,4,'#6a86a0');                              // a window
+  /* the platform out front, and the ladder down from it */
+  p.rect(13,7,4,1,W0[1]); p.px(16,8,W0[3]);
+  for(let y=8;y<13;y++){ p.px(14,y,W0[3]); if(y%2) p.px(15,y,W0[2]); }
+  p.px(16,6,'#4aa04a'); p.px(16,5,'#5ab85a'); p.px(15,6,'#b8683c');             // a pot of basil on the rail
+  /* the roof: a steep gable, lit on the left */
+  for(let y=0;y<4;y++){ const hw=1.5+y*1.9;
+    for(let x=R(7-hw); x<=R(7+hw); x++) p.px(x,y, x<7? roof[y===0?0:1] : x===7? roof[1] : roof[3]); }
+  if(v%3===0) for(let x=2;x<13;x+=2) p.px(x,3,roof[4]);                         // zinc ribs
+  p.rect(0,3,15,1,roof[3]); p.px(7,0,roof[0]);
+}];
+MSD.granary = [10, 12, (p,v)=>{
+  const roof = v%2? MA.zinc : MA.thatch;
+  for(const x of [2,7]) p.rect(x,7,1,5,MA.woodD[2]);
+  p.rect(1,4,8,4,MA.wood[2]); p.rect(1,4,1,4,MA.wood[1]); p.rect(8,4,1,4,MA.wood[3]); p.rect(4,5,2,2,'#3a2a22');
+  for(let y=0;y<4;y++){ const hw=2+y*1.3; for(let x=R(4.5-hw); x<=R(4.5+hw); x++) p.px(x,y, x<5? roof[1] : roof[3]); }
+  p.line(9,6,9.6,11,MA.wood[1]);                                               // a ladder leant on it
+}];
+/* the field hut: a platform and a roof out in the paddy, for the noon heat */
+MSD.hut = [11, 9, (p,v)=>{
+  for(const x of [1,9]) p.rect(x,3,1,6,MA.woodD[2]);
+  p.rect(1,6,9,1,MA.wood[1]); p.rect(1,7,9,1,MA.wood[3]);
+  for(let y=0;y<3;y++){ const hw=2+y*1.8; for(let x=R(5-hw); x<=R(5+hw); x++) p.px(x,y, x<5? MA.thatch[1] : MA.thatch[3]); }
+  /* a pha khao ma hung to dry: red and white check */
+  for(let x=3;x<7;x++) for(let y=3;y<5;y++) p.px(x,y, (x+y)%2? '#d8443a' : '#f4ecde');
+}];
+MSD.jars = [7, 5, (p)=>{ p.ball(2.2,2.8,2.2,2.2,MA.clay,{spec:true}); p.ball(5.2,3.2,1.8,1.8,MA.clay,{spec:false});
+  p.rect(1,0,3,1,'#3a2418'); p.px(5,1,'#3a2418'); }];
+MSD.spirit = [8, 12, (p)=>{
+  p.rect(3,6,2,6,MA.white[2]); p.px(4,6,MA.white[3]); p.px(4,9,MA.white[3]);
+  p.rect(1,5,6,1,MA.gold[2]);
+  p.rect(2,2,4,3,MA.white[1]); p.px(5,2,MA.white[3]); p.px(5,3,MA.white[3]); p.px(3,3,'#8a3a2a');
+  p.tri(0.5,2.4,3.5,-0.4,6.5,2.4,MA.gold[1]); p.px(3,0,MA.gold[0]);
+  p.px(1,6,'#f07aa0'); p.px(1,7,'#f0c040'); p.px(6,6,'#f07aa0'); p.px(6,7,'#f0c040');     // garlands
+  p.px(2,4,'#e8303a');                                                           // the red soda
+}];
+MSD.cart = [10, 10, (p,v)=>{
+  p.rect(1,5,8,3,v%2? MA.blue[2] : MA.red[2]); p.rect(1,5,8,1,'#f4ecde'); p.rect(2,6,3,1,'#bfe0e8');
+  p.ball(2.5,8.6,1.2,1.2,MA.black,{spec:false}); p.ball(7.5,8.6,1.2,1.2,MA.black,{spec:false});
+  p.rect(5,2,1,3,MA.trunkG[2]);
+  for(let x=0;x<10;x++){ const y=R(2-Math.sin((x+0.5)/10*Math.PI)*2); p.px(x,y+1, x%3===0? '#f4ecde' : '#e8503a'); if(y+2<3) p.px(x,y+2,x%3===0?'#d8ccbc':'#b83a2e'); }
+}];
+MSD.kitchen = [13, 11, (p)=>{
+  for(const x of [1,11]) p.rect(x,3,1,8,MA.woodD[2]);
+  for(let y=0;y<3;y++){ const hw=3+y*1.8; for(let x=R(6-hw); x<=R(6+hw); x++) p.px(x,y, x<6? MA.thatch[1] : MA.thatch[3]); }
+  p.rect(3,7,5,3,MA.clay[2]); p.rect(3,7,5,1,MA.clay[1]); p.rect(4,8,2,1,'#f09030'); p.px(5,8,'#ffd060');   // the stove, lit
+  p.ball(5.5,6,2.2,1.4,MA.black,{spec:false});                                  // the pot on it
+  p.rect(9,5,2,1,MA.wood[1]); p.px(9,4,'#e8e0d0'); p.px(10,4,'#88b0d8');        // a shelf, a bowl, a cup
+}];
+MSD.bench = [10, 6, (p)=>{
+  p.rect(0,1,10,2,MA.wood[1]); p.rect(0,2,10,1,MA.wood[3]);
+  p.rect(1,3,1,3,MA.woodD[2]); p.rect(8,3,1,3,MA.woodD[2]);
+  p.rect(2,0,3,1,'#9aa0a8'); p.px(6,0,MA.wood[0]); p.px(7,0,'#6a4a2c');         // a saw, a mallet
+  p.px(4,5,'#e8c890'); p.px(6,5,'#e8c890');
+}];
+MSD.log = [12, 5, (p)=>{
+  p.tube([[1,2.5],[10,2]],3,MA.bark);
+  p.ball(10.4,2.2,1.5,1.8,ramp('#c89a64'),{spec:false}); p.px(10,2,MA.wood[3]);
+  p.px(4,0,MA.bark[2]); p.px(4,1,MA.bark[2]); p.px(6,1,'#5ab84a'); p.px(7,1,'#6ac85a');
+}];
+MSD.lamp = [6, 12, (p)=>{
+  p.rect(3,1,1,11,MA.trunkG[1]); p.px(4,2,MA.trunkG[3]);
+  p.rect(0,0,4,1,MA.trunkG[2]); p.rect(0,1,2,1,'#4a4038'); p.px(0,2,'#6a6258');   // the head, dark
+  p.rect(2,11,3,1,MA.trunkG[3]);
+}];
+MSD.grave = [11, 6, (p)=>{
+  p.ball(5.5,4.4,5,2.4,ramp('#9a7a52'),{spec:false,dither:0.2});
+  p.rect(5,0,1,4,MA.wood[2]); p.rect(4,1,3,1,MA.wood[1]);
+  p.px(2,3,'#f09a28'); p.px(3,4,'#f0c040'); p.px(8,3,'#f09a28'); p.px(9,4,'#f0e060');   // marigolds
+  p.px(7,2,'#fff0c0');                                                            // a candle
+}];
+MSD.ruinstupa = [9, 11, (p)=>{
+  const B=MA.brick;
+  p.rect(0,8,9,3,B[3]); p.rect(0,8,9,1,B[2]);
+  p.rect(2,4,5,4,B[2]); p.rect(2,4,1,4,B[1]); p.rect(6,4,1,4,B[3]);
+  p.rect(3,2,3,2,B[2]); p.px(3,1,B[1]); p.px(5,1,B[3]);                          // the top broken off
+  for(let y=5;y<11;y+=2) for(let x=(y%4?1:3);x<8;x+=4) p.px(x,y,B[4]);           // the courses
+  p.px(4,0,'#5aa84a'); p.px(3,0,'#4a9a44'); p.px(5,0,'#6ab85a');                 // a sapling in the top
+}];
+MSD.bonestupa = [5, 9, (p)=>{
+  const Wt=MA.white;
+  p.rect(0,7,5,2,Wt[2]); p.rect(0,7,5,1,Wt[1]); p.px(4,8,Wt[3]);
+  p.rect(1,4,3,3,Wt[1]); p.px(3,4,Wt[3]); p.px(3,5,Wt[3]); p.px(2,5,'#c89a40');
+  p.rect(2,2,1,2,Wt[1]); p.px(2,1,MA.gold[1]); p.px(2,0,MA.gold[0]);
+}];
+/* a termite mound of the dry forest: a clay castle with its spires up, and
+   a cloth tied round it by somebody who asks it for lottery numbers */
+MSD.termite = [7, 9, (p,v)=>{
+  const C=ramp('#c88a58');
+  p.poly([0,8, 1,5, 2,3, 3,0, 4,3, 5,2, 6,5, 7,8],C[2]);
+  p.poly([0,8, 1,5, 2,3, 3,0, 3,8],C[1]);
+  p.px(5,2,C[1]); p.px(6,5,C[3]); p.px(5,6,C[3]); p.px(2,6,C[3]); p.px(4,4,C[3]);
+  p.rect(1,7,6,1,C[3]);
+  if(v%2===0){ p.px(2,5,'#e8403a'); p.px(3,5,'#e8403a'); p.px(4,5,'#f0c040'); }
+}];
+MSD.scarecrow = [7, 10, (p)=>{
+  p.rect(3,3,1,7,MA.wood[2]); p.rect(0,4,7,1,MA.wood[2]);
+  for(let x=1;x<6;x++) for(let y=4;y<7;y++) p.px(x,y,(x+y)%2? '#d8443a':'#3a58a0');
+  p.ball(3.5,2,1.4,1.4,MA.cream,{spec:false}); p.rect(1,0,5,1,MA.straw[2]); p.px(3,0,MA.straw[1]);
+}];
+MSD.haystack = [9, 9, (p)=>{
+  p.ball(4.5,5.4,4.2,3.6,MA.straw,{spec:false,dither:0.3});
+  p.rect(4,0,1,3,MA.wood[2]);
+  for(const [x,y] of [[2,5],[4,7],[6,4],[3,3],[7,6]]) p.px(x,y,MA.straw[3]);
+}];
+/* the stone jars and the well of a courtyard are the jars; the rest is chickens */
+MSD.chicken = [5, 5, (p,v)=>{
+  const B = v%2? MA.cream : ramp('#b8683c');
+  p.ball(2.4,3,2,1.5,B,{spec:false}); p.ball(3.6,1.6,1,1,B,{spec:false});
+  p.px(4,0,'#e8303a'); p.px(5,1,'#f0b030'); p.px(0,1,v%2?'#d8ccbc':'#2a4a3a'); p.px(0,2,v%2?'#c8bcac':'#305848');
+  p.px(2,4,'#e0a030');
+}];
+
+/* ---------------- the wat ---------------- */
+/* the sim: an Isan ordination hall is small and low and white, with a roof
+   in two tiers and the chofa horns up at the ends of the ridge */
+MSD.sim = [23, 17, (p)=>{
+  const Wt=MA.white, T=MA.tile, G=MA.gold;
+  p.rect(1,14,21,3,Wt[2]); p.rect(1,14,21,1,Wt[1]); p.rect(1,16,21,1,Wt[3]);
+  p.rect(9,14,5,3,Wt[1]); for(let y=14;y<17;y++){ p.px(8,y,'#4a9a5a'); p.px(14,y,'#4a9a5a'); }   // the naga stair
+  p.rect(3,8,17,6,Wt[1]); p.rect(18,8,2,6,Wt[3]);
+  p.rect(10,10,3,4,'#6a2a22'); p.rect(10,10,3,1,G[2]);                           // the door
+  for(const x of [5,15]){ p.rect(x,10,2,2,'#3a3040'); p.px(x,9,G[2]); p.px(x+1,9,G[2]); }
+  /* the lower tier of roof */
+  for(let y=4;y<9;y++){ const hw=7+(y-4)*1.1; for(let x=R(11-hw); x<=R(11+hw); x++) p.px(x,y, x<11? T[y%2?1:2] : T[y%2?3:4]); }
+  /* the upper tier, gable to the front, gold in its face */
+  for(let y=1;y<6;y++){ const hw=1+(y-1)*1.4; for(let x=R(11-hw); x<=R(11+hw); x++) p.px(x,y, G[x<11? 1 : 3]); }
+  p.px(11,3,G[0]); p.px(11,4,'#c84a2a');
+  p.px(11,0,G[0]); p.px(0,7,G[1]); p.px(22,7,G[3]); p.px(0,6,G[1]); p.px(22,6,G[3]);   // chofa, and the tails at the eaves
+}];
+/* the that: a tall square spire gathered in to a lotus bud, like Phra That Phanom */
+MSD.that = [11, 20, (p)=>{
+  const Wt=MA.white, G=MA.gold;
+  p.rect(0,17,11,3,Wt[2]); p.rect(0,17,11,1,Wt[1]); p.rect(9,17,2,3,Wt[3]);
+  p.rect(1,14,9,3,Wt[1]); p.rect(8,14,2,3,Wt[3]);
+  p.rect(2,9,7,5,Wt[1]); p.rect(7,9,2,5,Wt[3]);
+  for(const y of [10,12]) for(let x=3;x<7;x+=2) p.px(x,y,G[2]);
+  p.rect(4,11,2,2,'#b85a3a');
+  for(let y=5;y<9;y++){ const hw=R(3.2-(y-5)*0.4); for(let x=5-hw;x<=5+hw;x++) p.px(x,y, x>5? G[3] : G[1]); }
+  p.rect(4,3,3,2,G[2]); p.px(4,3,G[0]); p.px(6,4,G[3]);
+  p.rect(5,1,1,2,G[1]); p.rect(4,1,3,1,G[2]); p.px(5,0,G[0]);
+}];
+MSD.sala = [15, 10, (p)=>{
+  for(let y=0;y<4;y++){ const hw=4+y*1.2; for(let x=R(7-hw); x<=R(7+hw); x++) p.px(x,y, x<7? MA.tile[1] : MA.tile[3]); }
+  p.rect(1,3,13,1,MA.tile[4]);
+  for(const x of [2,12]) p.rect(x,4,1,5,MA.white[2]);
+  p.rect(7,4,1,5,MA.white[3]);
+  p.rect(1,8,13,2,MA.wood[2]); p.rect(1,8,13,1,MA.wood[1]);
+}];
+MSD.chedi = [7, 12, (p)=>{
+  const Wt=MA.white, G=MA.gold;
+  p.rect(0,10,7,2,Wt[2]); p.rect(0,10,7,1,Wt[1]);
+  p.ball(3.5,7.6,2.8,2.6,Wt,{spec:false}); p.rect(2,4,3,1,G[2]);
+  p.rect(3,1,1,3,G[1]); p.px(3,0,G[0]); p.px(4,2,G[3]);
+}];
+MSD.wall = [6, 4, (p)=>{ p.rect(0,1,6,3,MA.white[1]); p.rect(0,0,6,1,MA.tile[2]); p.rect(0,3,6,1,MA.white[3]); }];
+
+/* ---------------- town ---------------- */
+MSD.shophouse = [12, 15, (p,v)=>{
+  const F = [MA.cream, MA.mint, MA.sky, ramp('#e4c0c0')][v%4];
+  p.rect(0,0,12,15,F[2]); p.rect(0,0,12,1,F[1]); p.rect(11,0,1,15,F[3]);
+  for(const x of [2,7]){ p.rect(x,2,3,3,'#3e4a5a'); p.rect(x,2,3,1,'#8aa8c0'); }
+  if(v%3===1){ p.px(3,5,'#4aa04a'); p.px(8,5,'#5ab85a'); }                      // pots on the ledge
+  p.rect(0,7,12,2,[MA.red,MA.blue,MA.orange,MA.purple][v%4][2]);
+  for(let x=2;x<10;x+=2) p.px(x,7,'#fff4e0');                                   // the sign, its letters too small to read
+  p.rect(1,9,10,6,'#8a94a0'); for(let y=10;y<15;y+=2) p.rect(1,y,10,1,'#a8b2bc');
+  p.rect(1,9,5,6,'#3a3038'); p.px(2,13,'#e8503a'); p.px(3,12,'#f0c040'); p.px(4,13,'#4ab0d8');   // open: the goods inside
+}];
+MSD.shop = [18, 13, (p)=>{
+  p.rect(1,3,16,10,MA.cream[2]); p.rect(16,3,1,10,MA.cream[3]);
+  p.rect(0,0,18,3,MA.red[2]); p.rect(0,0,18,1,MA.red[1]); for(let x=3;x<15;x+=2) p.px(x,1,'#fff4e0');
+  for(let x=0;x<18;x++) p.px(x,3,x%4<2? '#3a78c8' : '#f4f0e4'); for(let x=0;x<18;x++) p.px(x,4,x%4<2? '#2a5aa0' : '#d4d0c4');
+  p.rect(2,5,9,8,'#3a3038');
+  for(let y=6;y<12;y+=2) for(let x=3;x<10;x++) p.px(x,y,['#e8503a','#f0c040','#4ab0d8','#5ac05a','#f4ecde'][(x+y)%5]);
+  p.rect(12,8,4,4,'#e8f0f4'); p.rect(12,8,4,1,'#4a88c8');                        // the ice chest
+  p.rect(12,6,3,1,MA.wood[1]);
+}];
+MSD.busstop = [12, 9, (p)=>{
+  p.rect(0,0,12,2,MA.white[1]); p.rect(0,1,12,1,'#3a78c8');
+  for(const x of [1,10]) p.rect(x,2,1,7,MA.trunkG[2]);
+  p.rect(2,2,8,4,MA.white[2]); p.rect(3,3,3,1,'#3a78c8');
+  p.rect(2,6,8,1,MA.wood[1]); p.rect(3,7,1,2,MA.woodD[2]); p.rect(8,7,1,2,MA.woodD[2]);
+}];
+MSD.pole = [5, 14, (p)=>{ p.rect(2,1,1,13,MA.trunkG[1]); p.px(2,6,MA.trunkG[3]); p.rect(0,1,5,1,MA.trunkG[2]); p.px(0,0,'#e8e0d0'); p.px(4,0,'#e8e0d0'); }];
+MSD.songthaew = [14, 8, (p,v)=>{
+  const C = v%2? MA.blue : MA.red;
+  p.rect(0,0,9,1,C[1]); for(const x of [0,8]) p.rect(x,1,1,4,C[2]);
+  p.rect(0,4,13,2,C[2]); p.rect(0,4,13,1,C[1]); p.rect(9,1,4,4,C[2]); p.rect(10,2,2,2,'#bfe0f0');
+  p.px(3,3,'#d8a070'); p.px(5,3,'#6a4a3a'); p.px(3,2,'#2a2028'); p.px(5,2,'#2a2028');     // somebody riding
+  p.ball(3,6.4,1.4,1.4,MA.black,{spec:false}); p.ball(10.5,6.4,1.4,1.4,MA.black,{spec:false});
+}];
+/* the iron buffalo: the walking-tractor engine bolted to a cart that Isan
+   drives to market and to the fields */
+MSD.etaen = [12, 8, (p,v)=>{
+  p.rect(0,3,7,2,MA.wood[2]); p.rect(0,3,7,1,MA.wood[1]);
+  p.rect(7,2,4,3,v%2? '#3a8a5a':'#3a68b0'); p.rect(8,1,1,1,'#2a2a30'); p.rect(8,0,1,1,'#6a6a70');
+  p.px(5,1,'#d8a070'); p.px(5,2,'#e8503a'); p.px(4,0,MA.straw[1]); p.px(5,0,MA.straw[1]); p.px(6,0,MA.straw[2]);
+  p.ball(2,6,1.6,1.6,MA.black,{spec:false}); p.ball(9.5,6,1.8,1.8,MA.black,{spec:false}); p.px(9,5,'#8a8a90');
+}];
+
+/* ---------------- water ---------------- */
+MSD.boat = [15, 7, (p,v)=>{
+  const H=MA.woodD;
+  for(let x=0;x<15;x++){ const lift = x<2? 2-x : x>12? x-12 : 0; p.px(x,4-lift,H[1]); p.px(x,5-lift+ (lift?0:0),H[2]); if(!lift) p.px(x,6,H[3]); }
+  p.rect(2,4,11,1,H[2]);
+  /* the fisherman in his hat, casting */
+  p.rect(10,2,2,2,v%2? '#3a68b0' : '#d8443a'); p.px(10,1,'#d8a070');
+  p.rect(9,0,4,1,MA.straw[1]); p.px(12,0,MA.straw[3]);
+  p.line(9,2,4,0,'#8a8a80');
+  if(v%2===0) for(const [x,y] of [[1,1],[2,0],[3,1],[2,2]]) p.px(x,y,'#b8c0c0');
+}];
+MSD.raft = [16, 10, (p)=>{
+  p.rect(0,8,16,2,MA.straw[2]); for(let x=0;x<16;x+=2) p.px(x,9,MA.straw[3]);
+  p.rect(2,4,11,4,MA.wood[2]); p.rect(12,4,1,4,MA.wood[3]); p.rect(6,5,2,3,'#3a2a22');
+  for(let y=0;y<4;y++){ const hw=4+y*1.7; for(let x=R(7.5-hw); x<=R(7.5+hw); x++) p.px(x,y, x<7? MA.zinc[1] : MA.zinc[3]); }
+  p.px(14,7,'#4aa04a'); p.px(14,6,'#5ab85a'); p.px(1,7,'#d8443a'); p.px(1,6,'#f4ecde');
+}];
+MSD.lotus = [8, 5, (p,v)=>{
+  p.ell(2,3.4,2,1.2,'#4e9a4e'); p.ell(5.5,3.6,2.2,1.2,'#5aa652'); p.ell(4,2.2,1.6,1,'#6ab85a'); p.px(2,3,'#3a7a40');
+  if(v%3!==2){ p.px(4,0,'#ffb0cc'); p.px(4,1,'#ec6c9c'); p.px(3,1,'#f08ab0'); p.px(5,1,'#d84a80'); }
+  else { p.px(6,1,'#ec6c9c'); p.px(6,2,'#d84a80'); }
+}];
+MSD.pier = [12, 6, (p)=>{
+  p.rect(0,1,12,2,MA.wood[1]); p.rect(0,2,12,1,MA.wood[3]);
+  for(const x of [1,5,10]) p.rect(x,3,1,3,MA.woodD[2]);
+}];
+MSD.heron = [5, 7, (p)=>{
+  p.ball(2.4,3.6,1.8,1.4,MA.white,{spec:false}); p.line(3.6,3,4,1,MA.white[1]); p.px(4,0,MA.white[1]); p.px(5,0,'#e8b030');
+  p.px(2,5,'#3a3440'); p.px(2,6,'#3a3440'); p.px(3,6,'#3a3440');
+}];
+
+/* ---------------- the hills and the ruins ---------------- */
+MSD.mushroom = [8, 10, (p)=>{
+  const S=MA.sandst;
+  p.rect(3,4,2,6,S[2]); p.px(4,5,S[3]); p.px(4,7,S[3]); p.rect(2,9,4,1,S[3]);
+  p.ball(4,2.4,3.8,2.2,ramp('#8a6a4a'),{spec:false}); p.rect(1,1,5,1,ramp('#8a6a4a')[1]);
+}];
+/* a sandstone hill of the plateau: flat on top, cliffs down the sides, a
+   skirt of fallen rock, and scrub along the rim. Variants ten and up have a cave */
+MSD.mesa = [v=>28+(v%10)*8, 18, (p,v,r,w,h)=>{
+  const S=MA.sandst, T=ramp('#b89a70'), cave=v>=10, top=2+(v%3)*2;
+  const k=v%10, step=x=> (k===1? (x>w*0.55? 3 : 0) : k===2? (x<w*0.35? 2 : 0) : (x>w*0.3&&x<w*0.5? 1 : 0));
+  const topY=x=> top + step(x) + (x<6? (6-x)*2.2 : x>w-7? (x-(w-7))*2.2 : 0);
+  for(let x=0;x<w;x++){ const ty=R(topY(x)), lit = x<w*0.34? 1 : x>w*0.72? 3 : 2;
+    for(let y=ty;y<h;y++){ let c=S[lit];
+      if((y-ty)%4===3) c=S[Math.min(4,lit+1)];
+      if(y===ty) c=S[0];
+      if(y>=h-3) c=T[lit];
+      p.px(x,y,c); } }
+  for(let k=0;k<Math.floor(w/9);k++){ const x=(4+r()*(w-8))|0; for(let y=top+2;y<h-4;y++) if(r()<0.7) p.px(x,y,S[4]); }
+  for(let x=5;x<w-5;x+=3+(r()*3|0)) p.ball(x,topY(x)-0.6,1.8,1.3,r()<0.3? MA.olive : MA.leafD,{spec:false});
+  /* a stream of water down one face, and the pool it makes */
+  if(k===2){ const wx=R(w*0.7); for(let y=R(topY(wx))+1;y<h-2;y++) p.px(wx,y,y%3?'#a8d8e8':'#e8f8ff'); p.rect(wx-2,h-2,5,1,'#6eaec2'); }
+  for(let x=1;x<w-1;x+=4+(r()*4|0)) p.px(x,h-1,T[4]);
+  if(cave){ const cx=R(w/2); p.ell(cx,h-4.5,3.2,4,'#2a2026'); p.rect(cx-3,h-5,7,4,'#2a2026'); p.px(cx-2,h-7,'#5a4640'); p.px(cx+2,h-2,'#e8c080'); }
+}];
+MSD.boulder = [6, 4, (p,v)=>{ p.ball(3,2.4,3,1.8,v%2? MA.sandst : MA.stone,{spec:false,dither:0.2}); }];
+/* a Khmer prasat: the corncob tower on its laterite terrace, as at Phanom Rung */
+MSD.prasat = [15, 13, (p)=>{
+  const L=MA.laterite, S=ramp('#c8a48a');
+  p.rect(0,11,15,2,L[2]); p.rect(0,11,15,1,L[1]);
+  p.rect(2,10,11,1,L[1]); for(let x=6;x<9;x++) p.px(x,12,L[0]);
+  p.rect(4,6,7,4,S[2]); p.rect(4,6,1,4,S[1]); p.rect(9,6,2,4,S[3]);
+  p.rect(6,7,2,3,'#3a2a26'); p.px(7,6,S[0]);
+  for(let t=0;t<6;t++){ const y=5-t, hw=[3.8,3.6,3,2.6,2,1.2][t];
+    for(let x=R(7-hw); x<=R(7+hw); x++) p.px(x,y, x>7? S[t%2?3:4] : S[t%2?1:2]); }
+  p.px(3,7,'#5a9a4a'); p.px(11,9,'#5a9a4a'); p.px(1,10,'#5a9a4a');
+  /* its two little sisters, fallen further */
+  p.rect(0,7,2,3,S[3]); p.px(0,6,S[2]); p.rect(13,8,2,2,S[3]); p.px(14,7,S[2]);
+}];
+MSD.stonehead = [10, 10, (p)=>{
+  const S=MA.stone;
+  p.ball(5,5.6,3.6,3.8,S,{spec:false,dither:0.15});
+  for(let x=2;x<9;x+=2) p.px(x,3,S[3]); for(let x=3;x<8;x+=2) p.px(x,2,S[3]);
+  p.ball(5,1.4,1.4,1.2,S,{spec:false});
+  p.rect(3,6,2,1,S[4]); p.rect(6,6,2,1,S[4]); p.px(5,7,S[3]); p.rect(4,8,3,1,S[4]);
+  /* the roots that hold it */
+  p.line(0,9,2,4,MA.bark[2]); p.line(9,9,8,5,MA.bark[3]); p.line(1,9,4,9,MA.bark[2]);
+  p.px(7,3,'#5a9a4a'); p.px(2,5,'#5a9a4a');
+}];
+MSD.view = [13, 12, (p)=>{
+  const S=MA.sandst;
+  p.poly([0,11, 1,7, 4,5, 12,5, 12,11],S[2]); p.rect(0,10,12,2,S[3]); p.line(2,8,11,8,S[3]);
+  p.rect(2,4,9,1,MA.wood[1]); p.rect(2,5,9,1,MA.wood[3]);
+  for(const x of [2,6,10]) p.rect(x,2,1,2,MA.wood[2]); p.rect(2,2,9,1,MA.wood[1]);
+  p.rect(11,0,1,5,MA.trunkG[2]);
+  p.rect(8,0,3,1,'#d8443a'); p.rect(8,1,3,1,'#f4f0e8'); p.rect(8,2,3,1,'#2a3a88');    // the flag
+}];
+MSD.naga = [9, 5, (p)=>{
+  const G=ramp('#4a9a6a');
+  p.line(0,4,6,2,G[2],2); p.line(6,2,8,0,G[1]); p.px(8,1,G[1]); p.px(7,0,MA.gold[1]);
+}];
+
+/* ---------------- people, animals, fun ---------------- */
+MSD.buffalo = [13, 9, (p,v)=>{
+  const B = v%3===2? MA.albino : ramp('#6c6a76');
+  for(const x of [4,5,9,10]) p.rect(x,6,1,3,B[x%2?3:4]);
+  p.ball(7,4,4.4,2.4,B,{spec:false,dither:0.1});
+  p.ball(2.2,5.6,1.9,1.5,B,{spec:false});                                        // head down, grazing
+  p.px(0,6,'#2a2028'); p.px(4,4,B[3]);
+  p.px(3,3,'#e8e0d0'); p.px(4,2,'#e8e0d0'); p.px(5,2,'#d8d0c0'); p.px(1,3,'#e8e0d0'); p.px(0,2,'#d8d0c0');   // the horns, swept back
+  p.px(11,3,B[3]); p.px(12,4,B[3]); p.px(12,5,B[4]);
+  if(v%2===0){ p.rect(7,0,2,2,'#fbfbf4'); p.px(9,1,'#fbfbf4'); p.px(6,0,'#f0b030'); }    // the egret riding it
+}];
+MSD.elephant = [14, 11, (p)=>{
+  const E=MA.ele;
+  for(const x of [4,6,10,12]) p.rect(x,7,2,4,E[3]); p.rect(6,7,2,4,E[2]);
+  p.ball(8.6,5,5,3.4,E,{spec:false,dither:0.1});
+  p.ball(3.4,4,2.6,2.6,E,{spec:false});
+  p.line(1.6,5.6,1,9,E[2],2); p.px(1,10,E[3]);                                   // the trunk
+  p.px(3,6,'#f4f0e4'); p.px(2,6,'#f4f0e4');                                       // tusks
+  p.ball(4.6,3.6,1.4,2,E,{spec:false});                                          // the ear
+  p.px(2,3,'#1a1216');
+  p.rect(7,1,4,3,'#c8302a'); p.rect(7,1,4,1,MA.gold[1]); p.px(9,3,MA.gold[2]);   // a red cloth on her back
+}];
+MSD.dog = [9, 5, (p,v)=>{
+  const C = [ramp('#d8a060'), ramp('#ece2d0'), ramp('#4a3a34')][v%3];
+  if(v>=3){                                                                        // sitting up, ears up
+    p.ball(3,3.2,2.2,1.8,C,{spec:false}); p.ball(5.6,1.8,1.6,1.4,C,{spec:false});
+    p.px(4,0,C[3]); p.px(6,0,C[3]); p.px(7,2,C[1]); p.px(8,2,'#2a2028'); p.px(6,1,'#2a2028');
+    p.px(5,4,C[3]); p.px(0,3,C[2]); p.px(1,4,C[2]); return; }
+  p.ball(4,3.2,3.4,1.7,C,{spec:false}); p.ball(7,3.2,1.6,1.3,C,{spec:false});   // curled up asleep in the sun
+  p.px(7,1,C[3]); p.px(6,2,C[3]); p.px(7,3,'#3a2a2a'); p.px(8,3,C[1]);
+  p.px(0,3,C[2]); p.px(1,4,C[2]);
+  if(v%3===0){ p.px(3,2,C[3]); p.px(4,2,C[3]); }
+}];
+MSD.cat = [6, 6, (p,v)=>{
+  const C = [ramp('#e8983c'), ramp('#3a3440'), ramp('#e8dcc0')][v%3];
+  p.ball(2.6,3.8,2,2,C,{spec:false}); p.ball(3.4,1.6,1.4,1.4,C,{spec:false});
+  p.px(2,0,C[2]); p.px(4,0,C[2]); p.px(5,4,C[2]); p.px(5,3,C[2]);
+  if(v%3===2){ p.px(3,2,'#6a4a3a'); p.px(2,5,'#6a4a3a'); }
+  if(v%3===0){ p.px(2,4,C[3]); p.px(3,5,C[3]); }
+}];
+/* wao aek: the Isan kite with a bow on its head that hums in the wind */
+MSD.kite = [9, 8, (p,v)=>{
+  p.line(0,2,4,0,'#5a3a24'); p.line(4,0,8,2,'#5a3a24');
+  p.poly([4,1, 7,4, 4,7, 1,4], v%2? MA.red[2] : MA.orange[1]);
+  p.poly([4,1, 4,7, 1,4], v%2? MA.red[1] : MA.gold[1]);
+  p.px(4,4,'#2a58a8');
+}];
+MSD.kid = [4, 6, (p,v)=>{
+  p.px(1,0,'#2a2028'); p.px(2,0,'#2a2028'); p.px(1,1,'#d8a070'); p.px(2,1,'#c89060');
+  p.rect(1,2,2,2,v%2? '#e8503a' : '#3a78c8'); p.px(3,2,'#d8a070');
+  p.px(1,4,'#2a2a40'); p.px(2,4,'#2a2a40'); p.px(1,5,'#c89060'); p.px(2,5,'#c89060');
+}];
+MSD.farmer = [6, 6, (p,v)=>{
+  p.rect(0,1,6,1,MA.straw[1]); p.rect(1,0,4,1,MA.straw[0]); p.px(5,1,MA.straw[3]);
+  p.rect(2,2,3,2,v%2? '#3a68b0' : '#8a4a8a'); p.px(1,3,'#d8a070'); p.px(1,4,'#d8a070');
+  p.px(2,4,'#2a2a40'); p.px(4,4,'#2a2a40'); p.px(2,5,'#c89060'); p.px(4,5,'#c89060');
+}];
+/* the bang fai tower: bamboo scaffold the rockets go up off in the sixth month */
+MSD.bangfai = [7, 16, (p)=>{
+  const Bm=ramp('#c8b060');
+  p.line(1,15,3,0,Bm[1]); p.line(5,15,3,0,Bm[3]);
+  for(let y=4;y<15;y+=4){ const hw=R((y/15)*2); p.line(3-hw,y,3+hw,y,Bm[2]); }
+  p.px(3,0,'#d8443a'); p.px(2,1,'#f0c040'); p.px(4,1,'#4aa04a');
+}];
+/* a morlam stage, set up for the night: speaker stacks as tall as the band */
+MSD.morlam = [18, 12, (p)=>{
+  p.rect(3,1,12,7,'#6a2a8a'); p.rect(3,1,12,1,'#9a4ab0');
+  for(let x=4;x<15;x+=2) p.px(x,1,['#f0e060','#60e0f0','#f070b0'][x%3]);
+  p.rect(2,8,14,4,'#3a2a30'); p.rect(2,8,14,1,MA.wood[1]);
+  for(const x0 of [0,15]){ p.rect(x0,3,3,9,'#1e1a22'); for(let y=4;y<11;y+=3){ p.px(x0+1,y,'#6a6a72'); p.px(x0+1,y+1,'#4a4a52'); } }
+  p.rect(8,4,2,4,'#f0c040'); p.px(8,3,'#d8a070'); p.px(9,3,'#2a2028'); p.px(9,4,'#fff0a0');
+  p.rect(5,5,1,3,'#f070b0'); p.px(5,4,'#d8a070'); p.rect(12,5,1,3,'#60d0f0'); p.px(12,4,'#d8a070');
+}];
+/* Nang Tani, who lives in a wild banana: shy, not frightening */
+MSD.tani = [11, 12, (p)=>{
+  const L=ramp('#7cbc4c');
+  icoLeaf(p,5,7,0,4,1.6,L,false); icoLeaf(p,5,7,10,4,1.6,L,false); icoLeaf(p,5,6,3,0,1.4,L,false); icoLeaf(p,5,6,8,0,1.4,L,false);
+  p.rect(4,7,2,5,ramp('#9ab458')[2]);
+  p.ball(7.6,7.2,1.6,1.8,MA.ghost,{spec:false}); p.rect(6,6,1,4,'#2a2028'); p.px(9,6,'#2a2028');
+  p.px(7,7,'#2a2028'); p.px(8,7,'#2a2028'); p.px(8,8,'#e88aa0');
+  p.rect(6,9,3,3,ramp('#8ad08a')[1]);
+}];
+MSD.flagthai = [5, 11, (p)=>{
+  p.rect(0,0,1,11,MA.trunkG[1]);
+  p.rect(1,0,4,1,'#d8303a'); p.rect(1,1,4,1,'#f4f0e8'); p.rect(1,2,4,2,'#2a3a88'); p.rect(1,4,4,1,'#f4f0e8'); p.rect(1,5,4,1,'#d8303a');
+}];
+MSD.sign = [9, 8, (p)=>{
+  p.rect(4,3,1,5,MA.wood[2]); p.rect(0,0,9,4,MA.wood[1]); p.rect(0,3,9,1,MA.wood[3]);
+  p.rect(1,1,5,1,'#5a3a24'); p.px(7,1,'#5a3a24');
+}];
+/* the one stamped on the road for you: his pale face, the tuft, the eyes */
+MSD.me = [9, 11, (p)=>{
+  p.tri(2,5,4.5,10.6,7,5,MA.red[2]); p.px(4,9,MA.red[3]);
+  p.ball(4.5,4.4,4,3.8,MA.ghost,{spec:true,dither:0.08});
+  p.px(3,4,'#1a1216'); p.px(6,4,'#1a1216'); p.px(3,3,'#fffdf4'); p.px(6,3,'#fffdf4');
+  p.px(4,6,'#5a3a40'); p.px(5,6,'#5a3a40'); p.px(2,5,'#f0a8b8'); p.px(7,5,'#f0a8b8');
+  p.px(4,0,'#6a8a50'); p.px(5,0,'#4a7a40');
+}];
+/* a ghost you have met, small, on the road where you met it */
+MSD.spook = [6, 7, (p,v)=>{
+  const C = v? ramp('#f090b0') : ramp('#b8b0d0');
+  p.ball(3,2.6,2.8,2.6,C,{spec:false});
+  p.rect(0,3,6,3,C[2]); p.rect(5,3,1,3,C[3]);
+  p.px(0,6,C[2]); p.px(2,6,C[2]); p.px(4,6,C[2]);
+  p.px(2,2,'#1a1216'); p.px(4,2,'#1a1216');
+}];
+/* ============================================================
+   THE MAP — THE ROAD THROUGH ISAN
+
+   A new map, drawn from nothing. The road still snakes across the
+   page — west to east along the top, round a bend, back along the
+   middle, round again, and out east along the bottom — because
+   that is the only way sixteen thousand pixels of road will fit on
+   one page at a size you can read. Everything else is new.
+
+   The country is the northeast. Paddies laid out in their bunds,
+   green or gold with the season and some of them standing in
+   water, with sugar palms on the bunds. Houses on posts with the
+   jars and the hammock underneath, rice barns, field huts, the
+   white sim and the lotus-bud that of the wat inside its wall, a
+   morlam stage in the middle of the village, the red laterite
+   earth and thin crooked trees of the dry forest, the town, gold
+   paddies with haystacks and a bang fai tower, the river with the
+   fishing boats and the raft houses, the red lotus sea, the
+   flat-topped sandstone hills with their mushroom rocks, and a
+   Khmer prasat on its terrace at the end. Buffalo with an egret
+   riding, dogs asleep, a cat in the tamarind, a kid with a kite.
+
+   Every one of those is a small sprite with a black line round
+   it, lit from the top left like the item icons. Where you have
+   never walked, cloud lies over the country. The border is a band
+   of khit, the woven pattern of Isan cloth.
+
+   The painting is kept and made again only when there is more of
+   the road you have seen. The pins, the names, the birds and you
+   are drawn over it every frame.
+   ============================================================ */
+const PMAP = { key:'', cv:null, lay:null, anim:null };
+/* each part of the road's ground: three tones, light to dark, and what grows there */
+const PMG = {
+  charnel: {t:['#c4c4a4','#b0b294','#9a9e84'], k:'grave'},
+  roadside:{t:['#c6d690','#b0c67e','#9ab26e'], k:'meadow'},
+  paddy:   {t:['#b6d488','#a2c478','#8cae68'], k:'paddy'},
+  villageW:{t:['#ddca9a','#cdb686','#b9a072'], k:'village'},
+  centre:  {t:['#ddca9a','#cdb686','#b9a072'], k:'village'},
+  grove:   {t:['#b2ce82','#9ebe72','#88aa64'], k:'grove'},
+  wat:     {t:['#d4cc9c','#c4ba8a','#b0a678'], k:'wat'},
+  forest:  {t:['#d2a272','#c28e60','#aa7852'], k:'dry'},
+  deep:    {t:['#90b272','#7ca064','#688e56'], k:'deep'},
+  cross:   {t:['#c8ca9a','#b8ba88','#a4a676'], k:'cross'},
+  town:    {t:['#d2cec2','#c2beb2','#aeaa9e'], k:'town'},
+  far:     {t:['#d4d08a','#c4c07a','#aeaa68'], k:'gold'},
+  river:   {t:['#c8d496','#b4c484','#a0b070'], k:'river'},
+  bank:    {t:['#c6d290','#b2c280','#9cae6e'], k:'bank'},
+  lake:    {t:['#bcd49a','#a8c488','#94b076'], k:'lake'},
+  hill:    {t:['#dcc696','#ccb484','#b89e70'], k:'hill'},
+  ruins:   {t:['#ccc28e','#bcb07c','#a89c6a'], k:'ruins'},
+};
+const PM_WATER = ['#86c0d0','#6eaec2','#5a9ab0'];
+/* which ground every ten pixels of the world stands on, looked up once */
+var PM_ZT = [];
+BUILD_STEPS.push(['drawing the map', ()=>{ PM_ZT=[]; for(let x=0;x<WORLD_W+10;x+=10) PM_ZT.push(PMG[zoneAt(Math.min(WORLD_W-1,x+5)).id]||PMG.roadside); }]);
+TH['drawing the map'] = 'วาดแผนที่';
+const PM_PLOT  = ['#8cc860','#98cc66','#a6d26c','#7cbc58','#b0d472'];
+const PM_GOLD  = ['#dcc860','#e4d06a','#d2be5a','#c8c262','#e8d888'];
+/* what stands about in each kind of country: [sprite, variant, weight], and how thick */
+const PM_FLORA = {
+  grave:  {d:0.07, o:[['bonestupa',0,3],['bush',2,2],['tree0',0,1],['deadtree',0,1]], s:['bonestupa',0]},
+  meadow: {d:0.10, o:[['tree1',1,2],['bush',1,2],['tree0',1,2],['palmyra',0,2]], s:['tree0',1]},
+  paddy:  {d:0.035,o:[['palmyra',0,4],['palmyra',1,3],['palmyra',2,2]]},
+  gold:   {d:0.035,o:[['palmyra',1,4],['palmyra',2,3],['haystack',0,2]]},
+  village:{d:0.14, o:[['coco',0,3],['coco',1,2],['banana',0,3],['tree1',1,2],['tree0',0,1],['bush',1,2]], s:['banana',1]},
+  grove:  {d:0.20, o:[['banana',0,6],['banana',1,3],['bush',0,1],['coco',1,1]], s:['banana',0]},
+  wat:    {d:0.05, o:[['tree1',0,1],['bush',3,1],['coco',0,1]]},
+  dry:    {d:0.13, o:[['dipt',0,5],['dipt',1,4],['dipt',2,3],['termite',0,2],['bush',2,1]], s:['termite',0]},
+  deep:   {d:0.40, o:[['tree2',0,4],['tree1',0,4],['tree2',2,2],['tree0',0,2],['bamboo',0,1]], s:['tree0',0]},
+  cross:  {d:0.06, o:[['tree1',1,2],['bush',0,2],['palmyra',0,1]]},
+  town:   {d:0.02, o:[['tree0',1,1]]},
+  river:  {d:0.0,  o:[]},
+  bank:   {d:0.12, o:[['coco',0,2],['bush',0,2],['tree1',1,1],['bamboo',0,1]]},
+  lake:   {d:0.0,  o:[]},
+  hill:   {d:0.07, o:[['dipt',1,3],['bush',2,2],['mushroom',0,2],['boulder',0,1],['boulder',1,1]], s:['mushroom',0]},
+  ruins:  {d:0.08, o:[['tree1',2,3],['palmyra',0,2],['tree0',2,2],['bush',2,1],['boulder',1,1]], s:['tree0',2]},
+};
+
+/* ---------- where things go on the page ----------
+   The scale is an illustrator's, not a surveyor's. The road turns at the
+   edge of the grove and at the edge of the river, so each row is one kind
+   of journey — the village, then the long way through the forest and the
+   town, then the water and the old country — and inside a row the busy
+   places are given more of the page than the empty ones: a stretch of the
+   village takes half as much again as the same length of forest. */
+const PM_SPLIT = [0, 3800, 10600];
+const PM_WEIGHT = { charnel:1.0, roadside:1.0, paddy:0.8, villageW:1.45, centre:1.5, grove:0.85, wat:1.15, forest:0.75,
+                    deep:0.7, cross:1.0, town:0.95, far:0.8, river:0.9, bank:1.1, lake:0.9, hill:0.8, ruins:1.05 };
+let PM_S = null;
+function pmS(){
+  if(PM_S) return PM_S;
+  const n=Math.ceil(WORLD_W/10)+1, t=new Float64Array(n);
+  for(let i=1;i<n;i++) t[i]=t[i-1]+10*(PM_WEIGHT[zoneAt((i-0.5)*10).id]||1);
+  return PM_S=t;
+}
+function pmSat(wx){ const t=pmS(), f=clamp(wx,0,WORLD_W)/10, i=Math.min(t.length-2,Math.floor(f)); return t[i]+(t[i+1]-t[i])*(f-i); }
+function pmSinv(S){
+  const t=pmS(); let lo=0, hi=t.length-1;
+  if(S<=0) return 0; if(S>=t[hi]) return WORLD_W;
+  while(hi-lo>1){ const m=(lo+hi)>>1; if(t[m]<=S) lo=m; else hi=m; }
+  return (lo + (S-t[lo])/Math.max(1e-6,t[hi]-t[lo]))*10;
+}
 function pmGeo(x0,y0,w,h){
-  const top=y0+24, bot=y0+h-20, rows=MAP_ROWS, rowH=(bot-top)/rows;
-  const mx=x0+22, mw=w-44, seg=WORLD_W/rows;
-  const G={x0,y0,w,h,top,bot,rowH,mx,mw,seg,rows,ry:[]};
+  const B=6, top=y0+B+1, bot=y0+h-B-1, rows=MAP_ROWS, rowH=(bot-top)/rows;
+  const mx=x0+22, mw=w-44;
+  const b=[...PM_SPLIT.slice(0,rows), WORLD_W], Sb=b.map(pmSat);
+  const G={x0,y0,w,h,B,top,bot,rowH,mx,mw,rows,ry:[],b};
   for(let r=0;r<rows;r++) G.ry.push(top+rowH*(r+0.5));
-  G.row = wx => Math.min(rows-1, Math.floor(wx/seg));
-  G.X = wx => { const r=G.row(wx), u=(wx-r*seg)/seg; return mx + mw*(r%2? 1-u : u); };
+  G.row = wx => { let r=0; while(r<rows-1 && wx>=b[r+1]) r++; return r; };
+  G.u = wx => { const r=G.row(wx); return (pmSat(wx)-Sb[r])/(Sb[r+1]-Sb[r]); };
+  G.X = wx => { const r=G.row(wx), u=G.u(wx); return mx + mw*(r%2? 1-u : u); };
   G.bend = wx => Math.sin(wx*0.0016)*2.2 + Math.sin(wx*0.00052+1.1)*1.6;
   G.Y = wx => G.ry[G.row(wx)] + G.bend(wx);
-  /* which world x a map column is, on a given row */
-  G.W = (px,r) => { const u=(px-mx)/mw; return r*seg + seg*(r%2? 1-u : u); };
+  /* which world x a map column is, on a given row; past the ends it is the end */
+  G.W = (px,r) => { let u=clamp((px-mx)/mw,0,1); if(r%2) u=1-u; return clamp(pmSinv(Sb[r]+u*(Sb[r+1]-Sb[r])), 0, WORLD_W-1); };
+  G.t0 = r => R(top + r*rowH);
+  G.t1 = r => R(top + (r+1)*rowH);
   return G;
 }
-/* smooth value noise, for ground that is mottled rather than striped */
-function pmHash(i,j){ const h=Math.sin(i*127.1+j*311.7)*43758.5453; return h-Math.floor(h); }
+/* a fixed field of random numbers, looked up rather than worked out: the
+   ground pass asks for a few of these per pixel */
+const PM_LAT = (()=>{ const r=mulberry(9091), t=new Float32Array(65536); for(let i=0;i<65536;i++) t[i]=r(); return t; })();
+function pmHash(i,j){ return PM_LAT[((i&255)<<8)|(j&255)]; }
 function pmNoise(x,y,s){
   const X=x/s, Y=y/s, i=Math.floor(X), j=Math.floor(Y), fx=X-i, fy=Y-j;
   const u=fx*fx*(3-2*fx), v=fy*fy*(3-2*fy);
@@ -31521,304 +31974,678 @@ function pmSeenKey(){
   return s+'|'+LANG;
 }
 
-/* ---------- the little painted things ---------- */
-function pmTree(g,x,y,r,dark){
-  const C=dark? ['#2e5a34','#3e7442','#56904e','#7aac62'] : ['#3e6e3a','#528a46','#6ea656','#94c46e'];
-  pEll(g,x+1.4,y+r*0.9,r*0.95,r*0.38,'rgba(60,50,30,0.30)');
-  pR(g,R(x),R(y),1,R(r*0.8)+1,'#6a4a2c');
-  pEll(g,x,y-r*0.3,r,r*0.86,C[0]); pEll(g,x-0.4,y-r*0.45,r*0.84,r*0.7,C[1]);
-  pEll(g,x-r*0.3,y-r*0.66,r*0.46,r*0.38,C[2]); pR(g,R(x-r*0.45),R(y-r*0.8),1,1,C[3]);
+/* ---------- the names: laid out first, so nothing gets painted under them ----------
+   Each pin is a stop on the road itself, like a stop on a railway map, and
+   its name is a small tag just above or just below it. Stops that crowd are
+   pushed apart along the road until they sit shoulder to shoulder; tags take
+   whichever side leaves them where they belong. That leaves most of every row
+   to the country. */
+const PM_STOP = 14;
+/* Thai sits taller than the pixel font: marks above the letters and below them */
+const pmTH = ()=> LANG==='th'? 3 : 0;
+function pmLayout(G){
+  const pins=[], zones=[];
+  for(let row=0; row<G.rows; row++){
+    const wa=G.b[row], wb=G.b[row+1], lo=G.mx+4, hi=G.mx+G.mw-4;
+    const list=MAP_PINS.filter(pn=>{ const wx=pn.x(); return wx>=wa && wx<wb && seenAt(wx); })
+      .map(pn=>({pn, wx:pn.x(), px:G.X(pn.x())})).sort((a,b)=>a.px-b.px);
+    for(const it of list) it.sx=clamp(it.px,lo,hi);
+    for(let k=0;k<80;k++){ let moved=false;
+      for(let i=0;i+1<list.length;i++){ const a=list[i], b=list[i+1], d=b.sx-a.sx;
+        if(d<PM_STOP-0.01){ const pu=(PM_STOP-d)/2; a.sx=Math.max(lo,a.sx-pu); b.sx=Math.min(hi,b.sx+pu); moved=true; } }
+      if(!moved) break; }
+    for(const it of list) it.sy=G.Y(G.W(it.sx,row));
+    const edge=[-1e9,-1e9];
+    list.forEach((it,i)=>{
+      const nm=L(it.pn.n), lw=Math.max(txtW(nm,6),14)+6;
+      const want=it.sx-lw/2, push=s=>Math.max(0,(edge[s]+6)-want);
+      let s = push(0)<=push(1)? 0 : 1;
+      if(push(0)<=0 && push(1)<=0) s=i%2;
+      let la=Math.max(want, edge[s]+6);
+      la=clamp(la, G.x0+G.B+5, G.x0+G.w-G.B-5-lw);
+      edge[s]=la+lw;
+      const tb = s===0? R(it.sy)-8 : R(it.sy)+17+pmTH();
+      pins.push({pn:it.pn, wx:it.wx, px:it.px, sx:it.sx, sy:it.sy, tb, la, lw, s, row, nm});
+    });
+  }
+  /* the names of the parts of the road run along the foot of each row, in a
+     lane of their own */
+  for(const z of ZONES){
+    const mid=(z.a+Math.min(z.b,EAST.edge))/2; if(!seenAt(mid) || z.a>EAST.edge) continue;
+    const row=G.row(mid), nm=L(z.s||z.name), zw=txtW(nm,6);
+    const px=G.X(mid), yy=G.t1(row)-3, a=px-zw/2, b=px+zw/2;
+    if(a<G.x0+G.B+3 || b>G.x0+G.w-G.B-3) continue;
+    if(pins.some(l=>l.row===row && l.s===1 && l.tb>yy-9 && a<l.la+l.lw+4 && l.la-4<b)) continue;
+    if(pmCartouches(G).some(r=>a<r[0]+r[2]+2 && r[0]-2<b && yy-7<r[1]+r[3] && r[1]<yy+2)) continue;
+    if(zones.some(q=>q.row===row && a<q.b+6 && q.a-6<b)) continue;
+    if(pins.some(l=>l.nm.toLowerCase().includes(nm.toLowerCase()) || nm.toLowerCase().includes(l.nm.toLowerCase()))) continue;
+    zones.push({nm, px, yy, a, b, row});
+  }
+  return {pins, zones};
 }
-function pmPalm(g,x,y){
-  pEll(g,x+2,y+1,2.4,0.8,'rgba(60,50,30,0.28)');
-  pTaper(g,x,y+1,x+1,y-6,1.4,1,'#8a6a44');
-  for(const [dx,dy] of [[-3.4,-4.4],[3.6,-4.8],[-2.6,-7.6],[2.8,-7.8],[0,-8.6]]) pTaper(g,x+1,y-6,x+1+dx,y-6+dy*0.5+2,1.4,0.6,dy<-7?'#6aa44e':'#4a8a40');
+/* the pieces of paper laid over the corners of the country: [x, y, w, h] */
+function pmCartouches(G){
+  const {x0,y0,w,h}=G, tw=txtW(L('THE ROAD'),8)+16, pc=Math.round(seenFrac()*100);
+  const tl=txtW(L('walked')+' '+pc+'%',6)+8, sc=txtW(L("half an hour's walk"),6)+58;
+  return [[x0+9,y0,tw+3,15], [x0+w-12-tl,y0,tl+3,13], [x0+9,y0+h-14,sc,14], [x0+w-124,y0+h-13,30,13], [x0+w-36,y0+h-30,30,30]];
 }
-function pmBanana(g,x,y){
-  pTaper(g,x,y+1,x,y-4,1.6,1.2,'#7a9a4c');
-  for(const s of [-1,1]) pTaper(g,x,y-4,x+s*4,y-2.6,2.2,1,s<0?'#5a9a48':'#72b056');
-  pTaper(g,x,y-4,x+0.6,y-8,2,0.8,'#82bc5e');
+/* which side of the road a pin's name went, near a world x: 0 above, 1 below, -1 none */
+function pmLabelSide(lay, wx, near){
+  let best=-1, bd=near||90;
+  for(const l of lay.pins){ const d=Math.abs(l.wx-wx); if(d<bd){ bd=d; best=l.s; } }
+  return best;
 }
-function pmHouse(g,x,y,roof){
-  pR(g,x-3,y+2,9,1,'rgba(60,50,30,0.30)');
-  pR(g,x-3,y-1,1,3,'#5a3e28'); pR(g,x+3,y-1,1,3,'#5a3e28');
-  pR(g,x-3,y-4,7,3,'#b48a58'); pR(g,x-3,y-4,7,1,'#d0a870'); pR(g,x+1,y-3,1,1,'#3a2a1c');
-  pTri(g,x+0.5,y-8,x-4.5,y-4,x+5.5,y-4,roof||'#a8483a'); pTri(g,x+0.5,y-8,x-4.5,y-4,x+0.5,y-4,shade(roof||'#a8483a',0.18));
-}
-function pmChedi(g,x,y,s,col){
-  s=s||1; const C=col||'#e8c050';
-  pEll(g,x+2*s,y+1,4*s,1.2,'rgba(60,50,30,0.30)');
-  pR(g,R(x-4*s),R(y-1*s),R(8*s),R(1*s)+1,shade(C,-0.25));
-  pEll(g,x,y-3*s,3*s,2.6*s,C); pEll(g,x-1*s,y-3.6*s,1.4*s,1.2*s,shade(C,0.3));
-  pTaper(g,x,y-5*s,x,y-11*s,2.4*s,0.6,C); pR(g,R(x),R(y-12*s),1,1,shade(C,0.4));
-}
-function pmWat(g,x,y){
-  pR(g,x-8,y+1,18,1,'rgba(60,50,30,0.30)');
-  pR(g,x-7,y-4,14,5,'#f0e8d8'); pR(g,x-7,y-4,14,1,'#ffffff'); pR(g,x-1,y-2,2,3,'#6a4a2c');
-  pTri(g,x,y-11,x-9,y-4,x+9,y-4,'#d0602e'); pTri(g,x,y-11,x-9,y-4,x,y-4,'#e8844a');
-  pTri(g,x,y-14,x-5,y-9,x+5,y-9,'#3a8a5a');
-  pR(g,x-9,y-5,1,2,'#f2c94c'); pR(g,x+9,y-5,1,2,'#f2c94c'); pR(g,x,y-15,1,2,'#f2c94c');
-}
-function pmShop(g,x,y,h,c){
-  pR(g,x+1,y+1,8,1,'rgba(60,50,30,0.3)');
-  pR(g,x,y-h,7,h,c); pR(g,x+5,y-h,2,h,shade(c,-0.2)); pR(g,x,y-h,7,1,shade(c,0.3));
-  for(let yy=y-h+2; yy<y-1; yy+=3) pR(g,x+1,yy,3,1,'#5a6070');
-}
-function pmKarst(g,x,y,h){
-  pEll(g,x+3,y+1,5,1.2,'rgba(60,50,30,0.3)');
-  pPoly(g,[x-4,y, x+5,y, x+4,y-h+2, x+1,y-h, x-3,y-h+3],'#a8a494');
-  pPoly(g,[x+1,y, x+5,y, x+4,y-h+2, x+1,y-h],'#888474');
-  pEll(g,x,y-h+1.4,3.2,1.8,'#5a9a52'); pEll(g,x-1,y-h+1,1.4,0.8,'#82bc6a');
-  pR(g,R(x-1),R(y-h*0.5),1,3,'#6a6658');
-}
-function pmPrang(g,x,y){
-  pR(g,x-3,y+1,8,1,'rgba(60,50,30,0.3)');
-  for(let i=0;i<5;i++) pR(g,R(x-3+i*0.6),R(y-2-i*2),R(7-i*1.2),2, i%2? '#b86a44':'#9a5234');
-  pR(g,R(x),R(y-13),1,2,'#9a5234');
-}
-function pmStupa(g,x,y){ pR(g,x-2,y-1,5,2,'#8a867a'); pTri(g,x+0.5,y-6,x-2,y-1,x+3,y-1,'#a4a090'); pR(g,x+2,y+1,4,1,'rgba(60,50,30,0.25)'); }
 
 /* ---------- the painting ---------- */
-function pmPaint(G){
-  const {x0,y0,w,h}=G;
-  const c=mkCv(w,h), r=mulberry(4040); let g=G2(c);
-  const ox=-x0, oy=-y0;
-  g.translate(ox,oy);
-  /* the paper, with age in it */
-  pR(g,x0,y0,w,h,'#ecdcb4');
-  for(let i=0;i<w*h/9;i++){ const px=x0+R(r()*w), py=y0+R(r()*h); pR(g,px,py,1,1, r()<0.5? '#e2d0a4':'#f4e8c8'); }
-  for(let i=0;i<14;i++){ pEll(g,x0+r()*w,y0+r()*h,20+r()*40,10+r()*20,'rgba(200,170,110,0.06)'); }
-  /* the land, a column at a time, the whole height of each row */
-  const BAND=G.rowH;
+function pmPaint(G, lay){
+  const {x0,y0,w,h,B}=G;
+  const c=mkCv(w,h), g=G2(c), rnd=mulberry(4040);
+  const anim={ water:[], smoke:[], kite:null, rocket:null, boats:[] };
+  /* what is already taken on the page, a pixel at a time */
+  const occ=new Uint8Array(w*h);
+  const mark=(x,y,ww,hh,v)=>{ x=R(x)-x0; y=R(y)-y0; for(let j=Math.max(0,y); j<Math.min(h,y+R(hh)); j++) for(let i=Math.max(0,x); i<Math.min(w,x+R(ww)); i++) occ[j*w+i]=v||1; };
+  const free=(x,y,ww,hh)=>{ x=R(x)-x0; y=R(y)-y0; if(x<0||y<0||x+ww>w||y+hh>h) return false;
+    for(let j=y; j<y+R(hh); j++) for(let i=x; i<x+R(ww); i++) if(occ[j*w+i]) return false; return true; };
+  const seenPx=(px,row)=>seenAt(G.W(px+0.5,row));
+  /* how high and how low the road runs under something this wide */
+  const roadSpan=(x,hw,row)=>{ let a=1e9,b=-1e9; for(let q=x-hw-1;q<=x+hw+1;q++){ const y=G.Y(G.W(q,row)); a=Math.min(a,y); b=Math.max(b,y); } return [a,b]; };
+  const rowOf=py=>clamp(Math.floor((py-G.top)/G.rowH),0,G.rows-1);
+
+  /* ---- the ground, a pixel at a time ---- */
+  const im=g.createImageData(w,h), D=im.data;
+  const put=(x,y,col)=>{ const i=((y-y0)*w+(x-x0))*4; D[i]=col[0]; D[i+1]=col[1]; D[i+2]=col[2]; D[i+3]=255; };
+  const HX=new Map(), H=s=>{ let v=HX.get(s); if(!v){ v=hx(s); HX.set(s,v); } return v; };
+  const mixA=(a,b,t)=>[a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+  const shadeA=(a,t)=> t>=0? mixA(a,[255,255,255],t) : mixA(a,[16,10,14],-t);
+  const PAPER=H('#ecdcb4'), PAPER2=H('#e2d0a4'), HAZE=H('#eae6ce');
+  for(let yy=y0;yy<y0+h;yy++) for(let xx=x0;xx<x0+w;xx++) put(xx,yy, ((xx*7+yy*13)%11===0)? PAPER2 : PAPER);
+  /* the special ground: water, the wat's sand, the pond and the baray — decided
+     now so the pixel pass can ask about it */
+  const wet=[]; // {row, x0,x1,y0,y1, f(x,y)->bool}
+  const pondSide = pmLabelSide(lay,700)===1? -1 : 1;
+  const watSide  = pmLabelSide(lay,SALA_X,160)===0? 1 : -1;
   for(let row=0; row<G.rows; row++){
-    const t0=R(G.top+row*BAND), t1=R(G.top+(row+1)*BAND);
-    for(let px=R(G.mx); px<R(G.mx+G.mw); px++){
-      const wx=G.W(px+0.5,row);
-      const known = seenAt(wx);
-      const z=zoneAt(wx), Z=PM_ZONE[z.id]||PM_ZONE.roadside;
-      /* soften the seam into the next zone with a dither */
-      let zb=Z;
-      for(const d of [-90,90]){ const z2=zoneAt(wx+d); if(z2.id!==z.id && r()<0.35) zb=PM_ZONE[z2.id]||Z; }
-      for(let py=t0; py<t1; py++){
-        let col;
-        if(!known) col = ((px+py)%3===0)? '#ddd0ae' : '#e4d8b8';
-        else {
-          const v=(py-t0)/(t1-t0);
-          const n=pmNoise(px,py,7)*0.65+pmNoise(px+50,py,3)*0.35 + (ICO_BAYER[(py&3)*4+(px&3)]/16-0.5)*0.18;
-          col = n>0.64? shade(zb.g,0.08) : n>0.42? zb.g : zb.g2;
-          if(v<0.1) col=mix(col,'#dfe4d0',0.25*(1-v/0.1));      // the far edge of each row lies in a haze
-          if(v>0.88) col=shade(col,-0.10);
-          /* the lie of the land, lit from the top left like everything else */
-          const rel=(pmNoise(px-1,py-1,9)-pmNoise(px+1,py+1,9))*2.2;
-          col=shade(col, clamp(rel,-0.13,0.13));
-        }
-        g.fillStyle=col; g.fillRect(px,py,1,1);
-      }
-    }
-    /* a line of far hills along the top of the row, blue with distance */
-    for(let px=R(G.mx); px<R(G.mx+G.mw); px++){ if(!seenAt(G.W(px+0.5,row))) continue;
-      const hh=3+R(pmNoise(px,row*40,11)*6); for(let k=0;k<hh;k++){ g.fillStyle=k===hh-1? '#aebca8':'#b8c4b0'; g.fillRect(px,t0+1+(6-hh)+k+2,1,1); } }
-    /* the rows meet in a soft fold, not a cut */
-    g.globalAlpha=0.35; pR(g,R(G.mx),t1-1,R(G.mw),1,'#8a7450'); g.globalAlpha=0.18; pR(g,R(G.mx),t1,R(G.mw),1,'#fff4d8'); g.globalAlpha=1;
-  }
-  /* what stands on it goes on a layer of its own, so it can be inked and
-     lit the way the icons are before it is laid onto the ground */
-  const gMain=g, fcv=mkCv(w,h); g=G2(fcv); g.translate(ox,oy);
-  /* what stands on it, zone by zone, where you have been */
-  const road=(px,py,row)=> Math.abs(py-G.Y(G.W(px,row)))<4.5;
-  for(let row=0; row<G.rows; row++){
-    const t0=G.top+row*BAND, t1=G.top+(row+1)*BAND;
-    const items=[];
-    for(let px=G.mx+3; px<G.mx+G.mw-3; px+=1){
-      const wx=G.W(px,row); if(!seenAt(wx)) continue;
-      const Z=PM_ZONE[zoneAt(wx).id]||PM_ZONE.roadside, k=Z.k;
-      const put=(fn,py,n)=>{ if(py>t0+3 && py<t1-2 && !road(px,py,row)) items.push({py,fn}); };
-      const rr=r();
-      if(k==='paddy'){
-        if(px%7===0) for(let py=t0+4;py<t1-2;py+=5) if(!road(px,py,row)){ const y2=py;
-          items.push({py:y2-100, fn:()=>{ const G2m=gMain; pR(G2m,px,y2,6,4,'#7cb86e'); pR(G2m,px,y2,6,1,'#a8d890'); pR(G2m,px,y2+3,6,1,'#5e9a58');
-            for(let i=0;i<3;i++) pR(G2m,px+1+i*2,y2+1,1,2,'#4e8a48'); }}); }
-      } else if(k==='forest' || k==='deep'){
-        if(rr<(k==='deep'?0.34:0.24)) put(()=>pmTree(g,px,items._y,2.4+r()*1.8,k==='deep'), t0+4+r()*(BAND-8));
-      } else if(k==='grove'){
-        if(rr<0.18) put(()=>pmBanana(g,px,items._y), t0+8+r()*(BAND-12));
-      } else if(k==='village'){
-        if(rr<0.11) put(()=>pmHouse(g,px,items._y,r()<0.5?'#a8483a':'#8a5a3a'), t0+12+r()*(BAND-16));
-        else if(rr<0.18) put(()=>pmPalm(g,px,items._y), t0+10+r()*(BAND-14));
-      } else if(k==='wat'){
-        if(rr<0.06) put(()=>pmTree(g,px,items._y,2.6,false), t0+6+r()*(BAND-10));
-        else if(rr<0.08) put(()=>pmChedi(g,px,items._y,0.6,'#f0e8d8'), t0+10+r()*(BAND-14));
+    const t0=G.t0(row), t1=G.t1(row);
+    /* the paddies' bunds: a grid of plots, different on every row */
+    const pr=mulberry(900+row*77), colOf=new Int16Array(w), colX=[], colW=[], cells=[];
+    for(let x=0, k=0; x<w; k++){ const cw=7+(pr()*8|0); colX.push(x); colW.push(cw);
+      const cl=new Int16Array(t1-t0+1), cy=[], ch=[]; for(let y=0, j=0; y<=t1-t0; j++){ const hh=4+(pr()*5|0); cy.push(y); ch.push(hh); for(let q=y;q<Math.min(t1-t0+1,y+hh);q++) cl[q]=j; y+=hh; }
+      cells.push({cl,cy,ch}); for(let q=x;q<Math.min(w,x+cw);q++) colOf[q]=k; x+=cw; }
+    /* where each column is in the world, and whether it has been seen, once per column */
+    const WX=new Float64Array(w), SN=new Uint8Array(w);
+    for(let xx=x0+B; xx<x0+w-B; xx++){ const wx=G.W(xx+0.5,row); WX[xx-x0]=wx; SN[xx-x0]=seenAt(wx)?1:0; }
+    for(let yy=t0; yy<t1; yy++) for(let xx=x0+B; xx<x0+w-B; xx++){
+      if(!SN[xx-x0]) continue;
+      const wx=WX[xx-x0];
+      const bay=ICO_BAYER[(yy&3)*4+(xx&3)]/16-0.5;
+      const Z=PM_ZT[Math.min(PM_ZT.length-1,Math.max(0,((wx+bay*70)/10)|0))], k=Z.k;
+      const n=pmNoise(xx,yy,12)*0.62+pmNoise(xx+40,yy*1.4,4.5)*0.38+bay*0.16;
+      let col=H(Z.t[n>0.6?0:n<0.38?2:1]);
+      const hs=pmHash(xx,yy);
+      /* the river and the lotus sea run across the road, top of the page to the bottom */
+      const wav=Math.sin(yy*0.35+row)*14;
+      const inRiver = wx+wav>EAST.river0 && wx+wav<EAST.river1, inLake = wx+wav>EAST.lake0+30 && wx+wav<EAST.lake1-30;
+      const inStream = Math.abs(wx+Math.sin(yy*0.5)*18-6330)<16;
+      if(inRiver || inLake || inStream){
+        const wn=pmNoise(xx*0.6,yy*2.2,3);
+        col=H(PM_WATER[wn>0.66?0:wn<0.3?2:1]);
+        if(inRiver && (yy+(xx>>1))%5===0 && hs>0.55) col=H('#a8d4e0');
+        if(inLake && hs>0.965) col=H('#c8eae8');
+      } else if(Math.abs(wx+wav-EAST.river0)<60 || Math.abs(wx+wav-EAST.river1)<50 || (wx+wav>EAST.lake0-10 && wx+wav<EAST.lake0+30) || (wx+wav>EAST.lake1-30 && wx+wav<EAST.lake1+10)){
+        col=H(hs>0.5?'#e4d09e':'#d8c490');                                   // sand on the banks
+      } else if(k==='paddy' || k==='gold'){
+        const lx=xx-x0, kk=colOf[lx], cc=cells[kk], j=cc.cl[yy-t0], px2=lx-colX[kk], py2=(yy-t0)-cc.cy[j];
+        if(px2===0 || py2===0) col=H(hs>0.3? '#cfae74' : '#dcbe86');                        // the bund
+        else if(px2===1 || py2===1) col=H('#6e9e4e');                                         // its shadow in the plot
+        else { const pk=pmHash(kk*3+row, j*7+row*13), P=k==='gold'? PM_GOLD : PM_PLOT;
+          if(pk>0.83 && k==='paddy'){ col=H(hs>0.9?'#d6f0ec':'#9ccac6'); if((px2+py2)%3===0) col=H('#78b860'); }   // a plot standing in water, just planted
+          else { col=H(P[(pk*5)|0]); if(px2%2===0 && (py2+px2)%3!==0) col=shadeA(col,-0.09); if(hs>0.97) col=shadeA(col,0.18); } }
+      } else if(k==='meadow' || k==='grove' || k==='bank'){
+        if(hs>0.986) col=H(['#f4e060','#f08ab0','#fff4e8','#f0a040'][(hs*1000|0)%4]);
+        else if(hs>0.95) col=shadeA(col,-0.14);
+      } else if(k==='dry'){
+        if(hs>0.95) col=H(hs>0.975?'#8a9c46':'#a0ac56');                                     // grass in the red earth
+        else if(hs<0.02) col=H('#a86a44');
+      } else if(k==='grave' || k==='hill' || k==='ruins'){
+        if(hs>0.975) col=H(hs>0.99?'#e8e2d0':'#9a9484');
+      } else if(k==='deep'){
+        if(hs>0.9) col=shadeA(col,-0.12);
       } else if(k==='town'){
-        if(px%9===0){ for(const yy of [t0+14, t1-4]) put(()=>pmShop(g,px,items._y,5+R(r()*6),r()<0.5?'#c8c4bc':'#b8b0a4'), yy); }
-      } else if(k==='river'){
-        if(rr<0.5){ const yy=t0+2+r()*(BAND-4); items.push({py:yy, fn:()=>{ pR(gMain,px,R(yy),2+R(r()*3),1,'rgba(255,255,255,0.55)'); }}); }
-      } else if(k==='lake'){
-        if(rr<0.12) put(()=>{ pEll(g,px,items._y,2,1,'#4e9a5a'); if(r()<0.4) pR(g,px,R(items._y)-2,1,1,'#f08ab0'); }, t0+4+r()*(BAND-6));
-      } else if(k==='karst'){
-        if(rr<0.13) put(()=>pmKarst(g,px,items._y,8+R(r()*12)), t0+16+r()*(BAND-20));
-        else if(rr<0.12) put(()=>pmTree(g,px,items._y,2,true), t0+6+r()*(BAND-8));
-      } else if(k==='ruins'){
-        if(wx>EAST.edge){ if(px%3===0) items.push({py:t0-50, fn:()=>{ for(let yy=t0+2; yy<t1-1; yy+=3) pR(gMain,px,R(yy),3,1,'rgba(150,180,110,0.5)'); }}); }
-        else if(rr<0.05) put(()=>pmPrang(g,px,items._y), t0+14+r()*(BAND-18));
-        else if(rr<0.12) put(()=>pmTree(g,px,items._y,2.2,false), t0+6+r()*(BAND-8));
-      } else if(k==='grave'){
-        if(rr<0.05) put(()=>pmStupa(g,px,items._y), t0+8+r()*(BAND-12));
-      } else if(k==='cross'){
-        if(Math.abs(wx-CROSS_X)<14) items.push({py:t0-60, fn:()=>{ pR(gMain,px-1,t0+2,4,BAND-4,'#d8c8a0'); pR(gMain,px-1,t0+2,1,BAND-4,'#b8a47a'); }});
-        else if(rr<0.05) put(()=>pmTree(g,px,items._y,2,false), t0+6+r()*(BAND-10));
-      } else {
-        if(rr<0.05) put(()=>pmTree(g,px,items._y,2.2,false), t0+6+r()*(BAND-10));
-        else if(rr<0.1) put(()=>{ pR(g,px,R(items._y),1,1,r()<0.5?'#f0e060':'#f08ab0'); }, t0+6+r()*(BAND-8));
+        if((xx+yy*3)%9===0) col=shadeA(col,-0.05);
       }
-      /* grass in everything that grows, stones in what does not */
-      if(k!=='river' && k!=='lake' && k!=='town' && r()<0.22){ const yy=t0+8+r()*(BAND-10);
-        if(!road(px,yy,row)) items.push({py:yy, fn: (k==='karst'||k==='grave'||k==='ruins')
-          ? ()=>{ pR(g,px,R(yy),2,1,'#9a9484'); pR(g,px,R(yy)-1,1,1,'#c8c2b0'); }
-          : ()=>{ pR(g,px,R(yy)-1,1,2,'#5e8e44'); pR(g,px+1,R(yy),1,1,'#7aaa56'); }}); }
+      /* the far edge of each row lies in a haze, and each row ends in a lip of shade */
+      if(yy-t0<3) col=mixA(col,HAZE,0.30*(1-(yy-t0)/3));
+      if(yy>=t1-2) col=shadeA(col, yy===t1-1? -0.16 : -0.07);
+      put(xx,yy,col);
+      if((inRiver||inLake) && hs>0.992) anim.water.push([xx,yy]);
     }
-    /* back to front, so the ones lower on the page stand in front */
-    items.sort((a,b)=>a.py-b.py);
-    for(const it of items){ items._y=it.py; it.fn(); }
-    /* the big landmarks, painted bigger */
-    if(seenAt(SALA_X) && G.row(SALA_X)===row){ const x=G.X(SALA_X); pmWat(g,x-14,G.Y(SALA_X)-6); pmChedi(g,x+14,G.Y(SALA_X)-6,1.1); }
-    for(const [wx2,s2] of [[112,0.8],[GRAVE_X,0.7]]) if(seenAt(wx2) && G.row(wx2)===row) pmChedi(g,G.X(wx2)+8,G.Y(wx2)-7,s2,'#b8b4a4');
   }
-  g=gMain;
-  { const sh=artShadeCanvas(fcv,{grain:0.04}); g.save(); g.setTransform(1,0,0,1,0,0); g.drawImage(sh,-1,-1); g.restore(); }
-  /* mist over what you have not walked */
+  /* the wat's sand inside its wall, the pond and the baray */
+  const sideBox=(wa,wb,side,depth)=>{ const pa=G.X(wa), pb=G.X(wb), a=Math.min(pa,pb), b=Math.max(pa,pb), row=G.row(wa), ry=G.Y((wa+wb)/2);
+    return side<0? {row, x:R(a), y:G.t0(row)+3, w:R(b-a), h:R(ry-5-(G.t0(row)+3))} : {row, x:R(a), y:R(ry+6), w:R(b-a), h:R(G.t1(row)-3-(ry+6))}; };
+  const fillBox=(bx,fn)=>{ for(let yy=bx.y; yy<bx.y+bx.h; yy++) for(let xx=bx.x; xx<bx.x+bx.w; xx++){ const col=fn(xx-bx.x,yy-bx.y,bx.w,bx.h,xx,yy); if(col) put(xx,yy,H(col)); } };
+  const WAT = seenAt(SALA_X)? sideBox(3880,4500,watSide,0) : null;
+  if(WAT) fillBox(WAT,(i,j,ww,hh,xx,yy)=>{ const e=i===0||j===0||i===ww-1||j===hh-1;
+    if(e) return (watSide<0 && j===hh-1 && Math.abs(i-ww/2)<5) || (watSide>0 && j===0 && Math.abs(i-ww/2)<5)? '#e8dcb8' : (j===0? '#c85a3a' : '#f4f0e4');
+    if(i===1||j===1) return '#cfc098'; return pmHash(xx,yy)>0.93? '#dccca0' : '#e8dcb8'; });
+  if(seenAt(700)){ const cx=G.X(700)+4, cy=G.Y(700)+pondSide*23, rx=8, ry=3.4;
+    for(let yy=R(cy-ry-1); yy<=R(cy+ry+1); yy++) for(let xx=R(cx-rx-1); xx<=R(cx+rx+1); xx++){ const d=((xx-cx)/rx)**2+((yy-cy)/ry)**2;
+      if(d<1) put(xx,yy,H(d<0.5? (pmHash(xx,yy)>0.9?'#a6d2dc':'#6eaec2') : '#5a9ab0')); else if(d<1.55) put(xx,yy,H('#a88258')); }
+    anim.water.push([R(cx-3),R(cy)],[R(cx+2),R(cy-1)]); PMAP._pond=[R(cx-rx-2),R(cy-ry-2),R(rx*2+5),R(ry*2+5)]; }
+  PMAP._baray=null; PMAP._pond=null;
+  if(seenAt(14650)){ const bx=sideBox(14540,14800,pmLabelSide(lay,14650,200)===1? -1 : 1,0); PMAP._baray=[bx.x-1,bx.y+1,bx.w+2,bx.h-2];
+    const pad=2; fillBox({row:bx.row,x:bx.x,y:bx.y+pad,w:bx.w,h:bx.h-pad*2},(i,j,ww,hh)=>{ if(i<2||j<2||i>=ww-2||j>=hh-2) return (i+j)%2? '#b8683e' : '#a85a36';
+      return (i*3+j)%11===0? '#a6d2dc' : '#6eaec2'; }); }
+  g.putImageData(im,0,0);
+  g.translate(-x0,-y0);
+
+  /* ---- the road: reserved first, so nothing is put down on it ---- */
+  const path=[];
   for(let row=0; row<G.rows; row++){
-    const t0=G.top+row*BAND;
-    for(let px=G.mx; px<G.mx+G.mw; px+=6){
-      if(seenAt(G.W(px,row))) continue;
-      for(let k=0;k<2;k++){ const fy=t0+4+r()*(BAND-8);
-        g.globalAlpha=0.55; pEll(g,px,fy,6+r()*5,2.6,'#f4ecd6'); g.globalAlpha=0.4; pEll(g,px+2,fy-1.4,4,1.6,'#fffaf0'); g.globalAlpha=1; }
+    const dir=row%2? -1 : 1, a=row%2? G.mx+G.mw : G.mx, b=row%2? G.mx : G.mx+G.mw;
+    for(let px=a; dir>0? px<=b : px>=b; px+=dir*0.5){ const wx=G.W(px,row); path.push({x:px, y:G.Y(wx), wx, seen:seenAt(wx)}); }
+    if(row+1<G.rows){
+      const right=row%2===0, ex=right? G.mx+G.mw : G.mx;
+      const wb=G.b[row+1], y1=G.Y(wb-1), y2=G.Y(wb+1), cy=(y1+y2)/2, ryy=(y2-y1)/2, wx=wb, sn=seenAt(wx);
+      for(let an=-Math.PI/2; an<=Math.PI/2; an+=0.012) path.push({x:ex+(right?1:-1)*Math.cos(an)*15, y:cy+Math.sin(an)*ryy, wx, seen:sn, bend:true});
     }
   }
-  /* the road */
-  const step=G.seg/G.mw/2;
-  for(let wx=0; wx<Math.min(WORLD_W,EAST.edge+60); wx+=step){
-    const px=G.X(wx), py=G.Y(wx), seen=seenAt(wx);
-    if(seen){ pR(g,R(px)-1,R(py)-2,3,5,'#8a6a44'); pR(g,R(px)-1,R(py)-1,3,3,'#e0c894'); pR(g,R(px),R(py)-1,1,1,'#f4e2b4'); }
-    else if((R(px)+R(py))%4===0) pR(g,R(px),R(py),1,1,'rgba(120,98,66,0.55)');
+  for(const q of path) mark(q.x-4, q.y-4, 9, 9, 2);
+  /* and the names */
+  for(const l of lay.pins){ mark(l.sx-8,l.sy-8,17,17); mark(l.la-3,l.tb-10-pmTH(),l.lw+6,12+pmTH());
+    const mid=l.la+l.lw/2; if(Math.abs(mid-l.sx)>l.lw/2-3) mark(Math.min(mid,l.sx)-1, l.s===0? l.tb-1 : l.tb-10, Math.abs(mid-l.sx)+2, 11); }
+  for(const z of lay.zones) mark(z.a-3,z.yy-7,z.b-z.a+6,9);
+  /* the cartouches laid over the country: the title, how far you have walked,
+     the scale, the friends, the compass */
+  for(const r of pmCartouches(G)) mark(r[0],r[1],r[2],r[3]);
+  if(PMAP._pond && seenAt(700)) mark(...PMAP._pond);
+  if(PMAP._baray) mark(...PMAP._baray);
+
+  const isWater=(wx)=> (wx>EAST.river0-10 && wx<EAST.river1+10) || (wx>EAST.lake0+20 && wx<EAST.lake1-20);
+  const bridgeAt=(wx)=> wx>EAST.river0-40 && wx<EAST.river1+40;
+  const walkAt=(wx)=> wx>EAST.lake0 && wx<EAST.lake1;
+  /* ink, then red earth, then the worn middle of it */
+  const disc=(x,y,r,col)=>{ g.fillStyle=col; x=R(x); y=R(y); const hw=r===3? [1,2,3,3,3,2,1] : r===2? [1,2,2,2,1] : [0,1,0];
+    for(let i=0;i<hw.length;i++) g.fillRect(x-hw[i], y-(hw.length>>1)+i, hw[i]*2+1, 1); };
+  for(const q of path) if(q.seen) disc(q.x,q.y,3,MAP_INK);
+  for(const q of path) if(q.seen){ const br=bridgeAt(q.wx)&&!q.bend, bw=walkAt(q.wx)&&!q.bend;
+    disc(q.x,q.y,2, br? '#b88a58' : bw? '#c89a64' : '#c88a5a'); }
+  for(const q of path) if(q.seen){ const br=bridgeAt(q.wx)&&!q.bend, bw=walkAt(q.wx)&&!q.bend;
+    if(br||bw){ if(R(q.x)%2===0) pR(g,R(q.x),R(q.y)-2,1,5,'#8a5e3a'); }
+    else { pR(g,R(q.x),R(q.y)-1,1,1,'#e2ac72'); if(pmHash(R(q.x),9)>0.8) pR(g,R(q.x),R(q.y)+1,1,1,'#a86e46'); } }
+  /* the rails of the long bridge, and its posts in the water */
+  for(const q of path) if(q.seen && bridgeAt(q.wx) && !q.bend){ pR(g,R(q.x),R(q.y)-4,1,1,'#6a4a2c'); pR(g,R(q.x),R(q.y)+4,1,1,'#6a4a2c');
+    if(R(q.x)%6===0){ pR(g,R(q.x),R(q.y)-5,1,2,'#6a4a2c'); pR(g,R(q.x),R(q.y)+5,1,2,'#4a3420'); } }
+  /* the side road at the crossroad, north and south as far as the row goes */
+  if(seenAt(CROSS_X)){ const cx=R(G.X(CROSS_X)), row=G.row(CROSS_X), ya=G.t0(row)+2, yb=G.t1(row)-3;
+    for(let yy=ya; yy<=yb; yy++){ pR(g,cx-3,yy,7,1,MAP_INK); pR(g,cx-2,yy,5,1,'#c88a5a'); if(yy%3) pR(g,cx,yy,1,1,'#e2ac72'); }
+    mark(cx-4,ya,9,yb-ya); }
+
+  /* ---- the big shapes of the country: hills, the wat's wall ---- */
+  const placed=[];
+  const place=(name,v,x,y,o)=>{ o=o||{};
+    const s=mapArt(name,v); if(!s) return false;
+    const bx=R(x-s.width/2), by=R(y-s.height+1), pad=o.pad===undefined? 0 : o.pad;
+    const row=o.row===undefined? rowOf(y-1) : o.row;
+    if(!o.force){
+      if(bx<x0+B+1 || bx+s.width>x0+w-B-1) return false;
+      if(by<G.t0(row)+1 || y>G.t1(row)-2) return false;
+      if(!seenPx(x,row)) return false;
+      if(!free(bx-pad,by-pad,s.width+pad*2,s.height+pad*2)) return false;
+    }
+    const sh=o.shrink||0; mark(bx+sh,by+sh,s.width-sh*2,s.height-sh*2);
+    placed.push({name,v,x,y,flip:!!o.flip,sh:o.shadow!==false,w:s.width});
+    return true;
+  };
+  /* a sprite beside the road at a world x, on the side the names left alone */
+  const beside=(wx,name,v,o)=>{ o=o||{};
+    if(!seenAt(wx)) return false;
+    const row=G.row(wx), s=mapArt(name,v); if(!s) return false;
+    const side = o.side || (pmLabelSide(lay,wx,o.near)===0? 1 : -1), g0=o.gap||0;
+    /* next to the road if there is room, and further out past the names if not */
+    for(const sd of [side,-side]){
+      for(let gap=g0; gap<=g0+(o.only? 0 : 24); gap+=3){
+        let out=0;
+        for(const dx of (o.wide? [0,3,-3,6,-6,10,-10,14,-14,19,-19,25,-25,32,-32] : [0,2,-2,4,-4,7,-7,10,-10,14,-14])){
+          const x=G.X(wx)+(o.dx||0)*(row%2?-1:1)+dx, [ra,rb]=roadSpan(x,s.width/2,row);
+          const y= sd<0? Math.floor(ra)-6-gap : Math.ceil(rb)+6+s.height-1+gap;
+          if(y-s.height+1<G.t0(row)+1 || y>G.t1(row)-2){ out++; continue; }
+          if(place(name,v,x,y,Object.assign({row},o))) return true;
+        }
+        if(out>=(o.wide?15:11)) break;
+      }
+      if(o.only) break;
+    }
+    return false;
+  };
+  /* sandstone hills along the far side of the cave country */
+  if(seenAt(12900) || seenAt(14000)){
+    const row=G.row(13500);
+    for(const [wa,v] of [[13080,2],[13760,13],[14200,1]]){ if(!seenAt(wa)) continue;
+      const x=G.X(wa), ry=G.Y(wa), s=mapArt('mesa',v);
+      const side=(v>=10 || pmLabelSide(lay,wa,200)!==0)? -1 : 1;
+      const y= side<0? ry-5 : Math.min(G.t1(row)-3, ry+5+s.height);
+      place('mesa',v,x,y,{row,force:true});
+      mark(R(x-s.width/2), R(y-s.height+1), s.width, s.height);
+      if(v>=10) anim.cave={x, y}; }
   }
-  /* the river crosses under the long bridge: planks over the water */
-  if(seenAt(EAST.river0)) for(let wx=EAST.river0; wx<EAST.river1; wx+=step*4){ const px=G.X(wx), py=G.Y(wx);
-    pR(g,R(px),R(py)-2,1,5,'#6a4a2c'); }
-  /* the bends: round the end of one row and into the next */
-  for(let row=0; row+1<G.rows; row++){
-    const right = row%2===0, ex = right? G.mx+G.mw : G.mx;
-    const y1=G.Y(G.seg*(row+1)-1), y2=G.Y(G.seg*(row+1)+1), cy=(y1+y2)/2, ry=(y2-y1)/2;
-    const seen=seenAt(G.seg*(row+1));
-    for(let a=-Math.PI/2; a<=Math.PI/2; a+=0.02){
-      const px=ex+(right?1:-1)*Math.cos(a)*14, py=cy+Math.sin(a)*ry;
-      if(seen){ pR(g,R(px)-1,R(py)-1,3,3,'#8a6a44'); pR(g,R(px),R(py),1,1,'#e0c894'); }
-      else if(R(a*50)%4===0) pR(g,R(px),R(py),1,1,'rgba(120,98,66,0.55)');
+  /* the wat inside its wall: the sim, the that, a sala, the bodhi, little chedis */
+  if(WAT){
+    const row=WAT.row, by=watSide<0? WAT.y+WAT.h-2 : WAT.y+WAT.h-2;
+    const at=wx=>G.X(wx);
+    const inside=[['sim',0,SALA_X,0],['that',0,CHEDI_X,0],['bodhi',0,4230,-1],['sala',0,3950,0],['chedi',0,4440,0],['chedi',0,3900,-2],['flagthai',0,4010,-4],['bush',0,4160,-3],['tree0',0,4480,-6]];
+    for(const [n,v,wx,dy] of inside){ const s=mapArt(n,v), x=at(wx), y=by+dy;
+      if(y-s.height+1<WAT.y+1) continue;
+      place(n,v,x,y,{row,force:true}); }
+    mark(WAT.x-1,WAT.y-1,WAT.w+2,WAT.h+2);
+  }
+
+  /* ---- the places the pins are about ---- */
+  const L2=(wx,n,v,o)=>beside(wx,n,v,o);
+  L2(112,'ruinstupa',0,{wide:1}); L2(250,'grave',0,{wide:1}); L2(60,'bonestupa',0,{side:-1}); L2(170,'bonestupa',0,{side:1}); L2(340,'bonestupa',0,{side:-1}); L2(420,'deadtree',0,{side:-1,dx:2});
+  L2(566,'cart',1,{wide:1}); L2(640,'tree1',1,{side:-1});
+  L2(800,'elephant',0,{side:pondSide,dx:6,gap:1});
+  L2(FARMHOUSE_X,'stilt',2,{dx:2}); L2(FARMHOUSE_X+60,'jars',0,{gap:0});
+  L2(1060,'hut',0,{side:1,dx:4,gap:6}); L2(1180,'buffalo',0,{side:-1,gap:4}); L2(1300,'scarecrow',0,{side:1,gap:3}); L2(1380,'buffalo',3,{side:-1,gap:9,flip:1});
+  L2(1250,'farmer',0,{side:-1,gap:12}); L2(1000,'farmer',1,{side:-1,gap:2});
+  HOUSE_XS.forEach((hx2,i)=>{ const v=[1,0,2,0,1,1][i%6];
+    if(L2(hx2,'stilt',v,{flip:i%2===1})){ L2(hx2+(i%2?-70:70),'granary',i%2,{gap:1}); L2(hx2-(i%2?-60:60),i%3?'coco':'banana',i%2,{gap:2}); } });
+  L2(1990,'log',0); L2(2060,'lamp',0); L2(2340,'bench',0); L2(2500,'spirit',0); L2(2650,'tree2',1,{dx:0}); L2(2790,'kitchen',0);
+  L2(2600,'morlam',0,{side:1,gap:1,near:60,wide:1});
+  L2(3340,'tani',0,{wide:1});
+  L2(6330,'bamboo',0,{side:-1,dx:6}); L2(6330,'heron',0,{side:1,dx:-5});
+  L2(CROSS_X+80,'sign',0,{side:-1}); L2(7560,'busstop',0); L2(7620,'songthaew',0,{side:1,gap:0});
+  L2(STORE_X,'shop',0,{dx:1});
+  L2(9860,'hut',1,{gap:4}); L2(10000,'bangfai',0,{side:-1,gap:3,wide:1}); L2(9700,'buffalo',2,{side:1,gap:5}); L2(9450,'haystack',0,{side:1,gap:2}); L2(10300,'haystack',0,{side:-1,gap:6});
+  L2(10250,'kid',1,{side:1,gap:4});
+  L2(11700,'pier',0,{gap:0}); L2(11820,'sala',0,{dx:2});
+  L2(12430,'sala',0,{gap:2});
+  L2(14960,'prasat',0,{wide:1}); L2(14880,'naga',0,{gap:0,dx:-3}); L2(15280,'stonehead',0); L2(15590,'view',0);
+  L2(15420,'bodhi',0,{side:-1,wide:1}); L2(14700,'palmyra',1,{side:-1,wide:1}); L2(15120,'tree1',2,{side:1,wide:1});
+
+  /* the town: shophouses in a row along both sides, as a town is */
+  if(seenAt(8300)){
+    let i=0;
+    for(let wx=7820; wx<9020; wx+=150){ if(Math.abs(wx-STORE_X)<120){ i++; continue; }
+      beside(wx,'shophouse',i%4,{side:-1,only:true,gap:0}); beside(wx+70,'shophouse',(i+2)%4,{side:1,only:true,gap:0}); i++; }
+    for(let wx=7900; wx<9000; wx+=330) beside(wx,'pole',0,{side:-1,only:true,gap:0});
+  }
+  /* the river: fishing boats on it, a raft house moored, and on the lotus sea, lotus */
+  if(seenAt(11100)){
+    const row=G.row(11100);
+    for(const [wx,side,v] of [[10860,-1,0],[11350,1,1],[11050,1,0]]){ if(beside(wx,'boat',v,{side,gap:2,wide:1,shadow:false})){ const b=placed[placed.length-1]; anim.boats.push({x:b.x,y:b.y,v}); } }
+    beside(11200,'raft',0,{side:-1,gap:6}); beside(11480,'raft',0,{side:1,gap:3});
+  }
+  if(seenAt(12400)){
+    const row=G.row(12400), t0=G.t0(row), t1=G.t1(row), lr=mulberry(123);
+    for(let k=0;k<600;k++){ const wx=EAST.lake0+60+lr()*(EAST.lake1-EAST.lake0-120), x=G.X(wx), y=t0+4+lr()*(t1-t0-6);
+      if(Math.abs(y-G.Y(wx))<7) continue; place('lotus',(k*7)%3,x,y,{row,shadow:false,shrink:2,pad:-1}); }
+  }
+
+  /* ---- who lives here: animals, and the odd person ---- */
+  const beast=[[1520,'dog',0,1],[1880,'chicken',0,-1],[1905,'chicken',1,-1],[2230,'dog',3,1],[2420,'cat',1,-1],[2900,'chicken',1,1],[2940,'dog',1,-1],
+               [4390,'dog',2,1],[7450,'dog',0,-1],[8420,'dog',4,1],[8700,'cat',0,1],[3100,'chicken',0,-1],[11760,'cat',2,1]];
+  for(const [wx,n,v,sd] of beast) beside(wx,n,v,{side:sd,gap:1});
+  /* the cat is up the tamarind, where the pin says */
+  { const t=placed.find(p=>p.name==='tree2' && Math.abs(p.x-G.X(2650))<12); if(t){ const s=mapArt('tree2',1);
+      placed.push({name:'cat',v:0,x:t.x+3,y:t.y-s.height+8,flip:false,sh:false,w:7}); } }
+
+  /* ---- and then everything that grows, thick or thin by the country: a
+     jittered grid of places to try, as close together as that country grows ---- */
+  const SPACE = {grave:9, meadow:9, paddy:14, gold:14, village:8, grove:6, wat:14, dry:6, deep:4, cross:10, town:22, bank:8, hill:10, ruins:9, river:0, lake:0};
+  for(let row=0; row<G.rows; row++){
+    const t0=G.t0(row), t1=G.t1(row), fr=mulberry(313+row*17);
+    for(let py=t0+4; py<t1-2; py+=4) for(let px=x0+B+3; px<x0+w-B-3; px+=4){
+      const wx=G.W(px,row); if(!seenAt(wx)) continue;
+      if(isWater(wx) && zoneAt(wx).id!=='bank') continue;
+      const Z=PMG[zoneAt(wx).id]||PMG.roadside, F=PM_FLORA[Z.k], sp=SPACE[Z.k]; if(!F || !F.o.length || !sp) continue;
+      /* one try per cell of this country's spacing */
+      if(fr() > 16/(sp*sp)) continue;
+      const X=px+fr()*4-2, Y=py+fr()*4-2, thick = Z.k==='deep'||Z.k==='dry'||Z.k==='grove';
+      /* and if the first thing will not fit there, something smaller might */
+      for(let tries=0; tries<2; tries++){
+        let tot=0; for(const o of F.o) tot+=o[2]; let pk=fr()*tot, ch=F.o[0]; for(const o of F.o){ pk-=o[2]; if(pk<=0){ ch=o; break; } }
+        if(tries){ if(!F.s || fr()<0.5) break; ch=F.s; }
+        const tree=/tree|dipt|palm|coco|banana|bamboo/.test(ch[0]);
+        if(place(ch[0],ch[1],X,Y,{row,shrink:tree?(ch[0]==='palmyra'?3:2):0,pad:tree&&thick? -2 : 0,flip:fr()<0.5})) break;
+      }
     }
   }
-  /* the paper darkens toward its edges, as old paper does */
+
+  /* ---- stand it all up: shadows first, then back to front ---- */
+  placed.sort((a,b)=>a.y-b.y); PMAP.placed=placed.length;
+  for(const p of placed) if(p.sh) mapShadow(g, p.x, p.y, p.w*0.42);
+  for(const p of placed) mapPut(g, p.name, p.v, p.x, p.y, p.flip);
+  /* things for the frame loop to move */
+  const kid=placed.find(p=>p.name==='kid'); if(kid) anim.kite={x:kid.x+1, y:kid.y-5};
+  const bf=placed.find(p=>p.name==='bangfai'); if(bf) anim.rocket={x:bf.x, y:bf.y-18};
+  const kt=placed.find(p=>p.name==='kitchen'); if(kt) anim.smoke.push({x:kt.x-1, y:kt.y-9});
+  for(const p of placed) if(p.name==='stilt' && pmHash(p.x,3)>0.6) anim.smoke.push({x:p.x+(p.flip?-3:3), y:p.y-14});
+
+  /* ---- cloud, over everything you have not walked ----
+     painted into a buffer of tones first and turned into pixels once: a
+     page that is mostly cloud, which is every page early on, was a few
+     hundred thousand little rectangles and several seconds of waiting */
+  { const tone=new Uint8Array(w*h), cr=mulberry(77);
+    let any=false;
+    for(let row=0; row<G.rows; row++){
+      const t0=G.t0(row)-y0, t1=G.t1(row)-y0;
+      for(let px=x0+B; px<x0+w-B; px+=5){
+        if(seenPx(px,row) && seenPx(px+4,row)) continue;
+        any=true;
+        for(let k=0;k<3;k++){ const cx=px-x0+cr()*5, cy=t0+4+cr()*(t1-t0-8), r0=4+cr()*6, rx=r0*1.3;
+          const ya=Math.max(t0,R(cy-r0)), yb=Math.min(t1-1,R(cy+r0)), xa=Math.max(B,R(cx-rx)), xb=Math.min(w-B-1,R(cx+rx));
+          for(let yy=ya; yy<=yb; yy++){ const dy=(yy-cy)/r0; for(let xx=xa; xx<=xb; xx++){
+            const dx=(xx-cx)/rx; if(dx*dx+dy*dy>1) continue;
+            const lit=-dx*0.5-dy*0.8+(ICO_BAYER[(yy&3)*4+(xx&3)]/16-0.5)*0.3;
+            tone[yy*w+xx] = lit>0.5? 1 : lit>-0.25? 2 : lit>-0.7? 3 : 4; } } }
+      }
+    }
+    if(any){
+      const cc=mkCv(w,h), cg=cc.getContext('2d',{willReadFrequently:true}), ci=cg.createImageData(w,h), cd=ci.data;
+      const TONE=[null,[255,255,255],[246,240,226],[230,220,198],[212,200,174]];
+      for(let i=0;i<w*h;i++){ const t=tone[i]; if(!t) continue; const c2=TONE[t]; cd[i*4]=c2[0]; cd[i*4+1]=c2[1]; cd[i*4+2]=c2[2]; cd[i*4+3]=255; }
+      cg.putImageData(ci,0,0); icoOutline(cc,'#8a7a64');
+      g.save(); g.setTransform(1,0,0,1,0,0); g.drawImage(cc,0,0); g.restore();
+    }
+  }
+  /* the road you have not walked, dotted on top of the cloud */
+  for(let i=0;i<path.length;i+=5){ const q=path[i]; if(!q.seen) pR(g,R(q.x),R(q.y),1,1,'rgba(74,52,36,0.6)'); }
+
+  /* ---- the paper's age, and a border of khit ---- */
   { g.save(); g.setTransform(1,0,0,1,0,0);
-    const vg=g.createRadialGradient(w/2,h/2,Math.min(w,h)*0.35,w/2,h/2,Math.max(w,h)*0.62);
-    vg.addColorStop(0,'rgba(120,80,40,0)'); vg.addColorStop(1,'rgba(120,80,40,0.22)');
+    const vg=g.createRadialGradient(w/2,h/2,Math.min(w,h)*0.40,w/2,h/2,Math.max(w,h)*0.64);
+    vg.addColorStop(0,'rgba(120,80,40,0)'); vg.addColorStop(1,'rgba(110,70,30,0.20)');
     g.fillStyle=vg; g.fillRect(0,0,w,h); g.restore(); }
-  /* the border: a double rule in ink with a gold key-pattern between */
-  pR(g,x0,y0,w,2,PM_INK); pR(g,x0,y0+h-2,w,2,PM_INK); pR(g,x0,y0,2,h,PM_INK); pR(g,x0+w-2,y0,2,h,PM_INK);
-  pR(g,x0+4,y0+4,w-8,1,PM_INK); pR(g,x0+4,y0+h-5,w-8,1,PM_INK); pR(g,x0+4,y0+4,1,h-8,PM_INK); pR(g,x0+w-5,y0+4,1,h-8,PM_INK);
-  for(let x=x0+6;x<x0+w-6;x+=4){ pR(g,x,y0+2,2,1,'#c89a40'); pR(g,x,y0+h-3,2,1,'#c89a40'); }
-  for(let y=y0+6;y<y0+h-6;y+=4){ pR(g,x0+2,y,1,2,'#c89a40'); pR(g,x0+w-3,y,1,2,'#c89a40'); }
-  for(const [cx,cy] of [[x0+4,y0+4],[x0+w-5,y0+4],[x0+4,y0+h-5],[x0+w-5,y0+h-5]]){
-    pEll(g,cx,cy,3,3,PM_INK); pEll(g,cx,cy,2,2,'#e8c050'); pR(g,R(cx),R(cy),1,1,'#fff0a8'); }
+  pmKhit(g,x0,y0,w,h);
+  PMAP.anim=anim;
   return c;
+}
+/* khit: the diamond-and-hook weave of Isan cloth, red and gold on indigo */
+function pmKhit(g,x0,y0,w,h){
+  const IND='#2a2e5e', RD='#c8403a', GD='#f0c048', WT='#f4ecd8';
+  pR(g,x0,y0,w,6,MAP_INK); pR(g,x0,y0+h-6,w,6,MAP_INK); pR(g,x0,y0,6,h,MAP_INK); pR(g,x0+w-6,y0,6,h,MAP_INK);
+  pR(g,x0+1,y0+1,w-2,4,IND); pR(g,x0+1,y0+h-5,w-2,4,IND); pR(g,x0+1,y0+1,4,h-2,IND); pR(g,x0+w-5,y0+1,4,h-2,IND);
+  const motif=(x,y,vert)=>{ const P=[[1,0,GD],[0,1,GD],[1,1,RD],[2,1,GD],[1,2,GD],[1,3,0]];
+    for(const [a,b,c] of P){ if(!c) continue; const X=vert? x+b : x+a, Y=vert? y+a : y+b; pR(g,X,Y,1,1,c); } };
+  for(let x=x0+7; x<x0+w-9; x+=6){ motif(x,y0+1,false); motif(x,y0+h-5,false); pR(g,x+4,y0+2,1,1,WT); pR(g,x+4,y0+h-4,1,1,WT); }
+  for(let y=y0+7; y<y0+h-9; y+=6){ motif(x0+1,y,true); motif(x0+w-5,y,true); pR(g,x0+2,y+4,1,1,WT); pR(g,x0+w-4,y+4,1,1,WT); }
+  for(const [cx,cy] of [[x0+3,y0+3],[x0+w-4,y0+3],[x0+3,y0+h-4],[x0+w-4,y0+h-4]]){
+    pR(g,cx-3,cy-3,7,7,MAP_INK); pR(g,cx-2,cy-2,5,5,GD); pR(g,cx-1,cy-1,3,3,RD); pR(g,cx,cy,1,1,'#fff0a8'); }
+  /* and a thin gold rule inside it */
+  pR(g,x0+6,y0+6,w-12,1,'#c8a048'); pR(g,x0+6,y0+h-7,w-12,1,'#8a6a30');
+  pR(g,x0+6,y0+6,1,h-12,'#c8a048'); pR(g,x0+w-7,y0+6,1,h-12,'#8a6a30');
 }
 
 /* ---------- the names, the pins, and you ---------- */
-function pmRibbon(g, x, y, w, hh){
-  hh=hh||9;
-  pR(g,x+1,y-hh+2,w,hh,'rgba(60,40,20,0.30)');
-  pR(g,x,y-hh+1,w,hh,PM_INK); pR(g,x+1,y-hh+2,w-2,hh-2,'#f8eed4'); pR(g,x+1,y-hh+2,w-2,1,'#fffaea');
-  pTri(g,x,y-hh+1,x-3,y-hh+3,x,y-1,PM_INK); pTri(g,x+w,y-hh+1,x+w+3,y-hh+3,x+w,y-1,PM_INK);
+const PM_MED = new Map();
+function pmMedal(done){
+  let c=PM_MED.get(done); if(c) return c;
+  c=mkCv(15,15); const g=c.getContext('2d');
+  const G5=done? ramp('#9cc46a') : MA.gold;
+  for(let y=0;y<15;y++) for(let x=0;x<15;x++){ const dx=x-7, dy=y-7, d=Math.hypot(dx,dy);
+    let col=null;
+    if(d<=7.1) col=MAP_INK;
+    if(d<=6.1){ const l=(-dx-dy)/8.6; col= l>0.45? G5[0] : l>0.05? G5[1] : l>-0.4? G5[2] : G5[3]; }
+    if(d<=4.6) col=done? '#eef4dc' : '#f8eed6';
+    if(d<=4.6 && dx+dy>3.6) col=done? '#dce8c4' : '#eadcbc';
+    if(col){ g.fillStyle=col; g.fillRect(x,y,1,1); } }
+  PM_MED.set(done,c); return c;
+}
+/* a name tag: paper in a black line with its corners taken off. y is its bottom row */
+function pmTag(g, x, y, w, hh){
+  hh=(hh||10)+pmTH();
+  pR(g,x+2,y-hh+3,w-1,hh-1,'rgba(40,24,16,0.28)');
+  pR(g,x+1,y-hh+1,w-2,hh,MAP_INK); pR(g,x,y-hh+2,w,hh-2,MAP_INK);
+  pR(g,x+1,y-hh+2,w-2,hh-2,'#f8eed4'); pR(g,x+1,y-hh+2,w-2,1,'#fffcf0'); pR(g,x+1,y-1,w-2,1,'#e2d2ae');
+}
+/* type with no shadow under it, for a halo of paper round a name */
+function pmTxtNS(g,s,x,y,col,size,align){
+  s=L(String(s)); if(!s.length) return;
+  const w=txtW(s,size), dx= align==='center'? -w/2 : align==='right'? -w : 0, P=fontPick(size);
+  if(!THAI_RE.test(s)){ g.drawImage(txtSprite(s,size,col,null), R(x+dx), R(y-P.h*P.s)); return; }
+  let cx=x+dx;
+  for(const r of txtRuns(s)){
+    if(r.th){ thaiBlit(g, thaiSprite(r.s,size,col,null), cx, y); cx+=thaiMeasure(r.s,size); }
+    else { g.drawImage(txtSprite(r.s,size,col,null), R(cx), R(y-P.h*P.s)); cx+=latinW(r.s,size)+1; }
+  }
+}
+function pmHaloTxt(g,s,x,y,col,halo,size,align){
+  for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) pmTxtNS(g,s,x+dx,y+dy,halo,size,align);
+  pmTxtNS(g,s,x,y,col,size,align);
 }
 function drawMap(g,x0,y0,w,h){
   const G=pmGeo(x0,y0,w,h);
   const key=pmSeenKey()+'|'+x0+','+y0+','+w+','+h;
-  if(PMAP.key!==key){ PMAP.key=key; PMAP.cv=pmPaint(G); }
+  if(PMAP.key!==key){ PMAP.key=key; PMAP.lay=pmLayout(G); PMAP.cv=pmPaint(G,PMAP.lay); }
+  const lay=PMAP.lay, A=PMAP.anim||{}, t=GS.t||0;
   g.drawImage(PMAP.cv, x0, y0);
-  /* the title, on a ribbon at the top, and how much of it you have walked */
+
+  /* what moves: the water, the smoke, a kite, a rocket, boats, birds */
+  for(let i=0;i<(A.water||[]).length;i++){ const [wx,wy]=A.water[i]; const tw=Math.sin(t*2.6+i*1.7);
+    if(tw>0.55) pR(g,wx,wy,1,1,'#f4fcff'); if(tw>0.9) { pR(g,wx-1,wy,1,1,'rgba(244,252,255,0.6)'); pR(g,wx+1,wy,1,1,'rgba(244,252,255,0.6)'); } }
+  for(const s of (A.smoke||[])) for(let k=0;k<3;k++){ const u=((t*0.35)+k/3)%1;
+    g.globalAlpha=0.7*(1-u); pEll(g,s.x+Math.sin(u*5+k)*1.2+u*3, s.y-u*9, 0.8+u*1.8, 0.8+u*1.4, '#f4f0e8'); g.globalAlpha=1; }
+  if(A.kite){ const kx=A.kite.x+9+Math.sin(t*0.9)*2.2, ky=A.kite.y-12+Math.sin(t*1.7)*1.4;
+    for(let i=1;i<9;i++){ const u=i/9; pR(g,R(lerp(A.kite.x,kx,u)),R(lerp(A.kite.y,ky+4,u)+Math.sin(u*Math.PI)*2),1,1,'rgba(40,30,30,0.55)'); }
+    for(let i=0;i<5;i++) pR(g,R(kx+1-i*0.6+Math.sin(t*4+i)*0.8),R(ky+8+i),1,1,i%2?'#f0c040':'#e8403a');
+    mapPut(g,'kite',1,kx,ky+7); }
+  if(A.rocket){ const cyc=(t%9)/9;
+    if(cyc<0.34){ const u=cyc/0.34, rx=A.rocket.x+u*u*6, ry=A.rocket.y-u*34;
+      for(let k=1;k<7;k++){ const uu=Math.max(0,u-k*0.035); g.globalAlpha=0.55*(1-k/7); pEll(g,A.rocket.x+uu*uu*6,A.rocket.y-uu*34+2,1+k*0.3,1+k*0.3,'#f8f4ec'); }
+      g.globalAlpha=1; pR(g,R(rx),R(ry),1,3,'#c8403a'); pR(g,R(rx),R(ry)-1,1,1,'#f0c040'); pR(g,R(rx),R(ry)+3,1,2,'#8a6a40'); pR(g,R(rx),R(ry)+5,1,1,'#ffd060'); }
+  }
+  for(const b of (A.boats||[])){ if(Math.sin(t*1.8+b.x)>0.2){ pR(g,R(b.x-7),R(b.y+1),2,1,'#a8d4e0'); pR(g,R(b.x+6),R(b.y+1),2,1,'#a8d4e0'); } }
+  for(let f=0; f<2; f++){ const bx=x0+((t*6+f*230)%(w+60))-30, by=y0+30+f*62+Math.sin(t*0.4+f)*4;
+    for(let k=0;k<3;k++){ const px=bx-k*5-(k===1?0:0), py=by+(k===1? -2 : k*1.5), fl=Math.sin(t*9+k)>0?1:0;
+      if(px<x0+8||px>x0+w-10) continue;
+      pR(g,R(px)-2,R(py)-fl,2,1,'#3a2a2a'); pR(g,R(px)+1,R(py)-fl,2,1,'#3a2a2a'); pR(g,R(px),R(py)+1-fl,1,1,'#3a2a2a'); } }
+
+  /* the title, on a banner at the top, and how much of it you have walked */
   const ttl=L('THE ROAD'), tw=txtW(ttl,8)+16;
-  pmRibbon(g, x0+12, y0+20, tw, 13);
-  pTxt(g, ttl, x0+12+tw/2, y0+17, PM_INK, 8, 'center');
-  const pc=Math.round(seenFrac()*100), tail=L('walked')+' '+pc+'%';
-  pTxt(g, tail, x0+w-12, y0+16, pc>70?'#4e6a34':PM_INK, 6, 'right');
-  const sub=L('west to east, and then east again'), sa=x0+22+tw, sb=x0+w-18-txtW(tail,6);
-  if(sb-sa > txtW(sub,6)) pTxt(g,sub,sa,y0+16,'#7a6040',6);
+  pmTag(g, x0+10, y0+13, tw, 13);
+  pTxt(g, ttl, x0+10+tw/2, y0+11-(pmTH()?1:0), MAP_INK, 8, 'center');
+  const pc=Math.round(seenFrac()*100), tail=L('walked')+' '+pc+'%', tl=txtW(tail,6)+8;
+  pmTag(g, x0+w-10-tl, y0+11, tl, 10);
+  pTxt(g, tail, x0+w-10-tl/2, y0+9-(pmTH()?1:0), pc>70?'#3e5a26':MAP_INK, 6, 'center');
 
+  /* the ghosts you have met, on the road where you met them */
+  for(const sp of SPIRITS){ if(!seenAt(sp.x)) continue;
+    const px=G.X(sp.x), py=G.Y(sp.x)+Math.sin(t*2+sp.x)*0.8;
+    if(lay.pins.some(l=>Math.abs(l.sx-px)<9 && l.row===G.row(sp.x))) continue;
+    mapPut(g,'spook',sp.friend?1:0,px,py+3);
+    if(sp.friend) icoHeart(g,px+4,py-6,0.45,'#c83a5a'); }
   MAP_LABELS.length=0;
-  for(let row=0; row<G.rows; row++){
-    const wa=row*G.seg, wb=(row+1)*G.seg;
-    const pins=MAP_PINS.filter(pn=>{ const wx=pn.x(); return wx>=wa && wx<wb && seenAt(wx); })
-      .map(pn=>({pn, px:G.X(pn.x()), py:G.Y(pn.x())})).sort((a,b)=>a.px-b.px);
-    const edge=[-1e9,-1e9];
-    pins.forEach((it,i)=>{
-      const nm=L(it.pn.n), lw=Math.max(txtW(nm,6),14)+6;
-      const want=it.px-lw/2, push=s=>Math.max(0,(edge[s]+6)-want);
-      let s = push(0)<=push(1)? 0 : 1;
-      if(push(0)<=0 && push(1)<=0) s=i%2;
-      let la=Math.max(want, edge[s]+6);
-      la=clamp(la, G.mx-6, x0+w-12-lw);
-      edge[s]=la+lw;
-      const up=s===0, iy=it.py+(up? -9 : 9), tb=iy+(up? -8 : 14);
-      const done=it.pn.done&&it.pn.done();
-      pR(g,R(it.px),R(Math.min(iy,it.py))+3,1,Math.max(1,R(Math.abs(iy-it.py))-4),'rgba(74,52,36,0.7)');
-      if(Math.abs(la+lw/2-it.px)>6){ const a2=Math.min(la+lw/2,it.px), b3=Math.max(la+lw/2,it.px);
-        pR(g,R(a2),R(up?tb+1:tb-8),R(b3-a2),1,'rgba(74,52,36,0.45)'); }
-      /* a medallion with the picture in it */
-      pEll(g,it.px+1,iy+1,6.4,6.4,'rgba(60,40,20,0.35)');
-      pEll(g,it.px,iy,6.4,6.4,PM_INK); pEll(g,it.px,iy,5.4,5.4, done?'#e8c050':'#c8a060');
-      pEll(g,it.px,iy,4.4,4.4, done?'#eaf2d6':'#f8eed4');
-      mapIcon(g,it.pn.ic,it.px,iy+1, done?'#4e6a34':'#4a3424', done?'#8ab064':'#9c8460');
-      pmRibbon(g, la, tb, lw);
-      pTxt(g, nm, la+lw/2, tb-1, done?'#4e6a34':PM_INK, 6, 'center');
-      MAP_LABELS.push({n:nm, row, side:s, a:la-3, b:la+lw+3, y:tb});
-    });
-    /* the ghosts you have met, on the road */
-    SPIRITS.forEach(sp=>{
-      if(sp.x<wa||sp.x>=wb || !seenAt(sp.x)) return;
-      const px=G.X(sp.x), py=G.Y(sp.x)+4;
-      pEll(g,px,py,3.2,3.2,PM_INK); pEll(g,px,py,2.4,2.4, sp.friend?'#e8829e':'#b8aec8');
-      if(sp.friend) icoHeart(g,px,py,0.5,'#6e2038');
-    });
+  /* a tag pushed off its stop keeps a line back to it */
+  for(const l of lay.pins){ const up=l.s===0, mid=l.la+l.lw/2;
+    if(Math.abs(mid-l.sx)>l.lw/2-3){ const ex= mid>l.sx? l.la+1 : l.la+l.lw-2, ey= l.tb-4-(pmTH()>>1);
+      pR(g,R(Math.min(ex,l.sx)),R(ey),R(Math.abs(ex-l.sx))+1,1,MAP_INK);
+      pR(g,R(l.sx),R(Math.min(ey,l.sy)),1,R(Math.abs(ey-l.sy)),MAP_INK); } }
+  for(const l of lay.pins){
+    const done=l.pn.done&&l.pn.done(), mid=l.la+l.lw/2;
+    pmTag(g, l.la, l.tb, l.lw);
+    pTxt(g, l.nm, mid, l.tb-2-(pmTH()?1:0), done?'#3e5a26':MAP_INK, 6, 'center');
+    MAP_LABELS.push({n:l.nm, row:l.row, side:l.s, a:l.la-2, b:l.la+l.lw+2, y:l.tb});
   }
-  /* the zones' names, painted small into the country where there is room */
-  for(const z of ZONES){
-    const mid=(z.a+Math.min(z.b,EAST.edge))/2; if(!seenAt(mid) || z.a>EAST.edge) continue;
-    const row=G.row(mid), nm=L(z.s||z.name), zw=txtW(nm,6);
-    const px=G.X(mid), band=G.top+row*G.rowH, yy=R(band+G.rowH-4);
-    const a=px-zw/2, b=px+zw/2;
-    if(a<G.mx || b>G.mx+G.mw) continue;
-    if(MAP_LABELS.some(l=>l.row===row && l.side===1 && a<l.b+2 && l.a-2<b)) continue;
-
-    pTxt(g, nm, px, yy, 'rgba(58,40,26,0.78)', 6, 'center');
-    MAP_LABELS.push({n:nm, row, side:1, a, b, y:yy, zone:true});
+  for(const l of lay.pins){
+    const done=l.pn.done&&l.pn.done();
+    g.drawImage(pmMedal(!!done), R(l.sx)-7, R(l.sy)-7);
+    mapIcon(g,l.pn.ic,l.sx,l.sy+1, done?'#3e5a26':'#3a2418', done?'#7aa050':'#a07a4a');
   }
-  /* and you: a red pin, bobbing */
-  { const wx=clamp(P.x,0,WORLD_W-1), px=G.X(wx), py=G.Y(wx), bob=Math.sin(GS.t*3)*1.4;
-    pEll(g,px+1,py+2,3,1.2,'rgba(40,20,10,0.4)');
-    pTaper(g,px,py+1+bob,px,py-7+bob,1.2,1.2,PM_INK);
-    pEll(g,px,py-8+bob,3.6,3.6,PM_INK); pEll(g,px,py-8+bob,2.8,2.8,'#e0402c'); pR(g,R(px-1),R(py-10+bob),1,1,'#ffb0a0'); }
+  /* the parts of the road, written small into the country */
+  for(const z of lay.zones){
+    pmHaloTxt(g, z.nm, z.px, z.yy, '#3a2618', '#f0e4c4', 6, 'center');
+    MAP_LABELS.push({n:z.nm, row:z.row, side:2, a:z.a, b:z.b, y:z.yy, zone:true});
+  }
+  /* and you: his face on a pin, bobbing */
+  { const wx=clamp(P.x,0,WORLD_W-1), px=G.X(wx), py=G.Y(wx), bob=Math.sin(t*3)*1.4;
+    const u=(t*0.8)%1; g.globalAlpha=0.8*(1-u);
+    for(let a2=0;a2<TAU;a2+=0.14){ pR(g,R(px+Math.cos(a2)*(4+u*9)),R(py+Math.sin(a2)*(2+u*4.5)),1,1,'#e8403a'); }
+    g.globalAlpha=1;
+    mapShadow(g,px,py+1,3);
+    mapPut(g,'me',0,px,py-1+bob); }
   /* W at the head of the road, E at the end of it */
   const wy=G.Y(0), ey=G.Y(Math.min(WORLD_W-1,EAST.edge));
-  pTxt(g, compass('w'), G.mx-10, wy+2, PM_INK, 6, 'center');
-  pTxt(g, compass('e'), G.X(EAST.edge)+10*(G.row(EAST.edge)%2?-1:1), ey+2, PM_INK, 6, 'center');
+  pmHaloTxt(g, compass('w'), G.mx-12, wy+3, MAP_INK, '#f0e4c4', 6, 'center');
+  pmHaloTxt(g, compass('e'), G.X(EAST.edge)+11*(G.row(EAST.edge)%2?-1:1), ey+3, MAP_INK, '#f0e4c4', 6, 'center');
   /* a compass rose, a scale, and the friends you have made */
-  { const cx2=x0+w-22, cy2=y0+h-11;
+  { const cx2=x0+w-21, cy2=y0+h-15;
+    pEll(g,cx2,cy2,11,11,MAP_INK); pEll(g,cx2,cy2,10,10,'#f8eed4'); pEll(g,cx2,cy2,8,8,'#efe2c2');
     for(let i=0;i<8;i++){ const a=i*Math.PI/4-Math.PI/2, L2=i%2? 4 : 8;
-      pTaper(g,cx2,cy2,cx2+Math.cos(a)*L2,cy2+Math.sin(a)*L2, i%2?1:2.2, 0.8, i===0?'#a8281e':PM_INK); }
-    pEll(g,cx2,cy2,1.8,1.8,'#e8c050'); pTxt(g, compass('n'), cx2-12, cy2-3, '#a8281e', 6, 'center'); }
-  { const sx=x0+14, sy=y0+h-9, sw=40;
-    pR(g,sx,sy,sw,2,PM_INK); pR(g,sx,sy,R(sw/2),2,'#f8eed4'); pR(g,sx,sy-2,1,6,PM_INK); pR(g,sx+sw-1,sy-2,1,6,PM_INK);
-    pTxt(g,L("half an hour's walk"),sx+sw+6,sy+2,PM_INK,6); }
-  icoHeart(g,x0+w-110,y0+h-9,0.7,PM_INK);
-  pTxt(g,SPIRITS.filter(s=>s.friend).length+'/'+SPIRITS.length,x0+w-102,y0+h-7,PM_INK,6);
+      pTaper(g,cx2,cy2,cx2+Math.cos(a)*(L2+1),cy2+Math.sin(a)*(L2+1), i%2?2:3.2, 1, MAP_INK); }
+    for(let i=0;i<8;i++){ const a=i*Math.PI/4-Math.PI/2, L2=i%2? 4 : 8;
+      pTaper(g,cx2,cy2,cx2+Math.cos(a)*L2,cy2+Math.sin(a)*L2, i%2?1:2, 0.6, i===0?'#d8403a':i%2?'#a07a4a':'#f0c048'); }
+    pEll(g,cx2,cy2,1.8,1.8,MAP_INK); pR(g,cx2,cy2,1,1,'#fff0a8');
+    pmTag(g, cx2-4, cy2-11, 9, 9); pTxt(g, compass('n'), cx2+0.5, cy2-13, '#b8302a', 6, 'center'); }
+  { const sx=x0+16, sy=y0+h-8, sw=40, lw=txtW(L("half an hour's walk"),6);
+    pmTag(g, sx-6, sy+6, sw+lw+18, 11);
+    pR(g,sx-1,sy-1,sw+2,4,MAP_INK); pR(g,sx,sy,R(sw/2),2,'#f8eed4'); pR(g,sx+R(sw/2),sy,sw-R(sw/2),2,'#c8403a');
+    pR(g,sx-1,sy-3,1,7,MAP_INK); pR(g,sx+sw,sy-3,1,7,MAP_INK);
+    pTxt(g,L("half an hour's walk"),sx+sw+6,sy+3-(pmTH()?1:0),MAP_INK,6); }
+  pmTag(g, x0+w-122, y0+h-2, 28, 11);
+  icoHeart(g,x0+w-115,y0+h-7,0.7,'#c83a5a');
+  pTxt(g,SPIRITS.filter(s=>s.friend).length+'/'+SPIRITS.length,x0+w-109,y0+h-4,MAP_INK,6);
 }
+/* ============================================================
+   ISAN
+
+   The northeast, from the road. What says it from any distance is
+   the sugar palm, ต้นตาล: a bare dark trunk twice the height of a
+   coconut, standing alone out in the paddies with a round crown of
+   fan leaves on top and last year's fronds hanging dead under it.
+   They are left standing when the field is cleared, one to a bund,
+   and the whole plain is dotted with them to the horizon.
+
+   So: sugar palms standing on the bunds of the terraces behind the
+   farm and all through the far paddies, hazier the further back
+   they stand; taller ones in the middle distance; a few by the road
+   that move in the wind like the other trees. Out in the far
+   paddies a field hut, เถียงนา, on its posts, and buffalo with an
+   egret riding. In the old forest the laterite earth grows termite
+   mounds, and somebody has tied a cloth round one and left a
+   garland, because a mound that has stood that long is asked for
+   things.
+
+   All of it goes into the painted layers once, before the grain.
+   ============================================================ */
+/* a sugar palm, h pixels tall, as the road sees it */
+function artSugarPalm(h, seed){
+  const r=mulberry(seed), W=38, c=mkCv(W,h+2), g=G2(c), cx=R(W/2), top=13;
+  /* the trunk: dark, ringed with the scars of old leaves, a little swollen at the foot */
+  for(let y=top+5; y<h+2; y++){
+    const lean=(seed%3-1)*0.018*(h+2-y), w2 = y>h-3? 4 : 3, x0=R(cx-1.5+lean)-(y>h-3?1:0);
+    g.fillStyle=(y%4===0)? '#4e4640' : '#655c54'; g.fillRect(x0,y,w2,1);
+    g.fillStyle='#857c70'; g.fillRect(x0,y,1,1);
+    g.fillStyle='#3e3834'; g.fillRect(x0+w2-1,y,1,1);
+  }
+  /* last year's fronds, hanging dead under the crown */
+  for(let k=0;k<6;k++){ const a=Math.PI*0.5+(k/5-0.5)*1.9+(r()-0.5)*0.2;
+    pTaper(g,cx,top+3,cx+Math.cos(a)*9,top+3+Math.sin(a)*9,1.8,0.8,k%2?'#8a6a40':'#a8844e'); }
+  /* the crown: fan leaves on their stalks the whole way round, the ones at
+     the back first and darker, the ones on top last and catching the light */
+  const n=22, GR=['#8cc060','#66a04a','#4e8a40','#3c7236','#2e5a2c'], fans=[];
+  for(let k=0;k<n;k++){ const a=-Math.PI*0.5+(k/(n-1)-0.5)*Math.PI*1.8+(r()-0.5)*0.25; fans.push({a, L:6.5+r()*4, fr:4.6+r()*1.8}); }
+  fans.sort((p2,q)=>Math.sin(q.a)-Math.sin(p2.a));
+  for(const F of fans){
+    const ex=cx+Math.cos(F.a)*F.L, ey=top+Math.sin(F.a)*F.L*0.84, up=-Math.sin(F.a), lit=up>0.2 && Math.cos(F.a)<0.3;
+    pTaper(g,cx,top+1,ex,ey,1,1,'#6a7a3a');
+    const tone = lit? 0 : up>0.5? 1 : up>-0.1? 2 : up>-0.6? 3 : 4, fr=F.fr;
+    pTri(g,ex,ey,ex+Math.cos(F.a-0.8)*fr,ey+Math.sin(F.a-0.8)*fr,ex+Math.cos(F.a+0.8)*fr,ey+Math.sin(F.a+0.8)*fr,GR[tone]);
+    /* the pleats of the fan, one dark line down the middle of it */
+    pTaper(g,ex,ey,ex+Math.cos(F.a)*fr*0.95,ey+Math.sin(F.a)*fr*0.95,1,1,GR[Math.min(4,tone+1)]);
+    if(tone<2){ g.fillStyle='#b8e088'; g.fillRect(R(ex+Math.cos(F.a-0.45)*fr*0.8),R(ey+Math.sin(F.a-0.45)*fr*0.8),1,1); }
+  }
+  pEll(g,cx,top+1,3.6,2.6,'#3a6630');
+  /* the clusters of fruit, dark, in against the crown */
+  for(const dx of [-3,2]){ pEll(g,cx+dx,top+4,1.6,1.4,'#3a2a20'); g.fillStyle='#6a4a30'; g.fillRect(cx+dx-1,top+3,1,1); }
+  return c;
+}
+/* the same shape, gone into the haze of distance */
+function hazed(img, col, k){
+  const c=mkCv(img.width,img.height), g=G2(c);
+  g.drawImage(img,0,0); g.globalCompositeOperation='source-atop';
+  g.globalAlpha=k; g.fillStyle=col; g.fillRect(0,0,c.width,c.height);
+  g.globalAlpha=1; g.globalCompositeOperation='source-over';
+  return c;
+}
+function artFieldHut(){
+  const c=mkCv(26,24), g=G2(c);
+  for(const x of [4,20]) pR(g,x,11,2,13,'#6a4a2c');
+  pR(g,3,16,20,2,'#a07448'); pR(g,3,16,20,1,'#c09060');
+  for(let y=0;y<11;y++){ const hw=4+y*0.95; pR(g,R(13-hw),y,R(hw*2),1, y%3===0? '#b89050' : '#caa060'); }
+  pR(g,1,10,24,2,'#9a7a40');
+  for(let x=9;x<16;x++) for(let y=12;y<15;y++) if((x+y)%2) pR(g,x,y,1,1,'#d8443a'); else pR(g,x,y,1,1,'#f0e6d8');   // a pha khao ma drying
+  return c;
+}
+function artBuffalo(egret){
+  const c=mkCv(24,16), g=G2(c);
+  for(const x of [6,9,15,18]) pR(g,x,10,2,6,'#3e3c44');
+  pEll(g,12,8,8,4.2,'#5a5862'); pEll(g,11,6.4,6,2.2,'#6e6c76');
+  pEll(g,4,10,3.4,2.8,'#5a5862'); pR(g,1,11,2,1,'#2a2830');
+  pTaper(g,5,7.6,9,5.4,1.4,1,'#d8d0c0'); pTaper(g,3,7.6,1,5,1.2,0.8,'#d8d0c0');                   // horns, swept back
+  pTaper(g,20,7,22,11,1.2,0.8,'#3e3c44');
+  if(egret){ pEll(g,13,3.2,2.4,1.6,'#fbfbf4'); pEll(g,15,1.6,1,1,'#fbfbf4'); pR(g,16,1,2,1,'#f0b030'); }
+  return c;
+}
+function artTermiteMound(seed){
+  const r=mulberry(seed), c=mkCv(28,40), g=G2(c), C=['#dcaa78','#c68e5c','#a87048','#80563a'];
+  pEll(g,14,37,13,3.4,C[2]);
+  /* a clay castle: a main spire and two lesser ones, built up in lumps */
+  pPoly(g,[0,38, 1,31, 3,26, 5,22, 6,16, 8,19, 9,11, 11,4, 12,2, 14,6, 15,14, 17,12, 19,9, 20,14, 22,20, 25,25, 27,31, 28,38],C[1]);
+  pPoly(g,[0,38, 1,31, 3,26, 5,22, 6,16, 8,19, 9,11, 11,4, 12,2, 13,38],C[0]);
+  pPoly(g,[19,9, 20,14, 22,20, 25,25, 27,31, 28,38, 18,38, 17,20],C[2]);
+  pEll(g,5,30,4,4,C[1]); pEll(g,23,31,4.4,4,C[2]); pEll(g,14,33,8,4.6,C[1]); pEll(g,11,32,4,3,C[0]);
+  for(let i=0;i<30;i++){ const y=4+r()*33, hw=2+y*0.28; pR(g,R(13+(r()-0.5)*hw*2),R(y),1,1,r()<0.6? C[3] : C[0]); }
+  for(let y=8;y<36;y+=5) pR(g,R(9+y*0.1),y,R(8+y*0.2),1,C[2]);
+  if(seed%2===0){ pR(g,4,27,20,3,'#d8303a'); pR(g,4,27,20,1,'#f0605a'); pR(g,12,30,3,5,'#d8303a');       // the cloth tied round it
+    pEll(g,19,33,2,1.4,'#f0c040'); pEll(g,8,33,1.8,1.3,'#f08ab0'); pR(g,15,33,1,3,'#e8e0d0'); }           // a garland, a stick of incense
+  return c;
+}
+var ISAN = { palms:[] };
+function paintIsan(){
+  const r=mulberry(4510);
+  /* ---- the back layer: sugar palms on the bunds of the terraces ---- */
+  { const g=bgG, sc=bgCv.width/WORLD_W;
+    const HAZE='#9aaeb4';
+    const spans=[[PADDY_A+60,PADDY_B-40,9],[9120,10560,16],[480,700,2],[6960,7200,2]];
+    for(const [a,b,n] of spans) for(let i=0;i<n;i++){
+      const wx=a+(b-a)*(i+0.25+r()*0.5)/n, ti=(r()*4)|0, t=ti/3, lift=11+ti*9.5;
+      const h=R(lerp(84,64,t)+r()*10), img=hazed(artSugarPalm(h,(wx|0)+i), HAZE, lerp(0.22,0.55,t));
+      const s2=lerp(0.66,0.46,t), x=R(wx*sc), y=R(groundY(wx))-4-lift+9;
+      g.globalAlpha=lerp(0.95,0.72,t);
+      g.drawImage(img, R(x-img.width*s2/2), R(y-img.height*s2), R(img.width*s2), R(img.height*s2));
+      g.globalAlpha=1;
+    }
+    /* a field hut out in the far paddies, and buffalo with an egret up */
+    for(const [wx,ti,kind] of [[9660,1,'hut'],[10180,2,'hut'],[9420,0,'buf1'],[9980,1,'buf0'],[1240,0,'buf1']]){
+      const t=ti/3, lift=11+ti*9.5, x=R(wx*sc), y=R(groundY(wx))-4-lift+9;
+      const src = kind==='hut'? artFieldHut() : artBuffalo(kind==='buf1');
+      const img=hazed(src, HAZE, lerp(0.18,0.5,t)), s2=kind==='hut'? lerp(0.9,0.6,t) : lerp(0.7,0.5,t);
+      g.drawImage(img, R(x-img.width*s2/2), R(y-img.height*s2), R(img.width*s2), R(img.height*s2));
+    }
+  }
+  /* ---- the middle distance: a few tall ones standing up out of the plain ---- */
+  { const g=midG, sc=midCv.width/WORLD_W;
+    for(const wx of [820,1320,9300,9700,10150,10480,5900,7100]){
+      const h=R(96+r()*20), img=hazed(artSugarPalm(h,wx|0), '#8fa4ac', 0.5), s2=0.72;
+      const x=R(wx*sc), y=200+R(r()*6);
+      g.globalAlpha=0.85;
+      g.drawImage(img, R(x-img.width*s2/2), R(y-img.height*s2), R(img.width*s2), R(img.height*s2));
+      g.globalAlpha=1;
+    }
+  }
+  /* ---- by the road: live ones, that move in the wind with the rest ---- */
+  for(const wx of [9260, 9905, 10420, 610]){
+    const img=artSugarPalm(R(88+r()*12), wx);
+    if(typeof treeSet==='function') treeSet().set(img,'palm');
+    stamp(img, wx, groundY(wx)+2, 1);
+    ISAN.palms.push(wx);
+  }
+  /* ---- termite mounds on the red earth of the old forest ---- */
+  for(const [wx,sd] of [[4720,2],[4960,3],[5240,4],[5480,6]]) stamp(artTermiteMound(sd), wx, groundY(wx)+3, 1);
+}
+BUILD_STEPS.push(['sugar palms on the bunds', paintIsan]);
+TH['sugar palms on the bunds'] = 'ต้นตาลบนคันนา';
 /* ============================================================
    THE WORLD, SHADED LIKE THE ICONS
 

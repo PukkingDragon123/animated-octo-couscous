@@ -30,9 +30,10 @@
                through the palms, not across them.
      bloom     anything bright bleeds a little light into what is
                round it, more at night than by day.
-     grade     a colour grade for the hour: cool shadows and a warm
-               top at dawn, a clean bright noon, orange and magenta at
-               dusk, and blue at night.
+     grade     a light colour grade for the hour, read off the sky as
+               it is drawn: cool shadows and a warm top in the golden
+               hours, a clean noon, and a little blue in the dark. It
+               lifts the painting; it does not repaint it.
 
    With no WebGL, or on a device too slow for it, none of this runs
    and the game draws exactly as it did.
@@ -302,25 +303,36 @@ function fxLights(realm, cx, cy, night){
 
 /* ---------- the grade for the hour ---------- */
 function fxGrade(){
-  const h=(DAY.min||0)/60, v=TOD.v, night=1-v;
-  const morning = h<12;
-  /* how much of dawn, or of dusk, it is right now */
-  const dawn = morning? clamp(1-Math.abs(h-6.25)/1.35,0,1) : 0;
-  const dusk = !morning? clamp(1-Math.abs(h-18.3)/1.5,0,1) : 0;
-  const g={ black: lerp(0.10, 0.03, night), sat:1.08, con:1.10, exp:1.04, vig:0.22, shadow:[0.10,0.12,0.30], high:[0.25,0.18,0.05], bloom:0.35, rays:0, sun:0, sunCol:[1,0.8,0.55] };
-  /* night: blue, a little less colour, more bloom round the lamps */
-  g.sat = lerp(g.sat, 0.86, night); g.con = lerp(g.con, 1.08, night);
-  g.shadow = [lerp(0.10,0.05,night), lerp(0.12,0.08,night), lerp(0.30,0.42,night)];
-  g.high = [lerp(0.25,0.30,night), lerp(0.18,0.22,night), lerp(0.05,0.10,night)];
-  g.bloom = lerp(0.32, 0.9, night); g.vig = lerp(0.20, 0.34, night);
-  /* dawn: cold shadows, a hot top, and the rays */
-  if(dawn>0){ g.shadow=[lerp(g.shadow[0],0.22,dawn),lerp(g.shadow[1],0.10,dawn),lerp(g.shadow[2],0.42,dawn)];
-    g.high=[lerp(g.high[0],0.55,dawn),lerp(g.high[1],0.30,dawn),lerp(g.high[2],0.08,dawn)];
-    g.sat=lerp(g.sat,1.20,dawn); g.con=lerp(g.con,1.24,dawn); g.black=lerp(g.black,0.12,dawn);
-    g.bloom=lerp(g.bloom,0.46,dawn); g.rays=dawn; g.sunCol=[1.0,0.72,0.42]; }
-  if(dusk>0){ g.shadow=[lerp(g.shadow[0],0.30,dusk),lerp(g.shadow[1],0.08,dusk),lerp(g.shadow[2],0.36,dusk)];
-    g.high=[lerp(g.high[0],0.60,dusk),lerp(g.high[1],0.24,dusk),lerp(g.high[2],0.04,dusk)];
-    g.sat=lerp(g.sat,1.14,dusk); g.con=lerp(g.con,1.18,dusk); g.bloom=lerp(g.bloom,0.46,dusk); g.rays=dusk*0.8; g.sunCol=[1.0,0.58,0.32]; }
+  const v=TOD.v, night=1-v;
+  /* How much of a golden hour it is comes off the sky as it is drawn, not
+     off the clock. The two usually agree, but not always: the first night
+     of a new game is pinned dark while the clock already reads 6:36, and
+     reading the clock laid the whole dawn grade — a hard black point, a
+     fifth more colour, a quarter more contrast — over a night picture,
+     which crushed it into one saturated navy. The sky is the picture, so
+     the grade follows the sky: warm light from where the sun is low
+     (TOD .45–.85), and no dawn at all while it is still dark. */
+  const gold = clamp(1-Math.abs(v-0.64)/0.24, 0, 1);
+  const eve  = (DAY.min||0) >= 12*60 && Math.abs(todFromClock(DAY.min||0)-v) < 0.25;
+  const dawn = eve? 0 : gold, dusk = eve? gold : 0;
+  /* the base is nearly neutral: the pass lights the picture, it does not
+     recolour it. The painting already carries its own palette for the hour */
+  const g={ black: lerp(0.02, 0.01, night), sat:1.0, con:1.04, exp:1.02, vig:0.16,
+            shadow:[0.08,0.09,0.18], high:[0.16,0.12,0.04], bloom:0.30, rays:0, sun:0, sunCol:[1,0.8,0.55] };
+  /* night: a little less colour and a touch of blue in the darks, and more
+     bloom round the lamps, which is where the night's colour belongs */
+  g.sat = lerp(g.sat, 0.90, night); g.con = lerp(g.con, 1.02, night);
+  g.shadow = [lerp(0.08,0.02,night), lerp(0.09,0.03,night), lerp(0.18,0.10,night)];
+  g.high = [lerp(0.16,0.14,night), lerp(0.12,0.11,night), lerp(0.04,0.06,night)];
+  g.bloom = lerp(0.28, 0.80, night); g.vig = lerp(0.16, 0.26, night);
+  /* the golden hours: cool shadows, a warm top and the rays, gently */
+  if(dawn>0){ g.shadow=[lerp(g.shadow[0],0.12,dawn),lerp(g.shadow[1],0.08,dawn),lerp(g.shadow[2],0.24,dawn)];
+    g.high=[lerp(g.high[0],0.30,dawn),lerp(g.high[1],0.18,dawn),lerp(g.high[2],0.05,dawn)];
+    g.sat=lerp(g.sat,1.0,dawn); g.con=lerp(g.con,1.06,dawn); g.black=lerp(g.black,0.025,dawn);
+    g.bloom=lerp(g.bloom,0.38,dawn); g.rays=dawn; g.sunCol=[1.0,0.76,0.50]; }
+  if(dusk>0){ g.shadow=[lerp(g.shadow[0],0.16,dusk),lerp(g.shadow[1],0.06,dusk),lerp(g.shadow[2],0.22,dusk)];
+    g.high=[lerp(g.high[0],0.32,dusk),lerp(g.high[1],0.15,dusk),lerp(g.high[2],0.03,dusk)];
+    g.sat=lerp(g.sat,1.0,dusk); g.con=lerp(g.con,1.06,dusk); g.bloom=lerp(g.bloom,0.38,dusk); g.rays=dusk*0.8; g.sunCol=[1.0,0.62,0.38]; }
   return g;
 }
 
@@ -334,7 +346,7 @@ FX.capture = function(realm){
   /* heaven is white cloud and gold, so it wants very little bloom and a
      black point, or the whole of it glows into one pale sheet */
   const G = inHeaven? {black:0.08,sat:1.08,con:1.14,exp:0.96,vig:0.20,shadow:[0.20,0.12,0.40],high:[0.30,0.22,0.06],bloom:0.16,rays:0.55,sun:1,sunCol:[1,0.86,0.6]}
-                    : (realm==='title'? Object.assign(fxGrade(),{rays:0.5,bloom:0.22,black:0.05}) : fxGrade());
+                    : (realm==='title'? Object.assign(fxGrade(),{rays:0.4,bloom:0.16,black:0.015,sat:0.97}) : fxGrade());
   /* the light map */
   fxLights(inHeaven? 'heaven' : (realm==='title'? 'title' : 'village'), cx, cy, night);
   /* the water mask, in screen space */
