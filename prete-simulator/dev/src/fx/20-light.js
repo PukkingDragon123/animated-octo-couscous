@@ -50,9 +50,11 @@ FX.lightG = G2(FX.lightCv);
 FX.bloomAG = FX.bloomA.getContext('2d'); FX.bloomBG = FX.bloomB.getContext('2d'); FX.bloomCG = FX.bloomC.getContext('2d');
 FX.maskG = G2(FX.maskCv);
 
-FX.VS = `attribute vec2 aPos; varying vec2 vUv;
-void main(){ vUv = vec2(aPos.x*0.5+0.5, 0.5-aPos.y*0.5); gl_Position = vec4(aPos,0.0,1.0); }`;
-FX.FS = `precision mediump float;
+/* the shaders are code, not words: kept off the enumerable tables so the
+   translation sweep does not go looking for Thai for them */
+Object.defineProperty(FX, 'VS', {value: `attribute vec2 aPos; varying vec2 vUv;
+void main(){ vUv = vec2(aPos.x*0.5+0.5, 0.5-aPos.y*0.5); gl_Position = vec4(aPos,0.0,1.0); }`});
+Object.defineProperty(FX, 'FS', {value: `precision mediump float;
 varying vec2 vUv;
 uniform sampler2D uScene, uBloomA, uBloomB, uBloomC, uLight, uMask;
 uniform vec2 uGame;                       /* one game pixel, in uv */
@@ -134,11 +136,11 @@ void main(){
   vec2 q = uv - 0.5; q.x *= 1.25;
   col *= 1.0 - uGrade.w*smoothstep(0.30, 0.78, length(q));
   gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
-}`;
+}`});
 
 FX.init = function(){
   if(FX.gl || FX.err) return;
-  if(!FX_GL_OK){ FX.err='no webgl'; return; }
+  if(!FX_GL_OK){ FX.err='nogl'; return; }
   try{
     const c=document.createElement('canvas'); c.id='fx';
     const st=c.style;
@@ -148,7 +150,7 @@ FX.init = function(){
     const wrap=cv.parentNode; wrap.insertBefore(c, cv);
     const gl=c.getContext('webgl',{alpha:false, antialias:false, depth:false, stencil:false,
                                     preserveDrawingBuffer:true, premultipliedAlpha:false, powerPreference:'high-performance'});
-    if(!gl) throw new Error('no context');
+    if(!gl) throw new Error('noctx');
     const sh=(type,src)=>{ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
       if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
     const p=gl.createProgram();
@@ -171,7 +173,7 @@ FX.init = function(){
     gl.uniform1i(FX.u.uBloomC,3); gl.uniform1i(FX.u.uLight,4); gl.uniform1i(FX.u.uMask,5);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
     FX.gl=gl; FX.cv=c; FX.prog=p;
-    FX.kind = (gl.getParameter(gl.VERSION)||'webgl');
+    Object.defineProperty(FX, 'kind', {value:(gl.getParameter(gl.VERSION)||'webgl'), writable:true, configurable:true});
     FX.resize();
   }catch(e){ FX.err=String(e && e.message || e); FX.gl=null; if(FX.cv){ FX.cv.remove(); FX.cv=null; } }
 };
@@ -232,6 +234,7 @@ function fxFindWater(){
   }
 }
 BUILD_STEPS.push(['the water', fxFindWater]);
+TH['the water'] = 'สายน้ำ';
 /* heaven's basin, from heaven's own painting, the first time it is needed */
 function fxHeavenWater(){
   if(FX.hvBodies || !HV_ART) return FX.hvBodies||[];

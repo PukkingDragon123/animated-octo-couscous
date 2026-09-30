@@ -801,6 +801,25 @@ function artPalm(seed){
   for(let i=0;i<5;i++) pEll(g,tx+rnd(-9,9),ty+rnd(2,11),4,4,'#5d7a3c');
   return c;
 }
+/* one clump of small leaves: shadow under it, the lit top, and a pattern of
+   leaf-sized marks over the lot, lighter where the light falls */
+const LEAF = { dk:'#1f4630', md:'#2e5d44', lt:'#3f7a5a', hi:'#5a9a6c', xh:'#86c088' };
+function leafClump(g, x, y, rr, r, P){
+  P = P || LEAF;
+  pEll(g, x, y+1, rr, rr*0.74, P.dk);
+  pEll(g, x+0.5, y-1, rr*0.9, rr*0.64, P.md);
+  pEll(g, x+rr*0.18, y-rr*0.26, rr*0.6, rr*0.4, P.lt);
+  const n=R(rr*rr*0.9);
+  for(let i=0;i<n;i++){
+    const a=r()*TAU, d=Math.sqrt(r()), px=x+Math.cos(a)*d*rr*0.95, py=y+Math.sin(a)*d*rr*0.7;
+    const up=(y-py)/(rr*0.7) + (px-x)/(rr*2.2);           // light from above, and a touch from the right
+    const c = up>0.55? P.xh : up>0.15? P.hi : up>-0.35? P.lt : up>-0.7? P.md : P.dk;
+    g.fillStyle=c; g.fillRect(R(px),R(py),1,1);
+    if(r()<0.5) g.fillRect(R(px)+(up>0?1:-1),R(py),1,1);
+  }
+  for(let i=0;i<5;i++){ const a=-Math.PI*0.15-r()*Math.PI*0.7;
+    g.fillStyle=P.xh; g.fillRect(R(x+Math.cos(a)*rr*0.88), R(y+Math.sin(a)*rr*0.62), 1, 1); }
+}
 function artTamarind(seed){
   const r=mulberry(seed), w=190,h=176,c=mkCv(w,h),g=G2(c), cx=w/2;
   // trunk with roots
@@ -818,23 +837,18 @@ function artTamarind(seed){
     pTaper(g,ex,ey,ex+dx*16,ey-14,4,2,'#4c3a2c');
     nodes.push([ex+dx*16,ey-14]);
   }
-  // canopy: overlapping leaf clumps
-  for(let i=0;i<26;i++){
+  /* canopy: leaf clumps, lowest first, so every clump above lays its lit
+     top over the shaded underside of the one below. That scallop of light
+     and dark is what reads as a mass of leaves rather than a green cloud. */
+  const CL=[];
+  for(let i=0;i<34;i++){
     const n=nodes[(r()*nodes.length)|0];
-    const bx=n[0]+(r()-0.5)*46, by=n[1]+(r()-0.5)*38-8;
-    const br=13+r()*11;
-    pEll(g,bx,by,br,br*0.74, i%3? '#2e5d44':'#26503a');
+    CL.push({x:n[0]+(r()-0.5)*48, y:n[1]+(r()-0.5)*36-8, r:10+r()*10});
   }
-  for(let i=0;i<20;i++){
-    const n=nodes[(r()*nodes.length)|0];
-    pEll(g,n[0]+(r()-0.5)*40, n[1]-8+(r()-0.5)*30, 9+r()*7, 7+r()*4, '#3f7a5a');
-  }
-  // feathery highlights
-  for(let i=0;i<260;i++){
-    const bx=cx+(r()-0.5)*w*0.86, by=h*0.1+r()*h*0.44;
-    g.fillStyle = r()<0.35?'#57996b':'#4a8a5e'; g.fillRect(R(bx),R(by),1,1);
-    if(r()<0.3) g.fillRect(R(bx+1),R(by),1,1);
-  }
+  for(let i=0;i<14;i++){ const n=nodes[(r()*nodes.length)|0];
+    pEll(g, n[0]+(r()-0.5)*50, n[1]-4+(r()-0.5)*30, 14+r()*8, 10+r()*5, '#1b3f2b'); }
+  CL.sort((a,b)=>b.y-a.y);
+  for(const k of CL) leafClump(g, k.x, k.y, k.r, r);
   // seed pods
   for(let i=0;i<9;i++) pTaper(g,cx+(r()-0.5)*100, h*0.28+r()*60, cx+(r()-0.5)*100+3, h*0.28+r()*60+9, 3,2, '#6b4a2c');
   return c;
@@ -3131,23 +3145,19 @@ function artBlossom(seed, col){
     pTaper(g,cx-4,h*0.48,ex,ey,8,3,'#4f3c2e'); nodes.push([ex,ey]);
     pTaper(g,ex,ey,ex+dx*14,ey-13,3,2,'#5a4436'); nodes.push([ex+dx*14,ey-13]);
   }
-  // blossom masses
-  for(let i=0;i<30;i++){
-    const n=nodes[(r()*nodes.length)|0];
-    const bx=n[0]+(r()-0.5)*44, by=n[1]+(r()-0.5)*34-8;
-    pEll(g,bx,by,11+r()*8,9+r()*6, i%3? shade(col,-0.12):col);
-  }
-  for(let i=0;i<22;i++){
-    const n=nodes[(r()*nodes.length)|0];
-    pEll(g,n[0]+(r()-0.5)*38,n[1]-6+(r()-0.5)*28,7+r()*5,5+r()*4, shade(col,0.16));
-  }
-  // individual petals catching the light
-  for(let i=0;i<220;i++){
-    const bx=cx+(r()-0.5)*w*0.8, by=h*0.1+r()*h*0.44;
-    g.fillStyle = r()<0.4? shade(col,0.32) : shade(col,0.08);
-    g.fillRect(R(bx),R(by),1,1);
-    if(r()<0.25) g.fillRect(R(bx+1),R(by),1,1);
-  }
+  /* blossom masses, the same way the tamarind's leaves are done: lowest
+     first, each lit on top, and flowers speckled over all of them */
+  const P={ dk:shade(col,-0.34), md:shade(col,-0.16), lt:col, hi:shade(col,0.2), xh:shade(col,0.42) };
+  const CL=[];
+  for(let i=0;i<32;i++){ const n=nodes[(r()*nodes.length)|0];
+    CL.push({x:n[0]+(r()-0.5)*44, y:n[1]+(r()-0.5)*32-8, r:8+r()*9}); }
+  for(let i=0;i<10;i++){ const n=nodes[(r()*nodes.length)|0];
+    pEll(g, n[0]+(r()-0.5)*44, n[1]-4+(r()-0.5)*26, 13+r()*6, 9+r()*4, shade(col,-0.46)); }
+  CL.sort((a,b)=>b.y-a.y);
+  for(const k of CL) leafClump(g, k.x, k.y, k.r, r, P);
+  /* a few leaves showing through, and the branch tips */
+  for(let i=0;i<60;i++){ const bx=cx+(r()-0.5)*w*0.74, by=h*0.14+r()*h*0.4;
+    g.fillStyle=r()<0.5?'#3f7a5a':'#2e5d44'; g.fillRect(R(bx),R(by),1,1); }
   for(let i=0;i<40;i++){ const bx=cx+(r()-0.5)*w*0.7, by=h*0.12+r()*h*0.4;
     g.fillStyle='#fff6e0'; g.fillRect(R(bx),R(by),1,1); }
   return c;
@@ -13296,7 +13306,8 @@ function drawSky(g){
     pCirc(g,sx,sy,lerp(11,8,rise),'#fffbe8');
     g.globalAlpha=1;
   }
-  for(const c of CLOUDS){
+  if(typeof drawCloudsFx==='function') drawCloudsFx(g);        // fx/15-sky.js
+  else for(const c of CLOUDS){
     const x=((c.x*W*1.5 + GS.t*c.sp*3 - GS.camX*0.05)%(W*1.6))-W*0.3;
     /* at night they are a hole in the stars; at dawn they catch the fire; by
        morning they are just clouds */

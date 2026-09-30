@@ -822,6 +822,25 @@ function artPalm(seed){
   for(let i=0;i<5;i++) pEll(g,tx+rnd(-9,9),ty+rnd(2,11),4,4,'#5d7a3c');
   return c;
 }
+/* one clump of small leaves: shadow under it, the lit top, and a pattern of
+   leaf-sized marks over the lot, lighter where the light falls */
+const LEAF = { dk:'#1f4630', md:'#2e5d44', lt:'#3f7a5a', hi:'#5a9a6c', xh:'#86c088' };
+function leafClump(g, x, y, rr, r, P){
+  P = P || LEAF;
+  pEll(g, x, y+1, rr, rr*0.74, P.dk);
+  pEll(g, x+0.5, y-1, rr*0.9, rr*0.64, P.md);
+  pEll(g, x+rr*0.18, y-rr*0.26, rr*0.6, rr*0.4, P.lt);
+  const n=R(rr*rr*0.9);
+  for(let i=0;i<n;i++){
+    const a=r()*TAU, d=Math.sqrt(r()), px=x+Math.cos(a)*d*rr*0.95, py=y+Math.sin(a)*d*rr*0.7;
+    const up=(y-py)/(rr*0.7) + (px-x)/(rr*2.2);           // light from above, and a touch from the right
+    const c = up>0.55? P.xh : up>0.15? P.hi : up>-0.35? P.lt : up>-0.7? P.md : P.dk;
+    g.fillStyle=c; g.fillRect(R(px),R(py),1,1);
+    if(r()<0.5) g.fillRect(R(px)+(up>0?1:-1),R(py),1,1);
+  }
+  for(let i=0;i<5;i++){ const a=-Math.PI*0.15-r()*Math.PI*0.7;
+    g.fillStyle=P.xh; g.fillRect(R(x+Math.cos(a)*rr*0.88), R(y+Math.sin(a)*rr*0.62), 1, 1); }
+}
 function artTamarind(seed){
   const r=mulberry(seed), w=190,h=176,c=mkCv(w,h),g=G2(c), cx=w/2;
   // trunk with roots
@@ -839,23 +858,18 @@ function artTamarind(seed){
     pTaper(g,ex,ey,ex+dx*16,ey-14,4,2,'#4c3a2c');
     nodes.push([ex+dx*16,ey-14]);
   }
-  // canopy: overlapping leaf clumps
-  for(let i=0;i<26;i++){
+  /* canopy: leaf clumps, lowest first, so every clump above lays its lit
+     top over the shaded underside of the one below. That scallop of light
+     and dark is what reads as a mass of leaves rather than a green cloud. */
+  const CL=[];
+  for(let i=0;i<34;i++){
     const n=nodes[(r()*nodes.length)|0];
-    const bx=n[0]+(r()-0.5)*46, by=n[1]+(r()-0.5)*38-8;
-    const br=13+r()*11;
-    pEll(g,bx,by,br,br*0.74, i%3? '#2e5d44':'#26503a');
+    CL.push({x:n[0]+(r()-0.5)*48, y:n[1]+(r()-0.5)*36-8, r:10+r()*10});
   }
-  for(let i=0;i<20;i++){
-    const n=nodes[(r()*nodes.length)|0];
-    pEll(g,n[0]+(r()-0.5)*40, n[1]-8+(r()-0.5)*30, 9+r()*7, 7+r()*4, '#3f7a5a');
-  }
-  // feathery highlights
-  for(let i=0;i<260;i++){
-    const bx=cx+(r()-0.5)*w*0.86, by=h*0.1+r()*h*0.44;
-    g.fillStyle = r()<0.35?'#57996b':'#4a8a5e'; g.fillRect(R(bx),R(by),1,1);
-    if(r()<0.3) g.fillRect(R(bx+1),R(by),1,1);
-  }
+  for(let i=0;i<14;i++){ const n=nodes[(r()*nodes.length)|0];
+    pEll(g, n[0]+(r()-0.5)*50, n[1]-4+(r()-0.5)*30, 14+r()*8, 10+r()*5, '#1b3f2b'); }
+  CL.sort((a,b)=>b.y-a.y);
+  for(const k of CL) leafClump(g, k.x, k.y, k.r, r);
   // seed pods
   for(let i=0;i<9;i++) pTaper(g,cx+(r()-0.5)*100, h*0.28+r()*60, cx+(r()-0.5)*100+3, h*0.28+r()*60+9, 3,2, '#6b4a2c');
   return c;
@@ -3152,23 +3166,19 @@ function artBlossom(seed, col){
     pTaper(g,cx-4,h*0.48,ex,ey,8,3,'#4f3c2e'); nodes.push([ex,ey]);
     pTaper(g,ex,ey,ex+dx*14,ey-13,3,2,'#5a4436'); nodes.push([ex+dx*14,ey-13]);
   }
-  // blossom masses
-  for(let i=0;i<30;i++){
-    const n=nodes[(r()*nodes.length)|0];
-    const bx=n[0]+(r()-0.5)*44, by=n[1]+(r()-0.5)*34-8;
-    pEll(g,bx,by,11+r()*8,9+r()*6, i%3? shade(col,-0.12):col);
-  }
-  for(let i=0;i<22;i++){
-    const n=nodes[(r()*nodes.length)|0];
-    pEll(g,n[0]+(r()-0.5)*38,n[1]-6+(r()-0.5)*28,7+r()*5,5+r()*4, shade(col,0.16));
-  }
-  // individual petals catching the light
-  for(let i=0;i<220;i++){
-    const bx=cx+(r()-0.5)*w*0.8, by=h*0.1+r()*h*0.44;
-    g.fillStyle = r()<0.4? shade(col,0.32) : shade(col,0.08);
-    g.fillRect(R(bx),R(by),1,1);
-    if(r()<0.25) g.fillRect(R(bx+1),R(by),1,1);
-  }
+  /* blossom masses, the same way the tamarind's leaves are done: lowest
+     first, each lit on top, and flowers speckled over all of them */
+  const P={ dk:shade(col,-0.34), md:shade(col,-0.16), lt:col, hi:shade(col,0.2), xh:shade(col,0.42) };
+  const CL=[];
+  for(let i=0;i<32;i++){ const n=nodes[(r()*nodes.length)|0];
+    CL.push({x:n[0]+(r()-0.5)*44, y:n[1]+(r()-0.5)*32-8, r:8+r()*9}); }
+  for(let i=0;i<10;i++){ const n=nodes[(r()*nodes.length)|0];
+    pEll(g, n[0]+(r()-0.5)*44, n[1]-4+(r()-0.5)*26, 13+r()*6, 9+r()*4, shade(col,-0.46)); }
+  CL.sort((a,b)=>b.y-a.y);
+  for(const k of CL) leafClump(g, k.x, k.y, k.r, r, P);
+  /* a few leaves showing through, and the branch tips */
+  for(let i=0;i<60;i++){ const bx=cx+(r()-0.5)*w*0.74, by=h*0.14+r()*h*0.4;
+    g.fillStyle=r()<0.5?'#3f7a5a':'#2e5d44'; g.fillRect(R(bx),R(by),1,1); }
   for(let i=0;i<40;i++){ const bx=cx+(r()-0.5)*w*0.7, by=h*0.12+r()*h*0.4;
     g.fillStyle='#fff6e0'; g.fillRect(R(bx),R(by),1,1); }
   return c;
@@ -13317,7 +13327,8 @@ function drawSky(g){
     pCirc(g,sx,sy,lerp(11,8,rise),'#fffbe8');
     g.globalAlpha=1;
   }
-  for(const c of CLOUDS){
+  if(typeof drawCloudsFx==='function') drawCloudsFx(g);        // fx/15-sky.js
+  else for(const c of CLOUDS){
     const x=((c.x*W*1.5 + GS.t*c.sp*3 - GS.camX*0.05)%(W*1.6))-W*0.3;
     /* at night they are a hole in the stars; at dawn they catch the fire; by
        morning they are just clouds */
@@ -29000,6 +29011,121 @@ function frame(now){
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{});
 requestAnimationFrame(frame);
 /* ============================================================
+   CLOUDS
+
+   The clouds were three ellipses stacked on each other at one
+   eighth opacity, which from a distance is a cloud and close to
+   is a pill. These are cumulus: a flat base, a heap of puffs on
+   it, a cauliflower of smaller ones on those, and shaded by how
+   far each pixel is from the side the light is coming from. At
+   dawn the light comes from low down on the right and the
+   undersides go orange; at noon it comes from above and the
+   bases go grey. Each one is painted once into a canvas for the
+   hour it is, and painted again when the hour moves on.
+   ============================================================ */
+var SKYC = { list:[], key:-1 };
+(function(){
+  const r=mulberry(9091);
+  for(let i=0;i<10;i++){
+    const far = i<4;
+    SKYC.list.push({ seed:100+i*37, x:r()*1.6,
+      y: far? 0.40+r()*0.12 : 0.15+r()*0.25,
+      w: far? 40+r()*40 : 70+r()*80, h: far? 7+r()*5 : 12+r()*11,
+      sp: far? 0.22+r()*0.18 : 0.45+r()*0.55, par: far? 0.022 : 0.05,
+      a: far? 0.72 : 0.94, cv:null, far });
+  }
+})();
+/* five tones, from the edge in the light to the base in the shade */
+const SKYC_KEYS = [
+  {v:0.00, t:['#4c5690','#363e70','#2a305c','#21274c','#1b1f3e']},
+  {v:0.40, t:['#c67e8c','#7e5c88','#5c4a7a','#483e6a','#3c345a']},
+  {v:0.56, t:['#ffe2a2','#ffb27c','#e27a8a','#a45c88','#ff9c62']},
+  {v:0.72, t:['#fff4d4','#ffdab2','#f2b2a2','#c692aa','#ffca92']},
+  {v:1.00, t:['#ffffff','#f6f8fc','#e2e8f2','#c8d2e2','#b6c2d6']},
+];
+function skycTones(v){
+  let a=SKYC_KEYS[0], b=SKYC_KEYS[SKYC_KEYS.length-1];
+  for(let i=0;i<SKYC_KEYS.length-1;i++) if(v>=SKYC_KEYS[i].v && v<=SKYC_KEYS[i+1].v){ a=SKYC_KEYS[i]; b=SKYC_KEYS[i+1]; break; }
+  const t=b.v===a.v? 0 : (v-a.v)/(b.v-a.v);
+  return a.t.map((c,i)=>hx(mix(c,b.t[i],t)));
+}
+const BAYER4=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+function skycPaint(c, v){
+  const pad=3, w=R(c.w), h=R(c.h), cw=w+pad*2, ch=R(h*2.2)+pad*2, base=ch-pad;
+  if(!c.cv || c.cv.width!==cw || c.cv.height!==ch){ c.cv=mkCv(cw,ch); c.mask=null; }
+  c.oy = base;                                       // where the flat bottom sits in the canvas
+  /* the shape, once: a heap of puffs on a flat base, and smaller ones on those */
+  if(!c.mask){
+    const m=new Uint8Array(cw*ch), r=mulberry(c.seed);
+    const disc=(x0,y0,rr)=>{ for(let y=Math.max(0,Math.floor(y0-rr)); y<=Math.min(ch-1,Math.ceil(y0+rr)); y++)
+      for(let x=Math.max(0,Math.floor(x0-rr)); x<=Math.min(cw-1,Math.ceil(x0+rr)); x++)
+        if((x-x0)*(x-x0)+(y-y0)*(y-y0)<=rr*rr) m[y*cw+x]=1; };
+    const n=Math.max(3, R(w/14));
+    let top=base;
+    for(let k=0;k<n;k++){
+      const u=(k+0.5)/n, bell=Math.pow(Math.sin(u*Math.PI),0.8);
+      const rr=h*(0.34+0.62*bell)*(0.8+0.4*r());
+      const x0=pad+u*w+(r()-0.5)*w/n*0.7, y0=base-rr*0.78;
+      disc(x0,y0,rr); top=Math.min(top,y0-rr);
+      if(bell>0.45){ disc(x0-rr*0.42, y0-rr*0.52, rr*0.5); disc(x0+rr*0.38, y0-rr*0.6, rr*0.42);
+                     if(r()<0.6) disc(x0+rr*0.05, y0-rr*0.9, rr*0.3); }
+    }
+    for(let y=R(base-h*0.3); y<base; y++) for(let x=R(pad+w*0.1); x<pad+w*0.9; x++) m[y*cw+x]=1;
+    for(const e of [0.1,0.9]){ const rr=h*(0.3+0.12*r()); disc(pad+w*e, base-rr*0.85, rr); }
+    for(let x=0;x<cw;x++) for(let y=base; y<ch; y++) m[y*cw+x]=0;       // the base is flat
+    c.mask=m; c.top=Math.max(0,Math.floor(top));
+  }
+  const m=c.mask, T=skycTones(v), top=c.top, hh=Math.max(1,base-top);
+  /* where the light is coming from: low on the right at dawn and dusk, overhead by day */
+  const low=clamp(1-(v-0.5)/0.4,0,1);
+  const lx=lerp(0.30,0.94,low), ly=lerp(-0.95,0.0,low);
+  const at=(x,y)=> x>=0&&y>=0&&x<cw&&y<ch? m[y*cw+x] : 0;
+  const g=G2(c.cv), id=g.createImageData(cw,ch), d=id.data;
+  for(let y=0;y<ch;y++) for(let x=0;x<cw;x++){
+    if(!m[y*cw+x]) continue;
+    let s=0; while(s<8 && at(R(x+lx*(s+1)), R(y+ly*(s+1)))) s++;
+    /* lit by how close the light side is, and by height: the tops are always brighter */
+    const lit = clamp(1-s/7,0,1)*0.62 + clamp(1-(y-top)/hh,0,1)*0.48;
+    const b=BAYER4[(y&3)*4+(x&3)]/16 - 0.5;
+    const q=clamp((1-lit)*3.4 + b*0.55, 0, 3);
+    let tone = s<1? 0 : R(q);
+    if(y>=base-1) tone = 4;
+    else if(y>=base-3 && (low>0.5 || b<0)) tone = low>0.5? 4 : 3;
+    const col=T[tone], o=(y*cw+x)*4;
+    d[o]=col[0]; d[o+1]=col[1]; d[o+2]=col[2]; d[o+3]=255;
+  }
+  g.putImageData(id,0,0);
+}
+/* long thin bands low over the horizon, lit from underneath, at either end of the day */
+function skycStreaks(g, v){
+  const h=(DAY.min||0)/60;
+  const glow = h<12? clamp(1-Math.abs(h-6.2)/1.2,0,1) : clamp(1-Math.abs(h-18.3)/1.3,0,1);
+  if(glow<0.02) return;
+  const T=skycTones(v), r=mulberry(313);
+  for(let i=0;i<7;i++){
+    const len=70+r()*170, y=R(112+r()*44), x=((r()*W*1.8 + GS.t*0.6*(1+i%3) - GS.camX*0.03)%(W*1.8)+W*1.8)%(W*1.8)-W*0.4;
+    const th=1+(i%3===0?1:0);
+    g.globalAlpha=glow*(0.55+0.35*r());
+    g.fillStyle=rgb(...T[i%2? 1 : 0]); g.fillRect(R(x), y, R(len), th);
+    g.fillStyle=rgb(...T[4]); g.fillRect(R(x+len*0.1), y+th, R(len*0.8), 1);
+    for(let k=0;k<6;k++){ g.fillRect(R(x-k*3-2), y, 2, 1); g.fillRect(R(x+len+k*3), y+(k%2), 2, 1); }
+  }
+  g.globalAlpha=1;
+}
+function drawCloudsFx(g){
+  const v=TOD.v, key=R(v*48);
+  if(key!==SKYC.key){ SKYC.key=key; for(const c of SKYC.list) skycPaint(c, v); }
+  skycStreaks(g, v);
+  const night=1-v;
+  for(const c of SKYC.list){
+    const span=W*1.6+c.w;
+    const x=(((c.x*W*1.5 + GS.t*c.sp*3 - GS.camX*c.par) % span)+span)%span - c.w - W*0.1;
+    g.globalAlpha=c.a*(c.far? lerp(1,0.75,night) : 1);
+    g.drawImage(c.cv, R(x), R(c.y*H - (c.oy||c.h)));
+  }
+  g.globalAlpha=1;
+}
+/* ============================================================
    LIGHT, WATER AND AIR
 
    A WebGL pass over the world, after it is drawn and before the
@@ -29051,9 +29177,11 @@ FX.lightG = G2(FX.lightCv);
 FX.bloomAG = FX.bloomA.getContext('2d'); FX.bloomBG = FX.bloomB.getContext('2d'); FX.bloomCG = FX.bloomC.getContext('2d');
 FX.maskG = G2(FX.maskCv);
 
-FX.VS = `attribute vec2 aPos; varying vec2 vUv;
-void main(){ vUv = vec2(aPos.x*0.5+0.5, 0.5-aPos.y*0.5); gl_Position = vec4(aPos,0.0,1.0); }`;
-FX.FS = `precision mediump float;
+/* the shaders are code, not words: kept off the enumerable tables so the
+   translation sweep does not go looking for Thai for them */
+Object.defineProperty(FX, 'VS', {value: `attribute vec2 aPos; varying vec2 vUv;
+void main(){ vUv = vec2(aPos.x*0.5+0.5, 0.5-aPos.y*0.5); gl_Position = vec4(aPos,0.0,1.0); }`});
+Object.defineProperty(FX, 'FS', {value: `precision mediump float;
 varying vec2 vUv;
 uniform sampler2D uScene, uBloomA, uBloomB, uBloomC, uLight, uMask;
 uniform vec2 uGame;                       /* one game pixel, in uv */
@@ -29135,11 +29263,11 @@ void main(){
   vec2 q = uv - 0.5; q.x *= 1.25;
   col *= 1.0 - uGrade.w*smoothstep(0.30, 0.78, length(q));
   gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
-}`;
+}`});
 
 FX.init = function(){
   if(FX.gl || FX.err) return;
-  if(!FX_GL_OK){ FX.err='no webgl'; return; }
+  if(!FX_GL_OK){ FX.err='nogl'; return; }
   try{
     const c=document.createElement('canvas'); c.id='fx';
     const st=c.style;
@@ -29149,7 +29277,7 @@ FX.init = function(){
     const wrap=cv.parentNode; wrap.insertBefore(c, cv);
     const gl=c.getContext('webgl',{alpha:false, antialias:false, depth:false, stencil:false,
                                     preserveDrawingBuffer:true, premultipliedAlpha:false, powerPreference:'high-performance'});
-    if(!gl) throw new Error('no context');
+    if(!gl) throw new Error('noctx');
     const sh=(type,src)=>{ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
       if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
     const p=gl.createProgram();
@@ -29172,7 +29300,7 @@ FX.init = function(){
     gl.uniform1i(FX.u.uBloomC,3); gl.uniform1i(FX.u.uLight,4); gl.uniform1i(FX.u.uMask,5);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
     FX.gl=gl; FX.cv=c; FX.prog=p;
-    FX.kind = (gl.getParameter(gl.VERSION)||'webgl');
+    Object.defineProperty(FX, 'kind', {value:(gl.getParameter(gl.VERSION)||'webgl'), writable:true, configurable:true});
     FX.resize();
   }catch(e){ FX.err=String(e && e.message || e); FX.gl=null; if(FX.cv){ FX.cv.remove(); FX.cv=null; } }
 };
@@ -29233,6 +29361,7 @@ function fxFindWater(){
   }
 }
 BUILD_STEPS.push(['the water', fxFindWater]);
+TH['the water'] = 'สายน้ำ';
 /* heaven's basin, from heaven's own painting, the first time it is needed */
 function fxHeavenWater(){
   if(FX.hvBodies || !HV_ART) return FX.hvBodies||[];

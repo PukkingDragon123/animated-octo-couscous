@@ -198,7 +198,9 @@ fs.mkdirSync(OUT,{recursive:true});
              title:  up(field,3).toDataURL('image/png') };
   });
   if(shots.err){ console.log('FAILED:', shots.err); await b.close(); return; }
-  for(const [k,name] of [['cover','cover-630x500.png'],['banner','banner-1920x620.png'],['title','title-1440x810.png']]){
+  /* the cover and the banner are gifart.js's now, with the light pass on; this
+     one still makes the page screenshot */
+  for(const [k,name] of [['title','title-1440x810.png']]){
     fs.writeFileSync(path.join(OUT,name), Buffer.from(shots[k].split(',')[1],'base64'));
     console.log(name, fs.statSync(path.join(OUT,name)).size, 'bytes');
   }
