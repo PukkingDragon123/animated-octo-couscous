@@ -353,11 +353,38 @@ naga round his neck, the trident and the little hourglass drum.
 
 ![the throne of พระอิศวร](screenshots/heaven-the-throne.png)
 
+### ช้างเอราวัณ, who used to be a prompt with nobody behind it
+
+For a long time there was a line of text on the terrace that said *scratch
+Erawan*, and nothing standing under it: the elephant had been drawn once, and
+never called. He is there now, between the hall and the chedi, and he is big —
+the same elephant Boonmee is drawn from (below), at nearly twice her size, white.
+**Three heads in a row, seen a little from the front**, the far two standing out
+past the near one's brow, each with its own gold net over both domes, a beaded
+band across the brow with a ruby hanging off it, its own crown, its own pair of
+gold-capped tusks and its own trunk, swinging to its own time. A red caparison
+worked all over in gold flame-flowers with a fringe of gold and gems, a green
+saddle-cloth, a chest band hung with bells, gold at every ankle. On his back is
+the **บุษบก** Indra rides in — a gold platform, four red pillars, three tiers of
+roof and a spire — with an empty blue cushion in it, because Indra is inside at
+the assembly. The far head stands behind the howdah and the near two in front
+of it, which is the only order that looks right.
+
+White on white is one white, so each head is drawn on its own and inked on its
+own before it goes onto the animal. When you come close the near trunk reaches
+out to smell you. Scratch it and he trumpets, the petals come down, and he picks
+you up.
+
+| | |
+|---|---|
+| ![Erawan on the terrace](screenshots/heaven-erawan.png) | ![and up you go](screenshots/heaven-erawan-lift.png) |
+
 **Everybody up there is somebody.** Nang Kaeo meets you at the ladder with a
 tray. The devas walk their stretch of cloud and have opinions about you. The
 yaksha at the gate have not stopped anybody in four hundred years and say so.
 พระอินทร์ will talk if you come into the hall, and the meetings are long.
-Erawan lets you scratch one of his three trunks. You can take three
+Erawan lets you scratch one of his three trunks, and the first time each visit he
+takes you round the waist with it and lifts you up to have a look at you. You can take three
 flowers a visit from under the Parijata and bring them home — they are worth
 something to somebody down here.
 
@@ -677,6 +704,61 @@ the top of the skull and swept back and up until they nearly meet over the neck.
 Get those wrong and you have drawn a cow.
 
 ![the buffalo](screenshots/the-buffalo.png)
+
+## พังบุญมี, the elephant
+
+She is fifty-one. She pulled teak out of the hills until they stopped the
+logging, then she carried tourists, and now she lives at the top of the banana
+grove with **Lung Kham**, who has looked after her for thirty years, under a
+thatch roof on four bamboo poles with a pile of cut banana stems, a bundle of
+grass, a blue tub, a chain lying slack, and her name on a board in his hand.
+
+**She has a day, and the clock is the whole plan.** At half past five she leaves
+the grove with him on her neck and walks the length of the village road to the
+spirit house, where there are bananas. At eight she goes on down to the pond,
+stands on the near bank, and spends the hot part of the day filling her trunk
+and hosing it over her back. At half past two she walks back, stops at the
+spirit house again, and is home by dark, when he climbs down and goes to his own
+bed. Her position is worked out from the minute of the day, so sleeping through
+a morning does not strand her anywhere: she is wherever the morning took her.
+
+She walks a lateral-sequence walk, the way elephants do — near hind, near fore,
+far hind, far fore — with the back rising and falling twice a stride. Her ears
+fan when it is hot. Her tail swishes. She blinks. Her trunk has eight things it
+can be doing and eases from one to the next: hanging, swaying, reaching,
+sniffing, eating, dipping, hosing her back, and throwing dust over her
+shoulder at home.
+
+**And she knows he is there.** The first time each day he comes near her she
+rumbles, flaps her ears out and turns her trunk to smell him, which nobody else
+in the village has ever done. Lung Kham has noticed.
+
+- **Give her a banana**, if you have one. It goes up in the air by itself, as far
+  as Lung Kham can see, and into her mouth. Merit, once a day.
+- **Stroke her trunk.** She curls it up and rumbles. Merit, once a day.
+- **Talk to Lung Kham**, who has five things to say about her and will say them
+  in order.
+
+![Boonmee and Lung Kham on the road at first light](screenshots/elephant-morning.png)
+
+![at the pond, where she spends the hot part of the day](screenshots/elephant-bath.png)
+
+**How she is drawn.** An Asian elephant, not an African one: twin domes on the
+top of the head, a small ear shaped like a map of India with the top edge
+folded forward, a back that is highest in the middle, no tusks (she is a cow),
+and pink freckles where an old elephant loses her colour — round the root of the
+trunk, on the forehead, along the edge of the ear. The body is three ellipses
+painted in four coats, all the rims first, then all the shadows, then all the
+hide, so the parts melt into one animal instead of showing their seams; a few
+hundred pixels of speckle sit on top, denser underneath. The trunk is a quadratic
+with its underside in shadow and its ridges only on the underside — which side
+is under follows the curve, so a raised trunk shows its ridges at the front.
+She is painted facing right into a scratch canvas and put into the world with
+**one ring of ink round the whole silhouette**, because one line round an
+elephant reads as a drawing and a line round every part of her reads as a sack
+of potatoes. The near legs and the head are inked separately, so they stand in
+front of the body, and the line across the top of each leg is cut off where it
+grows out of the belly.
 
 ## The farm
 
@@ -1245,12 +1327,23 @@ the way and he runs; shove it up and he jumps; pull it down and he steps off the
 plank he is standing on. Tapping the ground to walk somewhere still works — the
 stick just wins when both are asked at once.
 
-The buttons moved over to the right hand so one thumb can reach all four without
-stretching, and they are discs now rather than little square plaques: a rim, a
-bevel, a light on the top-left, a shadow underneath, and a real press that sinks
-the whole thing a pixel and takes the highlight off. Jump is the big gold one.
-The pictograms were redrawn to be readable at arm's length — an arrow coming off
-the ground, a heart, a mouth with the sound going out of it, a book.
+The buttons are laid out the way a console lays out its face buttons, on an arc
+round the big one, so the right thumb rests on jump and rolls to the rest without
+looking: **give** to the left of it, **whistle** up and to the left, **the tool
+you are holding** straight above. The book is not something you press in a
+hurry, so it went up under the clock, where menus live. They are one matched set
+now — a lacquered ring, a cream face, gold for jump — where they used to be four
+different ideas of a button; each one sinks a pixel when pressed and loses its
+highlight. The tool button shows the tool you are holding, or an open hand if it
+is nothing. The whistle is two notes, because a whistle is a tune.
+
+**And the pixels stay square on a phone.** A phone screen is almost never a whole
+number of 480×270 canvases wide. The canvas used to be scaled to fit exactly and
+the browser smoothed it, so every pixel came out a slightly different size and
+soft at the edges — which is what "it looks off" was. It now renders at the next
+whole number up and lets the browser shrink that by a hair, which keeps every
+pixel the same size and sharp, and switches the smoothing off whenever the fit is
+exact.
 
 ![the stick and the buttons](screenshots/the-controls.png)
 
@@ -2345,6 +2438,71 @@ The mark in the air is the whole vocabulary — question, heart, spark, tear,
 zzz, dots — and the mouth underneath it changes shape to match. Nothing here
 speaks.
 
+## Light, water and weather
+
+**The world is drawn, and then it is lit.** Everything above is still painted
+into the game's own 480×270 canvas, pixel by pixel. That canvas then goes up to
+the graphics card as a texture and comes back down through one shader, onto a
+second canvas underneath the first, and the interface is drawn on top of both.
+Nothing about the pixel art changes; what the shader adds is what a painter
+would put on top of it.
+
+- **Light.** Every lamp, window, lantern, cooking fire, firefly, spirit and
+  glowing thing is a soft sprite on a light map, a quarter of the size of the
+  screen. At night what it touches takes its colour and a little of the air
+  round it glows, so a window throws warm light onto the stilts under it and
+  the lanes between the lamps stay dark.
+- **The sun.** At dawn and dusk it has a glow round it and **rays coming off it,
+  occluded by whatever is standing in front of it**: the rays come out between
+  the houses and through the gaps in the trees, and a spirit house stood in
+  front of the sun gets a halo. By day there is no ray at all.
+- **Bloom**, three sizes of it, only on what is really bright — a lamp, the
+  sky round the sun — so that white shirts and pale ghosts do not go soft.
+- **The grade for the hour.** Blue shadows and a black point at night; cold
+  shadows, a hot top and more contrast at dawn; a warm fall at dusk; clean at
+  noon. And a vignette.
+- **Water.** The pond, the river and the lotus lake, and the pond in heaven,
+  are found once when the world is built and kept as a mask. Wherever the mask
+  says water, the shader **reflects what is standing over it** — the raft
+  houses, the pier, the sky, you — mirrored about the waterline and rippled a
+  whole pixel at a time, row by row, more the deeper it goes, and it keeps its
+  own colour wherever a boat or a lotus leaf is standing in it. It gets a bright
+  skin at the surface, glints that wink on and off, and when the sun is low, **a
+  road of light straight across the water toward you**, broken into pixels that
+  flash.
+
+![the village at night](screenshots/light-night.png)
+
+![sunrise on a merit day](screenshots/light-dawn.png)
+
+![the river at first light](screenshots/water-river.png)
+
+**And the air has things in it.** Smoke goes up out of every kitchen at cooking
+time, lit on the side the sun is on. A mist lies on the fields and the water at
+dawn and is burned off by eight. Fish jump and leave rings. Insects land on the
+water and leave smaller ones. Egrets and flocks of small birds cross the sky in
+a V at either end of the day. At night the cooking fires throw sparks, and in
+the morning there is dust hanging in the light and dew in the grass.
+
+**The clouds were three ellipses at an eighth of opacity**, which from a distance
+is a cloud and close to is a pill. They are cumulus now: a flat base, a heap of
+puffs on it and a cauliflower of smaller ones on those, and every pixel shaded by
+how far it is from the side the light is coming from. At dawn the light comes
+from low on the right and the undersides go orange; at noon it comes from above
+and the bases go grey; at night they are a hole in the stars. Each is painted
+once for the hour and painted again when the hour moves on. Long thin bands lie
+low over the horizon at either end of the day, lit from underneath. **The trees
+got the same treatment**: the tamarind and the blossom trees were flat discs of
+colour, and are built now out of shaded clumps of leaves, lowest first, so every
+clump lays its lit top over the shaded underside of the one below it.
+
+![trees and clouds](screenshots/trees-and-clouds.png)
+
+**It steps down rather than slowing down.** Without WebGL none of this happens
+and the game is exactly the game it was, drawn in two dimensions. With it, if the
+last few seconds of frames have been slow, it switches itself off for the rest
+of the session — not for good, because the next device might be faster.
+
 ## It speaks Thai, properly
 
 **It opens in Thai, and in Thai there is no English left.** The village is
@@ -2688,6 +2846,25 @@ You can pick up the bowl. It goes through you and lands on the road behind, whic
 is the joke and also the saddest thing in the game. Mali throws hers anyway, at
 where she thinks you are.
 
+**Boonmee comes too.** On the water days she does not go to the pond: she stands
+beside the barrel all afternoon in a flowered cloth, a garland of marigold and
+jasmine round her neck and white ดินสอพอง dabbed on her forehead, with a tub of
+her own in front of her. She fills her trunk, lifts it, and lets the kids have
+it. They have been waiting all year. Ask her and she will give you the lot,
+which goes straight through you and gets the kids behind you instead.
+
+**And the watering can is a water gun.** With it in your hand, anybody standing
+on the road can be splashed — *splash Lung Somchai*, *splash Mali* — and every
+one of them says something and gets you straight back, through you and onto the
+road. Water poured on somebody at Songkran is a blessing, so each person is
+merit once a day.
+
+**At the wat there are sand chedis.** All year you carry sand out of the temple
+on your feet; at Songkran you bring it back by the handful and heap it up and put
+a paper flag on top. There are three, flagged red, blue and yellow, with
+flowers stuck in them. You can add a handful. It runs through your fingers and
+lands on the heap all the same.
+
 ![the water](screenshots/songkran.png)
 
 ## The lore (actual research)
@@ -2723,10 +2900,22 @@ Sources: [Preta](https://en.wikipedia.org/wiki/Preta) ·
 
 ## What's inside
 
-One HTML file, ~1.05 MB, 480×270 canvas integer-scaled with `image-rendering:
-pixelated`. Parses and initialises in about a tenth of a second, has the whole
+One HTML file, ~1.6 MB, 480×270 canvas integer-scaled with `image-rendering:
+pixelated`, and a WebGL pass under it for the light and the water. Parses and initialises in about a tenth of a second, has the whole
 road built inside half a second behind a loading screen, and holds 50–60 fps
 with a fully stocked farm on screen.
+
+**Where the source is.** `index.html` is built, not edited. The game is
+[`dev/src/game.js`](dev/src/game.js); what was added on top of it lives in
+[`dev/src/fx/`](dev/src/fx) — the clouds, the light pass, the air, the
+elephants — and [`dev/build.sh`](dev/build.sh) stitches them into one file
+between `head.html` and `tail.html`, syntax-checks the result, and refuses any
+function declared twice unless it is one of the old ones that already was.
+[`dev/tests/`](dev/tests) runs the built file headless in Chromium: `smoke.js`
+for the flows everything else depends on, `features.js` for the elephant, the
+water days, Erawan, the light pass with and without WebGL, the clouds, the
+phone pads and the Thai. [`dev/shots.js`](dev/shots.js) takes the newest
+pictures in this README.
 
 - **Nothing is a sprite sheet, and nothing is a font glyph.** Every character is a
   procedural puppet posed fresh each frame — two-bone IK limbs, a walk cycle
@@ -3064,24 +3253,29 @@ with a fully stocked farm on screen.
 ## Putting it on itch.io
 
 Everything the store page needs is in [`itch/`](itch): the game zipped with
-`index.html` at the root, a 630×500 cover, a 1920×620 banner, and the settings
-that matter (HTML project, 960×540 embed, mobile friendly).
+`index.html` at the root, a 630×500 cover and a 1920×620 banner — both
+**animated GIFs**, with a still of each — and the settings that matter (HTML
+project, 960×540 embed, mobile friendly).
 
-Neither picture is drawn by hand. Both are **the game running with `GS.plate`
-set** — a flag that takes the purse, the clock, the prompts and the thumb
-controls off and leaves the village standing there — with the lettering set over
-the top at the size each picture wants, by [`itch/keyart.js`](itch/keyart.js).
-Change the game and the store art changes with it; it can never be a picture of
-a build that no longer exists.
-
-The scene is the village road at twenty past eight at night: the noodle stall
-lit, a string of coloured lanterns across the wires, a power pole, two houses
-with their windows on, a cat in the tamarind, and nine feet of grey ghost
-standing in the middle of it that nobody is running from. That is the game in
-one frame, which the rice field — pretty as it is — was not.
+**The cover and the banner move.** They are the village at sunrise on a merit
+day: four monks walking the lane barefoot with the village kneeling along it,
+the sun just up behind the spirit house, the kitchens going, and Boonmee coming
+down the road from the banana grove with Lung Kham on her neck. They are
+rendered by [`itch/gifart.js`](itch/gifart.js) with the light pass on, cropped
+and blown up by whole numbers so the pixels stay square, one palette for the
+whole loop, and the last half second dissolved into the first so it goes round
+without a jump.
 
 | | |
 |---|---|
-| ![the cover](itch/cover-630x500.png) | ![the banner](itch/banner-1920x620.png) |
+| ![the cover](itch/cover-630x500.gif) | ![the banner](itch/banner-1920x620.gif) |
+
+None of the pictures is drawn by hand. They are all **the game running with `GS.plate`
+set** — a flag that takes the purse, the clock, the prompts and the thumb
+controls off and leaves the village standing there — with the lettering set over
+the top at the size each picture wants, by [`itch/gifart.js`](itch/gifart.js)
+and [`itch/keyart.js`](itch/keyart.js).
+Change the game and the store art changes with it; it can never be a picture of
+a build that no longer exists.
 
 Made with rice and incense. May you go to a good place.

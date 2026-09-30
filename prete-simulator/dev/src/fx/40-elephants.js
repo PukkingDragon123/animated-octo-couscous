@@ -675,7 +675,7 @@ function stepErawan(dt){
     E.lift=up;
     if(u>0.6 && u<2.9){
       /* round the waist and up, to where the front head can see you */
-      const tx=erawanX()+E.face*70, gy=heavenGround(tx);
+      const tx=erawanX()+E.face*96, gy=heavenGround(tx);
       P.x = lerp(P.x, tx, clamp(dt*5,0,1)); P.y = gy - up*58; P.vy=0; P.vx=0; P.onGround=false; P.face=-E.face;
       if(Math.random()<dt*10) part({k:'sp', x:P.x+rnd(-12,12), y:P.y-rnd(10,40), vx:rnd(-10,10), vy:-rnd(10,30), life:rnd(.5,1), c:HV.goldL});
     }

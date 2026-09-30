@@ -89,11 +89,19 @@ void main(){
       vec3 tint = mix(vec3(0.80,0.92,1.0), vec3(0.55,0.72,0.82), k);
       vec3 w = mix(col, refl*tint + col*0.12, fres*guard);
       /* the bright skin right at the surface */
-      w += vec3(0.20,0.24,0.26)*(1.0 - smoothstep(0.0, 1.5, depthPx))*guard*(0.4+0.6*luma(refl));
+      w += vec3(0.12,0.14,0.15)*(1.0 - smoothstep(0.0, 1.2, depthPx))*guard*(0.3+0.7*luma(refl));
       /* glints: a few pixels at a time catch the sky and wink out */
       vec2 cell = floor(uv/uGame);
       float g = step(0.985 - 0.01*(1.0-k), hash(cell + floor(uT*3.0 + cell.x*0.05)));
       w += g*guard*(1.0-k)*vec3(1.0,0.97,0.9)*(0.25 + 0.9*luma(refl));
+      /* the road of light the low sun lays across the water toward you:
+         a warm path straight down from it, broken into pixels that flash */
+      if(uSun.z > 0.01){
+        float dx = (uv.x - uSun.x)*1.7778;
+        float band = exp(-dx*dx*38.0);
+        float tw = step(0.90 - 0.10*band, hash(cell*1.3 + floor(uT*5.0 + cell.y*0.7)));
+        w += uSunCol*guard*uSun.z*(band*tw*1.35*(0.5+0.5*(1.0-k)) + band*0.07);
+      }
       col = w;
     }
   }
