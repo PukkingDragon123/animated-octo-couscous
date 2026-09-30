@@ -103,7 +103,7 @@ void main(){
 
   /* ---- bloom ---- */
   vec3 bA = texture2D(uBloomA, uv).rgb, bB = texture2D(uBloomB, uv).rgb, bC = texture2D(uBloomC, uv).rgb;
-  vec3 bl = max(bA - 0.70, 0.0)*0.45 + max(bB - 0.60, 0.0)*0.60 + max(bC - 0.52, 0.0)*0.75;
+  vec3 bl = max(bA - 0.80, 0.0)*0.60 + max(bB - 0.72, 0.0)*0.72 + max(bC - 0.64, 0.0)*0.85;
   col += bl*uBloom;
 
   /* ---- the sun: a bloom round it, and rays off it ---- */
@@ -113,13 +113,13 @@ void main(){
     /* the glow is in the air, so it is strongest over the bright sky and
        weakest over whatever is standing between you and the sun */
     float open = 0.15 + 0.85*smoothstep(0.45, 0.90, luma(bA));
-    col += uSunCol*uSun.z*(0.30*exp(-dist*7.0) + 0.10*exp(-dist*1.8))*open;
+    col += uSunCol*uSun.z*(0.26*exp(-dist*8.0) + 0.06*exp(-dist*2.2))*open;
     if(uRays > 0.01){
       vec2 stp = (uSun.xy - uv)/30.0; vec2 p = uv; float acc = 0.0; float wt = 1.0;
       for(int i=0; i<30; i++){ p += stp;
         vec3 s = texture2D(uBloomC, p).rgb;
-        acc += max(luma(s) - 0.50, 0.0)*wt; wt *= 0.935; }
-      col += uSunCol*acc*uRays*0.085;
+        acc += max(luma(s) - 0.58, 0.0)*wt; wt *= 0.935; }
+      col += uSunCol*acc*uRays*0.075;
     }
   }
 
@@ -305,11 +305,11 @@ function fxGrade(){
   /* dawn: cold shadows, a hot top, and the rays */
   if(dawn>0){ g.shadow=[lerp(g.shadow[0],0.22,dawn),lerp(g.shadow[1],0.10,dawn),lerp(g.shadow[2],0.42,dawn)];
     g.high=[lerp(g.high[0],0.55,dawn),lerp(g.high[1],0.30,dawn),lerp(g.high[2],0.08,dawn)];
-    g.sat=lerp(g.sat,1.22,dawn); g.con=lerp(g.con,1.16,dawn); g.black=lerp(g.black,0.13,dawn);
-    g.bloom=lerp(g.bloom,0.62,dawn); g.rays=dawn; g.sunCol=[1.0,0.72,0.42]; }
+    g.sat=lerp(g.sat,1.20,dawn); g.con=lerp(g.con,1.24,dawn); g.black=lerp(g.black,0.12,dawn);
+    g.bloom=lerp(g.bloom,0.46,dawn); g.rays=dawn; g.sunCol=[1.0,0.72,0.42]; }
   if(dusk>0){ g.shadow=[lerp(g.shadow[0],0.30,dusk),lerp(g.shadow[1],0.08,dusk),lerp(g.shadow[2],0.36,dusk)];
     g.high=[lerp(g.high[0],0.60,dusk),lerp(g.high[1],0.24,dusk),lerp(g.high[2],0.04,dusk)];
-    g.sat=lerp(g.sat,1.14,dusk); g.bloom=lerp(g.bloom,0.58,dusk); g.rays=dusk*0.8; g.sunCol=[1.0,0.58,0.32]; }
+    g.sat=lerp(g.sat,1.14,dusk); g.con=lerp(g.con,1.18,dusk); g.bloom=lerp(g.bloom,0.46,dusk); g.rays=dusk*0.8; g.sunCol=[1.0,0.58,0.32]; }
   return g;
 }
 
@@ -322,7 +322,7 @@ FX.capture = function(realm){
   const night = inHeaven? 0 : 1-TOD.v;
   /* heaven is white cloud and gold, so it wants very little bloom and a
      black point, or the whole of it glows into one pale sheet */
-  const G = inHeaven? {black:0.07,sat:1.08,con:1.12,exp:0.98,vig:0.20,shadow:[0.20,0.12,0.40],high:[0.30,0.22,0.06],bloom:0.16,rays:0.55,sun:1,sunCol:[1,0.86,0.6]}
+  const G = inHeaven? {black:0.08,sat:1.08,con:1.14,exp:0.96,vig:0.20,shadow:[0.20,0.12,0.40],high:[0.30,0.22,0.06],bloom:0.16,rays:0.55,sun:1,sunCol:[1,0.86,0.6]}
                     : (realm==='title'? Object.assign(fxGrade(),{rays:0.5,bloom:0.22,black:0.05}) : fxGrade());
   /* the light map */
   fxLights(inHeaven? 'heaven' : (realm==='title'? 'title' : 'village'), cx, cy, night);

@@ -10085,6 +10085,8 @@ function render(){
   if(typeof drawPests==='function') drawPests(ctx);   // and what got into the crop
   if(typeof drawPets==='function')  drawPets(ctx);    // and everything asleep in the road
   drawBuff(ctx);       // ควาย
+  if(typeof drawEle==='function') drawEle(ctx);                 // and ช้าง
+  if(typeof drawSandChedis==='function') drawSandChedis(ctx);
   if(typeof drawAnthem==='function')  drawAnthem(ctx);    // eight o'clock, and six
   if(typeof drawParked==='function')  drawParked(ctx);    // one under every house
   if(typeof drawTraffic==='function') drawTraffic(ctx);   // and what is out on the road
@@ -10983,6 +10985,7 @@ function checkInteract(){
   if(typeof pestInteract==='function') pestInteract(set, ()=>false);
   buildInteract(set, ()=>false);
   buffInteract(set, ()=>false);
+  if(typeof eleInteract==='function'){ eleInteract(set, ()=>false); songCanInteract(set); sandInteract(set); }
   if(typeof heavenPrayInteract==='function') heavenPrayInteract(set);
   if(typeof eastInteract==='function') eastInteract(set);
   // the seed crate and the plants come last, so people always win the prompt
@@ -22132,80 +22135,8 @@ function drawNonthok2(g, x, y, o){
   g.restore();
 }
 
-/* ============================================================
-   ช้างเอราวัณ
-
-   Indra's elephant: white, three heads fanned out one behind the
-   other, a gold crown and a gold net on each brow, a red
-   caparison with a gold fringe, and an empty howdah on its back
-   because its rider is inside at the assembly.
-   ============================================================ */
-function drawErawan(g, x, y, o){
-  const s=o.s||1, f=o.face||1, t=o.t||0;
-  const WH='#f6f2e8', WHD='#d4cab8', WHX='#b8ac98', OC='#4a3a2a', G=HV.gold, GD=HV.goldD, GL=HV.goldL, GX=HV.goldX;
-  g.save(); g.translate(R(x),R(y)); g.scale(s*f, s);
-  const br=Math.sin(t*0.8)*0.7;
-  /* legs, far pair darker */
-  for(const [lx,dk] of [[-22,1],[-8,0],[12,1],[24,0]]){
-    pTapO(g, lx, -30, lx, -3, 10, 9, dk? WHD : WH, OC);
-    pR(g, lx-4, -10, 9, 3, G); pR(g, lx-4, -10, 9, 1, GL);
-    for(let k=-1;k<=1;k++) pR(g, lx+k*3-1, -2, 2, 1, WHX);
-  }
-  /* the body */
-  pEllO(g, 0, -42+br, 33, 20, WH, OC);
-  pEll(g, -5, -51+br, 22, 7, '#fffcf4');
-  pEll(g, 4, -31+br, 27, 5, WHD);
-  /* the tail */
-  pTaper(g, -32, -46+br, -37, -28+br+Math.sin(t*1.5)*2, 2.2, 1, WHD);
-  pR(g, -38, R(-28+br), 3, 4, OC);
-  /* the caparison */
-  pPolyO(g,[-24,-57+br, 16,-57+br, 21,-32+br, 14,-25+br, -17,-25+br, -26,-33+br], HV.red, HV.redD);
-  for(let yy=-53; yy<-29; yy+=5) for(let xx=-20; xx<16; xx+=6) pR(g, xx+((((yy+53)/5)|0)%2?3:0), R(yy+br), 2,2, G);
-  for(let xx=-17; xx<14; xx+=2) pR(g, xx, R(-25+br), 1, 3, xx%4? G : GL);
-  pR(g, -24, R(-57+br), 40, 2, G);
-  /* the howdah, empty */
-  pPolyO(g,[-14,-59+br, 8,-59+br, 6,-67+br, -12,-67+br], G, GX);
-  pR(g,-12,R(-65+br),18,1,HV.red);
-  for(const px of [-12,6]) pTapO(g, px, -67+br, px, -80+br, 1.6, 1.4, G, GX);
-  pPolyO(g,[-16,-80+br, 10,-80+br, 5,-88+br, -3,-97+br, -11,-88+br], HV.red, HV.redD);
-  pR(g,-16,R(-81+br),26,2,G);
-  pTapO(g, -3, -97+br, -3, -105+br, 1.6, 0.6, G, GX);
-  /* three heads fanned back to front: the rear one high and set back,
-     the middle one, and the one nearest you low and forward */
-  const HEADS=[{hx:22,hy:-72,sc:0.9,col:WHX},{hx:31,hy:-63,sc:0.95,col:WHD},{hx:40,hy:-53,sc:1.08,col:WH}];
-  HEADS.forEach((H,i)=>{
-    const hx=H.hx, hy=H.hy+br, sc=H.sc, col=H.col;
-    const ea=Math.sin(t*1.4+i*1.1)*1.6;
-    /* the ear, a great fan behind the head */
-    pPolyO(g,[hx-6*sc,hy-7*sc, hx-15*sc-ea,hy-4*sc, hx-16*sc-ea,hy+8*sc, hx-9*sc,hy+11*sc, hx-4*sc,hy+5*sc], shade(col,-0.06), OC);
-    pEllO(g, hx, hy, 10*sc, 10.5*sc, col, OC);
-    pEll(g, hx-2*sc, hy-4*sc, 5*sc, 3*sc, shade(col,0.08));
-    /* the trunk hangs, and curls at the end, and the curl breathes */
-    const sw=Math.sin(t*0.9+i*1.7);
-    const p0={x:hx+7*sc, y:hy+3*sc}, p1={x:hx+11*sc, y:hy+14*sc}, p2={x:hx+9*sc+sw*2, y:hy+26*sc};
-    /* ink for the whole trunk first, then the fill: done segment by segment
-       the outline of each one cut a ring into the last, and a trunk drawn as
-       a stack of rings is a ladder */
-    const TP=[p0];
-    for(let k=1;k<=10;k++){ const u=k/10, v=1-u;
-      TP.push({x:v*v*p0.x+2*v*u*p1.x+u*u*p2.x, y:v*v*p0.y+2*v*u*p1.y+u*u*p2.y, u}); }
-    for(const pass of [0,1]) for(let k=1;k<TP.length;k++){
-      const a=TP[k-1], b=TP[k], w=(5.6-(b.u||0)*2.8)*sc;
-      pTaper(g, a.x,a.y,b.x,b.y, w+(pass?0:2), w+(pass?0:2), pass? col : OC);
-    }
-    const prev=TP[TP.length-1];
-    pR(g, R(prev.x+1), R(prev.y-1), 2, 2, col);                 // the curl at the tip
-    for(let k=2;k<8;k+=2) pR(g, R(lerp(p0.x,p2.x,k/10))-1, R(lerp(p0.y,p2.y,k/10)), 3, 1, shade(col,-0.14));
-    pTapO(g, hx+5*sc, hy+6*sc, hx+12*sc, hy+10*sc, 2*sc, 0.8, '#fffaf2', OC);   // a tusk
-    pR(g, R(hx+3*sc), R(hy-1*sc), 2, o.blink? 1 : 2, '#2a1a10');
-    pR(g, R(hx+3*sc), R(hy-1*sc), 1, 1, o.blink? '#2a1a10' : '#6a5a4a');
-    /* the gold net over the brow, and a crown */
-    pPolyO(g,[hx-6*sc,hy-9*sc, hx+7*sc,hy-7*sc, hx+7*sc,hy-2*sc, hx-5*sc,hy-4*sc], G, GX);
-    for(let k=0;k<3;k++) pR(g, R(hx-3*sc+k*3*sc), R(hy-6*sc), 1,1, k===1? HV.gem : HV.gem2);
-    drawChada(g, R(hx), R(hy-10*sc), 1, {tall:0.7*sc, rings:5, w:10*sc, bend:0});
-  });
-  g.restore();
-}
+/* ช้างเอราวัณ himself lives in fx/40-elephants.js, with the elephant he is
+   drawn from */
 
 /* ============================================================
    กินรี, as her own function so heaven can sit her by the water.
@@ -23059,7 +22990,7 @@ function hvEnter(first){
   HVN.on=true; HVN.first=!!first; HVN.t=0;
   HVN.sx=P.x; HVN.sy=P.y; HVN.scx=GS.camX; HVN.scy=GS.camY;
   HVN.greeted=false; HVN.nonthokSeen=!!GS.q.nonthok; HVN.scared=!!GS.q.nonthok; HVN.scareT=9;
-  HVN.throneSeen=false; HVN.picked=0; HVN.prayed=false; HVN.blessed=false; HVN.petted=false;
+  HVN.throneSeen=false; HVN.picked=0; HVN.prayed=false; HVN.blessed=false; HVN.petted=false; HVN.lifted=false;
   HVN.zone=''; HVN.zoneT=0; HVN.carry=false; HVN.hint=0;
   /* and every line the story has already said, or a second first visit —
      a new game in the same sitting — waits for words that never come */
@@ -23223,9 +23154,9 @@ function hvInteract(){
     }, null, 'talk');
   /* Erawan, who will let you scratch one of his three trunks */
   if(near2(HV_X.erawan,44))
-    set(HV_X.erawan+30, HG-86, 'scratch Erawan', ()=>{
-      AU.tone(220,0.5,'sawtooth',0.04,330); AU.tone(330,0.4,'sawtooth',0.03,440,0.12);
-      pHeart && pHeart(HV_X.erawan+34, HG-70);
+    set(HV_X.erawan-44, HG-112, 'scratch Erawan', ()=>{
+      if(typeof erawanScratch==='function') erawanScratch();
+      pHeart && pHeart(HV_X.erawan-50, HG-96);
       if(!HVN.petted){ HVN.petted=true; if(!GS.seen.erawan && !HVN.first){ GS.seen.erawan=true; addMerit(1,true); toast('+1', PAL.gold, 'merit'); } }
     }, null, 'pet');
   if(typeof toolInteract==='function') toolInteract(set, 'heaven');
@@ -23248,6 +23179,7 @@ function stepHeaven(dt){
   HVN.t+=dt;
   if(DLG){ stepDlg(dt); }
   stepHeavenPlayer(dt);
+  if(typeof stepErawan==='function') stepErawan(dt);
   for(const n of HNPC) stepHvNpc(n, dt);
   for(const f of (HVN.fliers||[])){ f.x+=f.sp*dt; f.t+=dt; if(f.x>1.1) f.x=-0.1; if(f.x<-0.1) f.x=1.1; }
   if(Math.random()<dt*0.12 && HVN.swans.length<2)
@@ -23464,6 +23396,8 @@ function drawHeaven(g){
   g.restore();
   g.drawImage(A.front, cx, HTOP+cy, W, H, 0, 0, W, H);
   g.save(); g.translate(-cx,-cy);
+  /* Erawan, on the terrace, in front of the rail and behind whoever walks past */
+  if(typeof drawErawanHV==='function') drawErawanHV(g);
   /* the ones walking behind the chedi go first */
   const outside = HNPC.filter(n=>!n.inside && !n.gone).sort((a,b)=>((a.depth||0)>0?-1:1)-((b.depth||0)>0?-1:1));
   for(const n of outside) if((n.depth||0)>0) hvDrawNpc(g, n, t);
@@ -28759,6 +28693,7 @@ function update(dt){
       stepFarm(dt);
       stepNew(dt);
       stepBuff(dt);
+      if(typeof stepEle==='function') stepEle(dt);
       stepBuilds(dt);
       stepLife(dt);
       stepStory(dt);
