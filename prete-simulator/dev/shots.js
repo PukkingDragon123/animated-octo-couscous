@@ -22,6 +22,9 @@ const SHOTS = {
   'heaven-erawan':      { kind: 'heaven', x: 1420 },
   'heaven-erawan-lift': { kind: 'heaven', x: 1450, lift: true },
   'the-controls':     { kind: 'phone', x: 2600, hr: 6.7 },
+  'wind-in-the-trees': V(1, 9.2, 2600, '', null, 'for(let i=0;i<70;i++){ GUSTS.length=0; GUSTS.push({x:2600,v:40,w:600,a:1.4,aT:1.4,t:1,life:99}); update(1/60); P.x=2600; GS.camX=2360; } GS.plate=1; render(); GS.plate=0;'),
+  'flags-at-the-wat':  V(1, 9.2, 3990, '', null, 'for(let i=0;i<200;i++){ update(1/60); P.x=3990; GS.camX=3770; } GS.plate=1; render(); GS.plate=0;'),
+  'washing-line':      V(1, 9.2, 1700, '', null, 'for(let i=0;i<200;i++){ update(1/60); P.x=1700; GS.camX=1440; } GS.plate=1; render(); GS.plate=0;'),
   /* this round's: the ledger as a book, the painted map, the icons, the toolbar */
   'ledger-map':       V(1, 9, 2400, '', null, 'GS.seenX={}; for(let x=0;x<WORLD_W;x+=90) markSeen(x); GS.state="tree"; TREE.tab=3; render();'),
   'ledger-catches':   V(1, 9, 2400, '', null, 'GS.state="tree"; TREE.tab=5; for(const id of [...DEX_BUGS.slice(0,11),...DEX_FISH.slice(0,8),...DEX_FINDS.slice(0,6)]) dexAdd(id); render();'),

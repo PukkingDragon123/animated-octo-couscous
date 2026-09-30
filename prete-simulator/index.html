@@ -842,7 +842,7 @@ function leafClump(g, x, y, rr, r, P){
     g.fillStyle=P.xh; g.fillRect(R(x+Math.cos(a)*rr*0.88), R(y+Math.sin(a)*rr*0.62), 1, 1); }
 }
 function artTamarind(seed){
-  const r=mulberry(seed), w=190,h=176,c=mkCv(w,h),g=G2(c), cx=w/2;
+  const r=mulberry(seed), w=240,h=186,c=mkCv(w,h),g=G2(c), cx=w/2;
   // trunk with roots
   pTaper(g,cx,h,cx-6,h*0.44,20,11,'#4c3a2c');
   pTaper(g,cx-3,h,cx-8,h*0.5,8,4,'#5f4a37');
@@ -3155,7 +3155,8 @@ function artStall(seed){
 
 /* flowering tree — the colour the village needed */
 function artBlossom(seed, col){
-  const r=mulberry(seed), w=150,h=150, c=mkCv(w,h), g=G2(c), cx=w/2;
+  /* wide enough that no blossom is cut off square at the edge of the canvas */
+  const r=mulberry(seed), w=210,h=160, c=mkCv(w,h), g=G2(c), cx=w/2;
   pTaper(g,cx,h,cx-5,h*0.46,17,9,'#5a4436');
   pTaper(g,cx-2,h,cx-9,h*0.56,7,3,'#6d5442');
   pTaper(g,cx,h-3,cx-20,h-1,9,3,'#5a4436');

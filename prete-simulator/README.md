@@ -2555,6 +2555,51 @@ falls outside the frame.
 
 ![the painted map](screenshots/ledger-map.png)
 
+## The world, shaded like the icons, and moving in the wind
+
+**Everything is inked and lit now, not just the icons.** Houses, stalls, the
+spirit house, shrines, jars, fences, power poles and shophouses were flat colour
+straight onto the sky. Everything stamped into the world goes through one pass
+on its way in, at the size it will be drawn so the line is always exactly one
+pixel: a dark line round the outside coloured from what it touches, a lit edge
+wherever the sky is above it, a shaded one where it sits on something, and grain
+in every flat fill so paint reads as teak and thatch and whitewash. The ground,
+the hedges and the rooftops behind get a pass of smooth noise, so earth reads
+as earth. The prete's line is black now, like everybody's, with a grain laid
+over his pale skin and a little shade gathering toward his feet.
+
+**The trees are alive.** They used to be painted into the ground. They are
+drawn every frame now, each one a spring: leaned on by the wind where it stands
+and by every gust that crosses the village, fluttering round where the wind is
+holding it, and pushed again by anybody walking through its lower branches.
+Palms and bamboo give the most, the tamarind the least, a dead tree hardly at
+all. They bend a whole pixel at a time, more the higher up it goes, so the
+trunk stays planted and the crown goes over. Shake one hard enough, or stand
+under one in a strong gust, and it lets go of a leaf; the blossom trees drop
+petals.
+
+![a gust through the village](screenshots/wind-in-the-trees.png)
+
+**And there is cloth for the wind to get hold of**, the way there is in any
+Thai village. At the temple gate, the national flag and the yellow dharma-wheel
+flag on bamboo poles; at the wat, the long ธงตะขาบ, centipede flags, with their
+legs down both sides; flags outside the shop, at the crossroad shrine and by a
+house on the village road; and washing pegged on lines between the houses — a
+red ผ้าขาวม้า, a blue one, a sarong, a white shirt. All of it is cloth: points
+joined by sticks, pinned where it is tied, pulled down by its own weight, blown
+by the same wind as the grass and the trees with a flutter that grows with it,
+folds going into shade as they turn edge-on. Walk through the washing and it
+swings out of your way.
+
+| | |
+|---|---|
+| ![flags at the wat](screenshots/flags-at-the-wat.png) | ![the washing](screenshots/washing-line.png) |
+
+**The map got the same treatment**: its houses, trees, hills, prangs and
+shophouses are painted on a layer of their own, inked and lit like the icons,
+and laid over ground that is shaded for the lie of the land, on paper that
+darkens toward its edges.
+
 ## It speaks Thai, properly
 
 **It opens in Thai, and in Thai there is no English left.** The village is
