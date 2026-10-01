@@ -1034,6 +1034,58 @@ const isThai = s => THAI_RE.test(s);
 const F5W=5, F5H=7, F3W=3, F3H=5;
 const F5={'A':[[14,17,17,31,17,17,17],0],'B':[[30,17,17,30,17,17,30],0],'C':[[14,17,16,16,16,17,14],0],'D':[[30,17,17,17,17,17,30],0],'E':[[31,16,16,30,16,16,31],0],'F':[[31,16,16,30,16,16,16],0],'G':[[14,17,16,23,17,17,14],0],'H':[[17,17,17,31,17,17,17],0],'I':[[14,4,4,4,4,4,14],0],'J':[[7,2,2,2,2,18,12],0],'K':[[17,18,20,24,20,18,17],0],'L':[[16,16,16,16,16,16,31],0],'M':[[17,27,21,21,17,17,17],0],'N':[[17,25,21,21,19,17,17],0],'O':[[14,17,17,17,17,17,14],0],'P':[[30,17,17,30,16,16,16],0],'Q':[[14,17,17,17,21,18,13],0],'R':[[30,17,17,30,20,18,17],0],'S':[[15,16,16,14,1,1,30],0],'T':[[31,4,4,4,4,4,4],0],'U':[[17,17,17,17,17,17,14],0],'V':[[17,17,17,17,17,10,4],0],'W':[[17,17,17,21,21,21,10],0],'X':[[17,17,10,4,10,17,17],0],'Y':[[17,17,10,4,4,4,4],0],'Z':[[31,1,2,4,8,16,31],0],'a':[[0,0,14,1,15,17,15],0],'b':[[16,16,30,17,17,17,30],0],'c':[[0,0,14,16,16,16,14],0],'d':[[1,1,15,17,17,17,15],0],'e':[[0,0,14,17,31,16,14],0],'f':[[6,8,8,30,8,8,8],0],'g':[[15,17,17,15,1,17,14],1],'h':[[16,16,30,17,17,17,17],0],'i':[[4,0,12,4,4,4,14],0],'j':[[2,0,6,2,2,18,12],1],'k':[[16,16,18,20,24,20,18],0],'l':[[12,4,4,4,4,4,14],0],'m':[[0,0,26,21,21,21,21],0],'n':[[0,0,30,17,17,17,17],0],'o':[[0,0,14,17,17,17,14],0],'p':[[30,17,17,30,16,16,16],1],'q':[[15,17,17,15,1,1,1],1],'r':[[0,0,22,24,16,16,16],0],'s':[[0,0,15,16,14,1,30],0],'t':[[8,8,30,8,8,9,6],0],'u':[[0,0,17,17,17,19,13],0],'v':[[0,0,17,17,17,10,4],0],'w':[[0,0,17,21,21,21,10],0],'x':[[0,0,17,10,4,10,17],0],'y':[[17,17,17,15,1,17,14],1],'z':[[0,0,31,2,4,8,31],0],'0':[[14,17,19,21,25,17,14],0],'1':[[4,12,4,4,4,4,14],0],'2':[[14,17,1,2,4,8,31],0],'3':[[30,1,1,14,1,1,30],0],'4':[[2,6,10,18,31,2,2],0],'5':[[31,16,30,1,1,17,14],0],'6':[[6,8,16,30,17,17,14],0],'7':[[31,1,2,4,4,8,8],0],'8':[[14,17,17,14,17,17,14],0],'9':[[14,17,17,15,1,2,12],0],' ':[[0,0,0,0,0,0,0],0],'.':[[0,0,0,0,0,12,12],0],',':[[0,0,0,0,12,12,8],0],'\'':[[8,8,0,0,0,0,0],0],'’':[[8,8,0,0,0,0,0],0],'→':[[0,4,2,31,2,4,0],0],'"':[[10,10,0,0,0,0,0],0],'!':[[4,4,4,4,4,0,4],0],'?':[[14,17,1,6,4,0,4],0],':':[[0,12,12,0,12,12,0],0],';':[[0,12,12,0,12,12,8],0],'-':[[0,0,0,31,0,0,0],0],'+':[[0,4,4,31,4,4,0],0],'/':[[1,1,2,4,8,16,16],0],'(':[[2,4,8,8,8,4,2],0],')':[[8,4,2,2,2,4,8],0],'%':[[25,26,4,8,19,5,9],0],'*':[[0,21,14,31,14,21,0],0],'×':[[0,0,17,10,4,10,17],0],'=':[[0,0,31,0,31,0,0],0],'#':[[10,31,10,10,31,10,0],0],'&':[[12,18,20,8,21,18,13],0],'—':[[0,0,0,31,0,0,0],0],'·':[[0,0,0,4,0,0,0],0],'…':[[0,0,0,0,0,21,0],0],'฿':[[4,30,21,30,21,30,4],0]};
 const F3={'A':[[2,5,7,5,5],0],'B':[[6,5,6,5,6],0],'C':[[3,4,4,4,3],0],'D':[[6,5,5,5,6],0],'E':[[7,4,6,4,7],0],'F':[[7,4,6,4,4],0],'G':[[3,4,5,5,3],0],'H':[[5,5,7,5,5],0],'I':[[7,2,2,2,7],0],'J':[[1,1,1,5,2],0],'K':[[5,5,6,5,5],0],'L':[[4,4,4,4,7],0],'M':[[5,7,7,5,5],0],'N':[[5,7,7,7,5],0],'O':[[2,5,5,5,2],0],'P':[[6,5,6,4,4],0],'Q':[[2,5,5,6,3],0],'R':[[6,5,6,5,5],0],'S':[[3,4,2,1,6],0],'T':[[7,2,2,2,2],0],'U':[[5,5,5,5,3],0],'V':[[5,5,5,5,2],0],'W':[[5,5,7,7,5],0],'X':[[5,5,2,5,5],0],'Y':[[5,5,2,2,2],0],'Z':[[7,1,2,4,7],0],'a':[[2,5,7,5,5],0],'b':[[6,5,6,5,6],0],'c':[[3,4,4,4,3],0],'d':[[6,5,5,5,6],0],'e':[[7,4,6,4,7],0],'f':[[7,4,6,4,4],0],'g':[[3,4,5,5,3],0],'h':[[5,5,7,5,5],0],'i':[[7,2,2,2,7],0],'j':[[1,1,1,5,2],0],'k':[[5,5,6,5,5],0],'l':[[4,4,4,4,7],0],'m':[[5,7,7,5,5],0],'n':[[5,7,7,7,5],0],'o':[[2,5,5,5,2],0],'p':[[6,5,6,4,4],0],'q':[[2,5,5,6,3],0],'r':[[6,5,6,5,5],0],'s':[[3,4,2,1,6],0],'t':[[7,2,2,2,2],0],'u':[[5,5,5,5,3],0],'v':[[5,5,5,5,2],0],'w':[[5,5,7,7,5],0],'x':[[5,5,2,5,5],0],'y':[[5,5,2,2,2],0],'z':[[7,1,2,4,7],0],'0':[[2,5,5,5,2],0],'1':[[2,6,2,2,7],0],'2':[[6,1,2,4,7],0],'3':[[6,1,2,1,6],0],'4':[[5,5,7,1,1],0],'5':[[7,4,6,1,6],0],'6':[[3,4,6,5,2],0],'7':[[7,1,2,2,2],0],'8':[[2,5,2,5,2],0],'9':[[2,5,3,1,6],0],' ':[[0,0,0,0,0],0],'.':[[0,0,0,0,2],0],',':[[0,0,0,2,4],0],'\'':[[2,2,0,0,0],0],'’':[[2,2,0,0,0],0],'%':[[5,1,2,4,5],0],'→':[[0,1,7,1,0],0],'!':[[2,2,2,0,2],0],'?':[[6,1,2,0,2],0],':':[[0,2,0,2,0],0],'-':[[0,0,7,0,0],0],'/':[[1,1,2,4,4],0],'(':[[1,2,2,2,1],0],')':[[4,2,2,2,4],0],'+':[[0,2,7,2,0],0],'×':[[0,5,2,5,0],0],'=':[[0,7,0,7,0],0],'—':[[0,0,7,0,0],0],'·':[[0,0,2,0,0],0],'…':[[0,0,0,0,5],0],'฿':[[2,7,7,7,2],0]};
+
+/* ---- the cozy face ----
+   The 5x7 was a terminal font: every letter the same width, square corners,
+   an i as wide as an m. This one is drawn for the game: proportional, with
+   round bowls, a single-storey a, a t with a foot that turns up, an l with
+   one too, and capitals with their corners softened. Same height, so every
+   box the old one fitted still fits. '#' is ink. */
+(()=>{
+  const D = { /* name: [rows top to bottom, drops below the line] */
+    A:['.###.','#...#','#...#','#...#','#####','#...#','#...#'], B:['####.','#...#','#...#','####.','#...#','#...#','####.'],
+    C:['.###.','#...#','#....','#....','#....','#...#','.###.'], D:['###..','#..#.','#...#','#...#','#...#','#..#.','###..'],
+    E:['.###','#...','#...','###.','#...','#...','.###'], F:['.###','#...','#...','###.','#...','#...','#...'],
+    G:['.###.','#...#','#....','#.###','#...#','#...#','.###.'], H:['#...#','#...#','#...#','#####','#...#','#...#','#...#'],
+    I:['###','.#.','.#.','.#.','.#.','.#.','###'], J:['..##','...#','...#','...#','#..#','#..#','.##.'],
+    K:['#..#','#..#','#.#.','##..','#.#.','#..#','#..#'], L:['#...','#...','#...','#...','#...','#...','.###'],
+    M:['#...#','##.##','#.#.#','#.#.#','#...#','#...#','#...#'], N:['#...#','##..#','#.#.#','#.#.#','#..##','#...#','#...#'],
+    O:['.###.','#...#','#...#','#...#','#...#','#...#','.###.'], P:['####.','#...#','#...#','####.','#....','#....','#....'],
+    Q:['.###.','#...#','#...#','#...#','#.#.#','#..#.','.##.#'], R:['####.','#...#','#...#','####.','#.#..','#..#.','#...#'],
+    S:['.###.','#...#','#....','.###.','....#','#...#','.###.'], T:['#####','..#..','..#..','..#..','..#..','..#..','..#..'],
+    U:['#...#','#...#','#...#','#...#','#...#','#...#','.###.'], V:['#...#','#...#','#...#','.#.#.','.#.#.','.#.#.','..#..'],
+    W:['#...#','#...#','#...#','#.#.#','#.#.#','##.##','#...#'], X:['#...#','#...#','.#.#.','..#..','.#.#.','#...#','#...#'],
+    Y:['#...#','#...#','.#.#.','..#..','..#..','..#..','..#..'], Z:['#####','....#','...#.','..#..','.#...','#....','#####'],
+    a:['....','....','.###','#..#','#..#','#..#','.###'], b:['#...','#...','###.','#..#','#..#','#..#','###.'],
+    c:['....','....','.###','#...','#...','#...','.###'], d:['...#','...#','.###','#..#','#..#','#..#','.###'],
+    e:['....','....','.##.','#..#','####','#...','.###'], f:['.##','#..','#..','###','#..','#..','#..'],
+    g:[['.###','#..#','#..#','#..#','.###','...#','.##.'],1], h:['#...','#...','###.','#..#','#..#','#..#','#..#'],
+    i:['#','.','#','#','#','#','#'], j:['..#','...','..#','..#','..#','#.#','.#.'],
+    k:['#...','#...','#..#','#.#.','##..','#.#.','#..#'], l:['#.','#.','#.','#.','#.','#.','.#'],
+    m:['.....','.....','##.#.','#.#.#','#.#.#','#.#.#','#.#.#'], n:['....','....','###.','#..#','#..#','#..#','#..#'],
+    o:['....','....','.##.','#..#','#..#','#..#','.##.'], p:[['###.','#..#','#..#','#..#','###.','#...','#...'],1],
+    q:[['.###','#..#','#..#','#..#','.###','...#','...#'],1], r:['....','....','#.##','##..','#...','#...','#...'],
+    s:['....','....','.###','#...','.##.','...#','###.'], t:['.#.','.#.','###','.#.','.#.','.#.','..#'],
+    u:['....','....','#..#','#..#','#..#','#..#','.###'], v:['.....','.....','#...#','#...#','.#.#.','.#.#.','..#..'],
+    w:['.....','.....','#...#','#.#.#','#.#.#','#.#.#','.#.#.'], x:['....','....','#..#','#..#','.##.','#..#','#..#'],
+    y:[['#..#','#..#','#..#','#..#','.###','...#','.##.'],1], z:['....','....','####','...#','.##.','#...','####'],
+    0:['.##.','#..#','#.##','##.#','#..#','#..#','.##.'], 1:['.#.','##.','.#.','.#.','.#.','.#.','###'],
+    2:['.##.','#..#','...#','..#.','.#..','#...','####'], 3:['###.','...#','...#','.##.','...#','...#','###.'],
+    4:['..#.','.##.','#.#.','#.#.','####','..#.','..#.'], 5:['####','#...','###.','...#','...#','#..#','.##.'],
+    6:['.##.','#...','#...','###.','#..#','#..#','.##.'], 7:['####','...#','...#','..#.','..#.','.#..','.#..'],
+    8:['.##.','#..#','#..#','.##.','#..#','#..#','.##.'], 9:['.##.','#..#','#..#','.###','...#','...#','.##.'],
+  };
+  for(const k in D){ let v=D[k], drop=0; if(Array.isArray(v[0])){ drop=v[1]; v=v[0]; }
+    const w=v[0].length; F5[k]=[v.map(r=>{ let b=0; for(let i=0;i<w;i++) if(r[i]==='#') b|=1<<(w-1-i); return b; }), drop, w]; }
+  /* everything else, and the small face, is trimmed to the ink it has, so a
+     full stop is a full stop wide and not a capital M wide */
+  const trim=(F,W0,sp)=>{ for(const k in F){ const g=F[k]; if(g[2]) continue;
+      if(k===' '){ g[2]=sp; continue; }
+      let lo=W0, hi=-1; for(const b of g[0]) for(let i=0;i<W0;i++) if(b&(1<<(W0-1-i))){ lo=Math.min(lo,i); hi=Math.max(hi,i); }
+      if(hi<0){ g[2]=sp; continue; }
+      const w=hi-lo+1; g[0]=g[0].map(b=>(b>>(W0-1-hi))&((1<<w)-1)); g[2]=w; } };
+  trim(F5,F5W,3); trim(F3,F3W,2);
+})();
 /* pick the font and the whole-number scale for a requested size */
 function fontPick(size){
   if(size<=6)  return {f:F3, w:F3W, h:F3H, s:1, gap:1};
@@ -1067,7 +1119,9 @@ function txtRuns(s){
 }
 function latinW(s,size){
   const P=fontPick(size);
-  return s.length? s.length*(P.w*P.s+P.gap)-P.gap : 0;
+  if(!s.length) return 0;
+  let w=0; for(const ch of s) w += (glyph(P.f,ch)[2]||P.w)*P.s + P.gap;
+  return w-P.gap;
 }
 /* width in pixels of a string at a given size */
 function txtW(s,size=7){
@@ -1098,15 +1152,15 @@ function txtSprite(s,size,col,shadow){
     g.fillStyle=col2;
     let x=ox;
     for(const ch of s){
-      const gl=glyph(P.f,ch), rows=gl[0], dy=gl[1]? P.s*2 : 0;
+      const gl=glyph(P.f,ch), rows=gl[0], dy=gl[1]? P.s*2 : 0, gw=gl[2]||P.w;
       for(let r=0;r<rows.length;r++){
         const bits=rows[r];
         if(!bits) continue;
-        for(let i=0;i<P.w;i++){
-          if(bits & (1<<(P.w-1-i))) g.fillRect(x+i*P.s, oy+r*P.s+dy, P.s, P.s);
+        for(let i=0;i<gw;i++){
+          if(bits & (1<<(gw-1-i))) g.fillRect(x+i*P.s, oy+r*P.s+dy, P.s, P.s);
         }
       }
-      x += P.w*P.s + P.gap;
+      x += gw*P.s + P.gap;
     }
   };
   if(shadow) paint(shadow,1,1);
@@ -4243,13 +4297,31 @@ function paintPlay(){
       }
     }
   }
-  // the pond by the road
-  for(let x=POND_X-70;x<POND_X+70;x++){
-    const t=(x-(POND_X-70))/140, d=Math.sin(t*Math.PI);
-    const gy=R(groundY(x));
-    g.fillStyle='#6f6046'; g.fillRect(x,gy,1,2);
-    g.fillStyle=PAL.water; g.fillRect(x,gy+1,1,R(3+d*9));
-    g.fillStyle=PAL.waterL; g.fillRect(x,gy+2+((x*5)%4),1,1);
+  // the pond by the road: a clay bowl dug out of the bank, not a strip
+  { const L=POND_X-62, Rr=POND_X+62, sy=R(groundY(POND_X))+1;
+    for(let x=L-6;x<Rr+6;x++){
+      const t=(x-L)/(Rr-L), inside=t>0&&t<1, d=inside? Math.pow(Math.sin(t*Math.PI),0.7) : 0;
+      const depth=R(2+d*10), gy=R(groundY(x));
+      /* the bank: laterite, lit on its top edge, darker where it goes down to the water */
+      g.fillStyle='#8a5a3a'; g.fillRect(x,gy,1,inside? 1 : 3);
+      g.fillStyle='#b07a4e'; g.fillRect(x,gy,1,1);
+      if(!inside) continue;
+      for(let y=0;y<depth;y++){
+        const k=y/Math.max(1,depth);
+        g.fillStyle = y===0? '#a8d8e4' : k<0.35? '#5e9cb4' : k<0.7? '#467e98' : '#356478';
+        g.fillRect(x,sy+y,1,1);
+      }
+      g.fillStyle='#6e4a30'; g.fillRect(x,sy+depth,1,1);                      // the clay floor of it
+      g.fillStyle='#8a5a3a'; g.fillRect(x,sy+depth+1,1,1);
+      if((x*7)%11===0) { g.fillStyle='#86c0d0'; g.fillRect(x,sy+2+((x*3)%3),2,1); }   // ripples
+    }
+    /* lily pads, a lotus, and reeds standing in both ends */
+    for(const [dx,big] of [[-38,1],[-14,0],[18,1],[40,0]]){
+      const x=POND_X+dx; pEll(g,x,sy,big?4:3,1.2,'#3f8a4a'); pR(g,x-2,sy-1,big?4:3,1,'#5aa85a');
+      if(big){ pR(g,x,sy-3,2,2,'#f08ab0'); pR(g,x,sy-3,1,1,'#ffd0e0'); } }
+    for(const x0 of [L+2,Rr-8]) for(let i=0;i<6;i++){ const x=x0+i*1.3, h2=6+((i*5)%5);
+      g.fillStyle=i%2?'#5a7a3a':'#7a9a48'; g.fillRect(R(x),sy-h2,1,h2+1);
+      if(i%3===0){ g.fillStyle='#6a4a2a'; g.fillRect(R(x),sy-h2-2,1,3); } }
   }
   // ---- grass tufts, stones, litter of a real place ----
   for(let i=0;i<3600;i++){
@@ -6969,6 +7041,10 @@ function farmSprite(key, w, h, paint){
   if(c){ _farmSpr.delete(key); _farmSpr.set(key,c); return c; }
   c=mkCv(Math.max(1,Math.ceil(w)), Math.max(1,Math.ceil(h)));
   paint(G2(c));
+  /* the buildings get the same line and light as everything else stamped
+     into the village; the crops and trees stay soft */
+  if(/^(house|barn|pen|ong|ship|log)/.test(key) && typeof artShadeCanvas==='function'){
+    const sh=artShadeCanvas(c,{grain:0.05}); sh._pad=1; c=sh; }
   _farmSpr.set(key,c);
   while(_farmSpr.size > FARM_SPR_MAX) _farmSpr.delete(_farmSpr.keys().next().value);
   return c;
@@ -6980,7 +7056,8 @@ function baked(g, key, x, gy, w, h, ax, ay, paint){
   /* the anchor has to land on a whole pixel, or the sprite's own rounding and
      the blit's rounding disagree and the thing shifts half a pixel */
   ax=R(ax); ay=R(ay);
-  g.drawImage(farmSprite(key, w, h, gg=>paint(gg, ax, ay)), R(x-ax), R(gy-ay));
+  const c=farmSprite(key, w, h, gg=>paint(gg, ax, ay)), pd=c._pad||0;
+  g.drawImage(c, R(x-ax)-pd, R(gy-ay)-pd);
 }
 
 const farmOpen = ()=> FARM.rented;
@@ -7327,6 +7404,35 @@ function drawFarmhouse(g){
   }
 }
 /* st 0 derelict · 1 the roof mended · 2 the walls boarded · 3 a floor to sleep on */
+/* thatch: straw laid in strands, lit down the left, shaded under the eave,
+   ragged where it ends — instead of stripes of flat colour */
+function thatchRoof(g, cx, yTop, yBot, wTop, wBot, base, seed){
+  const r=mulberry(seed||7), H2=yBot-yTop, C=[shade(base,0.28),shade(base,0.12),base,shade(base,-0.16),shade(base,-0.32)];
+  for(let y=0;y<H2;y++){
+    const t=y/Math.max(1,H2-1), w=lerp(wTop,wBot,t), x0=R(cx-w/2), x1=R(cx+w/2);
+    for(let x=x0;x<=x1;x++){
+      const u=(x-x0)/Math.max(1,x1-x0), strand=pmHashT(x*3,R((y+((x*7)%5))/3));
+      let k = u<0.35? 1 : u>0.75? 3 : 2;
+      if(strand>0.78) k--; else if(strand<0.2) k++;
+      if(y>=H2-2) k=Math.min(4,k+1);
+      if(y===0) k=0;
+      g.fillStyle=C[clamp(k,0,4)]; g.fillRect(x,yTop+y,1,1);
+    }
+    /* a course line every few rows, where one layer of thatch laps the next */
+    if(y>1 && y%5===0){ g.fillStyle=C[4]; for(let x=x0+1;x<x1;x+=2) g.fillRect(x,yTop+y,1,1); }
+  }
+  /* the fringe: straw ends hanging past the eave */
+  for(let x=R(cx-wBot/2); x<=R(cx+wBot/2); x++){ const n=1+((x*13+seed)%3); g.fillStyle=C[3]; g.fillRect(x,yBot,1,n); if(n>2){ g.fillStyle=C[4]; g.fillRect(x,yBot+n-1,1,1); } }
+}
+function pmHashT(i,j){ const h=Math.sin(i*127.1+j*311.7)*43758.5453; return h-Math.floor(h); }
+/* planks with grain in them, and a knot now and then */
+function plankWall(g,x,y,w,h,col,seed){
+  pR(g,x,y,w,h,col);
+  for(let yy=y+3;yy<y+h;yy+=4) pR(g,x,yy,w,1,shade(col,-0.24));
+  for(let yy=y;yy<y+h;yy+=4) pR(g,x,yy,w,1,shade(col,0.08));
+  for(let i=0;i<w*h/14;i++){ const px=x+((i*37+seed)%w), py=y+((i*53+seed*3)%h); pR(g,px,py,2,1,shade(col,-0.14)); }
+  for(let i=0;i<w/14;i++){ const px=x+4+((i*29+seed)%Math.max(1,w-8)), py=y+2+((i*17)%Math.max(1,h-4)); pEll(g,px,py,1,0.8,shade(col,-0.35)); }
+}
 function paintFarmhouse(g,x,gy,st){
   const WALL = st>=2? '#8a6142' : st>=1? '#7a6a52' : '#6a5a48';
   const ROOF = st>=1? '#7a3b30' : '#4a4038';
@@ -7335,9 +7441,11 @@ function paintFarmhouse(g,x,gy,st){
     pR(g,sx,gy-26,5,26, '#4a3728'); pR(g,sx,gy-26,2,26,'#5f4a37'); }
   pR(g,x-26,gy-30,56,5,'#5f4a37'); pR(g,x-26,gy-30,56,1,'#7d6449');
   // walls
-  pR(g,x-24,gy-58,48,28,WALL);
-  for(let y=gy-55;y<gy-30;y+=5) pR(g,x-24,y,48,1,shade(WALL,-0.22));
-  pR(g,x+12,gy-58,12,28,shade(WALL,-0.2));
+  plankWall(g,x-24,gy-58,48,28,WALL,11);
+  pR(g,x+12,gy-58,12,28,'rgba(20,12,8,0.22)');
+  pR(g,x-24,gy-58,2,28,shade(WALL,0.14));
+  /* a brace under the floor, the way they are built */
+  pTaper(g,x-22,gy-6,x-8,gy-26,2,2,'#4a3728'); pTaper(g,x+20,gy-6,x+6,gy-26,2,2,'#3e2e22');
   if(st<2){ // holes in the wall where the planks went
     pR(g,x-14,gy-50,7,9,'#241a14'); pR(g,x+2,gy-42,5,7,'#241a14');
     if(st>=1){ // the roof is on, so somebody has at least tacked a mat over one
@@ -7350,11 +7458,7 @@ function paintFarmhouse(g,x,gy,st){
   }
   pR(g,x-20,gy-44,13,14,'#2c2018'); pR(g,x-19,gy-43,11,13,'#241a14');
   // roof
-  for(let i=0;i<7;i++){
-    const t=i/6, yy=lerp(gy-58,gy-76,t), ww=lerp(58,14,t);
-    pR(g,x-ww/2,yy-3,ww,4, i%2? shade(ROOF,-0.16):ROOF);
-    pR(g,x-ww/2,yy-3,ww,1, shade(ROOF,0.12));
-  }
+  thatchRoof(g, x, gy-79, gy-57, 12, 62, st>=1? '#a8823e' : '#7a6a44', 21);
   if(st<1){ // a hole right through the ridge
     pR(g,x-6,gy-74,13,7,'#12100c');
     for(let i=0;i<4;i++) pTaper(g,x-6+i*4,gy-68,x-8+i*5,gy-76,2,1,'#3a332a');
@@ -7363,7 +7467,7 @@ function paintFarmhouse(g,x,gy,st){
     pTaper(g,x+1,gy-76,x+7,gy-84,3,1,PAL.gold);
     pR(g,x-1,gy-82,2,7,PAL.goldD);
   }
-  pR(g,x-30,gy-59,60,3,shade(ROOF,-0.3));
+  pR(g,x-30,gy-57,60,1,'rgba(20,12,8,0.35)');
   if(st>=2){
     // the bracket and shade of the door lamp; the flame is drawn live
     pR(g,x+22,gy-50,1,5,'#4a3a2a');
@@ -8059,10 +8163,9 @@ function paintBarn(g,x,gy,tools,hasSeed){
     pR(g,px-1,gy-2,5,2,'#6d6b62');
   }
   pR(g,x-20,gy-24,40,5,'#5f4a37'); pR(g,x-20,gy-24,40,1,'#7d6449');
-  pR(g,x-18,gy-46,36,22,W1);
-  for(let y=gy-43;y<gy-24;y+=4) pR(g,x-18,y,36,1,W2);
-  pR(g,x+10,gy-46,8,22,shade(W1,-0.2));
-  pR(g,x-18,gy-46,3,22,shade(W1,0.08));
+  plankWall(g,x-18,gy-46,36,22,W1,5);
+  pR(g,x+10,gy-46,8,22,'rgba(20,12,8,0.22)');
+  pR(g,x-18,gy-46,2,22,shade(W1,0.14));
   // the hatch you reach in through, propped open
   pR(g,x-5,gy-40,11,13,'#2c2018'); pR(g,x-4,gy-39,9,11,'#241a14');
   pTaper(g,x+6,gy-40,x+13,gy-44,2,1.4,'#7d5a3c');
@@ -8071,13 +8174,7 @@ function paintBarn(g,x,gy,tools,hasSeed){
   pTaper(g,x-12,gy-24,x-13,gy-1,2,2,'#5f4a37');
   pTaper(g,x-2,gy-24,x-3,gy-1,2,2,'#4a3728');
   // thatch, in overlapping courses
-  for(let i=0;i<6;i++){
-    const t=i/5, yy=lerp(gy-46,gy-62,t), ww=lerp(44,16,t);
-    pR(g,x-ww/2,yy-3,ww,5, i%2? shade(ROOF,-0.18):ROOF);
-    pR(g,x-ww/2,yy-3,ww,1, shade(ROOF,0.16));
-    for(let k=0;k<ww;k+=5) pR(g,x-ww/2+k,yy+1,2,1, shade(ROOF,-0.3));
-  }
-  pR(g,x-23,gy-47,46,3,shade(ROOF,-0.3));
+  thatchRoof(g, x, gy-66, gy-46, 12, 48, '#b08c48', 9);
   pTaper(g,x-1,gy-62,x-5,gy-68,3,1,'#7d6449');
   pTaper(g,x+1,gy-62,x+5,gy-68,3,1,'#7d6449');
   /* the seed sack, open, with a scoop standing in it. When you are carrying

@@ -230,8 +230,11 @@ const fxBlue = (r,g,b)=> b-r > 10 && r < 190;
 function fxFindWater(){
   FX.bodies.length=0;
   const src=playCv;
-  FX.bodies.push(fxWaterBody(src, POND_X-70, POND_X+70, groundY(POND_X)-6, groundY(POND_X)+16,
-                             x=>R(groundY(x))+1, fxBlue));
+  /* the pond: only its own water colours count, or the bluish stones and
+     soil beside it light up as water at night */
+  const pondBlue=(r,g,b)=> b>95 && b-r>40 && g>r;
+  FX.bodies.push(fxWaterBody(src, POND_X-60, POND_X+60, R(groundY(POND_X))+1, R(groundY(POND_X))+14,
+                             ()=>R(groundY(POND_X))+1, pondBlue));
   if(typeof EAST!=='undefined'){
     FX.bodies.push(fxWaterBody(src, EAST.river0, EAST.river1, RIVER_WATER_Y-1, H, ()=>RIVER_WATER_Y, fxBlue));
     FX.bodies.push(fxWaterBody(src, EAST.lake0, EAST.lake1, LAKE_WATER_Y-1, H, ()=>LAKE_WATER_Y, fxBlue));
